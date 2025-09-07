@@ -28,6 +28,17 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [faqs, setFaqs] = useState<SupportFAQ[]>([]);
+  const [supportPosts, setSupportPosts] = useState<any[]>([]);
+  const [showNewTicketForm, setShowNewTicketForm] = useState(false);
+  const [newTicket, setNewTicket] = useState({
+    title: '',
+    content: '',
+    category: 'general',
+    user_name: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string>('');
 
   const categories = [
     { value: 'all', label: '전체' },
@@ -38,16 +49,91 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
     { value: 'account', label: '계정 관리' }
   ];
 
-  // 샘플 FAQ 데이터 (카테고리별 1개씩만)
-  const sampleFAQs: SupportFAQ[] = [
-    {
-      id: 1,
-      question: 'AHP for Paper는 어떤 서비스인가요?',
-      answer: 'AHP for Paper는 AHP(Analytic Hierarchy Process) 방법론을 활용하여 복잡한 의사결정 문제를 체계적으로 분석할 수 있도록 도와주는 온라인 플랫폼입니다. 연구자, 기업, 교육기관에서 논문 작성, 정책 결정, 사업 평가 등에 활용하실 수 있습니다.',
-      category: 'general',
-      popular: true
+  // API 함수들
+  const fetchFAQs = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const response = await fetch(`${API_BASE_URL}/api/support/faqs`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch FAQs');
+      }
+      
+      const data = await response.json();
+      setFaqs(data.faqs || []);
+    } catch (error) {
+      console.error('Error fetching FAQs:', error);
+      setError('FAQ를 불러오는데 실패했습니다.');
+      setFaqs([]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const fetchSupportPosts = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (selectedCategory && selectedCategory !== 'all') {
+        params.append('category', selectedCategory);
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/api/support/posts?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch support posts');
+      }
+      
+      const data = await response.json();
+      setSupportPosts(data.posts || []);
+    } catch (error) {
+      console.error('Error fetching support posts:', error);
+      setSupportPosts([]);
+    }
+  };
+
+  // 새 문의 작성
+  const createSupportTicket = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const response = await fetch(`${API_BASE_URL}/api/support/posts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newTicket)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create support ticket');
+      }
+      
+      // 성공 시 목록 새로고침
+      await fetchSupportPosts();
+      setShowNewTicketForm(false);
+      setNewTicket({
+        title: '',
+        content: '',
+        category: 'general',
+        user_name: ''
+      });
+    } catch (error) {
+      console.error('Error creating ticket:', error);
+      setError('문의 작성에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    fetchFAQs();
+    fetchSupportPosts();
+  }, []);
+
+  useEffect(() => {
+    fetchSupportPosts();
+  }, [selectedCategory]);
 
   const contactInfo: ContactInfo[] = [
     {
@@ -79,17 +165,17 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
   ];
 
   const filteredFAQs = selectedCategory === 'all' 
-    ? sampleFAQs.filter(faq => 
+    ? faqs.filter(faq => 
         faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : sampleFAQs.filter(faq => 
+    : faqs.filter(faq => 
         faq.category === selectedCategory && 
         (faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
          faq.answer.toLowerCase().includes(searchQuery.toLowerCase()))
       );
 
-  const popularFAQs = sampleFAQs.filter(faq => faq.popular);
+  const popularFAQs = faqs.filter(faq => faq.popular);
 
   const getCategoryBadge = (category: string) => {
     const categoryConfig = {
@@ -181,8 +267,170 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
         padding: '2rem 1.5rem'
       }}>
         
+        {/* 새 문의 작성 버튼 */}
+        <div style={{ marginBottom: '1.5rem', textAlign: 'right' }}>
+          <button
+            onClick={() => setShowNewTicketForm(!showNewTicketForm)}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: 'var(--accent-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          >
+            ✉️ 새 문의 작성
+          </button>
+        </div>
+
+        {/* 새 문의 작성 폼 */}
+        {showNewTicketForm && (
+          <div style={{
+            backgroundColor: 'var(--bg-primary)',
+            borderRadius: '0.75rem',
+            border: '1px solid var(--border-light)',
+            padding: '1.5rem',
+            marginBottom: '2rem'
+          }}>
+            <h3 style={{ 
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: 'var(--text-primary)'
+            }}>새 문의 작성</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input
+                type="text"
+                placeholder="이름을 입력하세요"
+                value={newTicket.user_name}
+                onChange={(e) => setNewTicket({...newTicket, user_name: e.target.value})}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem'
+                }}
+              />
+              
+              <input
+                type="text"
+                placeholder="문의 제목을 입력하세요"
+                value={newTicket.title}
+                onChange={(e) => setNewTicket({...newTicket, title: e.target.value})}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem'
+                }}
+              />
+              
+              <select
+                value={newTicket.category}
+                onChange={(e) => setNewTicket({...newTicket, category: e.target.value})}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem'
+                }}
+              >
+                <option value="general">일반 문의</option>
+                <option value="technical">기술 지원</option>
+                <option value="billing">결제/요금</option>
+                <option value="guide">사용법 문의</option>
+                <option value="account">계정 관리</option>
+              </select>
+              
+              <textarea
+                placeholder="문의 내용을 입력하세요"
+                value={newTicket.content}
+                onChange={(e) => setNewTicket({...newTicket, content: e.target.value})}
+                rows={6}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem',
+                  resize: 'vertical'
+                }}
+              />
+              
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowNewTicketForm(false)}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: 'var(--bg-subtle)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-light)',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  취소
+                </button>
+                <button
+                  onClick={createSupportTicket}
+                  disabled={!newTicket.title || !newTicket.content || !newTicket.user_name || isSubmitting}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: (!newTicket.title || !newTicket.content || !newTicket.user_name || isSubmitting) 
+                      ? 'var(--bg-subtle)' 
+                      : 'var(--accent-primary)',
+                    color: (!newTicket.title || !newTicket.content || !newTicket.user_name || isSubmitting) 
+                      ? 'var(--text-muted)' 
+                      : 'white',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    cursor: (!newTicket.title || !newTicket.content || !newTicket.user_name || isSubmitting) 
+                      ? 'not-allowed' 
+                      : 'pointer'
+                  }}
+                >
+                  {isSubmitting ? '작성 중...' : '문의 작성'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 에러 메시지 표시 */}
+        {error && (
+          <div style={{ 
+            marginBottom: '1.5rem',
+            backgroundColor: '#fee2e2',
+            border: '1px solid #fca5a5',
+            borderRadius: '0.75rem',
+            padding: '1rem'
+          }}>
+            <p style={{ 
+              fontSize: '0.875rem',
+              color: '#ef4444',
+              fontWeight: '500'
+            }}>{error}</p>
+          </div>
+        )}
+
         {/* 검색 및 빠른 도움말 */}
-        <div style={{ marginBottom: '3rem' }}>
+        <div style={{ marginBottom: '3rem' }}
           <div style={{ 
             textAlign: 'center',
             marginBottom: '2rem'

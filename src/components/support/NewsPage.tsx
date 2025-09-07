@@ -37,35 +37,80 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
     { value: 'update', label: '업데이트' }
   ];
 
-  // 샘플 데이터 (실제 서비스에서는 API로 교체)
-  const samplePosts: NewsPost[] = [
-    {
-      id: 1,
-      title: 'AHP for Paper 3.0 출시 - 새로운 분석 기능 추가',
-      content: 'AHP for Paper의 주요 업데이트가 완료되었습니다. 새로운 민감도 분석 기능과 향상된 시각화 도구를 만나보세요.',
-      summary: 'AHP for Paper 3.0의 새로운 기능과 개선사항을 소개합니다.',
-      author_name: 'AHP 개발팀',
-      created_at: '2025-01-20T10:00:00Z',
-      category: 'platform',
-      featured: true,
-      views: 1250,
-      published: true
-    }
-  ];
+  const [newPostForm, setNewPostForm] = useState({
+    title: '',
+    content: '',
+    summary: '',
+    category: 'platform',
+    author_name: 'AHP 개발팀'
+  });
+  const [showNewPostForm, setShowNewPostForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // API 함수들
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      // 실제 API 호출 대신 샘플 데이터 사용
-      setTimeout(() => {
-        setPosts(samplePosts);
-        setLoading(false);
-      }, 500);
+      setError('');
+      
+      const params = new URLSearchParams();
+      if (selectedCategory && selectedCategory !== 'all') {
+        params.append('category', selectedCategory);
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/api/news/posts?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
+      }
+      
+      const data = await response.json();
+      setPosts(data.posts || []);
     } catch (error) {
       console.error('Error fetching news posts:', error);
-      setError('서버 연결에 실패했습니다.');
+      setError('게시글을 불러오는데 실패했습니다.');
+      // 오류 시 빈 배열로 설정
+      setPosts([]);
+    } finally {
       setLoading(false);
+    }
+  };
+
+  // 게시글 작성
+  const createPost = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const response = await fetch(`${API_BASE_URL}/api/news/posts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...newPostForm,
+          featured: false,
+          published: true
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create post');
+      }
+      
+      // 성공 시 목록 새로고침
+      await fetchPosts();
+      setShowNewPostForm(false);
+      setNewPostForm({
+        title: '',
+        content: '',
+        summary: '',
+        category: 'platform',
+        author_name: 'AHP 개발팀'
+      });
+    } catch (error) {
+      console.error('Error creating post:', error);
+      setError('게시글 작성에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -177,6 +222,150 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
         margin: '0 auto',
         padding: '2rem 1.5rem'
       }}>
+        {/* 새 게시글 작성 버튼 */}
+        <div style={{ marginBottom: '1.5rem', textAlign: 'right' }}>
+          <button
+            onClick={() => setShowNewPostForm(!showNewPostForm)}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: 'var(--accent-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+          >
+            ✍️ 새 게시글 작성
+          </button>
+        </div>
+
+        {/* 새 게시글 작성 폼 */}
+        {showNewPostForm && (
+          <div style={{
+            backgroundColor: 'var(--bg-primary)',
+            borderRadius: '0.75rem',
+            border: '1px solid var(--border-light)',
+            padding: '1.5rem',
+            marginBottom: '2rem'
+          }}>
+            <h3 style={{ 
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: 'var(--text-primary)'
+            }}>새 게시글 작성</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input
+                type="text"
+                placeholder="제목을 입력하세요"
+                value={newPostForm.title}
+                onChange={(e) => setNewPostForm({...newPostForm, title: e.target.value})}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem'
+                }}
+              />
+              
+              <select
+                value={newPostForm.category}
+                onChange={(e) => setNewPostForm({...newPostForm, category: e.target.value})}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem'
+                }}
+              >
+                <option value="platform">플랫폼 소식</option>
+                <option value="research">연구 성과</option>
+                <option value="case">활용 사례</option>
+                <option value="news">업계 뉴스</option>
+                <option value="update">업데이트</option>
+              </select>
+              
+              <input
+                type="text"
+                placeholder="요약 (선택사항)"
+                value={newPostForm.summary}
+                onChange={(e) => setNewPostForm({...newPostForm, summary: e.target.value})}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem'
+                }}
+              />
+              
+              <textarea
+                placeholder="내용을 입력하세요"
+                value={newPostForm.content}
+                onChange={(e) => setNewPostForm({...newPostForm, content: e.target.value})}
+                rows={6}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem',
+                  resize: 'vertical'
+                }}
+              />
+              
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowNewPostForm(false)}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: 'var(--bg-subtle)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-light)',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  취소
+                </button>
+                <button
+                  onClick={createPost}
+                  disabled={!newPostForm.title || !newPostForm.content || isSubmitting}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: (!newPostForm.title || !newPostForm.content || isSubmitting) 
+                      ? 'var(--bg-subtle)' 
+                      : 'var(--accent-primary)',
+                    color: (!newPostForm.title || !newPostForm.content || isSubmitting) 
+                      ? 'var(--text-muted)' 
+                      : 'white',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    cursor: (!newPostForm.title || !newPostForm.content || isSubmitting) 
+                      ? 'not-allowed' 
+                      : 'pointer'
+                  }}
+                >
+                  {isSubmitting ? '작성 중...' : '게시글 작성'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <div style={{ 
           display: 'grid',
           gridTemplateColumns: 'minmax(250px, 300px) 1fr',

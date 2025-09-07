@@ -4,6 +4,39 @@ import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
+// FAQ 목록 조회
+router.get('/faqs', async (req, res) => {
+  try {
+    const { category = 'all', popular } = req.query;
+    
+    let whereClause = '';
+    let queryParams: any[] = [];
+    
+    if (category && category !== 'all') {
+      whereClause = 'WHERE category = $1';
+      queryParams.push(category);
+    }
+    
+    if (popular === 'true') {
+      whereClause = whereClause ? `${whereClause} AND popular = true` : 'WHERE popular = true';
+    }
+    
+    const result = await query(`
+      SELECT * FROM faqs
+      ${whereClause}
+      ORDER BY order_index, created_at DESC
+    `, queryParams);
+
+    res.json({
+      success: true,
+      faqs: result.rows
+    });
+  } catch (error) {
+    console.error('Error fetching FAQs:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch FAQs' });
+  }
+});
+
 // 고객지원 게시글 목록 조회
 router.get('/posts', async (req, res) => {
   try {
