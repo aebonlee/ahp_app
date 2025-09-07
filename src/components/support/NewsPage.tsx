@@ -50,54 +50,6 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
       featured: true,
       views: 1250,
       published: true
-    },
-    {
-      id: 2,
-      title: '서울대학교 경영대학원 AHP 논문 연구 성과 발표',
-      content: 'AHP for Paper를 활용한 공급망 관리 의사결정 연구가 국제 학술지에 게재되었습니다.',
-      summary: '학술 연구 성과와 AHP 방법론의 실무 적용 사례를 공유합니다.',
-      author_name: '연구팀',
-      created_at: '2025-01-18T14:30:00Z',
-      category: 'research',
-      featured: true,
-      views: 892,
-      published: true
-    },
-    {
-      id: 3,
-      title: '대기업 인사평가시스템 도입 사례 - LG전자',
-      content: 'LG전자에서 AHP 방법론을 활용하여 공정하고 객관적인 인사평가시스템을 구축한 사례를 소개합니다.',
-      summary: '대기업의 AHP 방법론 활용 사례와 도입 효과를 분석합니다.',
-      author_name: '사례연구팀',
-      created_at: '2025-01-15T09:15:00Z',
-      category: 'case',
-      featured: false,
-      views: 687,
-      published: true
-    },
-    {
-      id: 4,
-      title: '2025년 의사결정 분석 트렌드 - AHP 방법론 주목받아',
-      content: '최근 복잡한 비즈니스 환경에서 체계적 의사결정 방법론으로 AHP가 각광받고 있습니다.',
-      summary: '업계 전문가들이 전망하는 2025년 의사결정 분석 트렌드입니다.',
-      author_name: '업계분석팀',
-      created_at: '2025-01-12T16:45:00Z',
-      category: 'news',
-      featured: false,
-      views: 543,
-      published: true
-    },
-    {
-      id: 5,
-      title: '모바일 앱 베타 테스트 시작 - 언제 어디서나 AHP 분석',
-      content: 'AHP for Paper 모바일 앱의 베타 테스트가 시작되었습니다. 테스터를 모집하고 있으니 많은 참여 부탁드립니다.',
-      summary: '모바일 앱 베타 테스트 참여 방법과 주요 기능을 안내합니다.',
-      author_name: '모바일팀',
-      created_at: '2025-01-10T11:20:00Z',
-      category: 'update',
-      featured: true,
-      views: 756,
-      published: true
     }
   ];
 
