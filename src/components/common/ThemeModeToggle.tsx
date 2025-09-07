@@ -37,49 +37,110 @@ const ThemeModeToggle: React.FC = () => {
           e.preventDefault();
           setIsOpen(true);
         }}
-        className="flex items-center justify-center w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '3rem',
+          height: '3rem',
+          borderRadius: '50%',
           backgroundColor: 'var(--bg-secondary)',
           color: 'var(--text-primary)',
           border: '1px solid var(--border-light)',
-          backdropFilter: 'blur(10px)'
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease',
+          cursor: 'pointer'
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
         }}
         title={`현재: ${themeInfo[theme].name} (클릭: 다음 모드, 우클릭: 선택)`}
       >
-        <span className="text-xl group-hover:scale-110 transition-transform">
+        <span style={{
+          fontSize: '1.25rem',
+          transition: 'transform 0.3s ease'
+        }}>
           {getCurrentIcon()}
         </span>
       </button>
 
       {/* Theme Mode Selection Modal */}
       {isOpen && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)'
+            }}
             onClick={() => setIsOpen(false)}
           />
           
           {/* Modal Content */}
-          <div className="relative rounded-2xl shadow-2xl max-w-sm w-full mx-4"
-               style={{
-                 backgroundColor: 'var(--bg-secondary)',
-                 borderRadius: 'var(--radius-lg)',
-                 boxShadow: 'var(--shadow-2xl)',
-                 border: '1px solid var(--border-light)'
-               }}>
+          <div style={{
+            position: 'relative',
+            backgroundColor: 'var(--bg-secondary)',
+            borderRadius: '1rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            border: '1px solid var(--border-light)',
+            maxWidth: '24rem',
+            width: '100%',
+            margin: '0 1rem'
+          }}>
             
             {/* Header */}
-            <div className="px-6 py-4 border-b"
-                 style={{ borderColor: 'var(--border-light)' }}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold flex items-center gap-2"
-                    style={{ color: 'var(--text-primary)' }}>
+            <div style={{
+              padding: '1.5rem 1.5rem 1rem 1.5rem',
+              borderBottom: '1px solid var(--border-light)'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: 'var(--text-primary)'
+                }}>
                   {getCurrentIcon()} 모드 설정
                 </h3>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  style={{
+                    padding: '0.25rem',
+                    borderRadius: '0.5rem',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-elevated)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'}
                 >
                   <span style={{ color: 'var(--text-muted)' }}>✕</span>
                 </button>
@@ -87,23 +148,37 @@ const ThemeModeToggle: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-4">
+            <div style={{
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem'
+            }}>
               
               {/* Current Status */}
-              <div className="p-4 rounded-xl"
-                   style={{
-                     backgroundColor: 'var(--accent-light)',
-                     border: '1px solid var(--accent-primary)'
-                   }}>
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{getCurrentIcon()}</span>
+              <div style={{
+                padding: '1rem',
+                borderRadius: '0.75rem',
+                backgroundColor: 'var(--accent-light)',
+                border: '1px solid var(--accent-primary)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}>
+                  <span style={{ fontSize: '1.5rem' }}>{getCurrentIcon()}</span>
                   <div>
-                    <div className="font-semibold"
-                         style={{ color: 'var(--accent-primary)' }}>
+                    <div style={{
+                      fontWeight: '600',
+                      color: 'var(--accent-primary)'
+                    }}>
                       현재: {themeInfo[theme].name}
                     </div>
-                    <div className="text-sm"
-                         style={{ color: 'var(--text-secondary)' }}>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      color: 'var(--text-secondary)'
+                    }}>
                       {theme === 'system' 
                         ? `시스템: ${resolvedTheme === 'dark' ? '다크' : '라이트'} 모드`
                         : themeInfo[theme].description}
@@ -113,7 +188,11 @@ const ThemeModeToggle: React.FC = () => {
               </div>
 
               {/* Mode Options */}
-              <div className="space-y-2">
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem'
+              }}>
                 {(['light', 'dark', 'system'] as const).map((themeOption) => {
                   const info = themeInfo[themeOption];
                   const isActive = theme === themeOption;
@@ -125,28 +204,45 @@ const ThemeModeToggle: React.FC = () => {
                         setTheme(themeOption);
                         setIsOpen(false);
                       }}
-                      className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 hover:scale-[1.02] ${
-                        isActive ? 'ring-2 ring-offset-2' : ''
-                      }`}
                       style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        padding: '1rem',
+                        borderRadius: '0.75rem',
+                        border: '1px solid',
                         backgroundColor: isActive ? 'var(--accent-light)' : 'var(--bg-elevated)',
-                        borderColor: isActive ? 'var(--accent-primary)' : 'var(--border-light)'
+                        borderColor: isActive ? 'var(--accent-primary)' : 'var(--border-light)',
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer'
                       }}
+                      onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.02)'}
+                      onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'}
                     >
-                      <span className="text-2xl">{info.icon}</span>
-                      <div className="flex-1 text-left">
-                        <div className="font-medium"
-                             style={{ color: isActive ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
+                      <span style={{ fontSize: '1.5rem' }}>{info.icon}</span>
+                      <div style={{
+                        flex: 1,
+                        textAlign: 'left'
+                      }}>
+                        <div style={{
+                          fontWeight: '500',
+                          color: isActive ? 'var(--accent-primary)' : 'var(--text-primary)'
+                        }}>
                           {info.name}
                         </div>
-                        <div className="text-sm"
-                             style={{ color: 'var(--text-muted)' }}>
+                        <div style={{
+                          fontSize: '0.875rem',
+                          color: 'var(--text-muted)'
+                        }}>
                           {info.description}
                         </div>
                       </div>
                       {isActive && (
-                        <span className="text-lg"
-                              style={{ color: 'var(--accent-primary)' }}>
+                        <span style={{
+                          fontSize: '1.125rem',
+                          color: 'var(--accent-primary)'
+                        }}>
                           ✓
                         </span>
                       )}
@@ -156,13 +252,20 @@ const ThemeModeToggle: React.FC = () => {
               </div>
 
               {/* Help Text */}
-              <div className="p-3 rounded-lg"
-                   style={{ 
-                     backgroundColor: 'var(--bg-elevated)',
-                     border: '1px solid var(--border-light)'
-                   }}>
-                <p className="text-xs flex items-start gap-2"
-                   style={{ color: 'var(--text-muted)' }}>
+              <div style={{
+                padding: '0.75rem',
+                borderRadius: '0.5rem',
+                backgroundColor: 'var(--bg-elevated)',
+                border: '1px solid var(--border-light)'
+              }}>
+                <p style={{
+                  fontSize: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  color: 'var(--text-muted)',
+                  lineHeight: '1.5'
+                }}>
                   <span>💡</span>
                   <span>
                     <strong>빠른 전환:</strong> 버튼 클릭으로 순환 전환<br />

@@ -1,7 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import Particles from 'react-particles';
-import { loadSlim } from 'tsparticles-slim';
-import type { Container, Engine, ISourceOptions } from 'tsparticles-engine';
+import React, { useState, useEffect } from 'react';
 
 interface ParticleBackgroundProps {
   className?: string;
@@ -60,210 +57,9 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
         battery.addEventListener('chargingchange', updateBatteryStatus);
       });
     }
-
-    // Intersection Observer로 뷰포트 내에서만 실행
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold: 0.1 }
-    );
-
-    const element = document.getElementById('particle-background');
-    if (element) {
-      observer.observe(element);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
   }, []);
 
-  const particlesInit = useCallback(async (engine: Engine) => {
-    await loadSlim(engine);
-  }, []);
-
-  const particlesLoaded = useCallback(async (container: Container | undefined) => {
-    // 성능 최적화: 필요시에만 로그
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Particles loaded:', container);
-    }
-  }, []);
-
-  const particlesOptions: ISourceOptions = useMemo(() => {
-    // 디바이스 성능에 따른 설정 조정
-    const getPerformanceAdjustedSettings = () => {
-      const actualIntensity = devicePerformance === 'low' ? 'low' : 
-                              devicePerformance === 'high' ? intensity : 'medium';
-      
-      const particleCount = {
-        low: { base: 20, mobile: 10, small: 8 },
-        medium: { base: 50, mobile: 25, small: 15 },
-        high: { base: 80, mobile: 40, small: 25 }
-      };
-
-      const speed = {
-        low: 0.5,
-        medium: 1.5,
-        high: 2.5
-      };
-
-      return {
-        intensity: actualIntensity as 'low' | 'medium' | 'high',
-        particleCount: particleCount[actualIntensity],
-        speed: speed[actualIntensity]
-      };
-    };
-
-    const settings = getPerformanceAdjustedSettings();
-
-    const baseConfig: ISourceOptions = {
-      background: {
-        color: {
-          value: 'transparent'
-        }
-      },
-      fpsLimit: devicePerformance === 'low' ? 30 : devicePerformance === 'medium' ? 60 : 120,
-      pauseOnBlur: true, // 탭이 비활성화되면 일시정지
-      pauseOnOutsideViewport: true, // 뷰포트 밖에서 일시정지
-      interactivity: {
-        detectsOn: 'window',
-        events: {
-          onClick: {
-            enable: interactive && devicePerformance !== 'low',
-            mode: 'push'
-          },
-          onHover: {
-            enable: interactive && devicePerformance !== 'low',
-            mode: 'grab' // repulse보다 성능이 좋음
-          },
-          resize: true
-        },
-        modes: {
-          push: {
-            quantity: devicePerformance === 'high' ? 4 : 2
-          },
-          grab: {
-            distance: devicePerformance === 'high' ? 140 : 100,
-            links: {
-              opacity: 0.3
-            }
-          }
-        }
-      },
-      particles: {
-        color: {
-          value: theme === 'dark' ? '#C8A968' : '#848484' // 글로벌 테마 색상 사용
-        },
-        links: {
-          color: theme === 'dark' ? '#C8A968' : '#848484',
-          distance: devicePerformance === 'high' ? 150 : devicePerformance === 'medium' ? 120 : 100,
-          enable: true,
-          opacity: theme === 'dark' ? 0.3 : 0.15,
-          width: devicePerformance === 'low' ? 0.5 : 1
-        },
-        move: {
-          direction: 'none',
-          enable: true,
-          outModes: {
-            default: 'bounce'
-          },
-          random: devicePerformance === 'high',
-          speed: settings.speed,
-          straight: false
-        },
-        number: {
-          density: {
-            enable: true,
-            area: devicePerformance === 'low' ? 1200 : 800
-          },
-          value: settings.particleCount.base
-        },
-        opacity: {
-          value: theme === 'dark' ? 0.5 : 0.3,
-          animation: {
-            enable: devicePerformance === 'high',
-            speed: 0.5,
-            minimumValue: 0.1,
-            sync: false
-          }
-        },
-        shape: {
-          type: 'circle'
-        },
-        size: {
-          value: { min: 1, max: devicePerformance === 'high' ? 4 : 3 },
-          animation: {
-            enable: devicePerformance === 'high',
-            speed: 2,
-            minimumValue: 1,
-            sync: false
-          }
-        }
-      },
-      detectRetina: true,
-      responsive: [
-        {
-          maxWidth: 768,
-          options: {
-            particles: {
-              number: {
-                value: settings.particleCount.mobile
-              },
-              links: {
-                distance: 100
-              },
-              move: {
-                speed: settings.speed * 0.7 // 모바일에서 속도 감소
-              }
-            },
-            interactivity: {
-              events: {
-                onHover: {
-                  enable: false // 모바일에서 호버 비활성화
-                },
-                onClick: {
-                  enable: devicePerformance !== 'low'
-                }
-              }
-            }
-          }
-        },
-        {
-          maxWidth: 480,
-          options: {
-            particles: {
-              number: {
-                value: settings.particleCount.small
-              },
-              links: {
-                distance: 80,
-                width: 0.5
-              },
-              move: {
-                speed: settings.speed * 0.5
-              }
-            },
-            interactivity: {
-              events: {
-                onHover: {
-                  enable: false
-                },
-                onClick: {
-                  enable: false // 작은 화면에서 인터랙션 완전 비활성화
-                }
-              }
-            },
-            fpsLimit: 30 // 작은 화면에서 FPS 제한
-          }
-        }
-      ]
-    };
-
-    return baseConfig;
-  }, [theme, intensity, interactive, devicePerformance]);
-
-  // 성능이 너무 낮거나 배터리가 부족하거나 화면 밖에 있으면 렌더링하지 않음
+  // 성능이 너무 낮거나 배터리가 부족하면 간단한 그라데이션만
   if (!isVisible || devicePerformance === 'low') {
     return (
       <div 
@@ -277,20 +73,62 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
     );
   }
 
+  const particleCount = intensity === 'high' ? 12 : intensity === 'medium' ? 8 : 4;
+
+  // 간단한 CSS 기반 파티클 효과 (react-particles 없이)
   return (
-    <div className={`absolute inset-0 ${className}`}>
-      <Particles
+    <>
+      <div 
         id="particle-background"
-        init={particlesInit}
-        loaded={particlesLoaded}
-        options={particlesOptions}
-        className="absolute inset-0 w-full h-full"
-        style={{ 
+        className={`absolute inset-0 ${className}`}
+        style={{
+          background: theme === 'dark' 
+            ? 'radial-gradient(circle at 50% 50%, rgba(200, 169, 104, 0.05) 0%, transparent 70%)'
+            : 'radial-gradient(circle at 50% 50%, rgba(132, 132, 132, 0.03) 0%, transparent 70%)',
           zIndex: -1,
-          willChange: 'transform', // GPU 가속 힌트
+          overflow: 'hidden'
         }}
-      />
-    </div>
+      >
+        {/* CSS 애니메이션 도형들 */}
+        {Array.from({ length: particleCount }).map((_, i) => (
+          <div
+            key={i}
+            className={`particle-${i}`}
+            style={{
+              position: 'absolute',
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              width: `${Math.random() * 3 + 1}px`,
+              height: `${Math.random() * 3 + 1}px`,
+              backgroundColor: theme === 'dark' ? '#C8A968' : '#848484',
+              borderRadius: '50%',
+              opacity: Math.random() * 0.3 + 0.1,
+              animation: `float${i} ${Math.random() * 10 + 15}s infinite ease-in-out ${Math.random() * 5}s`
+            }}
+          />
+        ))}
+      </div>
+      
+      <style>{`
+        ${Array.from({ length: particleCount }).map(
+          (_, i) => `
+          @keyframes float${i} {
+            0%, 100% { 
+              transform: translateY(0px) translateX(0px) rotate(0deg); 
+            }
+            25% { 
+              transform: translateY(-${Math.random() * 30 + 20}px) translateX(${Math.random() * 20 - 10}px) rotate(90deg); 
+            }
+            50% { 
+              transform: translateY(-${Math.random() * 20 + 10}px) translateX(-${Math.random() * 25 + 15}px) rotate(180deg); 
+            }
+            75% { 
+              transform: translateY(-${Math.random() * 35 + 25}px) translateX(${Math.random() * 15 - 5}px) rotate(270deg); 
+            }
+          }`
+        ).join('\n')}
+      `}</style>
+    </>
   );
 };
 

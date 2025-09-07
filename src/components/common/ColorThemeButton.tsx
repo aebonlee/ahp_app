@@ -73,49 +73,110 @@ const ColorThemeButton: React.FC = () => {
       {/* Color Theme Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center justify-center w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '3rem',
+          height: '3rem',
+          borderRadius: '50%',
           backgroundColor: 'var(--bg-secondary)',
           color: 'var(--text-primary)',
           border: '1px solid var(--border-light)',
-          backdropFilter: 'blur(10px)'
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease',
+          cursor: 'pointer'
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
         }}
         title={`현재: ${themeInfo[currentTheme]?.name || '기본 테마'}`}
       >
-        <span className="text-xl group-hover:scale-110 transition-transform">
+        <span style={{
+          fontSize: '1.25rem',
+          transition: 'transform 0.3s ease'
+        }}>
           {getCurrentThemeEmoji()}
         </span>
       </button>
 
       {/* Color Theme Selection Modal */}
       {isOpen && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)'
+            }}
             onClick={() => setIsOpen(false)}
           />
           
           {/* Modal Content */}
-          <div className="relative rounded-2xl shadow-2xl max-w-lg w-full mx-4"
-               style={{
-                 backgroundColor: 'var(--bg-secondary)',
-                 borderRadius: 'var(--radius-lg)',
-                 boxShadow: 'var(--shadow-2xl)',
-                 border: '1px solid var(--border-light)'
-               }}>
+          <div style={{
+            position: 'relative',
+            backgroundColor: 'var(--bg-secondary)',
+            borderRadius: '1rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            border: '1px solid var(--border-light)',
+            maxWidth: '32rem',
+            width: '100%',
+            margin: '0 1rem'
+          }}>
             
             {/* Header */}
-            <div className="px-6 py-4 border-b"
-                 style={{ borderColor: 'var(--border-light)' }}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold flex items-center gap-2"
-                    style={{ color: 'var(--text-primary)' }}>
+            <div style={{
+              padding: '1.5rem 1.5rem 1rem 1.5rem',
+              borderBottom: '1px solid var(--border-light)'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: 'var(--text-primary)'
+                }}>
                   🎨 컬러 테마 선택
                 </h3>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  style={{
+                    padding: '0.25rem',
+                    borderRadius: '0.5rem',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-elevated)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'}
                 >
                   <span style={{ color: 'var(--text-muted)' }}>✕</span>
                 </button>
@@ -123,29 +184,53 @@ const ColorThemeButton: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-6">
+            <div style={{
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.5rem'
+            }}>
               
               {/* Current Theme Display */}
-              <div className="p-4 rounded-xl border-2"
-                   style={{
-                     backgroundColor: 'var(--accent-light)',
-                     borderColor: 'var(--accent-primary)',
-                     background: `linear-gradient(135deg, var(--accent-light), transparent)`
-                   }}>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-bold flex items-center gap-2"
-                      style={{ color: 'var(--text-primary)', fontSize: 'var(--font-size-base)' }}>
-                    <span className="text-2xl">{themeInfo[currentTheme]?.emoji || '🎨'}</span>
+              <div style={{
+                padding: '1rem',
+                borderRadius: '0.75rem',
+                border: '2px solid var(--accent-primary)',
+                backgroundColor: 'var(--accent-light)',
+                background: `linear-gradient(135deg, var(--accent-light), transparent)`
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.5rem'
+                }}>
+                  <h4 style={{
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: 'var(--text-primary)'
+                  }}>
+                    <span style={{ fontSize: '1.5rem' }}>{themeInfo[currentTheme]?.emoji || '🎨'}</span>
                     현재: {themeInfo[currentTheme]?.name || '기본 테마'}
                   </h4>
                 </div>
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <p style={{ 
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.875rem',
+                  lineHeight: '1.25rem'
+                }}>
                   {themeInfo[currentTheme]?.description || '기본 설정'}
                 </p>
               </div>
 
               {/* Theme Grid */}
-              <div className="grid grid-cols-3 gap-4">
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gap: '1rem'
+              }}>
                 {getAvailableThemes().map((theme) => {
                   const palette = getPalette(theme);
                   const info = themeInfo[theme];
@@ -155,19 +240,23 @@ const ColorThemeButton: React.FC = () => {
                     <button
                       key={theme}
                       onClick={() => handleThemeSelect(theme)}
-                      className={`group relative p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 ${
-                        isActive ? 'ring-2 ring-offset-2' : ''
-                      }`}
                       style={{
+                        position: 'relative',
+                        padding: '1rem',
+                        borderRadius: '0.75rem',
+                        border: '2px solid',
+                        transition: 'all 0.3s ease',
+                        cursor: 'pointer',
                         backgroundColor: isActive ? palette.light : 'var(--bg-elevated)',
                         borderColor: isActive ? palette.primary : 'var(--border-light)',
-                        boxShadow: isActive ? `0 4px 20px rgba(${palette.rgb}, 0.3)` : 'var(--shadow-sm)'
+                        boxShadow: isActive ? `0 4px 20px rgba(${palette.rgb}, 0.3), 0 0 0 2px ${palette.primary}, 0 0 0 4px var(--bg-secondary)` : 'var(--shadow-sm)'
                       }}
                       onMouseEnter={(e) => {
                         if (!isActive) {
                           e.currentTarget.style.backgroundColor = palette.light;
                           e.currentTarget.style.borderColor = palette.primary;
                           e.currentTarget.style.boxShadow = `0 4px 20px rgba(${palette.rgb}, 0.2)`;
+                          e.currentTarget.style.transform = 'scale(1.05)';
                         }
                       }}
                       onMouseLeave={(e) => {
@@ -175,37 +264,87 @@ const ColorThemeButton: React.FC = () => {
                           e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
                           e.currentTarget.style.borderColor = 'var(--border-light)';
                           e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                          e.currentTarget.style.transform = 'scale(1)';
                         }
                       }}
                     >
                       {/* Color Preview Circles */}
-                      <div className="flex justify-center mb-3 space-x-2">
-                        <div className="w-8 h-8 rounded-full shadow-md transition-transform group-hover:scale-110"
-                             style={{ backgroundColor: palette.primary }} />
-                        <div className="w-8 h-8 rounded-full shadow-md transition-transform group-hover:scale-110"
-                             style={{ backgroundColor: palette.secondary }} />
-                        <div className="w-8 h-8 rounded-full shadow-md transition-transform group-hover:scale-110"
-                             style={{ backgroundColor: palette.light }} />
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        marginBottom: '0.75rem',
+                        gap: '0.5rem'
+                      }}>
+                        <div style={{ 
+                          width: '2rem',
+                          height: '2rem',
+                          borderRadius: '50%',
+                          backgroundColor: palette.primary,
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                          transition: 'transform 0.3s ease'
+                        }} />
+                        <div style={{ 
+                          width: '2rem',
+                          height: '2rem',
+                          borderRadius: '50%',
+                          backgroundColor: palette.secondary,
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                          transition: 'transform 0.3s ease'
+                        }} />
+                        <div style={{ 
+                          width: '2rem',
+                          height: '2rem',
+                          borderRadius: '50%',
+                          backgroundColor: palette.light,
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                          transition: 'transform 0.3s ease'
+                        }} />
                       </div>
 
                       {/* Theme Info */}
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">{info.emoji}</div>
-                        <h5 className="font-bold text-sm mb-1"
-                            style={{ color: isActive ? palette.primary : 'var(--text-primary)' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{
+                          fontSize: '1.5rem',
+                          lineHeight: '2rem',
+                          marginBottom: '0.25rem'
+                        }}>{info.emoji}</div>
+                        <h5 style={{
+                          fontWeight: 'bold',
+                          fontSize: '0.875rem',
+                          lineHeight: '1.25rem',
+                          marginBottom: '0.25rem',
+                          color: isActive ? palette.primary : 'var(--text-primary)'
+                        }}>
                           {info.name}
                         </h5>
-                        <p className="text-xs"
-                           style={{ color: 'var(--text-muted)' }}>
+                        <p style={{
+                          fontSize: '0.75rem',
+                          lineHeight: '1rem',
+                          color: 'var(--text-muted)'
+                        }}>
                           {info.description}
                         </p>
                       </div>
 
                       {/* Active Indicator */}
                       {isActive && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
-                             style={{ backgroundColor: palette.primary }}>
-                          <span className="text-white text-xs">✓</span>
+                        <div style={{
+                          position: 'absolute',
+                          top: '0.5rem',
+                          right: '0.5rem',
+                          width: '1.5rem',
+                          height: '1.5rem',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: palette.primary
+                        }}>
+                          <span style={{
+                            color: 'white',
+                            fontSize: '0.75rem',
+                            lineHeight: '1rem'
+                          }}>✓</span>
                         </div>
                       )}
                     </button>
@@ -214,13 +353,20 @@ const ColorThemeButton: React.FC = () => {
               </div>
 
               {/* Help Text */}
-              <div className="p-3 rounded-lg"
-                   style={{ 
-                     backgroundColor: 'var(--bg-elevated)',
-                     border: '1px solid var(--border-light)'
-                   }}>
-                <p className="text-sm flex items-center gap-2"
-                   style={{ color: 'var(--text-muted)' }}>
+              <div style={{
+                padding: '0.75rem',
+                borderRadius: '0.5rem',
+                backgroundColor: 'var(--bg-elevated)',
+                border: '1px solid var(--border-light)'
+              }}>
+                <p style={{
+                  fontSize: '0.875rem',
+                  lineHeight: '1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: 'var(--text-muted)'
+                }}>
                   <span>🎨</span>
                   선택한 컬러 테마는 전체 인터페이스에 적용되며, 브라우저에 자동 저장됩니다.
                 </p>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import styles from './HomePage.module.css';
 import ThemeModeToggle from '../common/ThemeModeToggle';
 import ColorThemeButton from '../common/ColorThemeButton';
+import ParticleBackground from '../common/ParticleBackground';
 import PricingSection from './PricingSection';
 
 interface HomePageProps {
@@ -12,7 +12,10 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
   const [scrollY, setScrollY] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light');
+  const [isMobile, setIsMobile] = useState(false);
 
+  // 스크롤 이벤트 및 화면 크기 처리
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -20,10 +23,58 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
       setShowScrollTop(currentScrollY > 300);
     };
 
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // 초기 화면 크기 설정
+    handleResize();
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
+  // 테마 변경 감지
+  useEffect(() => {
+    const detectTheme = () => {
+      const theme = document.documentElement.getAttribute('data-theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setCurrentTheme(theme === 'dark' || (!theme && systemPrefersDark) ? 'dark' : 'light');
+    };
+
+    // 초기 테마 설정
+    detectTheme();
+
+    // 테마 변경 감지
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          detectTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    // 시스템 테마 변경 감지
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleMediaChange = () => detectTheme();
+    mediaQuery.addListener(handleMediaChange);
+
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeListener(handleMediaChange);
+    };
+  }, []);
+
+  // 상단으로 스크롤
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -32,45 +83,162 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
   };
 
   return (
-    <div className={styles.homeContainer}>
-      {/* Header */}
-      <header className={`${styles.header} ${scrollY > 10 ? styles.headerScrolled : styles.headerTransparent}`}>
-        <div className={styles.headerContainer}>
-          <div className={styles.headerContent}>
-            {/* Logo */}
-            <div className={styles.logo}>
-              AHP for Paper
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: 'var(--bg-primary, #ffffff)',
+      color: 'var(--text-primary, #1f2937)',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* 헤더 - 잔디 스타일 */}
+      <header style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        transition: 'all 0.3s ease',
+        backgroundColor: scrollY > 10 ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
+        backdropFilter: scrollY > 10 ? 'blur(10px)' : 'none',
+        boxShadow: scrollY > 10 ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1.5rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '4rem'
+          }}>
+            {/* 로고 */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <h1 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                background: 'linear-gradient(to right, var(--accent-primary), var(--accent-secondary))',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent',
+                margin: 0
+              }}>
+                AHP for Paper
+              </h1>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className={styles.nav}>
-              <a href="#features" className={styles.navLink}>주요 기능</a>
-              <a href="#how-it-works" className={styles.navLink}>이용 방법</a>
-              <a href="#pricing" className={styles.navLink}>요금제</a>
-              <a href="#research" className={styles.navLink}>연구 사례</a>
+            {/* 네비게이션 - 데스크톱 */}
+            <nav style={{
+              display: isMobile ? 'none' : 'flex',
+              alignItems: 'center',
+              gap: '2rem'
+            }}>
+              <a href="#features" style={{
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                transition: 'color 0.3s ease'
+              }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                 onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                주요 기능
+              </a>
+              <a href="#how-it-works" style={{
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                transition: 'color 0.3s ease'
+              }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                 onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                이용 방법
+              </a>
+              <a href="#pricing" style={{
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                transition: 'color 0.3s ease'
+              }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                 onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                요금제
+              </a>
             </nav>
 
-            {/* Desktop Buttons */}
-            <div className={styles.headerButtons}>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {/* CTA 버튼들 및 테마 컨트롤 */}
+            <div style={{
+              display: isMobile ? 'none' : 'flex',
+              alignItems: 'center',
+              gap: '1rem'
+            }}>
+              {/* 테마 컨트롤 */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
                 <ThemeModeToggle />
                 <ColorThemeButton />
               </div>
-              <div style={{ width: '1px', height: '24px', background: '#e5e7eb' }}></div>
-              <button onClick={onLoginClick} className={styles.loginButton}>
+              
+              <div style={{
+                width: '1px',
+                height: '1.5rem',
+                backgroundColor: 'var(--border-light)'
+              }}></div>
+              
+              <button
+                onClick={onLoginClick}
+                style={{
+                  padding: '0.5rem 1.25rem',
+                  color: 'var(--text-secondary)',
+                  fontWeight: '500',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'color 0.3s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'}
+              >
                 로그인
               </button>
-              <button onClick={onLoginClick} className={styles.ctaButton}>
+              <button
+                onClick={onLoginClick}
+                style={{
+                  padding: '0.625rem 1.5rem',
+                  color: 'white',
+                  backgroundColor: 'var(--accent-primary)',
+                  borderRadius: '0.5rem',
+                  fontWeight: '500',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                  transition: 'all 0.3s ease, transform 0.1s ease'
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-hover)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-primary)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                }}
+              >
                 시작하기
               </button>
             </div>
 
-            {/* Mobile Menu Button */}
-            <button 
-              className={styles.mobileMenuButton}
+            {/* 모바일 메뉴 버튼 */}
+            <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              style={{
+                display: isMobile ? 'block' : 'none',
+                padding: '0.5rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text-primary)'
+              }}
             >
-              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg style={{ width: '1.5rem', height: '1.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isMenuOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -81,30 +249,65 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* 모바일 메뉴 */}
         {isMenuOpen && (
-          <div className={styles.mobileMenu}>
-            <a href="#features" className={styles.mobileNavLink}>주요 기능</a>
-            <a href="#how-it-works" className={styles.mobileNavLink}>이용 방법</a>
-            <a href="#pricing" className={styles.mobileNavLink}>요금제</a>
-            <a href="#research" className={styles.mobileNavLink}>연구 사례</a>
-            <div style={{ padding: '1rem 0', borderTop: '1px solid #e5e7eb', marginTop: '1rem' }}>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '0.875rem', color: '#9ca3af' }}>테마:</span>
+          <div style={{
+            display: isMobile ? 'block' : 'none',
+            borderTop: '1px solid var(--border-light)',
+            backgroundColor: 'var(--bg-secondary)'
+          }}>
+            <div style={{
+              padding: '1rem 1.5rem'
+            }}>
+              <a href="#features" style={{
+                display: 'block',
+                padding: '0.5rem 0',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none'
+              }} onClick={() => setIsMenuOpen(false)}>주요 기능</a>
+              <a href="#how-it-works" style={{
+                display: 'block',
+                padding: '0.5rem 0',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none'
+              }} onClick={() => setIsMenuOpen(false)}>이용 방법</a>
+              <a href="#pricing" style={{
+                display: 'block',
+                padding: '0.5rem 0',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none'
+              }} onClick={() => setIsMenuOpen(false)}>요금제</a>
+              
+              {/* 모바일 테마 컨트롤 */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.75rem 0',
+                borderTop: '1px solid var(--border-light)',
+                marginTop: '0.75rem'
+              }}>
+                <span style={{
+                  fontSize: '0.875rem',
+                  color: 'var(--text-muted)'
+                }}>테마:</span>
                 <ThemeModeToggle />
                 <ColorThemeButton />
               </div>
+              
               <button 
                 onClick={onLoginClick} 
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: '#C8A968',
+                  marginTop: '1rem',
                   color: 'white',
-                  border: 'none',
+                  backgroundColor: 'var(--accent-primary)',
                   borderRadius: '0.5rem',
-                  fontWeight: '500',
-                  cursor: 'pointer'
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '500'
                 }}
               >
                 시작하기
@@ -114,86 +317,419 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
         )}
       </header>
 
-      {/* Hero Section */}
-      <section className={styles.heroSection}>
-        <div className={styles.heroBackground}></div>
-        <div className={styles.heroContent}>
-          <div className={styles.badge}>
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20" style={{ marginRight: '0.5rem' }}>
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            논문 작성을 위한 전문 분석 도구
-          </div>
-
-          <h1 className={styles.heroTitle}>
-            복잡한 의사결정을
-            <br />
-            <span className={styles.heroHighlight}>체계적으로 분석하세요</span>
-          </h1>
-
-          <p className={styles.heroSubtitle}>
-            AHP(Analytic Hierarchy Process) 방법론을 활용하여
-            연구의 신뢰성을 높이고 명확한 결론을 도출하세요
-          </p>
-
-          <div className={styles.heroButtons}>
-            <button onClick={onLoginClick} className={styles.primaryButton}>
-              연구 시작하기
-              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+      {/* 히어로 섹션 - Particles.js 배경 */}
+      <section style={{
+        position: 'relative',
+        paddingTop: '6rem',
+        paddingBottom: '5rem',
+        overflow: 'hidden'
+      }}>
+        {/* Particles.js 배경 */}
+        <ParticleBackground 
+          className="absolute inset-0"
+          theme={currentTheme}
+          intensity="medium"
+          interactive={true}
+        />
+        
+        {/* 배경 그라디언트 - 더 투명하게 조정 */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(135deg, var(--bg-subtle), var(--bg-primary), var(--bg-elevated))`
+        }}></div>
+        
+        {/* 애니메이션 도형들 - 투명도 낮춤 */}
+        <div style={{
+          position: 'absolute',
+          top: '5rem',
+          left: '2.5rem',
+          width: '18rem',
+          height: '18rem',
+          borderRadius: '50%',
+          backgroundColor: 'var(--accent-primary)',
+          mixBlendMode: 'multiply',
+          filter: 'blur(40px)',
+          opacity: 0.1,
+          animation: 'pulse 4s ease-in-out infinite'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: '10rem',
+          right: '2.5rem',
+          width: '18rem',
+          height: '18rem',
+          borderRadius: '50%',
+          backgroundColor: 'var(--accent-secondary)',
+          mixBlendMode: 'multiply',
+          filter: 'blur(40px)',
+          opacity: 0.08,
+          animation: 'pulse 4s ease-in-out infinite 2s'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          bottom: '-2rem',
+          left: '5rem',
+          width: '18rem',
+          height: '18rem',
+          borderRadius: '50%',
+          backgroundColor: 'var(--accent-light)',
+          mixBlendMode: 'multiply',
+          filter: 'blur(40px)',
+          opacity: 0.05,
+          animation: 'pulse 4s ease-in-out infinite 4s'
+        }}></div>
+        
+        <div style={{
+          position: 'relative',
+          maxWidth: '80rem',
+          margin: '0 auto',
+          padding: '0 1.5rem'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            {/* 배지 */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '0.5rem 1rem',
+              borderRadius: '9999px',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              marginBottom: '1.5rem',
+              backgroundColor: 'var(--accent-light)',
+              color: 'var(--accent-primary)'
+            }}>
+              <svg style={{
+                width: '1rem',
+                height: '1rem',
+                marginRight: '0.5rem'
+              }} fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-            </button>
-            <button className={styles.secondaryButton}>
-              가이드 보기
-              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </button>
+              논문 작성을 위한 전문 분석 도구
+            </div>
+
+            {/* 메인 타이틀 */}
+            <h1 style={{
+              fontSize: isMobile ? '3rem' : '4rem',
+              fontWeight: 'bold',
+              marginBottom: '1.5rem',
+              lineHeight: '1.2',
+              color: 'var(--text-primary)'
+            }}>
+              복잡한 의사결정을
+              <br />
+              <span style={{
+                background: 'linear-gradient(to right, var(--accent-primary), var(--accent-secondary))',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent'
+              }}>
+                체계적으로 분석하세요
+              </span>
+            </h1>
+
+            {/* 서브 타이틀 */}
+            <p style={{
+              fontSize: '1.25rem',
+              marginBottom: '2.5rem',
+              maxWidth: '48rem',
+              margin: '0 auto 2.5rem auto',
+              color: 'var(--text-secondary)',
+              lineHeight: '1.6'
+            }}>
+              AHP(Analytic Hierarchy Process) 방법론을 활용하여
+              연구의 신뢰성을 높이고 명확한 결론을 도출하세요
+            </p>
+
+            {/* CTA 버튼들 */}
+            <div style={{
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: '1rem',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <button
+                onClick={onLoginClick}
+                style={{
+                  padding: '1rem 2rem',
+                  color: 'white',
+                  backgroundColor: 'var(--accent-primary)',
+                  borderRadius: '0.75rem',
+                  fontWeight: '600',
+                  fontSize: '1.125rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.3s ease, transform 0.1s ease',
+                  minWidth: isMobile ? '100%' : 'auto'
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-hover)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-primary)';
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                }}
+              >
+                연구 시작하기
+                <svg style={{
+                  display: 'inline-block',
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  marginLeft: '0.5rem',
+                  verticalAlign: 'middle'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
+              <button
+                style={{
+                  padding: '1rem 2rem',
+                  borderRadius: '0.75rem',
+                  fontWeight: '600',
+                  fontSize: '1.125rem',
+                  border: '2px solid var(--border-medium)',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  minWidth: isMobile ? '100%' : 'auto'
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-secondary)'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-primary)'}
+              >
+                가이드 보기
+                <svg style={{
+                  display: 'inline-block',
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  marginLeft: '0.5rem',
+                  verticalAlign: 'middle'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 신뢰 지표 */}
+            <div style={{
+              marginTop: '3rem',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: '2rem',
+              color: 'var(--text-secondary)'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <svg style={{
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  color: 'var(--accent-primary)'
+                }} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>검증된 방법론</span>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <svg style={{
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  color: 'var(--accent-primary)'
+                }} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>실시간 분석</span>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <svg style={{
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  color: 'var(--accent-primary)'
+                }} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>전문가 지원</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className={styles.featuresSection}>
-        <div className={styles.featuresContainer}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>연구에 필요한 모든 기능</h2>
-            <p className={styles.sectionSubtitle}>복잡한 의사결정 문제를 체계적으로 해결하세요</p>
+      {/* 주요 기능 섹션 */}
+      <section id="features" style={{
+        padding: '5rem 0',
+        backgroundColor: 'var(--bg-subtle)'
+      }}>
+        <div style={{
+          maxWidth: '80rem',
+          margin: '0 auto',
+          padding: '0 1.5rem'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '4rem'
+          }}>
+            <h2 style={{
+              fontSize: '2.25rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: 'var(--text-primary)'
+            }}>
+              연구에 필요한 모든 기능
+            </h2>
+            <p style={{
+              fontSize: '1.25rem',
+              color: 'var(--text-secondary)'
+            }}>
+              복잡한 의사결정 문제를 체계적으로 해결하세요
+            </p>
           </div>
 
-          <div className={styles.featuresGrid}>
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>
-                <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gap: '2rem'
+          }}>
+            {/* 기능 카드 1 */}
+            <div style={{
+              borderRadius: '1rem',
+              padding: '2rem',
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-light)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+              transition: 'all 0.3s ease'
+            }} onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)'}
+               onMouseLeave={(e) => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)'}>
+              <div style={{
+                width: '3.5rem',
+                height: '3.5rem',
+                borderRadius: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1.5rem',
+                backgroundColor: 'var(--accent-light)'
+              }}>
+                <svg style={{
+                  width: '2rem',
+                  height: '2rem',
+                  color: 'var(--accent-primary)'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <h3 className={styles.featureTitle}>체계적 계층 구조</h3>
-              <p className={styles.featureDescription}>
+              <h3 style={{
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                marginBottom: '0.75rem',
+                color: 'var(--text-primary)'
+              }}>체계적 계층 구조</h3>
+              <p style={{
+                lineHeight: '1.75',
+                color: 'var(--text-secondary)'
+              }}>
                 목표, 기준, 대안을 체계적으로 구조화하여 복잡한 문제를 명확하게 정리합니다
               </p>
             </div>
 
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>
-                <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* 기능 카드 2 */}
+            <div style={{
+              borderRadius: '1rem',
+              padding: '2rem',
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-light)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+              transition: 'all 0.3s ease'
+            }} onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)'}
+               onMouseLeave={(e) => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)'}>
+              <div style={{
+                width: '3.5rem',
+                height: '3.5rem',
+                borderRadius: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1.5rem',
+                backgroundColor: 'var(--accent-light)'
+              }}>
+                <svg style={{
+                  width: '2rem',
+                  height: '2rem',
+                  color: 'var(--accent-primary)'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h3 className={styles.featureTitle}>정량적 분석</h3>
-              <p className={styles.featureDescription}>
+              <h3 style={{
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                marginBottom: '0.75rem',
+                color: 'var(--text-primary)'
+              }}>정량적 분석</h3>
+              <p style={{
+                lineHeight: '1.75',
+                color: 'var(--text-secondary)'
+              }}>
                 쌍대비교를 통해 주관적 판단을 객관적 수치로 변환하고 일관성을 검증합니다
               </p>
             </div>
 
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>
-                <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* 기능 카드 3 */}
+            <div style={{
+              borderRadius: '1rem',
+              padding: '2rem',
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-light)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+              transition: 'all 0.3s ease'
+            }} onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)'}
+               onMouseLeave={(e) => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)'}>
+              <div style={{
+                width: '3.5rem',
+                height: '3.5rem',
+                borderRadius: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1.5rem',
+                backgroundColor: 'var(--accent-light)'
+              }}>
+                <svg style={{
+                  width: '2rem',
+                  height: '2rem',
+                  color: 'var(--accent-primary)'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
-              <h3 className={styles.featureTitle}>협업 연구</h3>
-              <p className={styles.featureDescription}>
+              <h3 style={{
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                marginBottom: '0.75rem',
+                color: 'var(--text-primary)'
+              }}>협업 연구</h3>
+              <p style={{
+                lineHeight: '1.75',
+                color: 'var(--text-secondary)'
+              }}>
                 여러 전문가의 의견을 수집하고 통합하여 집단 의사결정을 지원합니다
               </p>
             </div>
@@ -201,65 +737,261 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
         </div>
       </section>
 
-      {/* Process Section */}
-      <section id="how-it-works" className={styles.processSection}>
-        <div className={styles.processContainer}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>간단한 3단계 프로세스</h2>
-            <p className={styles.sectionSubtitle}>가이드를 따라 쉽게 연구를 진행하세요</p>
+      {/* 사용 방법 섹션 */}
+      <section id="how-it-works" style={{
+        padding: '5rem 0',
+        backgroundColor: 'var(--bg-primary)'
+      }}>
+        <div style={{
+          maxWidth: '80rem',
+          margin: '0 auto',
+          padding: '0 1.5rem'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '4rem'
+          }}>
+            <h2 style={{
+              fontSize: '2.25rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: 'var(--text-primary)'
+            }}>
+              간단한 3단계 프로세스
+            </h2>
+            <p style={{
+              fontSize: '1.25rem',
+              color: 'var(--text-secondary)'
+            }}>
+              가이드를 따라 쉽게 연구를 진행하세요
+            </p>
           </div>
 
-          <div className={styles.processGrid}>
-            <div className={styles.processStep}>
-              <div className={styles.stepNumber}>1</div>
-              <h3 className={styles.stepTitle}>계층 구조 설계</h3>
-              <p className={styles.stepDescription}>
-                연구 목표와 평가 기준, 대안을 체계적으로 구성합니다
-              </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gap: '2rem'
+          }}>
+            {/* 단계 1 */}
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center'
+              }}>
+                <div style={{
+                  width: '4rem',
+                  height: '4rem',
+                  color: 'white',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  marginBottom: '1rem',
+                  backgroundColor: 'var(--accent-primary)'
+                }}>
+                  1
+                </div>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 'bold',
+                  marginBottom: '0.75rem',
+                  color: 'var(--text-primary)'
+                }}>계층 구조 설계</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  연구 목표와 평가 기준, 대안을 체계적으로 구성합니다
+                </p>
+              </div>
+              {/* 연결선 */}
+              {!isMobile && (
+                <div style={{
+                  position: 'absolute',
+                  top: '2rem',
+                  left: '50%',
+                  width: '100%',
+                  height: '2px',
+                  backgroundColor: 'var(--border-medium)',
+                  zIndex: -1
+                }}></div>
+              )}
             </div>
 
-            <div className={styles.processStep}>
-              <div className={styles.stepNumber}>2</div>
-              <h3 className={styles.stepTitle}>쌍대 비교</h3>
-              <p className={styles.stepDescription}>
-                각 요소들을 1:1로 비교하여 상대적 중요도를 평가합니다
-              </p>
+            {/* 단계 2 */}
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center'
+              }}>
+                <div style={{
+                  width: '4rem',
+                  height: '4rem',
+                  color: 'white',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  marginBottom: '1rem',
+                  backgroundColor: 'var(--accent-primary)'
+                }}>
+                  2
+                </div>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 'bold',
+                  marginBottom: '0.75rem',
+                  color: 'var(--text-primary)'
+                }}>쌍대 비교</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  각 요소들을 1:1로 비교하여 상대적 중요도를 평가합니다
+                </p>
+              </div>
+              {/* 연결선 */}
+              {!isMobile && (
+                <div style={{
+                  position: 'absolute',
+                  top: '2rem',
+                  left: '50%',
+                  width: '100%',
+                  height: '2px',
+                  backgroundColor: 'var(--border-medium)',
+                  zIndex: -1
+                }}></div>
+              )}
             </div>
 
-            <div className={styles.processStep}>
-              <div className={styles.stepNumber}>3</div>
-              <h3 className={styles.stepTitle}>결과 분석</h3>
-              <p className={styles.stepDescription}>
-                우선순위와 일관성 비율을 확인하고 최적 대안을 도출합니다
-              </p>
+            {/* 단계 3 */}
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center'
+              }}>
+                <div style={{
+                  width: '4rem',
+                  height: '4rem',
+                  color: 'white',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  marginBottom: '1rem',
+                  backgroundColor: 'var(--accent-primary)'
+                }}>
+                  3
+                </div>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 'bold',
+                  marginBottom: '0.75rem',
+                  color: 'var(--text-primary)'
+                }}>결과 분석</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  우선순위와 일관성 비율을 확인하고 최적 대안을 도출합니다
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* 요금제 섹션 */}
       <PricingSection onLoginClick={onLoginClick} />
 
-      {/* CTA Section */}
-      <section className={styles.ctaSection}>
-        <div className={styles.ctaContainer}>
-          <h2 className={styles.ctaTitle}>지금 바로 연구를 시작하세요</h2>
-          <p className={styles.ctaSubtitle}>
+      {/* CTA 섹션 */}
+      <section style={{
+        padding: '5rem 0',
+        background: `linear-gradient(to right, var(--accent-primary), var(--accent-secondary))`
+      }}>
+        <div style={{
+          maxWidth: '64rem',
+          margin: '0 auto',
+          padding: '0 1.5rem',
+          textAlign: 'center'
+        }}>
+          <h2 style={{
+            fontSize: '2.25rem',
+            fontWeight: 'bold',
+            color: 'white',
+            marginBottom: '1.5rem'
+          }}>
+            지금 바로 연구를 시작하세요
+          </h2>
+          <p style={{
+            fontSize: '1.25rem',
+            marginBottom: '2rem',
+            color: 'rgba(255, 255, 255, 0.8)'
+          }}>
             전문적인 AHP 분석으로 연구의 품질을 높이세요
           </p>
-          <button onClick={onLoginClick} className={styles.ctaButtonWhite}>
+          <button
+            onClick={onLoginClick}
+            style={{
+              padding: '1rem 2.5rem',
+              color: 'var(--accent-primary)',
+              backgroundColor: 'var(--bg-primary)',
+              borderRadius: '0.75rem',
+              fontWeight: '600',
+              fontSize: '1.125rem',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              transition: 'all 0.3s ease, transform 0.1s ease'
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-secondary)';
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-primary)';
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+            }}
+          >
             14일 무료 체험 시작
           </button>
         </div>
       </section>
 
+
       {/* Scroll to Top Button */}
       <button
         onClick={scrollToTop}
-        className={`${styles.scrollToTop} ${!showScrollTop ? styles.hidden : ''}`}
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          zIndex: 40,
+          width: '3rem',
+          height: '3rem',
+          borderRadius: '50%',
+          backgroundColor: 'var(--accent-primary)',
+          color: 'white',
+          border: 'none',
+          cursor: 'pointer',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease',
+          opacity: showScrollTop ? 1 : 0,
+          transform: showScrollTop ? 'translateY(0)' : 'translateY(1rem)',
+          pointerEvents: showScrollTop ? 'auto' : 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
         aria-label="상단으로 스크롤"
       >
-        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg style={{
+          width: '1.5rem',
+          height: '1.5rem'
+        }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
         </svg>
       </button>

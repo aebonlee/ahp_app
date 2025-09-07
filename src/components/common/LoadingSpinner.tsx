@@ -13,36 +13,72 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   text = 'Loading...',
   showText = true
 }) => {
-  const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-8 w-8',
-    lg: 'h-12 w-12'
+  const getSizeStyle = (size: string): React.CSSProperties => {
+    switch (size) {
+      case 'sm':
+        return { height: '1rem', width: '1rem' };
+      case 'lg':
+        return { height: '3rem', width: '3rem' };
+      default:
+        return { height: '2rem', width: '2rem' };
+    }
+  };
+
+  const spinnerStyle: React.CSSProperties = {
+    ...getSizeStyle(size),
+    color: 'var(--accent-primary, #C8A968)',
+    animation: 'spin 1s linear infinite'
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center ${className}`} role="status" aria-label="Loading...">
+    <div 
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+      className={className}
+      role="status" 
+      aria-label="Loading..."
+    >
+      <style>
+        {`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}
+      </style>
       <svg
-        className={`animate-spin text-primary-600 ${sizeClasses[size]}`}
+        style={spinnerStyle}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
       >
         <circle
-          className="opacity-25"
+          style={{ opacity: 0.25 }}
           cx="12"
           cy="12"
           r="10"
           stroke="currentColor"
           strokeWidth="4"
-        ></circle>
+        />
         <path
-          className="opacity-75"
+          style={{ opacity: 0.75 }}
           fill="currentColor"
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
+        />
       </svg>
       {text && showText && (
-        <p className="mt-2 text-sm text-gray-600">{text}</p>
+        <p style={{
+          marginTop: '0.5rem',
+          fontSize: '0.875rem',
+          color: 'var(--text-secondary, #6b7280)',
+          margin: '0.5rem 0 0 0'
+        }}>
+          {text}
+        </p>
       )}
     </div>
   );

@@ -23,6 +23,160 @@ import dataService from '../../services/dataService_clean';
 import type { ProjectData } from '../../services/api';
 // DEMO 데이터 제거 - 실제 DB만 사용
 
+// CSS-in-JS styles for responsive design and consistent theming
+const styles = {
+  container: {
+    minHeight: '100vh',
+    backgroundColor: 'var(--bg-base)'
+  },
+  header: {
+    backgroundColor: 'white',
+    borderBottom: '1px solid var(--border-light, #e5e7eb)',
+    position: 'sticky' as const,
+    top: 0,
+    zIndex: 10
+  },
+  headerContent: {
+    maxWidth: '80rem',
+    margin: '0 auto',
+    padding: 'var(--spacing-4, 1rem) var(--spacing-4, 1rem) var(--spacing-6, 1.5rem)'
+  },
+  flexContainer: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 'var(--spacing-6, 1.5rem)'
+  },
+  grid4Col: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
+    gap: 'var(--spacing-4, 1rem)',
+    '@media (min-width: 768px)': {
+      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))'
+    }
+  },
+  grid6ColResponsive: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: 'var(--spacing-4, 1rem)',
+    '@media (min-width: 768px)': {
+      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))'
+    },
+    '@media (min-width: 1024px)': {
+      gridTemplateColumns: 'repeat(6, minmax(0, 1fr))'
+    }
+  },
+  card: {
+    borderRadius: 'var(--radius-lg, 0.5rem)',
+    padding: 'var(--spacing-4, 1rem)',
+    border: '1px solid var(--border-light)',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+  },
+  cardHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  iconContainer: {
+    padding: 'var(--spacing-3, 0.75rem)',
+    borderRadius: '9999px'
+  },
+  button: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: 'var(--spacing-3, 0.75rem) var(--spacing-6, 1.5rem)',
+    borderRadius: 'var(--radius-xl, 0.75rem)',
+    border: '2px solid',
+    transition: 'all 0.3s ease',
+    cursor: 'pointer',
+    background: 'none',
+    fontSize: '1rem',
+    fontWeight: '500'
+  },
+  quickAccessButton: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    padding: 'var(--spacing-4, 1rem)',
+    borderRadius: 'var(--radius-xl, 0.75rem)',
+    border: '2px solid',
+    transition: 'all 0.3s ease',
+    cursor: 'pointer',
+    background: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    backdropFilter: 'blur(10px)'
+  },
+  typography: {
+    h1: {
+      fontSize: 'clamp(1.5rem, 4vw, 1.875rem)',
+      fontWeight: '700',
+      color: 'var(--text-primary)',
+      display: 'flex',
+      alignItems: 'center'
+    },
+    h2: {
+      fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+      fontWeight: '700',
+      color: 'var(--accent-secondary)'
+    },
+    body: {
+      fontSize: '1rem',
+      color: 'var(--text-primary)'
+    },
+    caption: {
+      fontSize: '0.875rem',
+      color: 'var(--text-muted, #6b7280)'
+    },
+    large: {
+      fontSize: '1.875rem',
+      fontWeight: '700'
+    }
+  },
+  flexCenter: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  flexBetween: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  flexWrapCenter: {
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    justifyContent: 'center',
+    gap: 'var(--spacing-4, 1rem)'
+  },
+  textCenter: {
+    textAlign: 'center' as const
+  },
+  mainContent: {
+    maxWidth: '80rem',
+    margin: '0 auto',
+    padding: 'var(--spacing-4, 1rem) var(--spacing-4, 1rem) var(--spacing-8, 2rem)'
+  }
+};
+
+// Utility function for creating gradient backgrounds
+const createGradient = (color: string) => {
+  const gradients: Record<string, string> = {
+    'blue': 'linear-gradient(to right, var(--gradient-blue-start, #3b82f6), var(--gradient-blue-end, #2563eb))',
+    'green': 'linear-gradient(to right, var(--gradient-green-start, #10b981), var(--gradient-green-end, #059669))',
+    'red': 'linear-gradient(to right, var(--gradient-red-start, #ef4444), var(--gradient-red-end, #dc2626))',
+    'purple': 'linear-gradient(to right, var(--gradient-purple-start, #8b5cf6), var(--gradient-purple-end, #7c3aed))',
+    'orange': 'linear-gradient(to right, var(--gradient-orange-start, #f59e0b), var(--gradient-orange-end, #d97706))',
+    'indigo': 'linear-gradient(to right, var(--gradient-indigo-start, #6366f1), var(--gradient-indigo-end, #4f46e5))',
+    'teal': 'linear-gradient(to right, var(--gradient-teal-start, #14b8a6), var(--gradient-teal-end, #0d9488))',
+    'pink': 'linear-gradient(to right, var(--gradient-pink-start, #ec4899), var(--gradient-pink-end, #db2777))'
+  };
+  
+  // Extract color name from Tailwind class like 'from-blue-500'
+  const colorMatch = color.match(/from-(\w+)-\d+/);
+  const colorName = colorMatch ? colorMatch[1] : 'blue';
+  
+  return gradients[colorName] || gradients.blue;
+};
+
 interface PersonalServiceProps {
   user: {
     id: string | number;  // 백엔드는 number로 보냄
@@ -94,6 +248,64 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   selectedProjectId: externalSelectedProjectId,
   onSelectProject: externalOnSelectProject
 }) => {
+  // Responsive styles effect
+  useEffect(() => {
+    const addResponsiveStyles = () => {
+      const existingStyle = document.getElementById('personal-dashboard-responsive-styles');
+      if (existingStyle) return;
+      
+      const style = document.createElement('style');
+      style.id = 'personal-dashboard-responsive-styles';
+      style.textContent = `
+        .responsive-grid {
+          grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        .responsive-stats-grid {
+          grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        .responsive-quick-access {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .responsive-filter-layout {
+          flex-direction: column;
+        }
+        
+        @media (min-width: 768px) {
+          .responsive-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+          .responsive-stats-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+          .responsive-quick-access {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+          .responsive-filter-layout {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .responsive-quick-access {
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    };
+    
+    addResponsiveStyles();
+    
+    return () => {
+      const style = document.getElementById('personal-dashboard-responsive-styles');
+      if (style) {
+        style.remove();
+      }
+    };
+  }, []);
+
   // 사용자 정보 내부 상태 관리
   const [user, setUser] = useState(initialUser);
   
@@ -625,72 +837,80 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
 
   const renderOverview = () => (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-6, 1.5rem)' }}>
 
       {/* 프로젝트 현황 대시보드 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <div className="flex items-center justify-between">
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', 
+        gap: 'var(--spacing-4, 1rem)'
+      }} className="responsive-grid">
+        <div style={{ borderRadius: 'var(--radius-lg, 0.5rem)', padding: 'var(--spacing-4, 1rem)', border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--status-info-text)' }}>프로젝트</p>
-              <p className="text-3xl font-bold" style={{ 
+              <p style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--status-info-text)' }}>프로젝트</p>
+              <p style={{ 
+                fontSize: '1.875rem', 
+                fontWeight: '700', 
                 color: (projects || []).length >= getCurrentQuotas().maxProjects ? 'var(--status-error-text)' : 'var(--text-primary)' 
               }}>
-                {(projects || []).length}<span className="text-lg text-gray-500">/{getCurrentQuotas().maxProjects}</span>
+                {(projects || []).length}<span style={{ fontSize: '1.125rem', color: 'var(--text-muted, #6b7280)' }}>/{getCurrentQuotas().maxProjects}</span>
               </p>
-              <p className="text-sm text-gray-500">{userPlan.planName}</p>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted, #6b7280)' }}>{userPlan.planName}</p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-info-text)' }}>
-              <span className="text-white text-2xl">📊</span>
+            <div style={{ padding: 'var(--spacing-3, 0.75rem)', borderRadius: '9999px', backgroundColor: 'var(--status-info-text)' }}>
+              <span style={{ color: 'white', fontSize: '1.5rem' }}>📊</span>
             </div>
           </div>
         </div>
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <div className="flex items-center justify-between">
+        <div style={{ borderRadius: 'var(--radius-lg, 0.5rem)', padding: 'var(--spacing-4, 1rem)', border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--status-success-text)' }}>평가자</p>
-              <p className="text-3xl font-bold" style={{ 
+              <p style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--status-success-text)' }}>평가자</p>
+              <p style={{ 
+                fontSize: '1.875rem', 
+                fontWeight: '700', 
                 color: getCurrentQuotas().currentEvaluators >= getCurrentQuotas().maxEvaluators ? 'var(--status-error-text)' : 'var(--text-primary)' 
               }}>
-                {getCurrentQuotas().currentEvaluators}<span className="text-lg text-gray-500">/{getCurrentQuotas().maxEvaluators}</span>
+                {getCurrentQuotas().currentEvaluators}<span style={{ fontSize: '1.125rem', color: 'var(--text-muted, #6b7280)' }}>/{getCurrentQuotas().maxEvaluators}</span>
               </p>
-              <p className="text-sm text-gray-500">
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted, #6b7280)' }}>
                 {userPlan.additionalEvaluators > 0 && `+${userPlan.additionalEvaluators * 10}명 추가`}
               </p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-success-text)' }}>
-              <span className="text-white text-2xl">👥</span>
+            <div style={{ padding: 'var(--spacing-3, 0.75rem)', borderRadius: '9999px', backgroundColor: 'var(--status-success-text)' }}>
+              <span style={{ color: 'white', fontSize: '1.5rem' }}>👥</span>
             </div>
           </div>
         </div>
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <div className="flex items-center justify-between">
+        <div style={{ borderRadius: 'var(--radius-lg, 0.5rem)', padding: 'var(--spacing-4, 1rem)', border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--accent-primary)' }}>진행중</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'active').length}</p>
+              <p style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--accent-primary)' }}>진행중</p>
+              <p style={{ fontSize: '1.875rem', fontWeight: '700', color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'active').length}</p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--accent-primary)' }}>
-              <span className="text-white text-2xl">🚀</span>
+            <div style={{ padding: 'var(--spacing-3, 0.75rem)', borderRadius: '9999px', backgroundColor: 'var(--accent-primary)' }}>
+              <span style={{ color: 'white', fontSize: '1.5rem' }}>🚀</span>
             </div>
           </div>
         </div>
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <div className="flex items-center justify-between">
+        <div style={{ borderRadius: 'var(--radius-lg, 0.5rem)', padding: 'var(--spacing-4, 1rem)', border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--status-warning-text)' }}>완료됨</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              <p style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--status-warning-text)' }}>완료됨</p>
+              <p style={{ fontSize: '1.875rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                 {(projects || []).filter(p => p.status === 'completed').length}
               </p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-warning-text)' }}>
-              <span className="text-white text-2xl">✅</span>
+            <div style={{ padding: 'var(--spacing-3, 0.75rem)', borderRadius: '9999px', backgroundColor: 'var(--status-warning-text)' }}>
+              <span style={{ color: 'white', fontSize: '1.5rem' }}>✅</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* 주요 기능 6개 인라인 배치 */}
-      <div className="flex flex-wrap justify-center gap-4">
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--spacing-4, 1rem)' }}>
         {[
           { id: 'creation', label: '새 프로젝트', icon: '🚀', color: 'from-blue-500 to-blue-600' },
           { id: 'projects', label: '내 프로젝트', icon: '📂', color: 'from-green-500 to-green-600' },
@@ -702,8 +922,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           <button
             key={item.id}
             onClick={() => handleTabChange(item.id)}
-            className="inline-flex items-center px-6 py-3 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg"
             style={{
+              ...styles.button,
               backgroundColor: 'var(--bg-secondary)',
               borderColor: 'var(--border-light)',
               color: 'var(--text-primary)'
@@ -717,38 +937,57 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               e.currentTarget.style.borderColor = 'var(--border-light)';
             }}
           >
-            <div className={`w-8 h-8 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center mr-3`}>
-              <span className="text-white text-lg">{item.icon}</span>
+            <div style={{
+              width: '2rem',
+              height: '2rem',
+              background: createGradient(item.color),
+              borderRadius: 'var(--radius-lg, 0.5rem)',
+              ...styles.flexCenter,
+              marginRight: 'var(--spacing-3, 0.75rem)'
+            }}>
+              <span style={{ color: 'white', fontSize: '1.125rem' }}>{item.icon}</span>
             </div>
-            <span className="font-medium">{item.label}</span>
+            <span style={{ fontWeight: '500' }}>{item.label}</span>
           </button>
         ))}
       </div>
 
       {/* 빠른 시작 및 빠른 접근 통합 - 하단에 크게 배치 */}
       <div 
-        className="p-8 rounded-xl border-2 transition-all duration-300"
         style={{
+          padding: 'var(--spacing-8, 2rem)',
+          borderRadius: 'var(--radius-xl, 0.75rem)',
           border: '1px solid var(--border-light)',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease'
         }}
       >
-        <div className="text-center mb-8">
+        <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-8, 2rem)' }}>
           <h2 
-            className="text-2xl lg:text-3xl font-bold mb-2"
-            style={{ color: 'var(--accent-secondary)' }}
+            style={{
+              fontSize: 'clamp(1.5rem, 4vw, 1.875rem)',
+              fontWeight: '700',
+              marginBottom: 'var(--spacing-2, 0.5rem)',
+              color: 'var(--accent-secondary)'
+            }}
           >
             ⚡ 빠른 시작 및 접근
           </h2>
           <p 
-            className="text-lg"
-            style={{ color: 'var(--text-secondary)' }}
+            style={{
+              fontSize: '1.125rem',
+              color: 'var(--text-secondary)'
+            }}
           >
             AHP 분석의 모든 기능을 빠르고 쉽게 사용해보세요
           </p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gap: 'var(--spacing-4, 1rem)'
+        }} className="responsive-quick-access">
           {[
             { id: 'user-guide', label: '사용자 가이드', icon: '📚', color: 'from-blue-500 to-blue-600' },
             { id: 'model-builder', label: '모델 구성', icon: '🏗️', color: 'from-green-500 to-green-600' },
@@ -761,8 +1000,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             <button
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className="flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg"
               style={{
+                ...styles.quickAccessButton,
                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
                 borderColor: 'rgba(255, 255, 255, 0.3)',
                 backdropFilter: 'blur(10px)'
@@ -776,12 +1015,23 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                 e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
               }}
             >
-              <div className={`w-12 h-12 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center mb-3`}>
-                <span className="text-white text-2xl">{item.icon}</span>
+              <div style={{
+                width: '3rem',
+                height: '3rem',
+                background: createGradient(item.color),
+                borderRadius: 'var(--radius-lg, 0.5rem)',
+                ...styles.flexCenter,
+                marginBottom: 'var(--spacing-3, 0.75rem)'
+              }}>
+                <span style={{ color: 'white', fontSize: '1.5rem' }}>{item.icon}</span>
               </div>
               <span 
-                className="text-base font-medium text-center leading-tight"
-                style={{ color: 'var(--text-primary)' }}
+                style={{
+                  ...styles.typography.body,
+                  fontWeight: '500',
+                  textAlign: 'center',
+                  lineHeight: '1.25'
+                }}
               >
                 {item.label}
               </span>
@@ -960,28 +1210,44 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
 
   const renderMyProjectsFullPage = () => (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-base)' }}>
+      <div style={{ backgroundColor: 'white', borderBottom: '1px solid var(--border-light, #e5e7eb)', position: 'sticky', top: 0, zIndex: 10 }}>
+        <div style={{ maxWidth: '80rem', margin: '0 auto', paddingLeft: 'var(--spacing-4, 1rem)', paddingRight: 'var(--spacing-4, 1rem)' }}>
+          <div style={{ paddingTop: 'var(--spacing-6, 1.5rem)', paddingBottom: 'var(--spacing-6, 1.5rem)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <button 
                   onClick={() => handleTabChange('dashboard')}
-                  className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
+                  style={{
+                    marginRight: 'var(--spacing-4, 1rem)',
+                    color: 'var(--text-muted, #6b7280)',
+                    fontSize: '1.5rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'color 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-secondary, #374151)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted, #6b7280)'}
                 >
                   ←
                 </button>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                    <span className="text-4xl mr-3">📂</span>
+                  <h1 style={{
+                    fontSize: '1.875rem',
+                    fontWeight: '700',
+                    color: 'var(--text-primary, #111827)',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <span style={{ fontSize: '2.25rem', marginRight: 'var(--spacing-3, 0.75rem)' }}>📂</span>
                     내 프로젝트
                   </h1>
-                  <p className="text-gray-600 mt-2">나의 AHP 분석 프로젝트들을 관리합니다</p>
+                  <p style={{ color: 'var(--text-secondary, #4b5563)', marginTop: 'var(--spacing-2, 0.5rem)' }}>나의 AHP 분석 프로젝트들을 관리합니다</p>
                 </div>
               </div>
-              <div className="flex space-x-2">
-                <Button variant="primary" className="p-5 lg:p-6 text-xl lg:text-2xl" onClick={() => handleTabChange('creation')}>
+              <div style={{ display: 'flex', gap: 'var(--spacing-2, 0.5rem)' }}>
+                <Button variant="primary" style={{ padding: 'clamp(0.75rem, 2vw, 1.5rem)', fontSize: 'clamp(1rem, 2vw, 1.25rem)' }} onClick={() => handleTabChange('creation')}>
                   ➕ 새 프로젝트 생성
                 </Button>
               </div>
@@ -989,7 +1255,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div style={{ maxWidth: '80rem', margin: '0 auto', paddingLeft: 'var(--spacing-4, 1rem)', paddingRight: 'var(--spacing-4, 1rem)', paddingTop: 'var(--spacing-8, 2rem)', paddingBottom: 'var(--spacing-8, 2rem)' }}>
         {renderMyProjects()}
       </div>
     </div>
@@ -1018,84 +1284,140 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     });
 
     return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-6, 1.5rem)' }}>
       {/* 프로젝트 통계 대시보드 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <div className="flex items-center justify-between">
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
+        gap: 'var(--spacing-4, 1rem)'
+      }} className="responsive-stats-grid">
+        <div style={{ borderRadius: 'var(--radius-lg, 0.5rem)', padding: 'var(--spacing-4, 1rem)', border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--status-info-text)' }}>전체 프로젝트</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).length}</p>
+              <p style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--status-info-text)' }}>전체 프로젝트</p>
+              <p style={{ fontSize: '1.875rem', fontWeight: '700', color: 'var(--text-primary)' }}>{(projects || []).length}</p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-info-text)' }}>
-              <span className="text-white text-2xl">📊</span>
+            <div style={{ padding: 'var(--spacing-3, 0.75rem)', borderRadius: '9999px', backgroundColor: 'var(--status-info-text)' }}>
+              <span style={{ color: 'white', fontSize: '1.5rem' }}>📊</span>
             </div>
           </div>
         </div>
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <div className="flex items-center justify-between">
+        <div style={{ ...styles.card }}>
+          <div style={{ ...styles.cardHeader }}>
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--status-success-text)' }}>진행중</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'active').length}</p>
+              <p style={{ ...styles.typography.body, fontWeight: '500', color: 'var(--status-success-text)' }}>진행중</p>
+              <p style={{ ...styles.typography.large, color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'active').length}</p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-success-text)' }}>
-              <span className="text-white text-2xl">🚀</span>
+            <div style={{ ...styles.iconContainer, backgroundColor: 'var(--status-success-text)' }}>
+              <span style={{ color: 'white', fontSize: '1.5rem' }}>🚀</span>
             </div>
           </div>
         </div>
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <div className="flex items-center justify-between">
+        <div style={{ ...styles.card }}>
+          <div style={{ ...styles.cardHeader }}>
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--accent-primary)' }}>완료됨</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'completed').length}</p>
+              <p style={{ ...styles.typography.body, fontWeight: '500', color: 'var(--accent-primary)' }}>완료됨</p>
+              <p style={{ ...styles.typography.large, color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'completed').length}</p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--accent-primary)' }}>
-              <span className="text-white text-2xl">✅</span>
+            <div style={{ ...styles.iconContainer, backgroundColor: 'var(--accent-primary)' }}>
+              <span style={{ color: 'white', fontSize: '1.5rem' }}>✅</span>
             </div>
           </div>
         </div>
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <div className="flex items-center justify-between">
+        <div style={{ ...styles.card }}>
+          <div style={{ ...styles.cardHeader }}>
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--status-warning-text)' }}>평균 진행률</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              <p style={{ ...styles.typography.body, fontWeight: '500', color: 'var(--status-warning-text)' }}>평균 진행률</p>
+              <p style={{ ...styles.typography.large, color: 'var(--text-primary)' }}>
                 {(projects || []).length > 0 ? Math.round((projects || []).reduce((sum, p) => sum + (p.completion_rate || 0), 0) / (projects || []).length) : 0}%
               </p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-warning-text)' }}>
-              <span className="text-white text-2xl">📈</span>
+            <div style={{ ...styles.iconContainer, backgroundColor: 'var(--status-warning-text)' }}>
+              <span style={{ color: 'white', fontSize: '1.5rem' }}>📈</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* 필터 및 검색 컨트롤 */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: 'var(--radius-lg, 0.5rem)',
+        border: '1px solid var(--border-light, #e5e7eb)',
+        padding: 'var(--spacing-4, 1rem)',
+        ...styles.flexContainer
+      }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--spacing-4, 1rem)'
+        }} className="responsive-filter-layout">
           {/* 검색 */}
-          <div className="flex-1 max-w-md">
-            <div className="relative">
+          <div style={{ flex: '1 1 auto', maxWidth: '24rem' }}>
+            <div style={{ position: 'relative' }}>
               <input
                 type="text"
                 placeholder="프로젝트 검색..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                style={{
+                  width: '100%',
+                  paddingLeft: '2.5rem',
+                  paddingRight: 'var(--spacing-4, 1rem)',
+                  paddingTop: 'var(--spacing-2, 0.5rem)',
+                  paddingBottom: 'var(--spacing-2, 0.5rem)',
+                  border: '1px solid var(--border-light, #d1d5db)',
+                  borderRadius: 'var(--radius-lg, 0.5rem)',
+                  outline: 'none',
+                  fontSize: '1rem'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--accent-primary, #3b82f6)';
+                  e.target.style.boxShadow = '0 0 0 2px var(--accent-primary-alpha, rgba(59, 130, 246, 0.1))';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'var(--border-light, #d1d5db)';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400">🔍</span>
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                height: '100%',
+                paddingLeft: 'var(--spacing-3, 0.75rem)',
+                display: 'flex',
+                alignItems: 'center',
+                pointerEvents: 'none'
+              }}>
+                <span style={{ color: 'var(--text-muted, #9ca3af)' }}>🔍</span>
               </div>
             </div>
           </div>
 
           {/* 필터 및 정렬 */}
-          <div className="flex flex-wrap items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">상태:</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--spacing-4, 1rem)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2, 0.5rem)' }}>
+              <label style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary, #374151)' }}>상태:</label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{
+                  padding: 'var(--spacing-1, 0.25rem) var(--spacing-3, 0.75rem)',
+                  border: '1px solid var(--border-light, #d1d5db)',
+                  borderRadius: 'var(--radius, 0.25rem)',
+                  fontSize: '0.875rem',
+                  outline: 'none',
+                  backgroundColor: 'white'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--accent-primary, #3b82f6)';
+                  e.target.style.boxShadow = '0 0 0 2px var(--accent-primary-alpha, rgba(59, 130, 246, 0.1))';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'var(--border-light, #d1d5db)';
+                  e.target.style.boxShadow = 'none';
+                }}
               >
                 <option value="all">전체</option>
                 <option value="draft">준비중</option>
@@ -1104,12 +1426,27 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               </select>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">정렬:</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2, 0.5rem)' }}>
+              <label style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary, #374151)' }}>정렬:</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{
+                  padding: 'var(--spacing-1, 0.25rem) var(--spacing-3, 0.75rem)',
+                  border: '1px solid var(--border-light, #d1d5db)',
+                  borderRadius: 'var(--radius, 0.25rem)',
+                  fontSize: '0.875rem',
+                  outline: 'none',
+                  backgroundColor: 'white'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--accent-primary, #3b82f6)';
+                  e.target.style.boxShadow = '0 0 0 2px var(--accent-primary-alpha, rgba(59, 130, 246, 0.1))';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'var(--border-light, #d1d5db)';
+                  e.target.style.boxShadow = 'none';
+                }}
               >
                 <option value="date">최신순</option>
                 <option value="name">이름순</option>
@@ -1119,26 +1456,64 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             </div>
 
             {/* 뷰 모드 토글 */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: 'var(--bg-muted, #f3f4f6)',
+              borderRadius: 'var(--radius-lg, 0.5rem)',
+              padding: 'var(--spacing-1, 0.25rem)'
+            }}>
               <button
                 onClick={() => setViewMode('grid')}
-                className={`px-3 py-1 rounded text-sm transition-all ${
-                  viewMode === 'grid' 
-                    ? 'bg-white text-blue-600 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
+                style={{
+                  padding: 'var(--spacing-1, 0.25rem) var(--spacing-3, 0.75rem)',
+                  borderRadius: 'var(--radius, 0.25rem)',
+                  fontSize: '0.875rem',
+                  transition: 'all 0.3s ease',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: viewMode === 'grid' ? 'white' : 'transparent',
+                  color: viewMode === 'grid' ? 'var(--accent-primary, #2563eb)' : 'var(--text-muted, #6b7280)',
+                  boxShadow: viewMode === 'grid' ? '0 1px 2px rgba(0, 0, 0, 0.05)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (viewMode !== 'grid') {
+                    e.currentTarget.style.color = 'var(--text-secondary, #374151)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (viewMode !== 'grid') {
+                    e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
+                  }
+                }}
               >
-                <span className="mr-1">⊞</span>그리드
+                <span style={{ marginRight: 'var(--spacing-1, 0.25rem)' }}>⊞</span>그리드
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-3 py-1 rounded text-sm transition-all ${
-                  viewMode === 'list' 
-                    ? 'bg-white text-blue-600 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
+                style={{
+                  padding: 'var(--spacing-1, 0.25rem) var(--spacing-3, 0.75rem)',
+                  borderRadius: 'var(--radius, 0.25rem)',
+                  fontSize: '0.875rem',
+                  transition: 'all 0.3s ease',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: viewMode === 'list' ? 'white' : 'transparent',
+                  color: viewMode === 'list' ? 'var(--accent-primary, #2563eb)' : 'var(--text-muted, #6b7280)',
+                  boxShadow: viewMode === 'list' ? '0 1px 2px rgba(0, 0, 0, 0.05)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (viewMode !== 'list') {
+                    e.currentTarget.style.color = 'var(--text-secondary, #374151)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (viewMode !== 'list') {
+                    e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
+                  }
+                }}
               >
-                <span className="mr-1">☰</span>리스트
+                <span style={{ marginRight: 'var(--spacing-1, 0.25rem)' }}>☰</span>리스트
               </button>
             </div>
 

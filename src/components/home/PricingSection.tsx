@@ -14,10 +14,13 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onLoginClick }) => {
       subtitle: '개인 연구자를 위한 기본 플랜',
       popular: false,
       features: [
-        '사용 기간: 7일',
+        '사용 기간: 1개월',
         '프로젝트 수: 1개',
         '평가자 인원: 30명',
-        '대상: 대학원 논문, 단기 과제, 학술 발표 준비'
+        '대상: 대학원 논문, 단기 과제, 학술 발표 준비',
+        '인공지능 활용 (옵션: +₩50,000)',
+        '문헌정보 정리 (옵션: +₩50,000)',
+        '평가자 10명 단위 추가 (옵션: +₩50,000)'
       ],
       buttonText: '기본 플랜 시작',
       buttonVariant: 'outline' as const
@@ -30,10 +33,13 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onLoginClick }) => {
       subtitle: '전문 연구자를 위한 고급 플랜',
       popular: true,
       features: [
-        '사용 기간: 15일',
+        '사용 기간: 1개월',
         '프로젝트 수: 3개',
         '평가자 인원: 50명',
-        '대상: 기업·기관 연구과제, 단일 컨설팅 프로젝트'
+        '대상: 기업·기관 연구과제, 단일 컨설팅 프로젝트',
+        '인공지능 활용 (옵션: +₩50,000)',
+        '문헌정보 정리 (옵션: +₩50,000)',
+        '평가자 10명 단위 추가 (옵션: +₩50,000)'
       ],
       buttonText: '프로 플랜 시작',
       buttonVariant: 'primary' as const
@@ -49,7 +55,10 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onLoginClick }) => {
         '사용 기간: 1개월',
         '프로젝트 수: 3개',
         '평가자 인원: 100명',
-        '대상: 공공기관·대규모 연구 프로젝트 단위 사용'
+        '대상: 공공기관·대규모 연구 프로젝트 단위 사용',
+        '인공지능 활용 (옵션: +₩50,000)',
+        '문헌정보 정리 (옵션: +₩50,000)',
+        '평가자 10명 단위 추가 (옵션: +₩50,000)'
       ],
       buttonText: '연구기관 문의',
       buttonVariant: 'secondary' as const
@@ -57,37 +66,88 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onLoginClick }) => {
   ];
 
   return (
-    <section id="pricing" className="py-20" style={{ backgroundColor: 'var(--bg-subtle)' }}>
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="pricing" style={{
+      padding: '5rem 0',
+      backgroundColor: 'var(--bg-subtle)'
+    }}>
+      <div style={{
+        maxWidth: '80rem',
+        margin: '0 auto',
+        padding: '0 1.5rem'
+      }}>
         {/* 헤더 */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '4rem'
+        }}>
+          <h2 style={{
+            fontSize: '2.25rem',
+            fontWeight: 'bold',
+            marginBottom: '1rem',
+            color: 'var(--text-primary)'
+          }}>
             연구 규모에 맞는 요금제
           </h2>
-          <p className="text-xl max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+          <p style={{
+            fontSize: '1.25rem',
+            maxWidth: '48rem',
+            margin: '0 auto',
+            color: 'var(--text-secondary)'
+          }}>
             개인 연구자부터 대형 연구기관까지, 모든 연구 환경에 최적화된 플랜을 제공합니다
           </p>
         </div>
 
         {/* 요금제 카드들 */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '2rem',
+          maxWidth: '80rem',
+          margin: '0 auto'
+        }}>
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`relative rounded-2xl border-2 transition-all duration-300 hover:scale-105 ${
-                plan.popular
-                  ? 'shadow-xl'
-                  : 'shadow-sm hover:shadow-lg'
-              }`}
               style={{
+                position: 'relative',
+                borderRadius: '1rem',
+                border: '2px solid',
                 backgroundColor: 'var(--bg-primary)',
-                borderColor: plan.popular ? 'var(--accent-primary)' : 'var(--border-medium)'
+                borderColor: plan.popular ? 'var(--accent-primary)' : 'var(--border-medium)',
+                boxShadow: plan.popular 
+                  ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)' 
+                  : '0 1px 2px rgba(0, 0, 0, 0.05)',
+                transition: 'all 0.3s ease',
+                cursor: 'default'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.02)';
+                if (!plan.popular) {
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
+                if (!plan.popular) {
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                }
               }}
             >
               {/* 인기 배지 */}
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="text-white px-6 py-2 rounded-full text-sm font-semibold" style={{
+                <div style={{
+                  position: 'absolute',
+                  top: '-1rem',
+                  left: '50%',
+                  transform: 'translateX(-50%)'
+                }}>
+                  <span style={{
+                    color: 'white',
+                    padding: '0.5rem 1.5rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
                     background: `linear-gradient(to right, var(--accent-primary), var(--accent-secondary))`
                   }}>
                     가장 인기
@@ -95,48 +155,85 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onLoginClick }) => {
                 </div>
               )}
 
-              <div className="p-8">
+              <div style={{ padding: '2rem' }}>
                 {/* 플랜 이름 */}
-                <h3 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-primary)'
+                }}>
                   {plan.name}
                 </h3>
                 
                 {/* 설명 */}
-                <p className="mb-2" style={{ color: 'var(--text-secondary)' }}>
+                <p style={{
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-secondary)'
+                }}>
                   {plan.description}
                 </p>
                 {'subtitle' in plan && plan.subtitle && (
-                  <p className="mb-6 text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <p style={{
+                    marginBottom: '1.5rem',
+                    fontSize: '0.875rem',
+                    color: 'var(--text-muted)'
+                  }}>
                     {plan.subtitle}
                   </p>
                 )}
 
                 {/* 가격 */}
-                <div className="mb-8">
-                  <span className="text-5xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                <div style={{ marginBottom: '2rem' }}>
+                  <span style={{
+                    fontSize: '3rem',
+                    fontWeight: 'bold',
+                    color: 'var(--text-primary)'
+                  }}>
                     {plan.price}
                   </span>
                   {plan.period && (
-                    <span className="text-xl" style={{ color: 'var(--text-secondary)' }}>
+                    <span style={{
+                      fontSize: '1.25rem',
+                      color: 'var(--text-secondary)'
+                    }}>
                       {plan.period}
                     </span>
                   )}
-                  {plan.name === '연구기관' && (
-                    <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
+                  {plan.name === 'Institution Pack' && (
+                    <p style={{
+                      fontSize: '0.875rem',
+                      marginTop: '0.5rem',
+                      color: 'var(--text-muted)'
+                    }}>
                       * 사용자 수에 따라 할인 적용
                     </p>
                   )}
                 </div>
 
                 {/* 기능 목록 */}
-                <ul className="space-y-4 mb-8">
+                <ul style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  marginBottom: '2rem'
+                }}>
                   {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start">
+                    <li key={featureIndex} style={{
+                      display: 'flex',
+                      alignItems: 'flex-start'
+                    }}>
                       <svg
-                        className="w-5 h-5 mt-0.5 mr-3 flex-shrink-0"
+                        style={{
+                          width: '1.25rem',
+                          height: '1.25rem',
+                          marginTop: '0.125rem',
+                          marginRight: '0.75rem',
+                          flexShrink: 0,
+                          color: 'var(--accent-primary)'
+                        }}
                         fill="currentColor"
                         viewBox="0 0 20 20"
-                        style={{ color: 'var(--accent-primary)' }}
                       >
                         <path
                           fillRule="evenodd"
@@ -152,8 +249,12 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onLoginClick }) => {
                 {/* CTA 버튼 */}
                 <button
                   onClick={onLoginClick}
-                  className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all transform hover:scale-105 shadow-lg"
                   style={{
+                    width: '100%',
+                    padding: '1rem 1.5rem',
+                    borderRadius: '0.75rem',
+                    fontWeight: '600',
+                    fontSize: '1.125rem',
                     backgroundColor: plan.buttonVariant === 'outline' 
                       ? 'transparent' 
                       : 'var(--accent-primary)',
@@ -162,7 +263,10 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onLoginClick }) => {
                       : 'white',
                     border: plan.buttonVariant === 'outline' 
                       ? `2px solid var(--accent-primary)` 
-                      : 'none'
+                      : 'none',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                    transition: 'all 0.3s ease, transform 0.1s ease',
+                    cursor: 'pointer'
                   }}
                   onMouseEnter={(e) => {
                     if (plan.buttonVariant === 'outline') {
@@ -236,49 +340,89 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onLoginClick }) => {
         </div>
 
         {/* FAQ 섹션 */}
-        <div className="mt-16">
-          <h3 className="text-2xl font-bold text-center mb-8" style={{ color: 'var(--text-primary)' }}>
+        <div style={{ marginTop: '4rem' }}>
+          <h3 style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginBottom: '2rem',
+            color: 'var(--text-primary)'
+          }}>
             자주 묻는 질문
           </h3>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="rounded-xl p-6 shadow-sm border" style={{ 
-              backgroundColor: 'var(--bg-primary)', 
-              borderColor: 'var(--border-light)' 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '2rem',
+            maxWidth: '64rem',
+            margin: '0 auto'
+          }}>
+            <div style={{
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-light)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
             }}>
-              <h4 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+              <h4 style={{
+                fontWeight: '600',
+                marginBottom: '0.75rem',
+                color: 'var(--text-primary)'
+              }}>
                 Q. 중도에 플랜을 변경할 수 있나요?
               </h4>
               <p style={{ color: 'var(--text-secondary)' }}>
                 네, 언제든지 플랜을 업그레이드하거나 다운그레이드할 수 있습니다. 변경 시점부터 새로운 요금이 적용됩니다.
               </p>
             </div>
-            <div className="rounded-xl p-6 shadow-sm border" style={{ 
-              backgroundColor: 'var(--bg-primary)', 
-              borderColor: 'var(--border-light)' 
+            <div style={{
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-light)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
             }}>
-              <h4 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-                Q. 가이드 학습을 제공하나요?
+              <h4 style={{
+                fontWeight: '600',
+                marginBottom: '0.75rem',
+                color: 'var(--text-primary)'
+              }}>
+                Q. 무료 체험 기간이 있나요?
               </h4>
               <p style={{ color: 'var(--text-secondary)' }}>
-                네, 수준별 맞춤 가이드를 제공합니다. 초보자부터 전문가까지 단계별 학습이 가능합니다.
+                모든 플랜에서 14일 무료 체험을 제공합니다. 체험 기간 중 언제든 취소 가능합니다.
               </p>
             </div>
-            <div className="rounded-xl p-6 shadow-sm border" style={{ 
-              backgroundColor: 'var(--bg-primary)', 
-              borderColor: 'var(--border-light)' 
+            <div style={{
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-light)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
             }}>
-              <h4 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+              <h4 style={{
+                fontWeight: '600',
+                marginBottom: '0.75rem',
+                color: 'var(--text-primary)'
+              }}>
                 Q. 연구기관 할인이 있나요?
               </h4>
               <p style={{ color: 'var(--text-secondary)' }}>
                 대학교, 연구소 등 교육기관은 별도 문의를 통해 특별 할인 혜택을 받으실 수 있습니다.
               </p>
             </div>
-            <div className="rounded-xl p-6 shadow-sm border" style={{ 
-              backgroundColor: 'var(--bg-primary)', 
-              borderColor: 'var(--border-light)' 
+            <div style={{
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-light)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
             }}>
-              <h4 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+              <h4 style={{
+                fontWeight: '600',
+                marginBottom: '0.75rem',
+                color: 'var(--text-primary)'
+              }}>
                 Q. 데이터는 안전하게 보관되나요?
               </h4>
               <p style={{ color: 'var(--text-secondary)' }}>
