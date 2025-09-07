@@ -57,4 +57,7 @@ class ApiService {
   }
 }
 
-export default new ApiService();
+// API 서비스 인스턴스
+const apiService = new ApiService();
+
+export default apiService;

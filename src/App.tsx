@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './store/authStore';
+import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectsPage from './pages/ProjectsPage';
@@ -12,7 +13,7 @@ function App() {
   useEffect(() => {
     // 앱 시작 시 세션 확인
     checkSession();
-  }, []);
+  }, [checkSession]);
 
   if (isLoading) {
     return (
@@ -28,6 +29,10 @@ function App() {
         <Routes>
           {/* 공개 라우트 */}
           <Route 
+            path="/" 
+            element={<HomePage />} 
+          />
+          <Route 
             path="/login" 
             element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} 
           />
@@ -40,12 +45,6 @@ function App() {
           <Route 
             path="/projects" 
             element={isAuthenticated ? <ProjectsPage /> : <Navigate to="/login" />} 
-          />
-          
-          {/* 기본 리다이렉트 */}
-          <Route 
-            path="/" 
-            element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
           />
         </Routes>
       </div>
