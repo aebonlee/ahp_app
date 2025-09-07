@@ -4,40 +4,12 @@ on:
   push:
     branches:
       - main
-      - develop
   pull_request:
     branches:
       - main
-      - develop
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [18.x]
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build project
-        run: npm run build
-        env:
-          CI: false
-          REACT_APP_API_URL: https://ahp-platform.onrender.com
-
-  backend-test:
+  build:
     runs-on: ubuntu-latest
     
     steps:
@@ -48,15 +20,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18.x'
+          cache: 'npm'
+      
+      - name: Install frontend dependencies
+        run: npm ci
+      
+      - name: Build frontend
+        run: npm run build
+        env:
+          CI: false
+          REACT_APP_API_URL: https://ahp-platform.onrender.com
       
       - name: Install backend dependencies
-        run: |
-          cd backend
-          npm install
+        working-directory: ./backend
+        run: npm install
       
       - name: Build backend
-        run: |
-          cd backend
-          npm run build
+        working-directory: ./backend
+        run: npm run build
         env:
           CI: false
