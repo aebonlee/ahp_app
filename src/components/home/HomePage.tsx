@@ -994,7 +994,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
       <footer style={{
         backgroundColor: 'var(--bg-secondary)',
         borderTop: '1px solid var(--border-light)',
-        padding: '3rem 0 2rem 0'
+        padding: '3rem 0 1rem 0'
       }}>
         <div style={{
           maxWidth: '80rem',
@@ -1005,9 +1005,9 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
             gap: '2rem',
-            marginBottom: '2rem'
+            marginBottom: '3rem'
           }}>
-            {/* 브랜드 정보 */}
+            {/* 회사 정보 */}
             <div>
               <h3 style={{
                 fontSize: '1.25rem',
@@ -1020,17 +1020,22 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
               <p style={{
                 color: 'var(--text-secondary)',
                 marginBottom: '1rem',
-                lineHeight: '1.6'
+                lineHeight: '1.6',
+                fontSize: '0.875rem',
+                fontWeight: '600'
               }}>
-                논문 연구를 위한 전문 AHP 분석 플랫폼
+                한국직업능력개발센터
               </p>
-              <p style={{
+              <div style={{
                 color: 'var(--text-muted)',
                 fontSize: '0.875rem',
-                lineHeight: '1.5'
+                lineHeight: '1.6'
               }}>
-                체계적 의사결정으로 더 나은 연구 성과를
-              </p>
+                <p style={{ margin: '0.25rem 0' }}>사업자등록번호: 601-45-20154</p>
+                <p style={{ margin: '0.25rem 0' }}>경기도 수원시 팔달구 매산로 45, 419호</p>
+                <p style={{ margin: '0.25rem 0' }}>대표이사: 이애본</p>
+                <p style={{ margin: '0.25rem 0' }}>통신판매신고: 제2024-수원팔달-0584호</p>
+              </div>
             </div>
 
             {/* 바로가기 */}
@@ -1054,6 +1059,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                     cursor: 'pointer',
                     textAlign: 'left',
                     padding: 0,
+                    fontSize: '0.875rem',
                     transition: 'color 0.3s ease'
                   }}
                   onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
@@ -1064,6 +1070,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                 <a href="#features" style={{
                   color: 'var(--text-secondary)',
                   textDecoration: 'none',
+                  fontSize: '0.875rem',
                   transition: 'color 0.3s ease'
                 }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
                    onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
@@ -1072,15 +1079,80 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                 <a href="#pricing" style={{
                   color: 'var(--text-secondary)',
                   textDecoration: 'none',
+                  fontSize: '0.875rem',
                   transition: 'color 0.3s ease'
                 }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
                    onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
                   요금 안내
                 </a>
+                <a href="#how-it-works" style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  fontSize: '0.875rem',
+                  transition: 'color 0.3s ease'
+                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                  사용자 가이드
+                </a>
               </div>
             </div>
 
-            {/* 정보 */}
+            {/* 고객 지원 */}
+            <div id="support">
+              <h4 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
+                marginBottom: '1rem',
+                color: 'var(--text-primary)'
+              }}>
+                🎧 고객 지원
+              </h4>
+              <div style={{
+                color: 'var(--text-muted)',
+                fontSize: '0.875rem',
+                lineHeight: '1.6'
+              }}>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <a 
+                    href="mailto:aebon@naver.com"
+                    style={{
+                      color: 'var(--text-secondary)',
+                      textDecoration: 'none',
+                      transition: 'color 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                    onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}
+                  >
+                    📧 aebon@naver.com
+                  </a>
+                </div>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <a 
+                    href="tel:010-3700-0629"
+                    style={{
+                      color: 'var(--text-secondary)',
+                      textDecoration: 'none',
+                      transition: 'color 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                    onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}
+                  >
+                    📞 010-3700-0629
+                  </a>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                    (평일: 09:00 ~ 18:00)
+                  </div>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-secondary)' }}>💬 카카오톡 상담</span>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                    ID: aebon
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 정보 및 링크 */}
             <div>
               <h4 style={{
                 fontSize: '1rem',
@@ -1098,6 +1170,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                   style={{
                     color: 'var(--text-secondary)',
                     textDecoration: 'none',
+                    fontSize: '0.875rem',
                     transition: 'color 0.3s ease'
                   }}
                   onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
@@ -1105,17 +1178,19 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                 >
                   GitHub 저장소
                 </a>
-                <a href="#how-it-works" style={{
+                <a href="#news" id="news" style={{
                   color: 'var(--text-secondary)',
                   textDecoration: 'none',
+                  fontSize: '0.875rem',
                   transition: 'color 0.3s ease'
                 }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
                    onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
-                  사용자 가이드
+                  소식 및 사례
                 </a>
                 <a href="#features" style={{
                   color: 'var(--text-secondary)',
                   textDecoration: 'none',
+                  fontSize: '0.875rem',
                   transition: 'color 0.3s ease'
                 }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
                    onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
@@ -1123,76 +1198,101 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                 </a>
               </div>
             </div>
-
-            {/* 지원 */}
-            <div id="support">
-              <h4 style={{
-                fontSize: '1rem',
-                fontWeight: '600',
-                marginBottom: '1rem',
-                color: 'var(--text-primary)'
-              }}>
-                🎧 지원
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <a 
-                  href="mailto:support@ahp-platform.com"
-                  style={{
-                    color: 'var(--text-secondary)',
-                    textDecoration: 'none',
-                    transition: 'color 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
-                  onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}
-                >
-                  문의하기
-                </a>
-                <a href="#news" id="news" style={{
-                  color: 'var(--text-secondary)',
-                  textDecoration: 'none',
-                  transition: 'color 0.3s ease'
-                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
-                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
-                  소식 및 사례
-                </a>
-                <a href="#support" style={{
-                  color: 'var(--text-secondary)',
-                  textDecoration: 'none',
-                  transition: 'color 0.3s ease'
-                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
-                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
-                  고객 지원
-                </a>
-              </div>
-            </div>
           </div>
 
-          {/* 하단 정보 */}
+          {/* 법적 정보 및 링크 */}
           <div style={{
             borderTop: '1px solid var(--border-light)',
             paddingTop: '2rem',
-            textAlign: 'center'
+            marginBottom: '2rem'
           }}>
             <div style={{
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
-              justifyContent: 'space-between',
+              justifyContent: 'center',
               alignItems: 'center',
-              gap: '1rem'
+              gap: isMobile ? '0.5rem' : '2rem',
+              marginBottom: '1.5rem'
+            }}>
+              <a 
+                href="/terms"
+                style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  transition: 'color 0.3s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}
+              >
+                이용약관
+              </a>
+              <a 
+                href="/privacy"
+                style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  transition: 'color 0.3s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}
+              >
+                개인정보처리방침
+              </a>
+              <a 
+                href="/refund"
+                style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  transition: 'color 0.3s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}
+              >
+                환불정책
+              </a>
+            </div>
+          </div>
+
+          {/* 최하단 저작권 정보 */}
+          <div style={{
+            borderTop: '1px solid var(--border-light)',
+            paddingTop: '1.5rem',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.75rem'
             }}>
               <p style={{
                 fontSize: '0.875rem',
                 color: 'var(--text-secondary)',
-                margin: 0
+                margin: 0,
+                fontWeight: '500'
               }}>
-                © 2025 AHP for Paper. 연구 논문 작성을 위한 전문 AHP 분석 도구
+                © 2024 AHP for Paper. All rights reserved.
               </p>
               <p style={{
-                fontSize: '0.875rem',
+                fontSize: '0.8rem',
+                color: 'var(--text-muted)',
+                margin: 0,
+                lineHeight: '1.5'
+              }}>
+                이 웹사이트의 모든 콘텐츠는 저작권법의 보호를 받습니다.
+              </p>
+              <p style={{
+                fontSize: '0.75rem',
                 color: 'var(--text-muted)',
                 margin: 0
               }}>
-                Built with React + TypeScript | Powered by Advanced Analytics
+                Last updated: 2024.08.31
               </p>
             </div>
           </div>

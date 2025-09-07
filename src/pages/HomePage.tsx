@@ -132,8 +132,15 @@ const HomePage: React.FC = () => {
           <div className="footer-content">
             <div className="footer-info">
               <h4>🏗️ AHP for Paper</h4>
-              <p>논문 연구를 위한 AHP 분석 플랫폼</p>
-              <p className="footer-tagline">체계적 의사결정으로 더 나은 연구 성과를</p>
+              <p>한국직업능력개발센터</p>
+              <p className="footer-tagline">연구 논문 작성을 위한 전문 AHP 분석 도구</p>
+              <div className="business-info">
+                <p>사업자등록번호: 601-45-20154</p>
+                <p>경기도 수원시 팔달구 매산로 45, 419호</p>
+                <p>대표이사: 이애본 | 통신판매신고: 제2024-수원팔달-0584호</p>
+                <p>고객지원: aebon@naver.com | 전화: 010-3700-0629 (평일: 09:00 ~ 18:00)</p>
+                <p>카카오톡 상담 - ID: aebon</p>
+              </div>
             </div>
             <div className="footer-links">
               <div className="footer-section">
@@ -154,13 +161,19 @@ const HomePage: React.FC = () => {
                 <h5>🎧 지원</h5>
                 <Link to="/support">고객 지원</Link>
                 <Link to="/news">소식 및 사례</Link>
-                <a href="mailto:support@ahp-platform.com">문의하기</a>
+                <a href="mailto:aebon@naver.com">문의하기</a>
               </div>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 AHP for Paper. 연구 논문 작성을 위한 전문 AHP 분석 도구</p>
-            <p>Built with React + TypeScript | Powered by Advanced Analytics</p>
+            <div className="legal-links">
+              <a href="#terms">이용약관</a>
+              <a href="#privacy">개인정보처리방침</a>
+              <a href="#refund">환불정책</a>
+            </div>
+            <p>&copy; 2024 AHP for Paper. All rights reserved.</p>
+            <p>이 웹사이트의 모든 콘텐츠는 저작권법의 보호를 받습니다.</p>
+            <p>Last updated: 2024.08.31</p>
           </div>
         </div>
       </footer>
