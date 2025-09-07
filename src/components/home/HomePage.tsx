@@ -161,6 +161,22 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                  onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
                 요금제
               </a>
+              <a href="#support" style={{
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                transition: 'color 0.3s ease'
+              }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                 onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                고객 지원
+              </a>
+              <a href="#news" style={{
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                transition: 'color 0.3s ease'
+              }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                 onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                소식 및 사례
+              </a>
             </nav>
 
             {/* CTA 버튼들 및 테마 컨트롤 */}
@@ -278,6 +294,18 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                 color: 'var(--text-secondary)',
                 textDecoration: 'none'
               }} onClick={() => setIsMenuOpen(false)}>요금제</a>
+              <a href="#support" style={{
+                display: 'block',
+                padding: '0.5rem 0',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none'
+              }} onClick={() => setIsMenuOpen(false)}>고객 지원</a>
+              <a href="#news" style={{
+                display: 'block',
+                padding: '0.5rem 0',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none'
+              }} onClick={() => setIsMenuOpen(false)}>소식 및 사례</a>
               
               {/* 모바일 테마 컨트롤 */}
               <div style={{
@@ -962,6 +990,214 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
         </div>
       </section>
 
+      {/* 푸터 */}
+      <footer style={{
+        backgroundColor: 'var(--bg-secondary)',
+        borderTop: '1px solid var(--border-light)',
+        padding: '3rem 0 2rem 0'
+      }}>
+        <div style={{
+          maxWidth: '80rem',
+          margin: '0 auto',
+          padding: '0 1.5rem'
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+            gap: '2rem',
+            marginBottom: '2rem'
+          }}>
+            {/* 브랜드 정보 */}
+            <div>
+              <h3 style={{
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                marginBottom: '1rem',
+                color: 'var(--text-primary)'
+              }}>
+                🏗️ AHP for Paper
+              </h3>
+              <p style={{
+                color: 'var(--text-secondary)',
+                marginBottom: '1rem',
+                lineHeight: '1.6'
+              }}>
+                논문 연구를 위한 전문 AHP 분석 플랫폼
+              </p>
+              <p style={{
+                color: 'var(--text-muted)',
+                fontSize: '0.875rem',
+                lineHeight: '1.5'
+              }}>
+                체계적 의사결정으로 더 나은 연구 성과를
+              </p>
+            </div>
+
+            {/* 바로가기 */}
+            <div>
+              <h4 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
+                marginBottom: '1rem',
+                color: 'var(--text-primary)'
+              }}>
+                🔗 바로가기
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <button
+                  onClick={onLoginClick}
+                  style={{
+                    color: 'var(--text-secondary)',
+                    textDecoration: 'none',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    padding: 0,
+                    transition: 'color 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'}
+                >
+                  로그인
+                </button>
+                <a href="#features" style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  transition: 'color 0.3s ease'
+                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                  주요 기능
+                </a>
+                <a href="#pricing" style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  transition: 'color 0.3s ease'
+                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                  요금 안내
+                </a>
+              </div>
+            </div>
+
+            {/* 정보 */}
+            <div>
+              <h4 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
+                marginBottom: '1rem',
+                color: 'var(--text-primary)'
+              }}>
+                📚 정보
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <a 
+                  href="https://github.com/aebonlee/ahp_app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: 'var(--text-secondary)',
+                    textDecoration: 'none',
+                    transition: 'color 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}
+                >
+                  GitHub 저장소
+                </a>
+                <a href="#how-it-works" style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  transition: 'color 0.3s ease'
+                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                  사용자 가이드
+                </a>
+                <a href="#features" style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  transition: 'color 0.3s ease'
+                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                  기술 문서
+                </a>
+              </div>
+            </div>
+
+            {/* 지원 */}
+            <div id="support">
+              <h4 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
+                marginBottom: '1rem',
+                color: 'var(--text-primary)'
+              }}>
+                🎧 지원
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <a 
+                  href="mailto:support@ahp-platform.com"
+                  style={{
+                    color: 'var(--text-secondary)',
+                    textDecoration: 'none',
+                    transition: 'color 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}
+                >
+                  문의하기
+                </a>
+                <a href="#news" id="news" style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  transition: 'color 0.3s ease'
+                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                  소식 및 사례
+                </a>
+                <a href="#support" style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  transition: 'color 0.3s ease'
+                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
+                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                  고객 지원
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* 하단 정보 */}
+          <div style={{
+            borderTop: '1px solid var(--border-light)',
+            paddingTop: '2rem',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '1rem'
+            }}>
+              <p style={{
+                fontSize: '0.875rem',
+                color: 'var(--text-secondary)',
+                margin: 0
+              }}>
+                © 2025 AHP for Paper. 연구 논문 작성을 위한 전문 AHP 분석 도구
+              </p>
+              <p style={{
+                fontSize: '0.875rem',
+                color: 'var(--text-muted)',
+                margin: 0
+              }}>
+                Built with React + TypeScript | Powered by Advanced Analytics
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* Scroll to Top Button */}
       <button
