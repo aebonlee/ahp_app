@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import useAuthStore from '../store/authStore';
 import apiService from '../services/api';
+import CriteriaManagement from '../components/criteria/CriteriaManagement';
+import AlternativeManagement from '../components/alternatives/AlternativeManagement';
+import PairwiseComparison from '../components/comparison/PairwiseComparison';
 
 // Type definitions
 interface Project {
@@ -28,6 +31,7 @@ interface ProjectForm {
 const PersonalServicePage: React.FC = () => {
   const { user } = useAuthStore();
   const [activeSection, setActiveSection] = useState<'dashboard' | 'projects' | 'model-builder' | 'analysis' | 'settings'>('dashboard');
+  const [modelBuilderStep, setModelBuilderStep] = useState<'overview' | 'criteria' | 'alternatives' | 'comparison' | 'results'>('overview');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -325,49 +329,159 @@ const PersonalServicePage: React.FC = () => {
             <p>{selectedProject.description}</p>
           </div>
 
-          <div className="workflow-steps">
-            <div className="step active">
-              <div className="step-number">1</div>
-              <div className="step-content">
-                <h4>기준 설정</h4>
-                <p>의사결정 기준을 정의합니다</p>
-                <div className="criteria-count">{selectedProject.criteria_count}개 기준</div>
-              </div>
-            </div>
-
-            <div className="step">
-              <div className="step-number">2</div>
-              <div className="step-content">
-                <h4>대안 설정</h4>
-                <p>비교할 대안들을 정의합니다</p>
-                <div className="alternatives-count">{selectedProject.alternatives_count}개 대안</div>
-              </div>
-            </div>
-
-            <div className="step">
-              <div className="step-number">3</div>
-              <div className="step-content">
-                <h4>쌍대비교</h4>
-                <p>기준과 대안에 대한 쌍대비교를 수행합니다</p>
-                <div className="evaluation-method">{selectedProject.evaluation_method} 방법</div>
-              </div>
-            </div>
-
-            <div className="step">
-              <div className="step-number">4</div>
-              <div className="step-content">
-                <h4>결과 분석</h4>
-                <p>AHP 분석 결과를 확인합니다</p>
-                <div className="completion-rate">{selectedProject.completion_rate}% 완료</div>
-              </div>
-            </div>
+          {/* 모델 빌더 네비게이션 */}
+          <div className="model-builder-nav">
+            <button 
+              className={`nav-step ${modelBuilderStep === 'overview' ? 'active' : ''}`}
+              onClick={() => setModelBuilderStep('overview')}
+            >
+              개요
+            </button>
+            <button 
+              className={`nav-step ${modelBuilderStep === 'criteria' ? 'active' : ''}`}
+              onClick={() => setModelBuilderStep('criteria')}
+            >
+              기준 관리
+            </button>
+            <button 
+              className={`nav-step ${modelBuilderStep === 'alternatives' ? 'active' : ''}`}
+              onClick={() => setModelBuilderStep('alternatives')}
+            >
+              대안 관리
+            </button>
+            <button 
+              className={`nav-step ${modelBuilderStep === 'comparison' ? 'active' : ''}`}
+              onClick={() => setModelBuilderStep('comparison')}
+            >
+              쌍대비교
+            </button>
+            <button 
+              className={`nav-step ${modelBuilderStep === 'results' ? 'active' : ''}`}
+              onClick={() => setModelBuilderStep('results')}
+            >
+              결과
+            </button>
           </div>
 
-          <div className="model-actions">
-            <button className="btn btn-primary">기준 관리</button>
-            <button className="btn btn-primary">대안 관리</button>
-            <button className="btn btn-primary">쌍대비교</button>
-            <button className="btn btn-outline">평가자 관리</button>
+          {/* 모델 빌더 콘텐츠 */}
+          <div className="model-builder-body">
+            {modelBuilderStep === 'overview' && (
+              <div className="workflow-steps">
+                <div className="step active">
+                  <div className="step-number">1</div>
+                  <div className="step-content">
+                    <h4>기준 설정</h4>
+                    <p>의사결정 기준을 정의합니다</p>
+                    <div className="criteria-count">{selectedProject.criteria_count}개 기준</div>
+                    <button 
+                      className="btn btn-sm btn-primary"
+                      onClick={() => setModelBuilderStep('criteria')}
+                    >
+                      기준 관리
+                    </button>
+                  </div>
+                </div>
+
+                <div className="step">
+                  <div className="step-number">2</div>
+                  <div className="step-content">
+                    <h4>대안 설정</h4>
+                    <p>비교할 대안들을 정의합니다</p>
+                    <div className="alternatives-count">{selectedProject.alternatives_count}개 대안</div>
+                    <button 
+                      className="btn btn-sm btn-primary"
+                      onClick={() => setModelBuilderStep('alternatives')}
+                    >
+                      대안 관리
+                    </button>
+                  </div>
+                </div>
+
+                <div className="step">
+                  <div className="step-number">3</div>
+                  <div className="step-content">
+                    <h4>쌍대비교</h4>
+                    <p>기준과 대안에 대한 쌍대비교를 수행합니다</p>
+                    <div className="evaluation-method">{selectedProject.evaluation_method} 방법</div>
+                    <button 
+                      className="btn btn-sm btn-primary"
+                      onClick={() => setModelBuilderStep('comparison')}
+                    >
+                      쌍대비교
+                    </button>
+                  </div>
+                </div>
+
+                <div className="step">
+                  <div className="step-number">4</div>
+                  <div className="step-content">
+                    <h4>결과 분석</h4>
+                    <p>AHP 분석 결과를 확인합니다</p>
+                    <div className="completion-rate">{selectedProject.completion_rate}% 완료</div>
+                    <button 
+                      className="btn btn-sm btn-outline"
+                      onClick={() => setModelBuilderStep('results')}
+                    >
+                      결과 보기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {modelBuilderStep === 'criteria' && (
+              <CriteriaManagement 
+                projectId={selectedProject.id}
+                onCriteriaChange={(criteria) => {
+                  setSelectedProject(prev => prev ? {
+                    ...prev,
+                    criteria_count: criteria.length
+                  } : null);
+                }}
+              />
+            )}
+
+            {modelBuilderStep === 'alternatives' && (
+              <AlternativeManagement 
+                projectId={selectedProject.id}
+                onAlternativesChange={(alternatives) => {
+                  setSelectedProject(prev => prev ? {
+                    ...prev,
+                    alternatives_count: alternatives.length
+                  } : null);
+                }}
+              />
+            )}
+
+            {modelBuilderStep === 'comparison' && (
+              <PairwiseComparison
+                projectId={selectedProject.id}
+                items={[
+                  { id: '1', name: '기준 A', description: '첫 번째 기준' },
+                  { id: '2', name: '기준 B', description: '두 번째 기준' },
+                  { id: '3', name: '기준 C', description: '세 번째 기준' }
+                ]}
+                type="criteria"
+                onComparisonComplete={(comparisons) => {
+                  console.log('쌍대비교 완료:', comparisons);
+                  setSelectedProject(prev => prev ? {
+                    ...prev,
+                    completion_rate: Math.min(prev.completion_rate + 25, 100)
+                  } : null);
+                }}
+              />
+            )}
+
+            {modelBuilderStep === 'results' && (
+              <div className="results-section">
+                <h3>분석 결과</h3>
+                <div className="results-placeholder">
+                  <div className="placeholder-icon">📊</div>
+                  <h4>결과 분석 기능 개발 중</h4>
+                  <p>쌍대비교 완료 후 결과를 표시할 예정입니다.</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
