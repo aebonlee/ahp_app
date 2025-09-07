@@ -131,20 +131,36 @@ const HomePage: React.FC = () => {
         <div className="container">
           <div className="footer-content">
             <div className="footer-info">
-              <h4>AHP System v2.0</h4>
-              <p>체계적 의사결정 지원 도구</p>
+              <h4>🏗️ AHP for Paper</h4>
+              <p>논문 연구를 위한 AHP 분석 플랫폼</p>
+              <p className="footer-tagline">체계적 의사결정으로 더 나은 연구 성과를</p>
             </div>
             <div className="footer-links">
-              <a href="https://github.com/aebonlee/ahp_app" target="_blank" rel="noopener noreferrer">
-                GitHub
-              </a>
-              <Link to="/login">로그인</Link>
-              <Link to="/dashboard">대시보드</Link>
-              <Link to="/personal-service">개인 서비스</Link>
+              <div className="footer-section">
+                <h5>🔗 바로가기</h5>
+                <Link to="/login">로그인</Link>
+                <Link to="/personal-service">개인 서비스</Link>
+                <Link to="/dashboard">대시보드</Link>
+              </div>
+              <div className="footer-section">
+                <h5>📚 정보</h5>
+                <a href="https://github.com/aebonlee/ahp_app" target="_blank" rel="noopener noreferrer">
+                  GitHub 저장소
+                </a>
+                <Link to="/user-guide">사용자 가이드</Link>
+                <Link to="/pricing">요금 안내</Link>
+              </div>
+              <div className="footer-section">
+                <h5>🎧 지원</h5>
+                <Link to="/support">고객 지원</Link>
+                <Link to="/news">소식 및 사례</Link>
+                <a href="mailto:support@ahp-platform.com">문의하기</a>
+              </div>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 AHP System. Built with React + TypeScript</p>
+            <p>&copy; 2025 AHP for Paper. 연구 논문 작성을 위한 전문 AHP 분석 도구</p>
+            <p>Built with React + TypeScript | Powered by Advanced Analytics</p>
           </div>
         </div>
       </footer>

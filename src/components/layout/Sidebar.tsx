@@ -231,7 +231,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, act
               className="text-xs font-semibold"
               style={{ color: 'var(--text-primary)' }}
             >
-              AHP Research Platform
+              🏗️ AHP for Paper
+            </div>
+            <div 
+              className="text-xs"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              연구 논문 AHP 분석 플랫폼
             </div>
             <div 
               className="text-xs"
@@ -241,16 +247,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, act
             </div>
             <div className="flex justify-center space-x-3 text-xs">
               <button 
-                className="hover:underline"
+                className="hover:underline transition-colors"
                 style={{ color: 'var(--accent-primary)' }}
+                onClick={() => window.open('mailto:support@ahp-platform.com', '_blank')}
+                title="이메일로 문의하기"
               >
-                📧 문의하기
+                📧 문의
               </button>
               <button 
-                className="hover:underline"
+                className="hover:underline transition-colors"
                 style={{ color: 'var(--accent-primary)' }}
+                onClick={() => onTabChange('user-guide')}
+                title="사용자 가이드 보기"
               >
-                📖 도움말
+                📖 가이드
+              </button>
+              <button 
+                className="hover:underline transition-colors"
+                style={{ color: 'var(--accent-primary)' }}
+                onClick={() => window.open('https://github.com/aebonlee/ahp_app', '_blank')}
+                title="GitHub 저장소"
+              >
+                🔗 GitHub
               </button>
             </div>
           </div>
