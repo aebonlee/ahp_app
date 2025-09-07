@@ -47,12 +47,24 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
     { value: 'account', label: '계정 관리' }
   ];
 
-  // API 함수들 (임시로 하드코딩 데이터 사용)
+  // API 함수들
   const fetchFAQs = async () => {
     try {
       setError('');
       
-      // 임시 FAQ 데이터 (백엔드 배포 전까지)
+      // 백엔드 API 요청 시도
+      const response = await fetch(`${API_BASE_URL}/api/support/faqs`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.faqs) {
+          setFaqs(data.faqs);
+          return;
+        }
+      }
+      
+      // API 실패 시 임시 데이터 사용
+      console.log('백엔드 API 비활성, 정적 데이터 사용 중');
       const staticFAQs: SupportFAQ[] = [
         {
           id: 1,
@@ -78,6 +90,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
       ];
       
       setFaqs(staticFAQs);
+      console.log('정적 FAQ 데이터 로드 완료:', staticFAQs.length, '개 항목');
     } catch (error) {
       console.error('Error loading FAQs:', error);
       setError('FAQ를 불러오는데 실패했습니다.');

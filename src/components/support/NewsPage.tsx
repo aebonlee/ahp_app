@@ -47,13 +47,36 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
   const [showNewPostForm, setShowNewPostForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // API 함수들 (임시로 하드코딩 데이터 사용)
+  // API 함수들
   const fetchPosts = async () => {
     try {
       setLoading(true);
       setError('');
       
-      // 임시 뉴스 데이터 (백엔드 배포 전까지)
+      // 백엔드 API 에서 뉴스 데이터 가져오기
+      const response = await fetch(`${API_BASE_URL}/api/news/posts`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.posts) {
+          // API에서 받은 데이터 사용
+          const apiPosts = data.posts.map((post: any) => ({
+            ...post,
+            created_at: post.created_at || new Date().toISOString()
+          }));
+          
+          // 카테고리 필터링
+          const filteredData = selectedCategory === 'all' 
+            ? apiPosts 
+            : apiPosts.filter((post: any) => post.category === selectedCategory);
+          
+          setPosts(filteredData);
+          return;
+        }
+      }
+      
+      // API 실패 시 임시 데이터 사용
+      console.log('백엔드 API 비활성, 정적 데이터 사용 중');
       const staticPosts: NewsPost[] = [
         {
           id: 1,
@@ -99,6 +122,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
         : staticPosts.filter(post => post.category === selectedCategory);
       
       setPosts(filteredData);
+      console.log('정적 뉴스 데이터 로드 완료:', filteredData.length, '개 항목');
     } catch (error) {
       console.error('Error loading news posts:', error);
       setError('게시글을 불러오는데 실패했습니다.');
