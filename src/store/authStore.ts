@@ -1,7 +1,29 @@
 import { create } from 'zustand';
 import { User, Session } from '../types';
-import apiService from '../services/api';
+import { APIResponse } from '../services/apiService';
 import { API_ENDPOINTS } from '../config/api';
+
+// Simple API client for auth
+const apiClient = {
+  async get<T>(endpoint: string): Promise<T> {
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return await response.json();
+  },
+  
+  async post<T>(endpoint: string, body?: any): Promise<T> {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    return await response.json();
+  }
+};
 
 interface AuthState {
   user: User | null;
@@ -25,7 +47,7 @@ const useAuthStore = create<AuthState>((set) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiService.post<Session>(API_ENDPOINTS.AUTH.LOGIN, {
+      const response = await apiClient.post<Session>(API_ENDPOINTS.AUTH.LOGIN, {
         email,
         password,
       });
@@ -47,7 +69,7 @@ const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      await apiService.post(API_ENDPOINTS.AUTH.LOGOUT);
+      await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -61,7 +83,7 @@ const useAuthStore = create<AuthState>((set) => ({
   checkSession: async () => {
     set({ isLoading: true });
     try {
-      const response = await apiService.get<Session>(API_ENDPOINTS.AUTH.CHECK_SESSION);
+      const response = await apiClient.get<Session>(API_ENDPOINTS.AUTH.VERIFY);
       
       if (response.user) {
         set({

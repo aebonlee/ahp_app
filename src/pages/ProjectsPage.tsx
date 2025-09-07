@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Project } from '../types';
-import apiService from '../services/api';
-import { API_ENDPOINTS } from '../config/api';
+import { projectAPI } from '../services/apiService';
+import { API_BASE_URL } from '../config/api';
 
 const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -15,10 +15,14 @@ const ProjectsPage: React.FC = () => {
   const loadProjects = async () => {
     try {
       setLoading(true);
-      const response = await apiService.get<Project[]>(API_ENDPOINTS.PROJECTS.LIST);
-      setProjects(response);
+      const response = await projectAPI.fetch();
+      if (response.data) {
+        setProjects(response.data as Project[]);
+      } else {
+        setError('프로젝트를 불러오는데 실패했습니다.');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || '프로젝트를 불러오는데 실패했습니다.');
+      setError(err.message || '프로젝트를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
