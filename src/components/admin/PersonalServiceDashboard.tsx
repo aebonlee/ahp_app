@@ -3467,53 +3467,89 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     <div className="max-w-6xl mx-auto space-y-6">
       {/* 환영 메시지 + 요금제 정보 통합 */}
       <div className="py-6">
-        {/* 환영 메시지 (기존 스타일) */}
-        <div className="text-center lg:text-left space-y-6">
-          <div className="space-y-3 p-6 rounded-xl" 
-               style={{
-                 border: '1px solid var(--border-light)',
-                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-               }}>
-            <h1 
-              className="text-4xl lg:text-5xl font-light tracking-wide"
-              style={{ 
-                color: 'var(--text-primary)',
-                fontFamily: "'Inter', 'Pretendard', system-ui, sans-serif"
-              }}
-            >
-              안녕하세요, 
-              <span 
-                className="font-semibold ml-2"
-                style={{ color: 'var(--accent-primary)' }}
-              >
-                {user.first_name} {user.last_name}
-              </span>님
-            </h1>
-            <div className="flex items-center justify-center lg:justify-start space-x-2">
-              <div 
-                className="w-12 h-0.5 rounded-full"
-                style={{ backgroundColor: 'var(--accent-primary)' }}
-              ></div>
-              <span 
-                className="text-xs font-medium uppercase tracking-wider px-3 py-1 rounded-full border"
-                style={{ 
-                  color: 'var(--accent-primary)',
-                  borderColor: 'var(--accent-light)'
-                }}
-              >
-                Pro Plan 🔵
-              </span>
-              <div 
-                className="w-12 h-0.5 rounded-full"
-                style={{ backgroundColor: 'var(--accent-primary)' }}
-              ></div>
-            </div>
-            <p 
-              className="text-lg font-light max-w-2xl mx-auto lg:mx-0 leading-relaxed"
-              style={{ color: 'var(--text-secondary)' }}
-            >
+        {/* 환영 메시지 - 모던 그라디언트 디자인 */}
+        <div style={{ textAlign: 'left' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+            borderRadius: '16px',
+            padding: '2rem',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* 배경 패턴 */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '200px',
+              height: '200px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '50%',
+              transform: 'translate(50%, -50%)'
+            }}></div>
+            
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <span style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '20px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  ✨ AHP for Paper Professional
+                </span>
+              </div>
+              
+              <h1 style={{
+                fontSize: '2.5rem',
+                fontWeight: '300',
+                marginBottom: '0.5rem',
+                lineHeight: '1.2'
+              }}>
+                안녕하세요, 
+                <span style={{ fontWeight: '600', marginLeft: '8px' }}>
+                  {user.first_name} {user.last_name}
+                </span>님
+              </h1>
+              
+              <p style={{
+                fontSize: '1.125rem',
+                opacity: 0.9,
+                marginBottom: '1.5rem',
+                lineHeight: '1.6'
+              }}>
               전문적인 AHP 의사결정 분석으로 복잡한 문제를 체계적으로 해결해보세요
-            </p>
+              </p>
+              
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '10px',
+                  fontSize: '0.875rem'
+                }}>
+                  🚀 프로젝트 관리
+                </div>
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '10px',
+                  fontSize: '0.875rem'
+                }}>
+                  📊 결과 분석
+                </div>
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '10px',
+                  fontSize: '0.875rem'
+                }}>
+                  👥 평가자 관리
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
