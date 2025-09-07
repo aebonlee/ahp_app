@@ -105,14 +105,15 @@ const Layout: React.FC<LayoutProps> = ({
           </>
         )}
         
-        <main className="flex-1 transition-luxury" 
+        <main className="flex-1 transition-all duration-300 ease-in-out" 
               style={{
                 marginLeft: user ? (sidebarCollapsed ? '4rem' : 'var(--sidebar-width)') : '0',
                 minHeight: 'calc(100vh - var(--header-height))',
-                backgroundColor: 'var(--bg-primary)',
-                transition: 'margin-left 0.3s ease, background-color 0.3s var(--transition-luxury)'
+                backgroundColor: 'var(--bg-base, #f8fafc)',
+                padding: user ? '1.5rem' : '0',
+                width: user ? `calc(100vw - ${sidebarCollapsed ? '4rem' : 'var(--sidebar-width)'})` : '100vw'
               }}>
-          <div className="container-adaptive section-padding">
+          <div className={user ? "max-w-7xl mx-auto" : ""}>
             {children}
           </div>
         </main>

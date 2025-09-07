@@ -30,6 +30,9 @@ import ComprehensiveUserGuide from './components/guide/ComprehensiveUserGuide';
 import EvaluatorDashboard from './components/evaluator/EvaluatorDashboard';
 import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
 import EvaluationTest from './components/evaluation/EvaluationTest';
+import PricingSection from './components/home/PricingSection';
+import NewsPage from './components/support/NewsPage';
+import SupportPage from './components/support/SupportPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
@@ -64,7 +67,8 @@ function App() {
       'my-projects', 'project-creation', 'model-builder',
       'evaluator-management', 'progress-monitoring', 'results-analysis',
       'paper-management', 'export-reports', 'workshop-management',
-      'decision-support-system', 'personal-settings', 'landing'
+      'decision-support-system', 'personal-settings', 'landing',
+      'pricing', 'news', 'support'
     ];
     
     if (tabParam && validTabs.includes(tabParam)) {
@@ -117,7 +121,8 @@ function App() {
         'my-projects', 'project-creation', 'model-builder',
         'evaluator-management', 'progress-monitoring', 'results-analysis',
         'paper-management', 'export-reports', 'workshop-management',
-        'decision-support-system', 'personal-settings'
+        'decision-support-system', 'personal-settings',
+        'pricing', 'news', 'support'
       ];
       
       if (tabParam && validTabs.includes(tabParam)) {
@@ -1289,6 +1294,27 @@ function App() {
             onNavigateToEvaluator={() => setActiveTab('evaluator-mode')}
             userRole={user?.role}
             isLoggedIn={!!user}
+          />
+        );
+
+      case 'pricing':
+        return (
+          <PricingSection 
+            onLoginClick={() => setActiveTab('personal-service')}
+          />
+        );
+
+      case 'news':
+        return (
+          <NewsPage 
+            onBackClick={() => setActiveTab('personal-service')}
+          />
+        );
+
+      case 'support':
+        return (
+          <SupportPage 
+            onBackClick={() => setActiveTab('personal-service')}
           />
         );
 
