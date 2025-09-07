@@ -27,9 +27,7 @@ interface SupportPageProps {
 const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [loading, setLoading] = useState(false);
   const [faqs, setFaqs] = useState<SupportFAQ[]>([]);
-  const [supportPosts, setSupportPosts] = useState<any[]>([]);
   const [showNewTicketForm, setShowNewTicketForm] = useState(false);
   const [newTicket, setNewTicket] = useState({
     title: '',
@@ -52,7 +50,6 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
   // API 함수들
   const fetchFAQs = async () => {
     try {
-      setLoading(true);
       setError('');
       
       const response = await fetch(`${API_BASE_URL}/api/support/faqs`);
@@ -66,28 +63,6 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
       console.error('Error fetching FAQs:', error);
       setError('FAQ를 불러오는데 실패했습니다.');
       setFaqs([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSupportPosts = async () => {
-    try {
-      const params = new URLSearchParams();
-      if (selectedCategory && selectedCategory !== 'all') {
-        params.append('category', selectedCategory);
-      }
-      
-      const response = await fetch(`${API_BASE_URL}/api/support/posts?${params}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch support posts');
-      }
-      
-      const data = await response.json();
-      setSupportPosts(data.posts || []);
-    } catch (error) {
-      console.error('Error fetching support posts:', error);
-      setSupportPosts([]);
     }
   };
 
@@ -108,8 +83,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
         throw new Error('Failed to create support ticket');
       }
       
-      // 성공 시 목록 새로고침
-      await fetchSupportPosts();
+      // 성공 시 폼 초기화
       setShowNewTicketForm(false);
       setNewTicket({
         title: '',
@@ -128,12 +102,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     fetchFAQs();
-    fetchSupportPosts();
   }, []);
-
-  useEffect(() => {
-    fetchSupportPosts();
-  }, [selectedCategory]);
 
   const contactInfo: ContactInfo[] = [
     {
@@ -461,7 +430,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
         )}
 
         {/* 검색 및 빠른 도움말 */}
-        <div style={{ marginBottom: '3rem' }}
+        <div style={{ marginBottom: '3rem' }}>
           <div style={{ 
             textAlign: 'center',
             marginBottom: '2rem'
