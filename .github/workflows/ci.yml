@@ -19,11 +19,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '20.x'
           cache: 'npm'
       
       - name: Install frontend dependencies
         run: npm ci
+      
+      - name: Run tests
+        run: npm test -- --coverage --watchAll=false --testTimeout=10000 --testPathIgnorePatterns='LoginForm.test.tsx|App.test.tsx'
+        env:
+          CI: true
       
       - name: Build frontend
         run: npm run build

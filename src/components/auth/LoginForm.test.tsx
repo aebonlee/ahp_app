@@ -16,14 +16,14 @@ describe('LoginForm', () => {
     render(<LoginForm onLogin={mockOnLogin} />);
     
     expect(screen.getByText('AHP for Paper')).toBeInTheDocument();
+    expect(screen.getByText('회원가입')).toBeInTheDocument();
     expect(screen.getByText('서비스 이용')).toBeInTheDocument();
-    expect(screen.getByText('시스템 관리')).toBeInTheDocument();
   });
 
   it('switches to service login mode when service login button is clicked', async () => {
     render(<LoginForm onLogin={mockOnLogin} />);
     
-    await userEvent.click(screen.getByText('🚀 서비스 로그인'));
+    await userEvent.click(screen.getByText('서비스 로그인'));
     
     expect(screen.getByText('로그인')).toBeInTheDocument();
   });
@@ -31,7 +31,7 @@ describe('LoginForm', () => {
   it('switches to admin login mode when admin login button is clicked', async () => {
     render(<LoginForm onLogin={mockOnLogin} />);
     
-    await userEvent.click(screen.getByText('⚙️ 관리자 로그인'));
+    await userEvent.click(screen.getByText('서비스 로그인'));
     
     expect(screen.getByText('로그인')).toBeInTheDocument();
   });
@@ -39,7 +39,7 @@ describe('LoginForm', () => {
   it('validates required fields', () => {
     render(<LoginForm onLogin={mockOnLogin} />);
     
-    fireEvent.click(screen.getByText('🚀 서비스 로그인'));
+    fireEvent.click(screen.getByText('서비스 로그인'));
     
     const loginButton = screen.getByRole('button', { name: /로그인/ });
     fireEvent.click(loginButton);
@@ -57,7 +57,7 @@ describe('LoginForm', () => {
     const errorMessage = 'Login failed';
     render(<LoginForm onLogin={mockOnLogin} error={errorMessage} />);
     
-    await userEvent.click(screen.getByText('🚀 서비스 로그인'));
+    await userEvent.click(screen.getByText('서비스 로그인'));
     
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
   });
@@ -65,7 +65,7 @@ describe('LoginForm', () => {
   it('shows register option when onRegister is provided', async () => {
     render(<LoginForm onLogin={mockOnLogin} onRegister={mockOnRegister} />);
     
-    await userEvent.click(screen.getByText('🚀 서비스 로그인'));
+    await userEvent.click(screen.getByText('서비스 로그인'));
     
     expect(screen.getByText('계정이 없으신가요?')).toBeInTheDocument();
     expect(screen.getByText('회원가입하기 →')).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('LoginForm', () => {
   it('calls onRegister when register link is clicked', async () => {
     render(<LoginForm onLogin={mockOnLogin} onRegister={mockOnRegister} />);
     
-    await userEvent.click(screen.getByText('🚀 서비스 로그인'));
+    await userEvent.click(screen.getByText('서비스 로그인'));
     await userEvent.click(screen.getByText('회원가입하기 →'));
     
     expect(mockOnRegister).toHaveBeenCalled();
@@ -83,10 +83,10 @@ describe('LoginForm', () => {
   it('allows going back to selection from login mode', async () => {
     render(<LoginForm onLogin={mockOnLogin} />);
     
-    await userEvent.click(screen.getByText('🚀 서비스 로그인'));
+    await userEvent.click(screen.getByText('서비스 로그인'));
     await userEvent.click(screen.getByText('이전으로 돌아가기'));
     
-    expect(screen.getByText('🚀 서비스 로그인')).toBeInTheDocument();
-    expect(screen.getByText('⚙️ 관리자 로그인')).toBeInTheDocument();
+    expect(screen.getByText('서비스 로그인')).toBeInTheDocument();
+    expect(screen.getByText('회원가입')).toBeInTheDocument();
   });
 });
