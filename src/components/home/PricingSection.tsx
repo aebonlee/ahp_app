@@ -293,47 +293,150 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onLoginClick }) => {
         </div>
 
         {/* 추가 정보 */}
-        <div className="mt-16 text-center">
-          <div className="rounded-2xl p-8 shadow-sm border" style={{ 
-            backgroundColor: 'var(--bg-primary)', 
-            borderColor: 'var(--border-light)' 
+        <div style={{ marginTop: '4rem', textAlign: 'center' }}>
+          <div style={{ 
+            borderRadius: '1rem',
+            padding: '2rem',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+            border: '1px solid var(--border-light)',
+            backgroundColor: 'var(--bg-primary)'
           }}>
-            <h3 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+            <h3 style={{ 
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: 'var(--text-primary)'
+            }}>
               추가 옵션 선택
             </h3>
-            <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
+            <p style={{ 
+              marginBottom: '1.5rem',
+              color: 'var(--text-secondary)'
+            }}>
               모든 요금제에서 필요에 따라 추가 옵션을 선택하실 수 있습니다.
             </p>
-            <div className="grid md:grid-cols-3 gap-6 mt-8">
-              <div className="text-center p-4 rounded-xl border" style={{ borderColor: 'var(--border-light)' }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: 'var(--accent-light)' }}>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--accent-primary)' }}>
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1.5rem',
+              marginTop: '2rem'
+            }}>
+              <div style={{ 
+                textAlign: 'center',
+                padding: '1rem',
+                borderRadius: '0.75rem',
+                border: '1px solid var(--border-light)'
+              }}>
+                <div style={{ 
+                  width: '3rem',
+                  height: '3rem',
+                  borderRadius: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 0.75rem auto',
+                  backgroundColor: 'var(--accent-light)'
+                }}>
+                  <svg style={{ 
+                    width: '1.5rem',
+                    height: '1.5rem',
+                    color: 'var(--accent-primary)'
+                  }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
-                <h4 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>인공지능 활용</h4>
-                <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>AI 기반 분석 및 추천</p>
-                <p className="font-bold" style={{ color: 'var(--accent-primary)' }}>+₩50,000</p>
+                <h4 style={{ 
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-primary)'
+                }}>인공지능 활용</h4>
+                <p style={{ 
+                  fontSize: '0.875rem',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-secondary)'
+                }}>AI 기반 분석 및 추천</p>
+                <p style={{ 
+                  fontWeight: 'bold',
+                  color: 'var(--accent-primary)'
+                }}>+₩50,000</p>
               </div>
-              <div className="text-center p-4 rounded-xl border" style={{ borderColor: 'var(--border-light)' }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: 'var(--accent-light)' }}>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--accent-primary)' }}>
+              <div style={{ 
+                textAlign: 'center',
+                padding: '1rem',
+                borderRadius: '0.75rem',
+                border: '1px solid var(--border-light)'
+              }}>
+                <div style={{ 
+                  width: '3rem',
+                  height: '3rem',
+                  borderRadius: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 0.75rem auto',
+                  backgroundColor: 'var(--accent-light)'
+                }}>
+                  <svg style={{ 
+                    width: '1.5rem',
+                    height: '1.5rem',
+                    color: 'var(--accent-primary)'
+                  }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <h4 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>문헌정보 정리</h4>
-                <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>체계적 문헌 관리</p>
-                <p className="font-bold" style={{ color: 'var(--accent-primary)' }}>+₩50,000</p>
+                <h4 style={{ 
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-primary)'
+                }}>문헌정보 정리</h4>
+                <p style={{ 
+                  fontSize: '0.875rem',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-secondary)'
+                }}>체계적 문헌 관리</p>
+                <p style={{ 
+                  fontWeight: 'bold',
+                  color: 'var(--accent-primary)'
+                }}>+₩50,000</p>
               </div>
-              <div className="text-center p-4 rounded-xl border" style={{ borderColor: 'var(--border-light)' }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: 'var(--accent-light)' }}>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--accent-primary)' }}>
+              <div style={{ 
+                textAlign: 'center',
+                padding: '1rem',
+                borderRadius: '0.75rem',
+                border: '1px solid var(--border-light)'
+              }}>
+                <div style={{ 
+                  width: '3rem',
+                  height: '3rem',
+                  borderRadius: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 0.75rem auto',
+                  backgroundColor: 'var(--accent-light)'
+                }}>
+                  <svg style={{ 
+                    width: '1.5rem',
+                    height: '1.5rem',
+                    color: 'var(--accent-primary)'
+                  }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
-                <h4 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>평가자 추가</h4>
-                <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>10명 단위 추가</p>
-                <p className="font-bold" style={{ color: 'var(--accent-primary)' }}>+₩50,000</p>
+                <h4 style={{ 
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-primary)'
+                }}>평가자 추가</h4>
+                <p style={{ 
+                  fontSize: '0.875rem',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-secondary)'
+                }}>10명 단위 추가</p>
+                <p style={{ 
+                  fontWeight: 'bold',
+                  color: 'var(--accent-primary)'
+                }}>+₩50,000</p>
               </div>
             </div>
           </div>
