@@ -234,7 +234,7 @@ export const apiHelpers = {
   },
 };
 
-export default {
+const apiService = {
   directEvaluationAPI,
   pairwiseEvaluationAPI,
   ahpCalculationAPI,
@@ -245,3 +245,5 @@ export default {
   alternativesAPI,
   apiHelpers,
 };
+
+export default apiService;
