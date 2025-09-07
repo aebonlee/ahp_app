@@ -87,6 +87,24 @@ const colorPalettes: Record<ColorTheme, ColorPalette> = {
   }
 };
 
+// Apply initial blue theme immediately to prevent flash
+const applyInitialTheme = () => {
+  const root = document.documentElement;
+  const bluePalette = colorPalettes.blue;
+  
+  if (bluePalette) {
+    root.style.setProperty('--accent-primary', bluePalette.primary);
+    root.style.setProperty('--accent-secondary', bluePalette.secondary);
+    root.style.setProperty('--accent-light', bluePalette.light);
+    root.style.setProperty('--accent-hover', bluePalette.hover);
+    root.style.setProperty('--accent-focus', bluePalette.focus);
+    root.style.setProperty('--accent-rgb', bluePalette.rgb);
+  }
+};
+
+// Apply theme immediately on module load
+applyInitialTheme();
+
 export const useColorTheme = () => {
   const [currentTheme, setCurrentTheme] = useState<ColorTheme>(() => {
     const saved = localStorage.getItem('colorTheme') as ColorTheme;

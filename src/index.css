@@ -25,11 +25,19 @@
   --gray-800: #1F2937;  /* Strong text */
   --gray-900: #111827;  /* Darkest text */
 
-  /* Luxury Gold Accents (restrained usage) */
-  --gold-primary:   #C8A968; /* Primary gold for buttons, highlights */
-  --gold-secondary: #A98C4B; /* Darker gold for hover/active states */
-  --gold-light:     #E5D5AA; /* Light gold for subtle backgrounds */
-  --ivory:          #F4F1EA; /* Warm ivory for section backgrounds */
+  /* Default Blue Theme (Primary color system) */
+  --accent-primary:   #3B82F6; /* Primary blue for buttons, highlights */
+  --accent-secondary: #2563EB; /* Darker blue for hover/active states */
+  --accent-light:     #93C5FD; /* Light blue for subtle backgrounds */
+  --accent-hover:     #1D4ED8; /* Hover state blue */
+  --accent-focus:     rgba(59, 130, 246, 0.35); /* Focus ring blue */
+  --accent-rgb:       59, 130, 246; /* RGB values for alpha variations */
+  
+  /* Legacy gold variables for compatibility */
+  --gold-primary:   #3B82F6;
+  --gold-secondary: #2563EB;
+  --gold-light:     #93C5FD;
+  --ivory:          #F8FAFC; /* Cool ivory background */
 
   /* === Semantic Colors (Low Saturation) === */
   --color-info:    #6B8AA6; /* Muted blue-gray */
@@ -58,6 +66,32 @@
   --border-medium:  var(--gray-300);   /* Medium borders */
   --border-strong:  var(--gray-400);   /* Strong borders */
   --border-focus:   var(--accent-primary); /* Focus ring color */
+  
+  /* === Interactive Colors (Blue Theme) === */
+  --interactive-primary: var(--accent-primary);
+  --interactive-primary-hover: var(--accent-hover);
+  --interactive-primary-light: var(--accent-light);
+  --interactive-secondary: var(--accent-secondary);
+  
+  /* === Component-specific Colors === */
+  --favorite-bg: var(--accent-light);
+  --favorite-border: var(--accent-primary);
+  --favorite-text: var(--accent-secondary);
+  --favorite-hover-bg: var(--accent-primary);
+  
+  --user-avatar-bg: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  
+  /* === Focus and Ring Colors === */
+  --shadow-focus: var(--accent-focus);
+  --focus: var(--accent-focus);
+  --ring: var(--accent-primary);
+  
+  /* === Theme-specific Shadows === */
+  --shadow-accent: 0 4px 20px rgba(var(--accent-rgb), 0.25);
+  --shadow-gold: 0 4px 20px rgba(var(--accent-rgb), 0.25);
+  
+  /* === AHP Specific Colors === */
+  --ahp-primary: var(--accent-primary);
 
   /* === Layout System === */
   --container-max-width: 1880px;     /* Max desktop width (under 1980px) */

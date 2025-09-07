@@ -13,6 +13,49 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>AHP System</title>
     
+    <!-- Apply default blue theme immediately -->
+    <style>
+      :root {
+        /* Default Blue Theme - Applied immediately to prevent flash */
+        --accent-primary: #3B82F6;
+        --accent-secondary: #2563EB;
+        --accent-light: #93C5FD;
+        --accent-hover: #1D4ED8;
+        --accent-focus: rgba(59, 130, 246, 0.35);
+        --accent-rgb: 59, 130, 246;
+        
+        /* Legacy compatibility */
+        --gold-primary: #3B82F6;
+        --gold-secondary: #2563EB;
+        --gold-light: #93C5FD;
+        
+        /* Interactive colors */
+        --interactive-primary: #3B82F6;
+        --interactive-primary-hover: #1D4ED8;
+        --interactive-primary-light: #93C5FD;
+        --interactive-secondary: #2563EB;
+        
+        /* Component colors */
+        --favorite-bg: #93C5FD;
+        --favorite-border: #3B82F6;
+        --favorite-text: #2563EB;
+        --favorite-hover-bg: #3B82F6;
+        
+        /* Focus and effects */
+        --shadow-focus: rgba(59, 130, 246, 0.35);
+        --focus: rgba(59, 130, 246, 0.35);
+        --ring: #3B82F6;
+        --border-focus: #3B82F6;
+        
+        /* Shadows */
+        --shadow-accent: 0 4px 20px rgba(59, 130, 246, 0.25);
+        --shadow-gold: 0 4px 20px rgba(59, 130, 246, 0.25);
+        
+        /* AHP specific */
+        --ahp-primary: #3B82F6;
+      }
+    </style>
+
     <!-- GitHub Pages SPA 라우팅 스크립트 -->
     <script type="text/javascript">
       // Single Page Apps for GitHub Pages
