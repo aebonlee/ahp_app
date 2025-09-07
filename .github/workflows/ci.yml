@@ -23,7 +23,7 @@ jobs:
           cache: 'npm'
       
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       
       - name: Run tests
         run: npm test -- --coverage --watchAll=false --testTimeout=10000 --testPathIgnorePatterns='LoginForm.test.tsx|App.test.tsx'
