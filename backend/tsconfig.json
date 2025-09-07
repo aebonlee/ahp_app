@@ -13,8 +13,10 @@
     "resolveJsonModule": true,
     "declaration": false,
     "sourceMap": false,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
     "types": ["node"],
-    "typeRoots": ["./node_modules/@types"]
+    "typeRoots": ["./node_modules/@types", "../node_modules/@types"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

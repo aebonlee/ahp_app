@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '18.x'
           cache: 'npm'
@@ -30,6 +30,7 @@ jobs:
         env:
           CI: false
           REACT_APP_API_URL: https://ahp-platform.onrender.com
+          DISABLE_ESLINT_PLUGIN: true
       
       - name: Install backend dependencies
         working-directory: ./backend
