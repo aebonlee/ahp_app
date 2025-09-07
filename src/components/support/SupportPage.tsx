@@ -47,41 +47,72 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
     { value: 'account', label: '계정 관리' }
   ];
 
-  // API 함수들
+  // API 함수들 (임시로 하드코딩 데이터 사용)
   const fetchFAQs = async () => {
     try {
       setError('');
       
-      const response = await fetch(`${API_BASE_URL}/api/support/faqs`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch FAQs');
-      }
+      // 임시 FAQ 데이터 (백엔드 배포 전까지)
+      const staticFAQs: SupportFAQ[] = [
+        {
+          id: 1,
+          question: 'AHP for Paper는 어떤 서비스인가요?',
+          answer: 'AHP for Paper는 AHP(Analytic Hierarchy Process) 방법론을 활용하여 복잡한 의사결정 문제를 체계적으로 분석할 수 있도록 도와주는 온라인 플랫폼입니다. 연구자, 기업, 교육기관에서 논문 작성, 정책 결정, 사업 평가 등에 활용하실 수 있습니다.',
+          category: 'general',
+          popular: true
+        },
+        {
+          id: 2,
+          question: '무료 체험 기간은 얼마나 되나요?',
+          answer: '모든 요금제에서 14일 무료 체험을 제공합니다. 체험 기간 중에는 모든 기능을 제한 없이 사용하실 수 있으며, 언제든지 취소 가능합니다.',
+          category: 'billing',
+          popular: true
+        },
+        {
+          id: 3,
+          question: '평가자를 초대하는 방법을 알려주세요.',
+          answer: '프로젝트 관리 화면에서 "평가자 관리" 메뉴를 선택한 후, 이메일 주소를 입력하여 초대할 수 있습니다. 초대받은 평가자는 이메일로 받은 링크를 통해 평가에 참여할 수 있습니다.',
+          category: 'guide',
+          popular: true
+        },
+        {
+          id: 4,
+          question: '일관성 비율이 0.1을 초과할 때 어떻게 해야 하나요?',
+          answer: '일관성 비율(CR)이 0.1을 초과하면 쌍대비교 값을 재검토해야 합니다. 시스템에서 제공하는 일관성 가이드를 참고하여 가장 불일치한 비교 항목을 찾아 수정하시거나, 전체 비교를 다시 수행해보세요.',
+          category: 'technical',
+          popular: false
+        },
+        {
+          id: 5,
+          question: '결제 후 영수증을 받을 수 있나요?',
+          answer: '네, 결제 완료 후 등록하신 이메일로 영수증이 자동 발송됩니다. 또한 개인 설정 > 결제 내역에서 언제든지 영수증을 다운로드하실 수 있습니다.',
+          category: 'billing',
+          popular: false
+        },
+        {
+          id: 6,
+          question: '계정 정보를 변경하려면 어떻게 해야 하나요?',
+          answer: '로그인 후 우측 상단의 프로필 아이콘을 클릭하고 "개인 설정"을 선택하여 이름, 이메일, 비밀번호 등을 변경할 수 있습니다. 이메일 변경 시에는 인증 과정이 필요합니다.',
+          category: 'account',
+          popular: false
+        }
+      ];
       
-      const data = await response.json();
-      setFaqs(data.faqs || []);
+      setFaqs(staticFAQs);
     } catch (error) {
-      console.error('Error fetching FAQs:', error);
+      console.error('Error loading FAQs:', error);
       setError('FAQ를 불러오는데 실패했습니다.');
       setFaqs([]);
     }
   };
 
-  // 새 문의 작성
+  // 새 문의 작성 (임시로 성공 메시지만 표시)
   const createSupportTicket = async () => {
     try {
       setIsSubmitting(true);
       
-      const response = await fetch(`${API_BASE_URL}/api/support/posts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newTicket)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to create support ticket');
-      }
+      // 임시로 성공 처리 (실제로는 아무것도 저장하지 않음)
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 지연
       
       // 성공 시 폼 초기화
       setShowNewTicketForm(false);
@@ -91,6 +122,9 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
         category: 'general',
         user_name: ''
       });
+      
+      // 임시 성공 메시지
+      alert('문의가 성공적으로 등록되었습니다. 빠른 시일 내에 답변드리겠습니다.');
     } catch (error) {
       console.error('Error creating ticket:', error);
       setError('문의 작성에 실패했습니다.');

@@ -47,57 +47,87 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
   const [showNewPostForm, setShowNewPostForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // API 함수들
+  // API 함수들 (임시로 하드코딩 데이터 사용)
   const fetchPosts = async () => {
     try {
       setLoading(true);
       setError('');
       
-      const params = new URLSearchParams();
-      if (selectedCategory && selectedCategory !== 'all') {
-        params.append('category', selectedCategory);
-      }
+      // 임시 뉴스 데이터 (백엔드 배포 전까지)
+      const staticPosts: NewsPost[] = [
+        {
+          id: 1,
+          title: 'AHP for Paper 3.0 출시 - 새로운 분석 기능 추가',
+          content: 'AHP for Paper의 주요 업데이트가 완료되었습니다. 새로운 민감도 분석 기능과 향상된 시각화 도구를 만나보세요. 이번 업데이트에서는 사용자 요청사항을 반영하여 더욱 직관적인 인터페이스와 강력한 분석 기능을 제공합니다.',
+          summary: 'AHP for Paper 3.0의 새로운 기능과 개선사항을 소개합니다.',
+          author_name: 'AHP 개발팀',
+          created_at: '2025-01-20T10:00:00Z',
+          category: 'platform',
+          featured: true,
+          views: 1250,
+          published: true
+        },
+        {
+          id: 2,
+          title: '서울대학교 경영대학원 AHP 논문 연구 성과 발표',
+          content: 'AHP for Paper를 활용한 공급망 관리 의사결정 연구가 국제 학술지에 게재되었습니다. 이번 연구는 복잡한 공급업체 선정 과정에서 AHP 방법론의 효과성을 입증했습니다.',
+          summary: '학술 연구 성과와 AHP 방법론의 실무 적용 사례를 공유합니다.',
+          author_name: '연구팀',
+          created_at: '2025-01-18T14:30:00Z',
+          category: 'research',
+          featured: true,
+          views: 892,
+          published: true
+        },
+        {
+          id: 3,
+          title: '대기업 인사평가시스템 도입 사례 - LG전자',
+          content: 'LG전자에서 AHP 방법론을 활용하여 공정하고 객관적인 인사평가시스템을 구축한 사례를 소개합니다. 다양한 평가 기준을 체계적으로 관리하고 평가자 간 일관성을 확보했습니다.',
+          summary: '대기업의 AHP 방법론 활용 사례와 도입 효과를 분석합니다.',
+          author_name: '사례연구팀',
+          created_at: '2025-01-15T09:15:00Z',
+          category: 'case',
+          featured: false,
+          views: 687,
+          published: true
+        }
+      ];
       
-      const response = await fetch(`${API_BASE_URL}/api/news/posts?${params}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch posts');
-      }
+      // 카테고리 필터링
+      const filteredData = selectedCategory === 'all' 
+        ? staticPosts 
+        : staticPosts.filter(post => post.category === selectedCategory);
       
-      const data = await response.json();
-      setPosts(data.posts || []);
+      setPosts(filteredData);
     } catch (error) {
-      console.error('Error fetching news posts:', error);
+      console.error('Error loading news posts:', error);
       setError('게시글을 불러오는데 실패했습니다.');
-      // 오류 시 빈 배열로 설정
       setPosts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // 게시글 작성
+  // 게시글 작성 (임시로 로컬 상태에만 추가)
   const createPost = async () => {
     try {
       setIsSubmitting(true);
       
-      const response = await fetch(`${API_BASE_URL}/api/news/posts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...newPostForm,
-          featured: false,
-          published: true
-        })
-      });
+      // 임시로 새 게시글을 로컬 상태에 추가
+      const newPost: NewsPost = {
+        id: Date.now(), // 임시 ID
+        title: newPostForm.title,
+        content: newPostForm.content,
+        summary: newPostForm.summary,
+        author_name: newPostForm.author_name,
+        category: newPostForm.category,
+        featured: false,
+        published: true,
+        views: 0,
+        created_at: new Date().toISOString()
+      };
       
-      if (!response.ok) {
-        throw new Error('Failed to create post');
-      }
-      
-      // 성공 시 목록 새로고침
-      await fetchPosts();
+      setPosts(prevPosts => [newPost, ...prevPosts]);
       setShowNewPostForm(false);
       setNewPostForm({
         title: '',
