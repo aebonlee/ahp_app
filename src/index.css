@@ -128,18 +128,18 @@ body {
   --gray-800: #1F2937;  /* Strong text */
   --gray-900: #111827;  /* Darkest text */
 
-  /* Default Blue Theme (Primary color system) */
-  --accent-primary:   #3B82F6; /* Primary blue for buttons, highlights */
-  --accent-secondary: #2563EB; /* Darker blue for hover/active states */
-  --accent-light:     #93C5FD; /* Light blue for subtle backgrounds */
-  --accent-hover:     #1D4ED8; /* Hover state blue */
-  --accent-focus:     rgba(59, 130, 246, 0.35); /* Focus ring blue */
-  --accent-rgb:       59, 130, 246; /* RGB values for alpha variations */
+  /* Default Gold Theme (Primary color system) */
+  --accent-primary:   #C8A968; /* Primary gold for buttons, highlights */
+  --accent-secondary: #A98C4B; /* Darker gold for hover/active states */
+  --accent-light:     #E5D5AA; /* Light gold for subtle backgrounds */
+  --accent-hover:     #B59A4D; /* Hover state gold */
+  --accent-focus:     rgba(200, 169, 104, 0.35); /* Focus ring gold */
+  --accent-rgb:       200, 169, 104; /* RGB values for alpha variations */
   
-  /* Legacy gold variables for compatibility */
-  --gold-primary:   #3B82F6;
-  --gold-secondary: #2563EB;
-  --gold-light:     #93C5FD;
+  /* Gold variables - proper gold colors */
+  --gold-primary:   #C8A968;
+  --gold-secondary: #A98C4B;
+  --gold-light:     #E5D5AA;
   --ivory:          #F8FAFC; /* Cool ivory background */
 
   /* === Semantic Colors (Low Saturation) === */

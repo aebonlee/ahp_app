@@ -87,18 +87,47 @@ const colorPalettes: Record<ColorTheme, ColorPalette> = {
   }
 };
 
-// Apply initial blue theme immediately to prevent flash
+// Apply initial gold theme immediately to prevent flash and ensure stable layout
 const applyInitialTheme = () => {
   const root = document.documentElement;
-  const bluePalette = colorPalettes.blue;
+  const goldPalette = colorPalettes.gold;
   
-  if (bluePalette) {
-    root.style.setProperty('--accent-primary', bluePalette.primary);
-    root.style.setProperty('--accent-secondary', bluePalette.secondary);
-    root.style.setProperty('--accent-light', bluePalette.light);
-    root.style.setProperty('--accent-hover', bluePalette.hover);
-    root.style.setProperty('--accent-focus', bluePalette.focus);
-    root.style.setProperty('--accent-rgb', bluePalette.rgb);
+  if (goldPalette) {
+    // Core accent colors
+    root.style.setProperty('--accent-primary', goldPalette.primary);
+    root.style.setProperty('--accent-secondary', goldPalette.secondary);
+    root.style.setProperty('--accent-light', goldPalette.light);
+    root.style.setProperty('--accent-hover', goldPalette.hover);
+    root.style.setProperty('--accent-focus', goldPalette.focus);
+    root.style.setProperty('--accent-rgb', goldPalette.rgb);
+    
+    // Legacy compatibility
+    root.style.setProperty('--gold-primary', goldPalette.primary);
+    root.style.setProperty('--gold-secondary', goldPalette.secondary);
+    root.style.setProperty('--gold-light', goldPalette.light);
+    
+    // Interactive elements
+    root.style.setProperty('--interactive-primary', goldPalette.primary);
+    root.style.setProperty('--interactive-primary-hover', goldPalette.hover);
+    root.style.setProperty('--interactive-primary-light', goldPalette.light);
+    root.style.setProperty('--interactive-secondary', goldPalette.secondary);
+    
+    // Component specific colors
+    root.style.setProperty('--favorite-bg', goldPalette.light);
+    root.style.setProperty('--favorite-border', goldPalette.primary);
+    root.style.setProperty('--favorite-text', goldPalette.secondary);
+    root.style.setProperty('--favorite-hover-bg', goldPalette.primary);
+    
+    // Effects
+    root.style.setProperty('--shadow-focus', goldPalette.focus);
+    root.style.setProperty('--focus', goldPalette.focus);
+    root.style.setProperty('--ring', goldPalette.primary);
+    root.style.setProperty('--border-focus', goldPalette.primary);
+    root.style.setProperty('--shadow-accent', `0 4px 20px rgba(${goldPalette.rgb}, 0.25)`);
+    root.style.setProperty('--shadow-gold', `0 4px 20px rgba(${goldPalette.rgb}, 0.25)`);
+    
+    // AHP specific
+    root.style.setProperty('--ahp-primary', goldPalette.primary);
   }
 };
 
@@ -114,20 +143,20 @@ export const useColorTheme = () => {
       return saved;
     }
     
-    // Fall back to blue theme if saved theme is invalid or doesn't exist
-    return 'blue';
+    // Fall back to gold theme if saved theme is invalid or doesn't exist
+    return 'gold';
   });
 
   // Apply color theme to CSS variables
   const applyColorTheme = (theme: ColorTheme): void => {
     const palette = colorPalettes[theme];
     
-    // Guard clause: if palette is undefined, fall back to blue theme
+    // Guard clause: if palette is undefined, fall back to gold theme
     if (!palette) {
-      console.warn(`Color theme '${theme}' not found, falling back to 'blue' theme`);
-      const fallbackPalette = colorPalettes.blue;
-      if (!fallbackPalette) return; // Exit if even blue theme is missing
-      return applyColorTheme('blue');
+      console.warn(`Color theme '${theme}' not found, falling back to 'gold' theme`);
+      const fallbackPalette = colorPalettes.gold;
+      if (!fallbackPalette) return; // Exit if even gold theme is missing
+      return applyColorTheme('gold');
     }
     
     const root = document.documentElement;
@@ -213,16 +242,16 @@ export const useColorTheme = () => {
     const targetTheme = theme || currentTheme;
     const palette = colorPalettes[targetTheme];
     
-    // If palette doesn't exist, return blue theme as fallback
+    // If palette doesn't exist, return gold theme as fallback
     if (!palette) {
-      console.warn(`Color palette for theme '${targetTheme}' not found, falling back to 'blue'`);
-      return colorPalettes.blue || {
-        primary: '#3B82F6',
-        secondary: '#2563EB',
-        light: '#93C5FD',
-        hover: '#1D4ED8',
-        focus: 'rgba(59, 130, 246, 0.35)',
-        rgb: '59, 130, 246'
+      console.warn(`Color palette for theme '${targetTheme}' not found, falling back to 'gold'`);
+      return colorPalettes.gold || {
+        primary: '#C8A968',
+        secondary: '#A98C4B',
+        light: '#E5D5AA',
+        hover: '#B59A4D',
+        focus: 'rgba(200, 169, 104, 0.35)',
+        rgb: '200, 169, 104'
       };
     }
     
