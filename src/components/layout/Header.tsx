@@ -365,6 +365,36 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                 </UnifiedButton>
                 
                 <UnifiedButton
+                  variant={activeTab === 'pricing' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => onTabChange && onTabChange('pricing')}
+                  icon="💳"
+                  className="font-medium"
+                >
+                  요금
+                </UnifiedButton>
+                
+                <UnifiedButton
+                  variant={activeTab === 'news' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => onTabChange && onTabChange('news')}
+                  icon="📰"
+                  className="font-medium"
+                >
+                  뉴스
+                </UnifiedButton>
+                
+                <UnifiedButton
+                  variant={activeTab === 'support' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => onTabChange && onTabChange('support')}
+                  icon="🎧"
+                  className="font-medium"
+                >
+                  고객지원
+                </UnifiedButton>
+                
+                <UnifiedButton
                   variant={activeTab === 'results-analysis' ? 'primary' : 'secondary'}
                   size="sm"
                   onClick={() => onTabChange && onTabChange('results-analysis')}
