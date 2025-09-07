@@ -139,11 +139,32 @@ function App() {
 
   // 초기 로딩 및 백엔드 연결 체크 (한 번만 실행)
   useEffect(() => {
-    // Remove loading fallback when React app is ready
-    const loadingFallback = document.getElementById('loading-fallback');
-    if (loadingFallback) {
-      loadingFallback.remove();
-    }
+    // Immediately hide loading fallback and show React app with smooth transition
+    const hideFallback = () => {
+      const loadingFallback = document.getElementById('loading-fallback');
+      if (loadingFallback) {
+        loadingFallback.style.transition = 'opacity 0.3s ease-out';
+        loadingFallback.style.opacity = '0';
+        setTimeout(() => {
+          loadingFallback.remove();
+        }, 300);
+      }
+      
+      // Mark React root and ensure proper display
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.setAttribute('data-reactroot', 'true');
+        rootElement.style.opacity = '0';
+        rootElement.style.transition = 'opacity 0.3s ease-in';
+        // Fade in React app after fallback is hidden
+        setTimeout(() => {
+          rootElement.style.opacity = '1';
+        }, 150);
+      }
+    };
+    
+    // Execute immediately
+    hideFallback();
     
     console.log('🚀 앱 초기화 - 백엔드 연결 확인');
     checkBackendAndInitialize();

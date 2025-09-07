@@ -53,6 +53,48 @@
         
         /* AHP specific */
         --ahp-primary: #3B82F6;
+        
+        /* Layout and spacing */
+        --header-height: 72px;
+        --sidebar-width: 280px;
+        --container-max-width: 1880px;
+        --space-4: 1rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        
+        /* Background and text colors */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f9fafb;
+        --bg-elevated: #f3f4f6;
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --text-muted: #9ca3af;
+        --border-light: #e5e7eb;
+        --border-medium: #d1d5db;
+      }
+      
+      /* Ensure proper box-sizing and reset */
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: var(--text-primary);
+        background-color: var(--bg-primary);
+      }
+      
+      /* Ensure proper React root styling */
+      #root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
     </style>
 
