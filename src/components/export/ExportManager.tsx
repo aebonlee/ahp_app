@@ -51,7 +51,7 @@ const ExportManager: React.FC<ExportManagerProps> = ({
   const [previewMode, setPreviewMode] = useState(false);
 
   const formatOptions = [
-    { value: 'excel', label: 'Excel (.xlsx)', icon: '📊', description: '스프레드시트 형태로 데이터 내보내기' },
+    { value: 'excel', label: 'Excel (.json)', icon: '📊', description: '스프레드시트 형태로 데이터 내보내기 (보안상 JSON 형태)' },
     { value: 'pdf', label: 'PDF (.pdf)', icon: '📄', description: '인쇄 가능한 PDF 보고서' },
     { value: 'word', label: 'Word (.docx)', icon: '📝', description: '편집 가능한 Word 문서' },
     { value: 'csv', label: 'CSV (.csv)', icon: '🗂️', description: '데이터만 CSV 형태로' },
@@ -153,7 +153,7 @@ const ExportManager: React.FC<ExportManagerProps> = ({
     // 다운로드 트리거
     const a = document.createElement('a');
     a.href = url;
-    a.download = `AHP_Analysis_${projectId}_${Date.now()}.xlsx`;
+    a.download = `AHP_Analysis_${projectId}_${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

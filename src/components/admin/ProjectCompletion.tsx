@@ -200,7 +200,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
               </label>
               <div className="space-y-2">
                 {[
-                  { value: 'excel', label: 'Excel 파일 (.xlsx)', description: '분석 데이터와 차트 포함' },
+                  { value: 'excel', label: 'JSON 파일 (.json)', description: '분석 데이터 포함 (보안상 JSON 형태)' },
                   { value: 'pdf', label: 'PDF 문서 (.pdf)', description: '최종 보고서 형태' },
                   { value: 'both', label: '두 형식 모두', description: 'Excel과 PDF 파일 모두 생성' }
                 ].map((format) => (
