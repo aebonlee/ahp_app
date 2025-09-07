@@ -29,14 +29,14 @@
     "@types/node": "^24.3.1",
     "@types/pg": "^8.15.5",
     "@types/uuid": "^10.0.0",
-    "bcrypt": "^6.0.0",
+    "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^5.2.1",
+    "express": "^4.19.2",
     "express-validator": "^7.2.1",
-    "helmet": "^9.1.0",
+    "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
     "node-fetch": "^3.3.2",
@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
-    "nodemon": "^3.1.10",
+    "nodemon": "^3.1.4",
     "ts-node": "^10.9.2"
   }
 }
