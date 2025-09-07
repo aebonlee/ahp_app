@@ -74,27 +74,6 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
           answer: '프로젝트 관리 화면에서 "평가자 관리" 메뉴를 선택한 후, 이메일 주소를 입력하여 초대할 수 있습니다. 초대받은 평가자는 이메일로 받은 링크를 통해 평가에 참여할 수 있습니다.',
           category: 'guide',
           popular: true
-        },
-        {
-          id: 4,
-          question: '일관성 비율이 0.1을 초과할 때 어떻게 해야 하나요?',
-          answer: '일관성 비율(CR)이 0.1을 초과하면 쌍대비교 값을 재검토해야 합니다. 시스템에서 제공하는 일관성 가이드를 참고하여 가장 불일치한 비교 항목을 찾아 수정하시거나, 전체 비교를 다시 수행해보세요.',
-          category: 'technical',
-          popular: false
-        },
-        {
-          id: 5,
-          question: '결제 후 영수증을 받을 수 있나요?',
-          answer: '네, 결제 완료 후 등록하신 이메일로 영수증이 자동 발송됩니다. 또한 개인 설정 > 결제 내역에서 언제든지 영수증을 다운로드하실 수 있습니다.',
-          category: 'billing',
-          popular: false
-        },
-        {
-          id: 6,
-          question: '계정 정보를 변경하려면 어떻게 해야 하나요?',
-          answer: '로그인 후 우측 상단의 프로필 아이콘을 클릭하고 "개인 설정"을 선택하여 이름, 이메일, 비밀번호 등을 변경할 수 있습니다. 이메일 변경 시에는 인증 과정이 필요합니다.',
-          category: 'account',
-          popular: false
         }
       ];
       
@@ -142,21 +121,21 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
     {
       type: 'email',
       title: '이메일 문의',
-      content: 'support@ahp-platform.com',
+      content: 'aebon@naver.com',
       icon: '📧',
-      action: 'mailto:support@ahp-platform.com'
+      action: 'mailto:aebon@naver.com'
     },
     {
       type: 'phone',
       title: '전화 문의',
-      content: '02-1234-5678 (평일 9:00-18:00)',
+      content: '010-3700-0629 (평일 09:00-18:00)',
       icon: '📞',
-      action: 'tel:02-1234-5678'
+      action: 'tel:010-3700-0629'
     },
     {
       type: 'chat',
-      title: '실시간 채팅',
-      content: '평일 9:00-18:00 운영',
+      title: '카카오톡 상담',
+      content: 'ID: aebon',
       icon: '💬'
     },
     {

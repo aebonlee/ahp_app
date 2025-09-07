@@ -81,7 +81,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
         },
         {
           id: 3,
-          title: '대기업 인사평가시스템 도입 사례 - LG전자',
+          title: 'LG전자 - AHP 방법론 활용 인사평가시스템 도입 성공',
           content: 'LG전자에서 AHP 방법론을 활용하여 공정하고 객관적인 인사평가시스템을 구축한 사례를 소개합니다. 다양한 평가 기준을 체계적으로 관리하고 평가자 간 일관성을 확보했습니다.',
           summary: '대기업의 AHP 방법론 활용 사례와 도입 효과를 분석합니다.',
           author_name: '사례연구팀',
