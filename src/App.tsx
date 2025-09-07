@@ -1179,7 +1179,7 @@ function App() {
     if (!user) {
       switch (activeTab) {
         case 'home':
-          return <HomePage onLoginClick={handleLoginClick} />;
+          return <HomePage onLoginClick={handleLoginClick} onRegisterClick={handleRegisterClick} />;
         
         case 'login':
         return (
@@ -1780,7 +1780,10 @@ function App() {
 
   // 로그인하지 않은 사용자는 Layout 없이 렌더링 (홈페이지, 로그인, 회원가입)
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: 'var(--bg-secondary, #f9fafb)'
+    }}>
       {renderContent()}
       <ApiErrorModal
         isVisible={showApiErrorModal}

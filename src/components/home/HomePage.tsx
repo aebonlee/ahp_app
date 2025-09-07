@@ -6,9 +6,10 @@ import PricingSection from './PricingSection';
 
 interface HomePageProps {
   onLoginClick: () => void;
+  onRegisterClick?: () => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
+const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) => {
   const [scrollY, setScrollY] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);

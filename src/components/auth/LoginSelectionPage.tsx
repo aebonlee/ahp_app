@@ -11,46 +11,141 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
   onServiceSelect 
 }) => {
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      overflow: 'hidden',
       backgroundColor: 'var(--bg-primary)'
     }}>
       {/* 고급스러운 그라디언트 배경 */}
-      <div className="absolute inset-0" style={{
+      <div style={{
+        position: 'absolute',
+        inset: '0',
         background: 'linear-gradient(to bottom right, var(--bg-elevated), var(--accent-primary), var(--accent-secondary))'
       }}></div>
-      <div className="absolute inset-0" style={{
+      <div style={{
+        position: 'absolute',
+        inset: '0',
         background: 'linear-gradient(to top right, transparent, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.2))'
       }}></div>
       
       {/* 세련된 기하학적 패턴 */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+      <div style={{ position: 'absolute', inset: '0' }}>
+        <div style={{
+          position: 'absolute',
+          top: '5rem',
+          left: '5rem',
+          width: '24rem',
+          height: '24rem',
+          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+          borderRadius: '50%',
+          filter: 'blur(48px)',
+          animation: 'pulse 2s infinite'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          bottom: '5rem',
+          right: '5rem',
+          width: '20rem',
+          height: '20rem',
+          backgroundColor: 'rgba(99, 102, 241, 0.2)',
+          borderRadius: '50%',
+          filter: 'blur(48px)',
+          animation: 'pulse 2s infinite',
+          animationDelay: '1s'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '24rem',
+          height: '24rem',
+          backgroundColor: 'rgba(6, 182, 212, 0.1)',
+          borderRadius: '50%',
+          filter: 'blur(48px)'
+        }}></div>
       </div>
 
-      <div className="max-w-5xl w-full space-y-6 relative z-10">
+      <div style={{
+        maxWidth: '80rem',
+        width: '100%',
+        position: 'relative',
+        zIndex: 10,
+        padding: '0 1.5rem'
+      }}>
         {/* 개선된 헤더 디자인 - 더욱 세련된 스타일 */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 mb-6 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl shadow-2xl transform rotate-3 hover:rotate-0 transition-all duration-300">
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '2rem'
+        }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '5rem',
+            height: '5rem',
+            marginBottom: '1.5rem',
+            background: 'linear-gradient(to bottom right, #2563eb, #9333ea, #4338ca)',
+            borderRadius: '1rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            transform: 'rotate(3deg)',
+            transition: 'all 0.3s ease-in-out'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'rotate(0deg)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'rotate(3deg)'}>
+            <svg style={{
+              width: '2.5rem',
+              height: '2.5rem',
+              color: 'white'
+            }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
           
-          <div className="relative inline-block">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-2 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
+          <div style={{
+            position: 'relative',
+            display: 'inline-block'
+          }}>
+            <h1 style={{
+              fontSize: 'clamp(1.875rem, 4vw, 3rem)',
+              fontWeight: '900',
+              marginBottom: '0.5rem',
+              background: 'linear-gradient(to right, #111827, #1f2937, #374151)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
               AHP for Paper
             </h1>
-            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+            <div style={{
+              position: 'absolute',
+              bottom: '-0.25rem',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '6rem',
+              height: '0.25rem',
+              background: 'linear-gradient(to right, #3b82f6, #9333ea)',
+              borderRadius: '9999px'
+            }}></div>
           </div>
           
-          <p className="text-base sm:text-lg font-semibold mt-4 mb-2" style={{
+          <p style={{
+            fontSize: 'clamp(1rem, 2vw, 1.125rem)',
+            fontWeight: '600',
+            marginTop: '1rem',
+            marginBottom: '0.5rem',
             color: '#374151'
           }}>
             전문가급 의사결정 지원 시스템
           </p>
-          <p className="text-sm font-medium tracking-wide" style={{
+          <p style={{
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            letterSpacing: '0.025em',
             color: '#6b7280'
           }}>
             Analytic Hierarchy Process Decision Support System
@@ -58,67 +153,200 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
         </div>
 
         {/* 개선된 서비스 선택 카드 - 2가지 옵션 (회원가입, 서비스 이용) */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 max-w-7xl mx-auto px-6 sm:px-8">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: 'clamp(1.5rem, 3vw, 2rem)',
+          maxWidth: '88rem',
+          margin: '0 auto',
+          padding: '0 clamp(1.5rem, 4vw, 2rem)',
+          marginTop: '1.5rem'
+        }}>
           {/* 회원가입 카드 (첫 번째) */}
           <Card 
             variant="glass" 
-            hoverable={true} 
-            className="bg-gray-50/95 backdrop-blur-xl border-2 border-purple-200/60 hover:border-purple-300/80 transform hover:scale-102 cursor-pointer hover:bg-gray-100/95 transition-all duration-300 shadow-lg hover:shadow-xl"
+            hoverable={true}
+            style={{
+              backgroundColor: 'rgba(249, 250, 251, 0.95)',
+              backdropFilter: 'blur(12px)',
+              border: '2px solid rgba(196, 181, 253, 0.6)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease-in-out',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(196, 181, 253, 0.8)';
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.backgroundColor = 'rgba(243, 244, 246, 0.95)';
+              e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(196, 181, 253, 0.6)';
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.backgroundColor = 'rgba(249, 250, 251, 0.95)';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            }}
           >
             <div 
-              className="text-center p-6 sm:p-8 lg:p-10"
+              style={{
+                textAlign: 'center',
+                padding: 'clamp(1.5rem, 4vw, 2.5rem)'
+              }}
               onClick={onRegisterSelect}
             >
-              <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 mx-auto mb-6 lg:mb-8 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <div style={{
+                width: 'clamp(5rem, 8vw, 7rem)',
+                height: 'clamp(5rem, 8vw, 7rem)',
+                margin: '0 auto',
+                marginBottom: 'clamp(1.5rem, 3vw, 2rem)',
+                background: 'linear-gradient(to bottom right, #8b5cf6, #7c3aed)',
+                borderRadius: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+              }}>
+                <svg style={{
+                  width: 'clamp(2.5rem, 4vw, 3.5rem)',
+                  height: 'clamp(2.5rem, 4vw, 3.5rem)',
+                  color: 'white'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                 </svg>
               </div>
               
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 lg:mb-6" style={{
-                color: '#1f2937',
-                fontWeight: '800'
+              <h3 style={{
+                fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
+                fontWeight: '800',
+                marginBottom: 'clamp(1rem, 2vw, 1.5rem)',
+                color: '#1f2937'
               }}>
                 회원가입
               </h3>
               
-              <p className="mb-6 lg:mb-8 leading-normal font-medium text-base sm:text-lg lg:text-xl" style={{
-                color: '#4b5563',
-                lineHeight: '1.4'
+              <p style={{
+                marginBottom: 'clamp(1.5rem, 3vw, 2rem)',
+                lineHeight: '1.4',
+                fontWeight: '500',
+                fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
+                color: '#4b5563'
               }}>
                 연구용 계정을 생성하여
                 전문 AHP 분석을 시작하세요
               </p>
               
-              <div className="space-y-3 lg:space-y-4 text-sm sm:text-base lg:text-lg mb-6 lg:mb-8" style={{
+              <div style={{
+                marginBottom: 'clamp(1.5rem, 3vw, 2rem)',
+                fontSize: 'clamp(0.875rem, 2vw, 1.125rem)',
                 color: '#374151'
               }}>
-                <div className="flex items-center justify-center">
-                  <span className="mr-3 text-lg lg:text-xl font-bold" style={{ color: '#8b5cf6' }}>✓</span>
-                  <span className="font-medium">연구 프로젝트 전용 계정</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 'clamp(0.75rem, 1.5vw, 1rem)'
+                }}>
+                  <span style={{
+                    marginRight: '0.75rem',
+                    fontSize: 'clamp(1.125rem, 2vw, 1.25rem)',
+                    fontWeight: '700',
+                    color: '#8b5cf6'
+                  }}>✓</span>
+                  <span style={{ fontWeight: '500' }}>연구 프로젝트 전용 계정</span>
                 </div>
-                <div className="flex items-center justify-center">
-                  <span className="mr-3 text-lg lg:text-xl font-bold" style={{ color: '#8b5cf6' }}>✓</span>
-                  <span className="font-medium">학술 연구 완벽 지원</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 'clamp(0.75rem, 1.5vw, 1rem)'
+                }}>
+                  <span style={{
+                    marginRight: '0.75rem',
+                    fontSize: 'clamp(1.125rem, 2vw, 1.25rem)',
+                    fontWeight: '700',
+                    color: '#8b5cf6'
+                  }}>✓</span>
+                  <span style={{ fontWeight: '500' }}>학술 연구 완벽 지원</span>
                 </div>
-                <div className="flex items-center justify-center">
-                  <span className="mr-3 text-lg lg:text-xl font-bold" style={{ color: '#8b5cf6' }}>✓</span>
-                  <span className="font-medium">가이드 학습 프로그램</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 'clamp(0.75rem, 1.5vw, 1rem)'
+                }}>
+                  <span style={{
+                    marginRight: '0.75rem',
+                    fontSize: 'clamp(1.125rem, 2vw, 1.25rem)',
+                    fontWeight: '700',
+                    color: '#8b5cf6'
+                  }}>✓</span>
+                  <span style={{ fontWeight: '500' }}>가이드 학습 프로그램</span>
                 </div>
-                <div className="flex items-center justify-center">
-                  <span className="mr-3 text-lg lg:text-xl font-bold" style={{ color: '#8b5cf6' }}>✓</span>
-                  <span className="font-medium">실제 연구 즉시 적용</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <span style={{
+                    marginRight: '0.75rem',
+                    fontSize: 'clamp(1.125rem, 2vw, 1.25rem)',
+                    fontWeight: '700',
+                    color: '#8b5cf6'
+                  }}>✓</span>
+                  <span style={{ fontWeight: '500' }}>실제 연구 즉시 적용</span>
                 </div>
               </div>
 
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  position: 'absolute',
+                  inset: '-0.25rem',
+                  background: 'linear-gradient(to right, #9333ea, #6b21a8)',
+                  borderRadius: '1rem',
+                  filter: 'blur(4px)',
+                  opacity: 0.25,
+                  transition: 'opacity 0.3s ease-in-out'
+                }}></div>
                 <button 
-                  className="relative w-full py-4 lg:py-5 px-8 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    padding: 'clamp(1rem, 2vw, 1.25rem) 2rem',
+                    background: 'linear-gradient(to right, #9333ea, #7c3aed)',
+                    color: 'white',
+                    fontWeight: '700',
+                    fontSize: '1.125rem',
+                    borderRadius: '0.75rem',
+                    border: 'none',
+                    transition: 'all 0.3s ease-in-out',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(to right, #7c3aed, #6b21a8)';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                    const prevElement = e.currentTarget.previousElementSibling as HTMLElement;
+                    if (prevElement) prevElement.style.opacity = '0.4';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(to right, #9333ea, #7c3aed)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    const prevElement = e.currentTarget.previousElementSibling as HTMLElement;
+                    if (prevElement) prevElement.style.opacity = '0.25';
+                  }}
                   onClick={onRegisterSelect}
                 >
-                  <span className="flex items-center justify-center">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <svg style={{
+                      width: '1.25rem',
+                      height: '1.25rem',
+                      marginRight: '0.5rem'
+                    }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
                     회원가입 시작하기
@@ -131,63 +359,188 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
           {/* 서비스 이용 카드 (두 번째) */}
           <Card 
             variant="glass" 
-            hoverable={true} 
-            className="bg-gray-50/95 backdrop-blur-xl border-2 border-blue-200/60 hover:border-blue-300/80 transform hover:scale-102 cursor-pointer hover:bg-gray-100/95 transition-all duration-300 shadow-lg hover:shadow-xl"
+            hoverable={true}
+            style={{
+              backgroundColor: 'rgba(249, 250, 251, 0.95)',
+              backdropFilter: 'blur(12px)',
+              border: '2px solid rgba(191, 219, 254, 0.6)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease-in-out',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.8)';
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.backgroundColor = 'rgba(243, 244, 246, 0.95)';
+              e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(191, 219, 254, 0.6)';
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.backgroundColor = 'rgba(249, 250, 251, 0.95)';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            }}
           >
             <div 
-              className="text-center p-6 sm:p-8 lg:p-10"
+              style={{
+                textAlign: 'center',
+                padding: 'clamp(1.5rem, 4vw, 2.5rem)'
+              }}
               onClick={onServiceSelect}
             >
-              <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 mx-auto mb-6 lg:mb-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div style={{
+                width: 'clamp(5rem, 8vw, 7rem)',
+                height: 'clamp(5rem, 8vw, 7rem)',
+                margin: '0 auto',
+                marginBottom: 'clamp(1.5rem, 3vw, 2rem)',
+                background: 'linear-gradient(to bottom right, #3b82f6, #1d4ed8)',
+                borderRadius: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+              }}>
+                <svg style={{
+                  width: 'clamp(2.5rem, 4vw, 3.5rem)',
+                  height: 'clamp(2.5rem, 4vw, 3.5rem)',
+                  color: 'white'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                 </svg>
               </div>
               
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 lg:mb-6" style={{
-                color: '#1f2937',
-                fontWeight: '800'
+              <h3 style={{
+                fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
+                fontWeight: '800',
+                marginBottom: 'clamp(1rem, 2vw, 1.5rem)',
+                color: '#1f2937'
               }}>
                 서비스 이용
               </h3>
               
-              <p className="mb-6 lg:mb-8 leading-normal font-medium text-base sm:text-lg lg:text-xl" style={{
-                color: '#4b5563',
-                lineHeight: '1.4'
+              <p style={{
+                marginBottom: 'clamp(1.5rem, 3vw, 2rem)',
+                lineHeight: '1.4',
+                fontWeight: '500',
+                fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
+                color: '#4b5563'
               }}>
                 AHP 의사결정 분석 플랫폼
                 개인/관리자 서비스 이용
               </p>
               
-              <div className="space-y-3 lg:space-y-4 text-sm sm:text-base lg:text-lg mb-6 lg:mb-8" style={{
+              <div style={{
+                marginBottom: 'clamp(1.5rem, 3vw, 2rem)',
+                fontSize: 'clamp(0.875rem, 2vw, 1.125rem)',
                 color: '#374151'
               }}>
-                <div className="flex items-center justify-center">
-                  <span className="mr-3 text-lg lg:text-xl font-bold" style={{ color: '#3b82f6' }}>✓</span>
-                  <span className="font-medium">프로젝트 생성 및 관리</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 'clamp(0.75rem, 1.5vw, 1rem)'
+                }}>
+                  <span style={{
+                    marginRight: '0.75rem',
+                    fontSize: 'clamp(1.125rem, 2vw, 1.25rem)',
+                    fontWeight: '700',
+                    color: '#3b82f6'
+                  }}>✓</span>
+                  <span style={{ fontWeight: '500' }}>프로젝트 생성 및 관리</span>
                 </div>
-                <div className="flex items-center justify-center">
-                  <span className="mr-3 text-lg lg:text-xl font-bold" style={{ color: '#3b82f6' }}>✓</span>
-                  <span className="font-medium">평가자 초대 및 설문 진행</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 'clamp(0.75rem, 1.5vw, 1rem)'
+                }}>
+                  <span style={{
+                    marginRight: '0.75rem',
+                    fontSize: 'clamp(1.125rem, 2vw, 1.25rem)',
+                    fontWeight: '700',
+                    color: '#3b82f6'
+                  }}>✓</span>
+                  <span style={{ fontWeight: '500' }}>평가자 초대 및 설문 진행</span>
                 </div>
-                <div className="flex items-center justify-center">
-                  <span className="mr-3 text-lg lg:text-xl font-bold" style={{ color: '#3b82f6' }}>✓</span>
-                  <span className="font-medium">실시간 결과 분석</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 'clamp(0.75rem, 1.5vw, 1rem)'
+                }}>
+                  <span style={{
+                    marginRight: '0.75rem',
+                    fontSize: 'clamp(1.125rem, 2vw, 1.25rem)',
+                    fontWeight: '700',
+                    color: '#3b82f6'
+                  }}>✓</span>
+                  <span style={{ fontWeight: '500' }}>실시간 결과 분석</span>
                 </div>
-                <div className="flex items-center justify-center">
-                  <span className="mr-3 text-lg lg:text-xl font-bold" style={{ color: '#3b82f6' }}>✓</span>
-                  <span className="font-medium">관리자 권한 자동 인식</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <span style={{
+                    marginRight: '0.75rem',
+                    fontSize: 'clamp(1.125rem, 2vw, 1.25rem)',
+                    fontWeight: '700',
+                    color: '#3b82f6'
+                  }}>✓</span>
+                  <span style={{ fontWeight: '500' }}>관리자 권한 자동 인식</span>
                 </div>
               </div>
 
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  position: 'absolute',
+                  inset: '-0.25rem',
+                  background: 'linear-gradient(to right, #2563eb, #1e40af)',
+                  borderRadius: '1rem',
+                  filter: 'blur(4px)',
+                  opacity: 0.25,
+                  transition: 'opacity 0.3s ease-in-out'
+                }}></div>
                 <button 
-                  className="relative w-full py-4 lg:py-5 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    padding: 'clamp(1rem, 2vw, 1.25rem) 2rem',
+                    background: 'linear-gradient(to right, #2563eb, #1d4ed8)',
+                    color: 'white',
+                    fontWeight: '700',
+                    fontSize: '1.125rem',
+                    borderRadius: '0.75rem',
+                    border: 'none',
+                    transition: 'all 0.3s ease-in-out',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(to right, #1d4ed8, #1e40af)';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                    const prevElement = e.currentTarget.previousElementSibling as HTMLElement;
+                    if (prevElement) prevElement.style.opacity = '0.4';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(to right, #2563eb, #1d4ed8)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    const prevElement = e.currentTarget.previousElementSibling as HTMLElement;
+                    if (prevElement) prevElement.style.opacity = '0.25';
+                  }}
                   onClick={onServiceSelect}
                 >
-                  <span className="flex items-center justify-center">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <svg style={{
+                      width: '1.25rem',
+                      height: '1.25rem',
+                      marginRight: '0.5rem'
+                    }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
                     서비스 로그인
@@ -199,8 +552,13 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
         </div>
 
         {/* 개선된 하단 정보 */}
-        <div className="text-center text-sm">
-          <p className="font-normal" style={{
+        <div style={{
+          textAlign: 'center',
+          fontSize: '0.875rem',
+          marginTop: '2rem'
+        }}>
+          <p style={{
+            fontWeight: '400',
             color: '#6b7280'
           }}>Powered by Advanced Analytics & Decision Intelligence</p>
         </div>

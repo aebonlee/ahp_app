@@ -56,71 +56,180 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{
-      backgroundColor: 'var(--bg-primary)'
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      overflow: 'hidden',
+      backgroundColor: 'var(--bg-primary, #f9fafb)'
     }}>
       {/* 고급스러운 그라디언트 배경 */}
-      <div className="absolute inset-0" style={{
-        background: 'linear-gradient(to bottom right, var(--bg-elevated), var(--accent-primary), var(--accent-secondary))'
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        background: 'linear-gradient(to bottom right, var(--bg-elevated, #ffffff), var(--accent-primary, #C8A968), var(--accent-secondary, #B8956A))'
       }}></div>
-      <div className="absolute inset-0" style={{
-        background: 'linear-gradient(to top right, transparent, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.2))'
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        background: 'linear-gradient(to top right, transparent, rgba(var(--accent-rgb, 200, 169, 104), 0.1), rgba(var(--accent-rgb, 200, 169, 104), 0.2))'
       }}></div>
       
       {/* 세련된 기하학적 패턴 */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{
-          backgroundColor: 'rgba(var(--accent-rgb), 0.2)'
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '5rem',
+          left: '5rem',
+          width: '24rem',
+          height: '24rem',
+          borderRadius: '50%',
+          filter: 'blur(48px)',
+          backgroundColor: 'rgba(var(--accent-rgb, 200, 169, 104), 0.2)',
+          animation: 'pulse 2s infinite'
         }}></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 rounded-full blur-3xl animate-pulse delay-1000" style={{
-          backgroundColor: 'rgba(var(--accent-rgb), 0.15)'
+        <div style={{
+          position: 'absolute',
+          bottom: '5rem',
+          right: '5rem',
+          width: '20rem',
+          height: '20rem',
+          borderRadius: '50%',
+          filter: 'blur(48px)',
+          backgroundColor: 'rgba(var(--accent-rgb, 200, 169, 104), 0.15)',
+          animation: 'pulse 2s infinite 1s'
         }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl" style={{
-          backgroundColor: 'rgba(var(--accent-rgb), 0.1)'
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '24rem',
+          height: '24rem',
+          borderRadius: '50%',
+          filter: 'blur(48px)',
+          backgroundColor: 'rgba(var(--accent-rgb, 200, 169, 104), 0.1)'
         }}></div>
       </div>
 
-      <div className="max-w-xl w-full space-y-6 relative z-10">
+      <div style={{
+        maxWidth: '36rem',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.5rem',
+        position: 'relative',
+        zIndex: 10
+      }}>
         {/* 개선된 헤더 */}
-        <div className="text-center">
+        <div style={{ textAlign: 'center' }}>
           <button
             onClick={onBackToSelection}
-            className="inline-flex items-center hover:bg-gray-100 mb-4 border-0 transition-all duration-200 px-4 py-2 rounded-lg"
-            style={{ 
-              color: '#374151'
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              marginBottom: '1rem',
+              border: 'none',
+              backgroundColor: 'transparent',
+              padding: '0.5rem 1rem',
+              borderRadius: '0.5rem',
+              transition: 'all 0.2s',
+              color: '#374151',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
             }}
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             이전으로 돌아가기
           </button>
           
-          <h2 className="text-3xl font-bold mb-3" style={{
+          <h2 style={{
+            fontSize: '1.875rem',
+            lineHeight: '2.25rem',
+            fontWeight: '700',
+            marginBottom: '0.75rem',
             color: '#1f2937'
           }}>
             서비스 로그인
           </h2>
           
-          <p className="mt-2 text-base font-normal" style={{
+          <p style={{
+            marginTop: '0.5rem',
+            fontSize: '1rem',
+            lineHeight: '1.5rem',
+            fontWeight: '400',
             color: '#4b5563'
           }}>
             AHP 의사결정 분석 서비스에 로그인하세요
             <br />
-            <span className="text-sm" style={{ color: '#6b7280' }}>관리자 권한은 이메일 기반으로 자동 인식됩니다</span>
+            <span style={{ 
+              fontSize: '0.875rem',
+              lineHeight: '1.25rem',
+              color: '#6b7280' 
+            }}>관리자 권한은 이메일 기반으로 자동 인식됩니다</span>
           </p>
         </div>
         
         {/* 개선된 로그인 폼 */}
-        <Card variant="glass" className="bg-white/95 backdrop-blur-xl border-2 border-gray-200 shadow-lg">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        <Card variant="glass" style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(24px)',
+          border: '2px solid #e5e7eb',
+          borderRadius: '0.75rem',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+        }}>
+          <form style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem'
+          }} onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-500/10 border-2 border-red-400/30 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <div style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: '2px solid rgba(248, 113, 113, 0.3)',
+                borderRadius: '0.75rem',
+                padding: '1rem',
+                backdropFilter: 'blur(4px)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <svg style={{
+                    width: '1.25rem',
+                    height: '1.25rem',
+                    color: '#f87171',
+                    marginRight: '0.5rem'
+                  }} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
-                  <p className="text-sm text-red-600 font-medium">{error}</p>
+                  <p style={{
+                    fontSize: '0.875rem',
+                    lineHeight: '1.25rem',
+                    color: '#dc2626',
+                    fontWeight: '500'
+                  }}>{error}</p>
                 </div>
               </div>
             )}
@@ -136,7 +245,7 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
               required
               variant="bordered"
               icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg style={{ width: '1.25rem', height: '1.25rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                 </svg>
               }
@@ -153,30 +262,97 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
               required
               variant="bordered"
               icon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg style={{ width: '1.25rem', height: '1.25rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               }
             />
 
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                position: 'absolute',
+                top: '-1px',
+                right: '-1px',
+                bottom: '-1px',
+                left: '-1px',
+                background: 'linear-gradient(to right, #2563eb, #1e40af)',
+                borderRadius: '1rem',
+                filter: 'blur(4px)',
+                opacity: 0.25,
+                transition: 'opacity 0.3s'
+              }}></div>
               <button
                 type="submit"
                 disabled={loading}
-                className="relative w-full py-4 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  padding: '1rem 2rem',
+                  background: loading ? '#9ca3af' : 'linear-gradient(to right, #2563eb, #1d4ed8)',
+                  color: 'white',
+                  fontWeight: '700',
+                  fontSize: '1.125rem',
+                  lineHeight: '1.75rem',
+                  borderRadius: '0.75rem',
+                  border: 'none',
+                  transition: 'all 0.3s',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.6 : 1,
+                  transform: loading ? 'none' : 'scale(1)',
+                  boxShadow: loading ? 'none' : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'linear-gradient(to right, #1d4ed8, #1e40af)';
+                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
+                    const prevElement = e.currentTarget.previousElementSibling as HTMLElement;
+                    if (prevElement) {
+                      prevElement.style.opacity = '0.4';
+                    }
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'linear-gradient(to right, #2563eb, #1d4ed8)';
+                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                    const prevElement = e.currentTarget.previousElementSibling as HTMLElement;
+                    if (prevElement) {
+                      prevElement.style.opacity = '0.25';
+                    }
+                  }
+                }}
               >
                 {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <svg style={{
+                      animation: 'spin 1s linear infinite',
+                      marginLeft: '-0.25rem',
+                      marginRight: '0.75rem',
+                      height: '1.25rem',
+                      width: '1.25rem'
+                    }} fill="none" viewBox="0 0 24 24">
+                      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     로그인 중...
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <svg style={{
+                      width: '1.25rem',
+                      height: '1.25rem',
+                      marginRight: '0.5rem'
+                    }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                     </svg>
                     서비스 로그인
@@ -187,19 +363,40 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
           </form>
 
           {/* 개선된 회원가입 링크 */}
-          <div className="mt-6 text-center p-4 bg-gray-50 rounded-xl border border-gray-200">
-            <p className="text-sm font-normal" style={{
+          <div style={{
+            marginTop: '1.5rem',
+            textAlign: 'center',
+            padding: '1rem',
+            backgroundColor: '#f9fafb',
+            borderRadius: '0.75rem',
+            border: '1px solid #e5e7eb'
+          }}>
+            <p style={{
+              fontSize: '0.875rem',
+              lineHeight: '1.25rem',
+              fontWeight: '400',
               color: '#6b7280'
             }}>
               계정이 없으신가요?{' '}
               <button
                 onClick={onSwitchToRegister}
-                className="font-semibold transition-all duration-200 hover:underline"
                 style={{
-                  color: '#3b82f6'
+                  fontWeight: '600',
+                  transition: 'all 0.2s',
+                  color: '#3b82f6',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  textDecoration: 'none'
                 }}
-                onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = '#1d4ed8'}
-                onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = '#3b82f6'}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.color = '#1d4ed8';
+                  (e.currentTarget as HTMLButtonElement).style.textDecoration = 'underline';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.color = '#3b82f6';
+                  (e.currentTarget as HTMLButtonElement).style.textDecoration = 'none';
+                }}
               >
                 회원가입하기 →
               </button>

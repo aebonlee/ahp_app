@@ -12,6 +12,8 @@ interface CardProps {
   rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
   shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   style?: React.CSSProperties;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 const Card: React.FC<CardProps> = ({ 
@@ -25,7 +27,9 @@ const Card: React.FC<CardProps> = ({
   onClick,
   rounded = 'md',
   shadow = 'md',
-  style
+  style,
+  onMouseEnter,
+  onMouseLeave
 }) => {
   // CSS 변수 기반 variant 스타일
   const getVariantStyle = (variant: string) => {
@@ -147,22 +151,34 @@ const Card: React.FC<CardProps> = ({
           e.currentTarget.style.transform = 'translateY(-2px)';
           e.currentTarget.style.boxShadow = getShadowStyle('xl').boxShadow;
         }
+        if (onMouseEnter) onMouseEnter(e);
       }}
       onMouseLeave={(e) => {
         if (hoverable || onClick) {
           e.currentTarget.style.transform = 'translateY(0)';
           e.currentTarget.style.boxShadow = getShadowStyle(shadow).boxShadow;
         }
+        if (onMouseLeave) onMouseLeave(e);
       }}>
       {title && (
-        <div className="px-6 py-4" style={{ borderBottom: '1px solid var(--card-border)' }}>
-          <h3 className="text-lg font-bold flex items-center" style={{ color: 'var(--text-primary)' }}>
-            {icon && <span className="mr-2">{icon}</span>}
+        <div style={{ 
+          padding: '1.5rem', 
+          borderBottom: '1px solid var(--card-border)' 
+        }}>
+          <h3 style={{
+            fontSize: '1.125rem',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            color: 'var(--text-primary)',
+            margin: 0
+          }}>
+            {icon && <span style={{ marginRight: '0.5rem' }}>{icon}</span>}
             {title}
           </h3>
         </div>
       )}
-      <div className={padding ? 'p-6' : ''}>
+      <div style={padding ? { padding: '1.5rem' } : {}}>
         {children}
       </div>
     </div>
