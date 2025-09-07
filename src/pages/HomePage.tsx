@@ -114,9 +114,14 @@ const HomePage: React.FC = () => {
                 <p><strong>PW:</strong> password123</p>
               </div>
             </div>
-            <Link to="/login" className="btn btn-primary">
-              데모 체험하기
-            </Link>
+            <div className="demo-actions">
+              <Link to="/login" className="btn btn-primary">
+                데모 체험하기
+              </Link>
+              <Link to="/personal-service" className="btn btn-outline">
+                개인 서비스 바로가기
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -135,6 +140,7 @@ const HomePage: React.FC = () => {
               </a>
               <Link to="/login">로그인</Link>
               <Link to="/dashboard">대시보드</Link>
+              <Link to="/personal-service">개인 서비스</Link>
             </div>
           </div>
           <div className="footer-bottom">

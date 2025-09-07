@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectsPage from './pages/ProjectsPage';
+import PersonalServicePage from './pages/PersonalServicePage';
 import './App.css';
 
 function App() {
@@ -45,6 +46,10 @@ function App() {
           <Route 
             path="/projects" 
             element={isAuthenticated ? <ProjectsPage /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/personal-service" 
+            element={isAuthenticated ? <PersonalServicePage /> : <Navigate to="/login" />} 
           />
         </Routes>
       </div>
