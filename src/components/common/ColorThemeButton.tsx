@@ -65,7 +65,7 @@ const ColorThemeButton: React.FC = () => {
   };
 
   const getCurrentThemeEmoji = () => {
-    return themeInfo[currentTheme].emoji;
+    return themeInfo[currentTheme]?.emoji || '🎨';
   };
 
   return (
@@ -80,7 +80,7 @@ const ColorThemeButton: React.FC = () => {
           border: '1px solid var(--border-light)',
           backdropFilter: 'blur(10px)'
         }}
-        title={`현재: ${themeInfo[currentTheme].name}`}
+        title={`현재: ${themeInfo[currentTheme]?.name || '기본 테마'}`}
       >
         <span className="text-xl group-hover:scale-110 transition-transform">
           {getCurrentThemeEmoji()}
@@ -135,12 +135,12 @@ const ColorThemeButton: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-bold flex items-center gap-2"
                       style={{ color: 'var(--text-primary)', fontSize: 'var(--font-size-base)' }}>
-                    <span className="text-2xl">{themeInfo[currentTheme].emoji}</span>
-                    현재: {themeInfo[currentTheme].name}
+                    <span className="text-2xl">{themeInfo[currentTheme]?.emoji || '🎨'}</span>
+                    현재: {themeInfo[currentTheme]?.name || '기본 테마'}
                   </h4>
                 </div>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {themeInfo[currentTheme].description}
+                  {themeInfo[currentTheme]?.description || '기본 설정'}
                 </p>
               </div>
 

@@ -139,6 +139,12 @@ function App() {
 
   // 초기 로딩 및 백엔드 연결 체크 (한 번만 실행)
   useEffect(() => {
+    // Remove loading fallback when React app is ready
+    const loadingFallback = document.getElementById('loading-fallback');
+    if (loadingFallback) {
+      loadingFallback.remove();
+    }
+    
     console.log('🚀 앱 초기화 - 백엔드 연결 확인');
     checkBackendAndInitialize();
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -90,12 +90,28 @@ const colorPalettes: Record<ColorTheme, ColorPalette> = {
 export const useColorTheme = () => {
   const [currentTheme, setCurrentTheme] = useState<ColorTheme>(() => {
     const saved = localStorage.getItem('colorTheme') as ColorTheme;
-    return saved || 'blue';
+    
+    // Validate that the saved theme exists in our color palettes
+    if (saved && colorPalettes[saved]) {
+      return saved;
+    }
+    
+    // Fall back to blue theme if saved theme is invalid or doesn't exist
+    return 'blue';
   });
 
   // Apply color theme to CSS variables
-  const applyColorTheme = (theme: ColorTheme) => {
+  const applyColorTheme = (theme: ColorTheme): void => {
     const palette = colorPalettes[theme];
+    
+    // Guard clause: if palette is undefined, fall back to blue theme
+    if (!palette) {
+      console.warn(`Color theme '${theme}' not found, falling back to 'blue' theme`);
+      const fallbackPalette = colorPalettes.blue;
+      if (!fallbackPalette) return; // Exit if even blue theme is missing
+      return applyColorTheme('blue');
+    }
+    
     const root = document.documentElement;
 
     // Update CSS variables with new color palette
@@ -176,7 +192,23 @@ export const useColorTheme = () => {
 
   // Get palette for specific theme
   const getPalette = (theme?: ColorTheme): ColorPalette => {
-    return colorPalettes[theme || currentTheme];
+    const targetTheme = theme || currentTheme;
+    const palette = colorPalettes[targetTheme];
+    
+    // If palette doesn't exist, return blue theme as fallback
+    if (!palette) {
+      console.warn(`Color palette for theme '${targetTheme}' not found, falling back to 'blue'`);
+      return colorPalettes.blue || {
+        primary: '#3B82F6',
+        secondary: '#2563EB',
+        light: '#93C5FD',
+        hover: '#1D4ED8',
+        focus: 'rgba(59, 130, 246, 0.35)',
+        rgb: '59, 130, 246'
+      };
+    }
+    
+    return palette;
   };
 
   return {
