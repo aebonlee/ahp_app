@@ -12,7 +12,7 @@
     "lint": "echo \"No linter configured\" && exit 0"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "npm": ">=8.0.0"
   },
   "keywords": [],
@@ -34,9 +34,9 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "express-validator": "^7.2.1",
-    "helmet": "^8.1.0",
+    "helmet": "^9.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
     "node-fetch": "^3.3.2",
