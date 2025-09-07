@@ -239,7 +239,7 @@ npm run test:e2e
 
 - **GitHub Issues**: 버그 리포트 및 기능 요청
 - **GitHub Discussions**: 일반적인 질문 및 토론
-- **이메일**: aebonlee@gmail.com
+- **이메일**: aebon@hs.ac.kr 
 
 ## 🙏 감사의 말
 
