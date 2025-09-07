@@ -3092,284 +3092,380 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
     <div className="max-w-6xl mx-auto space-y-6">
       {/* 환영 메시지 + 요금제 정보 통합 */}
       <div className="py-6">
-        {/* 환영 메시지 (기존 스타일) */}
-        <div className="text-center lg:text-left space-y-6">
-          <div className="space-y-3 p-6 rounded-xl" 
-               style={{
-                 border: '1px solid var(--border-light)',
-                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-               }}>
-            <h1 
-              className="text-4xl lg:text-5xl font-light tracking-wide"
-              style={{ 
-                color: 'var(--text-primary)',
-                fontFamily: "'Inter', 'Pretendard', system-ui, sans-serif"
-              }}
-            >
-              안녕하세요, 
-              <span 
-                className="font-semibold ml-2"
-                style={{ color: 'var(--accent-primary)' }}
-              >
-                {user.first_name} {user.last_name}
-              </span>님
-            </h1>
-            <div className="flex items-center justify-center lg:justify-start space-x-2">
-              <div 
-                className="w-12 h-0.5 rounded-full"
-                style={{ backgroundColor: 'var(--accent-primary)' }}
-              ></div>
-              <span 
-                className="text-xs font-medium uppercase tracking-wider px-3 py-1 rounded-full border"
-                style={{ 
-                  color: 'var(--accent-primary)',
-                  borderColor: 'var(--accent-light)'
-                }}
-              >
-                Pro Plan 🔵
-              </span>
-              <div 
-                className="w-12 h-0.5 rounded-full"
-                style={{ backgroundColor: 'var(--accent-primary)' }}
-              ></div>
+        {/* 환영 메시지 - 모던 그라디언트 디자인 */}
+        <div style={{ textAlign: 'left' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+            borderRadius: '16px',
+            padding: '2rem',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* 배경 패턴 */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '200px',
+              height: '200px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '50%',
+              transform: 'translate(50%, -50%)'
+            }}></div>
+            
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <span style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '20px',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  ✨ AHP for Paper Professional
+                </span>
+              </div>
+              
+              <h1 style={{
+                fontSize: '2.5rem',
+                fontWeight: '300',
+                marginBottom: '0.5rem',
+                lineHeight: '1.2'
+              }}>
+                안녕하세요, 
+                <span style={{ fontWeight: '600', marginLeft: '8px' }}>
+                  {user.first_name} {user.last_name}
+                </span>님
+              </h1>
+              
+              <p style={{
+                fontSize: '1.125rem',
+                opacity: 0.9,
+                marginBottom: '1.5rem',
+                lineHeight: '1.6'
+              }}>
+                전문적인 AHP 의사결정 분석으로 복잡한 문제를 체계적으로 해결해보세요
+              </p>
+              
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '10px',
+                  fontSize: '0.875rem'
+                }}>
+                  🚀 {usedProjects}개 프로젝트 활성
+                </div>
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '10px',
+                  fontSize: '0.875rem'
+                }}>
+                  👥 {usedEvaluators}명 평가자 참여
+                </div>
+              </div>
             </div>
-            <p 
-              className="text-lg font-light max-w-2xl mx-auto lg:mx-0 leading-relaxed"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              전문적인 AHP 의사결정 분석으로 복잡한 문제를 체계적으로 해결해보세요
-            </p>
           </div>
         </div>
         
-        {/* 요금제 할당량 정보 - 각 섹션을 개별 박스로 구분 */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* 요금제 할당량 정보 - 모던 카드 디자인 */}
+        <div style={{ 
+          marginTop: '2rem',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '1.5rem'
+        }}>
           {/* 프로젝트 개수 박스 */}
-          <div 
-            className="rounded-xl p-6 transition-all duration-300"
-            style={{
-              border: '1px solid var(--border-light)',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-lg)'}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
-          >
-            <div className="text-center space-y-3">
-              <div className="flex items-center justify-center space-x-2">
-                <div 
-                  className="text-2xl font-bold rounded-full w-8 h-8 flex items-center justify-center"
-                  style={{ 
-                    backgroundColor: 'var(--accent-primary)', 
-                    color: 'white' 
-                  }}
-                >
-                  P
-                </div>
-                <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                  프로젝트 개수
-                </h3>
+          <div style={{
+            background: 'var(--bg-primary)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            border: '1px solid var(--border-light)',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '1rem'
+              }}>
+                <span style={{ fontSize: '1.5rem' }}>📊</span>
               </div>
-              <div className="space-y-2">
-                <div className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                  {usedProjects}/{planLimits.projects}
-                </div>
-                <div className="text-base font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  사용 중인 프로젝트
-                </div>
-                <div className="w-full max-w-40 mx-auto">
-                  <div className="w-full rounded-full h-3" style={{ backgroundColor: 'var(--bg-subtle)' }}>
-                    <div 
-                      className="h-3 rounded-full transition-all duration-500"
-                      style={{ 
-                        width: `${Math.min((usedProjects / planLimits.projects) * 100, 100)}%`,
-                        backgroundColor: 'var(--accent-primary)'
-                      }}
-                    ></div>
-                  </div>
-                </div>
-                <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-                  {planLimits.projects - usedProjects}개 남음
-                </div>
+              <div>
+                <h3 style={{ 
+                  fontSize: '1.125rem', 
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  margin: 0
+                }}>
+                  프로젝트
+                </h3>
+                <p style={{ 
+                  fontSize: '0.875rem',
+                  color: 'var(--text-secondary)',
+                  margin: 0
+                }}>
+                  진행 중인 프로젝트 수
+                </p>
               </div>
             </div>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'baseline',
+                marginBottom: '0.5rem'
+              }}>
+                <span style={{
+                  fontSize: '2.5rem',
+                  fontWeight: '700',
+                  color: 'var(--text-primary)'
+                }}>
+                  {usedProjects}
+                </span>
+                <span style={{
+                  fontSize: '1.125rem',
+                  color: 'var(--text-muted)',
+                  marginLeft: '0.5rem'
+                }}>
+                  / {planLimits.projects}
+                </span>
+              </div>
+            </div>
+            
+            <div style={{
+              width: '100%',
+              height: '6px',
+              backgroundColor: 'var(--bg-subtle)',
+              borderRadius: '3px',
+              overflow: 'hidden',
+              marginBottom: '0.5rem'
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${Math.min((usedProjects / planLimits.projects) * 100, 100)}%`,
+                background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))',
+                borderRadius: '3px',
+                transition: 'width 0.5s ease'
+              }}></div>
+            </div>
+            
+            <p style={{
+              fontSize: '0.875rem',
+              color: 'var(--text-muted)',
+              margin: 0,
+              textAlign: 'right'
+            }}>
+              {planLimits.projects - usedProjects}개 사용 가능
+            </p>
           </div>
 
           {/* 평가자 인원수 박스 */}
-          <div 
-            className="rounded-xl p-6 transition-all duration-300"
-            style={{
-              border: '1px solid var(--border-light)',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-lg)'}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
-          >
-            <div className="text-center space-y-3">
-              <div className="flex items-center justify-center space-x-2">
-                <div 
-                  className="text-2xl font-bold rounded-full w-8 h-8 flex items-center justify-center"
-                  style={{ 
-                    backgroundColor: 'var(--accent-secondary)', 
-                    color: 'white' 
-                  }}
-                >
-                  E
-                </div>
-                <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                  평가자 인원수
-                </h3>
+          <div style={{
+            background: 'var(--bg-primary)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            border: '1px solid var(--border-light)',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '1rem'
+              }}>
+                <span style={{ fontSize: '1.5rem' }}>👥</span>
               </div>
-              <div className="space-y-2">
-                <div className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                  {usedEvaluators}/{planLimits.evaluators}명
-                </div>
-                <div className="text-base font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  사용 중인 평가자
-                </div>
-                <div className="w-full max-w-40 mx-auto">
-                  <div className="w-full rounded-full h-3" style={{ backgroundColor: 'var(--bg-subtle)' }}>
-                    <div 
-                      className="h-3 rounded-full transition-all duration-500"
-                      style={{ 
-                        width: `${Math.min((usedEvaluators / planLimits.evaluators) * 100, 100)}%`,
-                        backgroundColor: 'var(--accent-secondary)'
-                      }}
-                    ></div>
-                  </div>
-                </div>
-                <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-                  {planLimits.evaluators - usedEvaluators}명 남음
-                </div>
+              <div>
+                <h3 style={{ 
+                  fontSize: '1.125rem', 
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  margin: 0
+                }}>
+                  평가자
+                </h3>
+                <p style={{ 
+                  fontSize: '0.875rem',
+                  color: 'var(--text-secondary)',
+                  margin: 0
+                }}>
+                  참여 중인 평가자 수
+                </p>
               </div>
             </div>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'baseline',
+                marginBottom: '0.5rem'
+              }}>
+                <span style={{
+                  fontSize: '2.5rem',
+                  fontWeight: '700',
+                  color: 'var(--text-primary)'
+                }}>
+                  {usedEvaluators}
+                </span>
+                <span style={{
+                  fontSize: '1.125rem',
+                  color: 'var(--text-muted)',
+                  marginLeft: '0.5rem'
+                }}>
+                  / {planLimits.evaluators}명
+                </span>
+              </div>
+            </div>
+            
+            <div style={{
+              width: '100%',
+              height: '6px',
+              backgroundColor: 'var(--bg-subtle)',
+              borderRadius: '3px',
+              overflow: 'hidden',
+              marginBottom: '0.5rem'
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${Math.min((usedEvaluators / planLimits.evaluators) * 100, 100)}%`,
+                background: 'linear-gradient(90deg, #22c55e, #16a34a)',
+                borderRadius: '3px',
+                transition: 'width 0.5s ease'
+              }}></div>
+            </div>
+            
+            <p style={{
+              fontSize: '0.875rem',
+              color: 'var(--text-muted)',
+              margin: 0,
+              textAlign: 'right'
+            }}>
+              {planLimits.evaluators - usedEvaluators}명 사용 가능
+            </p>
           </div>
 
           {/* 사용 가능 옵션 박스 */}
-          <div 
-            className="rounded-xl p-6 transition-all duration-300"
-            style={{
-              border: '1px solid var(--border-light)',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-lg)'}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
-          >
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="flex items-center justify-center space-x-2 mb-3">
-                  <div 
-                    className="text-2xl font-bold rounded-full w-8 h-8 flex items-center justify-center"
-                    style={{ 
-                      backgroundColor: 'var(--accent-tertiary)', 
-                      color: 'white' 
-                    }}
-                  >
-                    O
+          <div style={{
+            background: 'var(--bg-primary)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            border: '1px solid var(--border-light)',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '1rem'
+              }}>
+                <span style={{ fontSize: '1.5rem' }}>⚡</span>
+              </div>
+              <div>
+                <h3 style={{ 
+                  fontSize: '1.125rem', 
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  margin: 0
+                }}>
+                  플랜 혜택
+                </h3>
+                <p style={{ 
+                  fontSize: '0.875rem',
+                  color: 'var(--text-secondary)',
+                  margin: 0
+                }}>
+                  Standard 플랜 기능
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {[
+                { key: 'group-ahp', icon: '👥', label: '그룹 AHP 분석' },
+                { key: 'advanced-analysis', icon: '📊', label: '고급 분석 도구' },
+                { key: 'realtime-collab', icon: '⚡', label: '실시간 협업' },
+                { key: 'premium-support', icon: '🎯', label: '프리미엄 지원' }
+              ].map(feature => (
+                <div key={feature.key} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.5rem',
+                  borderRadius: '8px',
+                  transition: 'background-color 0.2s ease'
+                }}>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    background: currentFeatures[feature.key as keyof typeof currentFeatures] 
+                      ? 'linear-gradient(135deg, #10b981, #059669)'
+                      : 'var(--bg-subtle)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.75rem'
+                  }}>
+                    {currentFeatures[feature.key as keyof typeof currentFeatures] ? '✓' : ''}
                   </div>
-                  <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                    사용 가능 옵션
-                  </h3>
+                  <span style={{
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    color: currentFeatures[feature.key as keyof typeof currentFeatures] 
+                      ? 'var(--text-primary)' 
+                      : 'var(--text-muted)'
+                  }}>
+                    {feature.icon} {feature.label}
+                  </span>
                 </div>
-              </div>
-              {/* 체크박스 목록 - 왼쪽 정렬 및 가독성 개선 */}
-              <div className="space-y-3">
-                <div 
-                  className="flex items-center space-x-3 p-2 rounded-lg transition-colors"
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  <input 
-                    type="checkbox" 
-                    id="advanced-analysis" 
-                    checked={currentFeatures['advanced-analysis']} 
-                    readOnly 
-                    className={`w-5 h-5 text-purple-600 bg-gray-100 border-2 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 ${
-                      currentFeatures['advanced-analysis'] 
-                        ? 'border-purple-300 dark:border-purple-600' 
-                        : 'border-gray-300 dark:border-gray-600 opacity-50'
-                    }`}
-                  />
-                  <label htmlFor="advanced-analysis" className={`text-sm font-semibold cursor-pointer ${
-                    currentFeatures['advanced-analysis'] 
-                      ? 'text-purple-700 dark:text-purple-300' 
-                      : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    고급 분석 도구
-                  </label>
-                </div>
-                <div 
-                  className="flex items-center space-x-3 p-2 rounded-lg transition-colors"
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  <input 
-                    type="checkbox" 
-                    id="group-ahp" 
-                    checked={currentFeatures['group-ahp']} 
-                    readOnly 
-                    className={`w-5 h-5 text-purple-600 bg-gray-100 border-2 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 ${
-                      currentFeatures['group-ahp'] 
-                        ? 'border-purple-300 dark:border-purple-600' 
-                        : 'border-gray-300 dark:border-gray-600 opacity-50'
-                    }`}
-                  />
-                  <label htmlFor="group-ahp" className={`text-sm font-semibold cursor-pointer ${
-                    currentFeatures['group-ahp'] 
-                      ? 'text-purple-700 dark:text-purple-300' 
-                      : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    그룹 AHP 분석
-                  </label>
-                </div>
-                <div 
-                  className="flex items-center space-x-3 p-2 rounded-lg transition-colors"
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  <input 
-                    type="checkbox" 
-                    id="realtime-collab" 
-                    checked={currentFeatures['realtime-collab']} 
-                    readOnly 
-                    className={`w-5 h-5 text-purple-600 bg-gray-100 border-2 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 ${
-                      currentFeatures['realtime-collab'] 
-                        ? 'border-purple-300 dark:border-purple-600' 
-                        : 'border-gray-300 dark:border-gray-600 opacity-50'
-                    }`}
-                  />
-                  <label htmlFor="realtime-collab" className={`text-sm font-semibold cursor-pointer ${
-                    currentFeatures['realtime-collab'] 
-                      ? 'text-purple-700 dark:text-purple-300' 
-                      : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    실시간 협업
-                  </label>
-                </div>
-                <div 
-                  className="flex items-center space-x-3 p-2 rounded-lg transition-colors"
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  <input 
-                    type="checkbox" 
-                    id="premium-support" 
-                    checked={currentFeatures['premium-support']} 
-                    readOnly 
-                    className={`w-5 h-5 text-purple-600 bg-gray-100 border-2 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 ${
-                      currentFeatures['premium-support'] 
-                        ? 'border-purple-300 dark:border-purple-600' 
-                        : 'border-gray-300 dark:border-gray-600 opacity-50'
-                    }`}
-                  />
-                  <label htmlFor="premium-support" className={`text-sm font-semibold cursor-pointer ${
-                    currentFeatures['premium-support'] 
-                      ? 'text-purple-700 dark:text-purple-300' 
-                      : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    프리미엄 지원
-                  </label>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
