@@ -4,17 +4,20 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
   ? 'https://ahp-platform.onrender.com' 
   : 'http://localhost:5000';
 
-interface SupportPost {
+interface SupportFAQ {
   id: number;
+  question: string;
+  answer: string;
+  category: string;
+  popular: boolean;
+}
+
+interface ContactInfo {
+  type: string;
   title: string;
   content: string;
-  author_name: string;
-  author_email?: string;
-  created_at: string;
-  category: string;
-  status: 'open' | 'answered' | 'closed';
-  reply_count: number;
-  views: number;
+  icon: string;
+  action?: string;
 }
 
 interface SupportPageProps {
@@ -22,21 +25,9 @@ interface SupportPageProps {
 }
 
 const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
-  const [posts, setPosts] = useState<SupportPost[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [showNewPostForm, setShowNewPostForm] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<SupportPost | null>(null);
-  const [postReplies, setPostReplies] = useState<any[]>([]);
-  const [newReply, setNewReply] = useState({ content: '', author_name: '', author_email: '' });
-  const [newPost, setNewPost] = useState({
-    title: '',
-    content: '',
-    category: 'general',
-    author_name: '',
-    author_email: ''
-  });
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>('');
 
   const categories = [
     { value: 'all', label: '전체' },
@@ -44,146 +35,118 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
     { value: 'technical', label: '기술 지원' },
     { value: 'billing', label: '결제/요금' },
     { value: 'guide', label: '사용법 문의' },
-    { value: 'bug', label: '버그 신고' }
+    { value: 'account', label: '계정 관리' }
   ];
 
-  // API 함수들
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const url = `${API_BASE_URL}/api/support/posts?category=${selectedCategory}&limit=50`;
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data.success) {
-        setPosts(data.posts);
-      } else {
-        setError('게시글을 불러오는데 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      setError('서버 연결에 실패했습니다.');
-    } finally {
-      setLoading(false);
+  // 샘플 FAQ 데이터
+  const sampleFAQs: SupportFAQ[] = [
+    {
+      id: 1,
+      question: 'AHP for Paper는 어떤 서비스인가요?',
+      answer: 'AHP for Paper는 AHP(Analytic Hierarchy Process) 방법론을 활용하여 복잡한 의사결정 문제를 체계적으로 분석할 수 있도록 도와주는 온라인 플랫폼입니다. 연구자, 기업, 교육기관에서 논문 작성, 정책 결정, 사업 평가 등에 활용하실 수 있습니다.',
+      category: 'general',
+      popular: true
+    },
+    {
+      id: 2,
+      question: '무료 체험 기간은 얼마나 되나요?',
+      answer: '모든 요금제에서 14일 무료 체험을 제공합니다. 체험 기간 중에는 모든 기능을 제한 없이 사용하실 수 있으며, 언제든지 취소 가능합니다.',
+      category: 'billing',
+      popular: true
+    },
+    {
+      id: 3,
+      question: '평가자를 초대하는 방법을 알려주세요.',
+      answer: '프로젝트 관리 화면에서 "평가자 관리" 메뉴를 선택한 후, 이메일 주소를 입력하여 초대할 수 있습니다. 초대받은 평가자는 이메일로 받은 링크를 통해 평가에 참여할 수 있습니다.',
+      category: 'guide',
+      popular: true
+    },
+    {
+      id: 4,
+      question: '일관성 비율이 0.1을 초과할 때 어떻게 해야 하나요?',
+      answer: '일관성 비율(CR)이 0.1을 초과하면 쌍대비교 값을 재검토해야 합니다. 시스템에서 제공하는 일관성 가이드를 참고하여 가장 불일치한 비교 항목을 찾아 수정하시거나, 전체 비교를 다시 수행해보세요.',
+      category: 'technical',
+      popular: false
+    },
+    {
+      id: 5,
+      question: '결제 후 영수증을 받을 수 있나요?',
+      answer: '네, 결제 완료 후 등록하신 이메일로 영수증이 자동 발송됩니다. 또한 개인 설정 > 결제 내역에서 언제든지 영수증을 다운로드하실 수 있습니다.',
+      category: 'billing',
+      popular: false
+    },
+    {
+      id: 6,
+      question: '계정 정보를 변경하려면 어떻게 해야 하나요?',
+      answer: '로그인 후 우측 상단의 프로필 아이콘을 클릭하고 "개인 설정"을 선택하여 이름, 이메일, 비밀번호 등을 변경할 수 있습니다. 이메일 변경 시에는 인증 과정이 필요합니다.',
+      category: 'account',
+      popular: false
     }
-  };
+  ];
 
-  const submitPost = async () => {
-    if (!newPost.title.trim() || !newPost.content.trim() || !newPost.author_name.trim()) {
-      setError('제목, 내용, 작성자명은 필수입니다.');
-      return;
+  const contactInfo: ContactInfo[] = [
+    {
+      type: 'email',
+      title: '이메일 문의',
+      content: 'support@ahp-platform.com',
+      icon: '📧',
+      action: 'mailto:support@ahp-platform.com'
+    },
+    {
+      type: 'phone',
+      title: '전화 문의',
+      content: '02-1234-5678 (평일 9:00-18:00)',
+      icon: '📞',
+      action: 'tel:02-1234-5678'
+    },
+    {
+      type: 'chat',
+      title: '실시간 채팅',
+      content: '평일 9:00-18:00 운영',
+      icon: '💬'
+    },
+    {
+      type: 'guide',
+      title: '사용자 가이드',
+      content: '단계별 사용법 안내',
+      icon: '📖'
     }
+  ];
 
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/support/posts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newPost)
-      });
+  const filteredFAQs = selectedCategory === 'all' 
+    ? sampleFAQs.filter(faq => 
+        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : sampleFAQs.filter(faq => 
+        faq.category === selectedCategory && 
+        (faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         faq.answer.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
 
-      const data = await response.json();
-      
-      if (data.success) {
-        setNewPost({ title: '', content: '', category: 'general', author_name: '', author_email: '' });
-        setShowNewPostForm(false);
-        setError('');
-        await fetchPosts(); // 목록 새로고침
-      } else {
-        setError(data.error || '게시글 작성에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('Error submitting post:', error);
-      setError('서버 연결에 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const popularFAQs = sampleFAQs.filter(faq => faq.popular);
 
-  // 게시글 상세보기
-  const fetchPostDetail = async (postId: number) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/support/posts/${postId}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setSelectedPost(data.post);
-        setPostReplies(data.replies || []);
-      } else {
-        setError('게시글을 불러오는데 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('Error fetching post detail:', error);
-      setError('서버 연결에 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 답글 작성
-  const submitReply = async () => {
-    if (!newReply.content.trim() || !newReply.author_name.trim()) {
-      setError('내용과 작성자명은 필수입니다.');
-      return;
-    }
-
-    if (!selectedPost) return;
-
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/support/posts/${selectedPost.id}/replies`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newReply)
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setNewReply({ content: '', author_name: '', author_email: '' });
-        setError('');
-        await fetchPostDetail(selectedPost.id); // 답글 목록 새로고침
-      } else {
-        setError(data.error || '답글 작성에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('Error submitting reply:', error);
-      setError('서버 연결에 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  useEffect(() => {
-    fetchPosts();
-  }, [selectedCategory]);
-
-  const filteredPosts = selectedCategory === 'all' 
-    ? posts 
-    : posts.filter(post => post.category === selectedCategory);
-
-  const handleSubmitPost = () => {
-    submitPost();
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      open: { label: '답변대기', color: '#f59e0b', bg: '#fef3e2' },
-      answered: { label: '답변완료', color: '#22c55e', bg: '#e8f5e8' },
-      closed: { label: '해결완료', color: '#6b7280', bg: '#f3f4f6' }
+  const getCategoryBadge = (category: string) => {
+    const categoryConfig = {
+      general: { label: '일반 문의', color: '#6b7280', bg: '#f3f4f6' },
+      technical: { label: '기술 지원', color: '#0066cc', bg: '#e3f2fd' },
+      billing: { label: '결제/요금', color: '#22c55e', bg: '#e8f5e8' },
+      guide: { label: '사용법 문의', color: '#f59e0b', bg: '#fef3e2' },
+      account: { label: '계정 관리', color: '#8b5cf6', bg: '#f3e8ff' }
     };
-    const config = statusConfig[status as keyof typeof statusConfig];
+    const config = categoryConfig[category as keyof typeof categoryConfig] || { label: category, color: '#6b7280', bg: '#f3f4f6' };
     
     return (
       <span 
-        className="inline-block px-3 py-1 text-xs font-medium rounded-full"
-        style={{ backgroundColor: config.bg, color: config.color }}
+        style={{ 
+          display: 'inline-block',
+          padding: '0.25rem 0.75rem',
+          fontSize: '0.75rem',
+          fontWeight: '500',
+          borderRadius: '9999px',
+          backgroundColor: config.bg,
+          color: config.color
+        }}
       >
         {config.label}
       </span>
@@ -191,64 +154,231 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-subtle)' }}>
+    <div style={{ 
+      minHeight: '100vh',
+      backgroundColor: 'var(--bg-subtle)',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
       {/* 헤더 */}
-      <div className="bg-white border-b" style={{ borderColor: 'var(--border-light)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <button
-                onClick={onBackClick}
-                className="mr-4 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <div>
-                <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                  고객지원
-                </h1>
-                <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
-                  문의사항이나 기술적 문제를 해결해드립니다
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowNewPostForm(true)}
-              className="px-6 py-3 rounded-lg font-semibold transition-all hover:shadow-md"
-              style={{
-                backgroundColor: 'var(--accent-primary)',
-                color: 'white'
-              }}
-            >
-              문의하기
-            </button>
+      <div style={{ 
+        backgroundColor: 'var(--bg-primary)',
+        borderBottom: '1px solid var(--border-light)'
+      }}>
+        <div style={{ 
+          maxWidth: '80rem',
+          margin: '0 auto',
+          padding: '1.5rem',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <button
+            onClick={onBackClick}
+            style={{
+              marginRight: '1rem',
+              padding: '0.5rem',
+              borderRadius: '0.5rem',
+              backgroundColor: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--text-primary)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-subtle)'}
+            onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'}
+          >
+            <svg style={{ width: '1.5rem', height: '1.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div>
+            <h1 style={{ 
+              fontSize: '2rem',
+              fontWeight: 'bold',
+              color: 'var(--text-primary)',
+              margin: 0
+            }}>
+              🎧 고객 지원
+            </h1>
+            <p style={{ 
+              marginTop: '0.5rem',
+              color: 'var(--text-secondary)',
+              margin: '0.5rem 0 0 0'
+            }}>
+              궁금한 점이 있으시면 언제든 문의해주세요
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
+      <div style={{ 
+        maxWidth: '80rem',
+        margin: '0 auto',
+        padding: '2rem 1.5rem'
+      }}>
+        
+        {/* 검색 및 빠른 도움말 */}
+        <div style={{ marginBottom: '3rem' }}>
+          <div style={{ 
+            textAlign: 'center',
+            marginBottom: '2rem'
+          }}>
+            <h2 style={{ 
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              marginBottom: '0.5rem',
+              color: 'var(--text-primary)'
+            }}>
+              무엇을 도와드릴까요?
+            </h2>
+            <p style={{ color: 'var(--text-secondary)' }}>
+              자주 묻는 질문을 검색하거나 카테고리별로 찾아보세요
+            </p>
+          </div>
+
+          {/* 검색창 */}
+          <div style={{ 
+            position: 'relative',
+            maxWidth: '32rem',
+            margin: '0 auto 2rem auto'
+          }}>
+            <input
+              type="text"
+              placeholder="궁금한 내용을 검색해보세요..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '1rem 1rem 1rem 3rem',
+                borderRadius: '0.75rem',
+                border: '1px solid var(--border-light)',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                fontSize: '1rem',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+              }}
+            />
+            <svg style={{
+              position: 'absolute',
+              left: '1rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '1.25rem',
+              height: '1.25rem',
+              color: 'var(--text-muted)'
+            }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          {/* 빠른 연락처 */}
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '1rem',
+            maxWidth: '64rem',
+            margin: '0 auto'
+          }}>
+            {contactInfo.map((contact, index) => (
+              <div key={index} style={{ 
+                backgroundColor: 'var(--bg-primary)',
+                borderRadius: '0.75rem',
+                padding: '1.5rem',
+                border: '1px solid var(--border-light)',
+                textAlign: 'center',
+                cursor: contact.action ? 'pointer' : 'default',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (contact.action) {
+                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (contact.action) {
+                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+                }
+              }}
+              onClick={() => {
+                if (contact.action) {
+                  if (contact.action.startsWith('mailto:') || contact.action.startsWith('tel:')) {
+                    window.location.href = contact.action;
+                  }
+                }
+              }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>
+                  {contact.icon}
+                </div>
+                <h3 style={{ 
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-primary)'
+                }}>
+                  {contact.title}
+                </h3>
+                <p style={{ 
+                  fontSize: '0.875rem',
+                  color: 'var(--text-secondary)'
+                }}>
+                  {contact.content}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ 
+          display: 'grid',
+          gridTemplateColumns: 'minmax(250px, 300px) 1fr',
+          gap: '2rem'
+        }}>
           
-          {/* 사이드바 - 카테고리 및 연락처 */}
-          <div className="lg:col-span-1">
-            <div className="space-y-6">
+          {/* 사이드바 */}
+          <div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               
               {/* 카테고리 필터 */}
-              <div className="bg-white rounded-lg p-6 border" style={{ borderColor: 'var(--border-light)' }}>
-                <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>카테고리</h3>
-                <div className="space-y-2">
+              <div style={{ 
+                backgroundColor: 'var(--bg-primary)',
+                borderRadius: '0.75rem',
+                padding: '1.5rem',
+                border: '1px solid var(--border-light)'
+              }}>
+                <h3 style={{ 
+                  fontWeight: 'bold',
+                  marginBottom: '1rem',
+                  color: 'var(--text-primary)',
+                  fontSize: '1.125rem'
+                }}>카테고리</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {categories.map(category => (
                     <button
                       key={category.value}
                       onClick={() => setSelectedCategory(category.value)}
-                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                        selectedCategory === category.value ? 'font-semibold' : ''
-                      }`}
                       style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '0.75rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
                         backgroundColor: selectedCategory === category.value ? 'var(--accent-light)' : 'transparent',
-                        color: selectedCategory === category.value ? 'var(--accent-primary)' : 'var(--text-secondary)'
+                        color: selectedCategory === category.value ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                        fontWeight: selectedCategory === category.value ? '600' : '400'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (selectedCategory !== category.value) {
+                          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-subtle)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (selectedCategory !== category.value) {
+                          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                        }
                       }}
                     >
                       {category.label}
@@ -257,422 +387,195 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
                 </div>
               </div>
 
-              {/* 연락처 정보 */}
-              <div className="bg-white rounded-lg p-6 border" style={{ borderColor: 'var(--border-light)' }}>
-                <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>직접 문의</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-3" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <div>
-                      <div className="font-medium" style={{ color: 'var(--text-primary)' }}>이메일</div>
-                      <div style={{ color: 'var(--text-secondary)' }}>aebon@naver.com</div>
+              {/* 인기 질문 */}
+              <div style={{ 
+                backgroundColor: 'var(--bg-primary)',
+                borderRadius: '0.75rem',
+                padding: '1.5rem',
+                border: '1px solid var(--border-light)'
+              }}>
+                <h3 style={{ 
+                  fontWeight: 'bold',
+                  marginBottom: '1rem',
+                  color: 'var(--text-primary)',
+                  fontSize: '1.125rem'
+                }}>인기 질문</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {popularFAQs.map((faq) => (
+                    <div key={faq.id} style={{ 
+                      paddingBottom: '0.75rem',
+                      borderBottom: '1px solid var(--border-light)'
+                    }}>
+                      <h4 style={{ 
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        marginBottom: '0.25rem',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer',
+                        lineHeight: '1.4'
+                      }}>
+                        {faq.question}
+                      </h4>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        {getCategoryBadge(faq.category)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-3" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    <div>
-                      <div className="font-medium" style={{ color: 'var(--text-primary)' }}>전화</div>
-                      <div style={{ color: 'var(--text-secondary)' }}>010-3700-0629</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-3" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    <div>
-                      <div className="font-medium" style={{ color: 'var(--text-primary)' }}>카카오톡</div>
-                      <div style={{ color: 'var(--text-secondary)' }}>ID: aebon</div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
             </div>
           </div>
 
-          {/* 메인 컨텐츠 */}
-          <div className="lg:col-span-3">
-            
-            {/* 에러 메시지 표시 */}
-            {error && (
-              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                  <p className="text-sm text-red-600 font-medium">{error}</p>
-                </div>
-              </div>
-            )}
-
-            {/* 게시글 목록 */}
-            <div className="bg-white rounded-lg border" style={{ borderColor: 'var(--border-light)' }}>
-              <div className="p-6 border-b" style={{ borderColor: 'var(--border-light)' }}>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                    문의 게시판
+          {/* 메인 컨텐츠 - FAQ 목록 */}
+          <div>
+            <div style={{ 
+              backgroundColor: 'var(--bg-primary)',
+              borderRadius: '0.75rem',
+              border: '1px solid var(--border-light)'
+            }}>
+              <div style={{ 
+                padding: '1.5rem',
+                borderBottom: '1px solid var(--border-light)'
+              }}>
+                <div style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <h2 style={{ 
+                    fontSize: '1.25rem',
+                    fontWeight: 'bold',
+                    color: 'var(--text-primary)'
+                  }}>
+                    자주 묻는 질문
                   </h2>
-                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    총 {filteredPosts.length}개의 게시글
+                  <span style={{ 
+                    fontSize: '0.875rem',
+                    color: 'var(--text-secondary)'
+                  }}>
+                    총 {filteredFAQs.length}개의 질문
                   </span>
                 </div>
               </div>
 
-              {loading ? (
-                <div className="p-12 text-center">
-                  <div className="flex items-center justify-center mb-4">
-                    <svg className="animate-spin h-8 w-8" fill="none" viewBox="0 0 24 24" style={{ color: 'var(--accent-primary)' }}>
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                    게시글을 불러오는 중...
-                  </h3>
-                  <p style={{ color: 'var(--text-secondary)' }}>
-                    잠시만 기다려주세요
-                  </p>
-                </div>
-              ) : (
-                <div className="divide-y" style={{ borderColor: 'var(--border-light)' }}>
-                {filteredPosts.length === 0 ? (
-                  <div className="p-12 text-center">
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{
+              <div>
+                {filteredFAQs.length === 0 ? (
+                  <div style={{ 
+                    padding: '3rem',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ 
+                      width: '4rem',
+                      height: '4rem',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 1rem auto',
                       backgroundColor: 'var(--bg-subtle)'
                     }}>
-                      <svg className="w-8 h-8" fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24">
+                      <svg style={{ 
+                        width: '2rem',
+                        height: '2rem',
+                        color: 'var(--text-muted)'
+                      }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                      아직 문의글이 없습니다
+                    <h3 style={{ 
+                      fontSize: '1.125rem',
+                      fontWeight: '500',
+                      marginBottom: '0.5rem',
+                      color: 'var(--text-primary)'
+                    }}>
+                      검색 결과가 없습니다
                     </h3>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                      첫 번째 문의를 남겨보세요!
+                      다른 키워드로 검색해보시거나 직접 문의해주세요
                     </p>
                   </div>
                 ) : (
-                  filteredPosts.map((post) => (
-                    <div 
-                      key={post.id} 
-                      className="p-6 hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => fetchPostDetail(post.id)}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            {getStatusBadge(post.status)}
-                            <span className="ml-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                              {categories.find(c => c.value === post.category)?.label}
-                            </span>
+                  <div>
+                    {filteredFAQs.map((faq, index) => (
+                      <details key={faq.id} style={{ 
+                        borderBottom: '1px solid var(--border-light)'
+                      }}>
+                        <summary style={{
+                          padding: '1.5rem',
+                          cursor: 'pointer',
+                          listStyle: 'none',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          justifyContent: 'space-between',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.parentElement as HTMLElement).style.backgroundColor = 'var(--bg-subtle)'}
+                        onMouseLeave={(e) => (e.currentTarget.parentElement as HTMLElement).style.backgroundColor = 'transparent'}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <div style={{ 
+                              display: 'flex',
+                              alignItems: 'center',
+                              marginBottom: '0.5rem'
+                            }}>
+                              {getCategoryBadge(faq.category)}
+                              {faq.popular && (
+                                <span style={{
+                                  marginLeft: '0.5rem',
+                                  display: 'inline-block',
+                                  padding: '0.25rem 0.5rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '500',
+                                  borderRadius: '9999px',
+                                  backgroundColor: '#fee2e2',
+                                  color: '#ef4444'
+                                }}>
+                                  인기
+                                </span>
+                              )}
+                            </div>
+                            <h3 style={{ 
+                              fontSize: '1.125rem',
+                              fontWeight: '600',
+                              color: 'var(--text-primary)',
+                              lineHeight: '1.5'
+                            }}>
+                              {faq.question}
+                            </h3>
                           </div>
-                          <h3 className="text-lg font-semibold mb-2 hover:text-blue-600" style={{ color: 'var(--text-primary)' }}>
-                            {post.title}
-                          </h3>
-                          <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-                            {post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content}
+                          <svg style={{
+                            width: '1.25rem',
+                            height: '1.25rem',
+                            color: 'var(--text-muted)',
+                            marginLeft: '1rem',
+                            flexShrink: 0,
+                            transition: 'transform 0.3s ease'
+                          }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </summary>
+                        <div style={{ 
+                          padding: '0 1.5rem 1.5rem 1.5rem'
+                        }}>
+                          <p style={{ 
+                            fontSize: '0.875rem',
+                            color: 'var(--text-secondary)',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-wrap'
+                          }}>
+                            {faq.answer}
                           </p>
-                          <div className="flex items-center text-xs space-x-4" style={{ color: 'var(--text-muted)' }}>
-                            <span>작성자: {post.author_name}</span>
-                            <span>{new Date(post.created_at).toLocaleDateString('ko-KR')}</span>
-                            <span>답글 {post.reply_count || 0}</span>
-                            <span>조회 {post.views}</span>
-                          </div>
                         </div>
-                      </div>
-                    </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      {/* 새 게시글 작성 모달 */}
-      {showNewPostForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b" style={{ borderColor: 'var(--border-light)' }}>
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                  새 문의 작성
-                </h2>
-                <button
-                  onClick={() => setShowNewPostForm(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* 카테고리 선택 */}
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                  카테고리
-                </label>
-                <select
-                  value={newPost.category}
-                  onChange={(e) => setNewPost({...newPost, category: e.target.value})}
-                  className="w-full px-4 py-3 rounded-lg border"
-                  style={{ borderColor: 'var(--border-medium)' }}
-                >
-                  {categories.slice(1).map(category => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 작성자 정보 */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                    작성자명 *
-                  </label>
-                  <input
-                    type="text"
-                    value={newPost.author_name}
-                    onChange={(e) => setNewPost({...newPost, author_name: e.target.value})}
-                    placeholder="이름을 입력하세요"
-                    className="w-full px-4 py-3 rounded-lg border"
-                    style={{ borderColor: 'var(--border-medium)' }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                    이메일 (선택)
-                  </label>
-                  <input
-                    type="email"
-                    value={newPost.author_email}
-                    onChange={(e) => setNewPost({...newPost, author_email: e.target.value})}
-                    placeholder="답변 받을 이메일"
-                    className="w-full px-4 py-3 rounded-lg border"
-                    style={{ borderColor: 'var(--border-medium)' }}
-                  />
-                </div>
-              </div>
-
-              {/* 제목 입력 */}
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                  제목 *
-                </label>
-                <input
-                  type="text"
-                  value={newPost.title}
-                  onChange={(e) => setNewPost({...newPost, title: e.target.value})}
-                  placeholder="문의 제목을 입력하세요"
-                  className="w-full px-4 py-3 rounded-lg border"
-                  style={{ borderColor: 'var(--border-medium)' }}
-                />
-              </div>
-
-              {/* 내용 입력 */}
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                  내용
-                </label>
-                <textarea
-                  value={newPost.content}
-                  onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-                  placeholder="문의 내용을 자세히 설명해주세요"
-                  rows={6}
-                  className="w-full px-4 py-3 rounded-lg border resize-none"
-                  style={{ borderColor: 'var(--border-medium)' }}
-                />
-              </div>
-
-              {/* 제출 버튼 */}
-              <div className="flex justify-end space-x-4">
-                <button
-                  onClick={() => setShowNewPostForm(false)}
-                  className="px-6 py-3 rounded-lg border font-medium transition-colors"
-                  style={{ 
-                    borderColor: 'var(--border-medium)',
-                    color: 'var(--text-secondary)'
-                  }}
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleSubmitPost}
-                  className="px-6 py-3 rounded-lg font-semibold transition-all"
-                  style={{
-                    backgroundColor: 'var(--accent-primary)',
-                    color: 'white'
-                  }}
-                  disabled={!newPost.title.trim() || !newPost.content.trim()}
-                >
-                  문의 등록
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 게시글 상세보기 모달 */}
-      {selectedPost && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto">
-            
-            {/* 모달 헤더 */}
-            <div className="p-6 border-b" style={{ borderColor: 'var(--border-light)' }}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  {getStatusBadge(selectedPost.status)}
-                  <span className="ml-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                    {categories.find(c => c.value === selectedPost.category)?.label}
-                  </span>
-                </div>
-                <button
-                  onClick={() => setSelectedPost(null)}
-                  className="p-2 rounded-lg hover:bg-gray-100"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* 게시글 내용 */}
-            <div className="p-6">
-              <h1 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-                {selectedPost.title}
-              </h1>
-              
-              <div className="flex items-center text-sm mb-6 space-x-4" style={{ color: 'var(--text-muted)' }}>
-                <span>작성자: {selectedPost.author_name}</span>
-                <span>{new Date(selectedPost.created_at).toLocaleDateString('ko-KR')}</span>
-                <span>조회 {selectedPost.views}</span>
-              </div>
-
-              <div className="prose prose-sm max-w-none mb-8">
-                <div style={{ color: 'var(--text-primary)', lineHeight: '1.6' }}>
-                  {selectedPost.content.split('\n').map((line, index) => (
-                    <p key={index} className="mb-2">{line}</p>
-                  ))}
-                </div>
-              </div>
-
-              {/* 답글 목록 */}
-              <div className="border-t pt-6" style={{ borderColor: 'var(--border-light)' }}>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-                  답글 ({postReplies.length})
-                </h3>
-                
-                {postReplies.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p style={{ color: 'var(--text-muted)' }}>아직 답글이 없습니다.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4 mb-6">
-                    {postReplies.map((reply, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center">
-                            <span className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>
-                              {reply.author_name}
-                            </span>
-                            {reply.is_admin && (
-                              <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                                관리자
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                            {new Date(reply.created_at).toLocaleDateString('ko-KR')}
-                          </span>
-                        </div>
-                        <div style={{ color: 'var(--text-secondary)' }}>
-                          {reply.content.split('\n').map((line: string, lineIndex: number) => (
-                            <p key={lineIndex} className="mb-1">{line}</p>
-                          ))}
-                        </div>
-                      </div>
+                      </details>
                     ))}
                   </div>
                 )}
-
-                {/* 답글 작성 폼 */}
-                <div className="border-t pt-6" style={{ borderColor: 'var(--border-light)' }}>
-                  <h4 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>답글 작성</h4>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                          작성자명 *
-                        </label>
-                        <input
-                          type="text"
-                          value={newReply.author_name}
-                          onChange={(e) => setNewReply({...newReply, author_name: e.target.value})}
-                          placeholder="이름"
-                          className="w-full px-4 py-3 rounded-lg border"
-                          style={{ borderColor: 'var(--border-medium)' }}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                          이메일 (선택)
-                        </label>
-                        <input
-                          type="email"
-                          value={newReply.author_email}
-                          onChange={(e) => setNewReply({...newReply, author_email: e.target.value})}
-                          placeholder="이메일"
-                          className="w-full px-4 py-3 rounded-lg border"
-                          style={{ borderColor: 'var(--border-medium)' }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                        답글 내용 *
-                      </label>
-                      <textarea
-                        value={newReply.content}
-                        onChange={(e) => setNewReply({...newReply, content: e.target.value})}
-                        placeholder="답글을 입력하세요"
-                        rows={4}
-                        className="w-full px-4 py-3 rounded-lg border resize-none"
-                        style={{ borderColor: 'var(--border-medium)' }}
-                      />
-                    </div>
-                    <div className="flex justify-end">
-                      <button
-                        onClick={submitReply}
-                        className="px-6 py-3 rounded-lg font-semibold transition-all"
-                        style={{
-                          backgroundColor: 'var(--accent-primary)',
-                          color: 'white'
-                        }}
-                        disabled={!newReply.content.trim() || !newReply.author_name.trim()}
-                      >
-                        답글 등록
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

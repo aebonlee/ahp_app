@@ -381,7 +381,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                   icon="📰"
                   className="font-medium"
                 >
-                  뉴스
+                  소식
                 </UnifiedButton>
                 
                 <UnifiedButton

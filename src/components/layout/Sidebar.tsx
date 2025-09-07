@@ -40,7 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, act
     { id: 'workshop-management', label: '워크숍 관리', icon: '🎯' },
     { id: 'decision-support-system', label: '의사결정 지원', icon: '🧠' },
     { id: 'pricing', label: '요금 안내', icon: '💳' },
-    { id: 'news', label: '뉴스 및 공지', icon: '📰' },
+    { id: 'news', label: '소식 및 사례', icon: '📰' },
     { id: 'support', label: '고객 지원', icon: '🎧' },
     { id: 'personal-settings', label: '개인 설정', icon: '⚙️' }
   ];
