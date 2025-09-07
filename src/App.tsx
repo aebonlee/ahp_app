@@ -1184,7 +1184,11 @@ function App() {
     if (!user) {
       switch (activeTab) {
         case 'home':
-          return <HomePage onLoginClick={handleLoginClick} onRegisterClick={handleRegisterClick} />;
+          return <HomePage 
+            onLoginClick={handleLoginClick} 
+            onRegisterClick={handleRegisterClick}
+            onNavigate={(tab) => setActiveTab(tab)}
+          />;
         
         case 'login':
         return (
@@ -1208,9 +1212,26 @@ function App() {
             />
           );
         
+        case 'news':
+          return (
+            <NewsPage 
+              onBackClick={() => setActiveTab('home')}
+            />
+          );
+        
+        case 'support':
+          return (
+            <SupportPage 
+              onBackClick={() => setActiveTab('home')}
+            />
+          );
+        
         default:
           // 로그인하지 않은 상태에서 다른 페이지 접근 시 홈으로 리다이렉트
-          return <HomePage onLoginClick={handleLoginClick} />;
+          return <HomePage 
+            onLoginClick={handleLoginClick}
+            onNavigate={(tab) => setActiveTab(tab)}
+          />;
       }
     }
     

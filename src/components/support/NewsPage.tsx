@@ -163,59 +163,90 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
   return (
     <div style={{ 
       minHeight: '100vh',
-      backgroundColor: 'var(--bg-subtle)',
+      backgroundColor: 'var(--bg-primary)',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
       {/* 헤더 */}
-      <div style={{ 
-        backgroundColor: 'var(--bg-primary)',
+      <header style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 40,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
         borderBottom: '1px solid var(--border-light)'
       }}>
         <div style={{ 
           maxWidth: '80rem',
           margin: '0 auto',
-          padding: '1.5rem',
-          display: 'flex',
-          alignItems: 'center'
+          padding: '0 1.5rem'
         }}>
-          <button
-            onClick={onBackClick}
-            style={{
-              marginRight: '1rem',
-              padding: '0.5rem',
-              borderRadius: '0.5rem',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-primary)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-subtle)'}
-            onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'}
-          >
-            <svg style={{ width: '1.5rem', height: '1.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div>
-            <h1 style={{ 
-              fontSize: '2rem',
-              fontWeight: 'bold',
-              color: 'var(--text-primary)',
-              margin: 0
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '4rem'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center'
             }}>
-              📰 소식 및 사례
-            </h1>
-            <p style={{ 
-              marginTop: '0.5rem',
-              color: 'var(--text-secondary)',
-              margin: '0.5rem 0 0 0'
-            }}>
-              최신 연구 동향과 플랫폼 업데이트 소식을 만나보세요
-            </p>
+              <button
+                onClick={onBackClick}
+                style={{
+                  marginRight: '1rem',
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--text-primary)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-subtle)'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'}
+              >
+                <svg style={{ width: '1.5rem', height: '1.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+              <div>
+                <h1 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(to right, var(--accent-primary), var(--accent-secondary))',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  color: 'transparent',
+                  margin: 0
+                }}>
+                  📰 소식 및 사례
+                </h1>
+              </div>
+            </div>
+            <button
+              onClick={onBackClick}
+              style={{
+                padding: '0.625rem 1.5rem',
+                color: 'var(--text-secondary)',
+                backgroundColor: 'var(--bg-subtle)',
+                borderRadius: '0.5rem',
+                fontWeight: '500',
+                border: '1px solid var(--border-light)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-secondary)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-subtle)';
+              }}
+            >
+              홈으로 돌아가기
+            </button>
           </div>
         </div>
-      </div>
+      </header>
 
       <div style={{ 
         maxWidth: '80rem',

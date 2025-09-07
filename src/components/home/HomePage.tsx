@@ -7,9 +7,10 @@ import PricingSection from './PricingSection';
 interface HomePageProps {
   onLoginClick: () => void;
   onRegisterClick?: () => void;
+  onNavigate?: (tab: string) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) => {
+const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNavigate }) => {
   const [scrollY, setScrollY] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -161,22 +162,38 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                  onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
                 요금제
               </a>
-              <a href="#support" style={{
-                color: 'var(--text-secondary)',
-                textDecoration: 'none',
-                transition: 'color 0.3s ease'
-              }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
-                 onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+              <button 
+                onClick={() => onNavigate && onNavigate('support')}
+                style={{
+                  color: 'var(--text-secondary)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 'inherit',
+                  fontFamily: 'inherit',
+                  padding: 0,
+                  transition: 'color 0.3s ease'
+                }} 
+                onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'}>
                 고객 지원
-              </a>
-              <a href="#news" style={{
-                color: 'var(--text-secondary)',
-                textDecoration: 'none',
-                transition: 'color 0.3s ease'
-              }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
-                 onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+              </button>
+              <button 
+                onClick={() => onNavigate && onNavigate('news')}
+                style={{
+                  color: 'var(--text-secondary)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 'inherit',
+                  fontFamily: 'inherit',
+                  padding: 0,
+                  transition: 'color 0.3s ease'
+                }} 
+                onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'}>
                 소식 및 사례
-              </a>
+              </button>
             </nav>
 
             {/* CTA 버튼들 및 테마 컨트롤 */}
@@ -1107,6 +1124,25 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
               }}>
                 🎧 고객 지원
               </h4>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <button
+                  onClick={() => onNavigate && onNavigate('support')}
+                  style={{
+                    color: 'var(--text-secondary)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    padding: 0,
+                    fontSize: '0.875rem',
+                    transition: 'color 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'}
+                >
+                  고객지원 센터 바로가기
+                </button>
+              </div>
               <div style={{
                 color: 'var(--text-muted)',
                 fontSize: '0.875rem',
@@ -1178,15 +1214,23 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick }) =>
                 >
                   GitHub 저장소
                 </a>
-                <a href="#news" id="news" style={{
-                  color: 'var(--text-secondary)',
-                  textDecoration: 'none',
-                  fontSize: '0.875rem',
-                  transition: 'color 0.3s ease'
-                }} onMouseEnter={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-primary)'}
-                   onMouseLeave={(e) => (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-secondary)'}>
+                <button
+                  onClick={() => onNavigate && onNavigate('news')}
+                  style={{
+                    color: 'var(--text-secondary)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    padding: 0,
+                    fontSize: '0.875rem',
+                    transition: 'color 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'}
+                >
                   소식 및 사례
-                </a>
+                </button>
                 <a href="#features" style={{
                   color: 'var(--text-secondary)',
                   textDecoration: 'none',
