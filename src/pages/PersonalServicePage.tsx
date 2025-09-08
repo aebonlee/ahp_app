@@ -379,6 +379,1186 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
     setProjectSelectorConfig(null);
   };
 
+  // Project management helper functions
+  const resetProjectForm = () => {
+    setProjectForm({
+      title: '',
+      description: '',
+      objective: '',
+      evaluation_method: 'pairwise',
+      evaluation_mode: 'practical' as EvaluationMode,
+      workflow_stage: 'creating' as WorkflowStage
+    });
+    setProjectTemplate('blank');
+    setEditingProject(null);
+    setIsProjectFormOpen(false);
+  };
+
+  const handleEditProject = (project: UserProject) => {
+    setEditingProject(project);
+    setProjectForm({
+      title: project.title,
+      description: project.description,
+      objective: project.objective || '',
+      evaluation_method: project.evaluation_method,
+      evaluation_mode: project.evaluation_mode || 'practical',
+      workflow_stage: project.workflow_stage || 'creating'
+    });
+    setIsProjectFormOpen(true);
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    const projectTitle = project?.title || '프로젝트';
+    
+    if (window.confirm(`"${projectTitle}"를 휴지통으로 이동하시겠습니까?\n\n휴지통에서 복원하거나 영구 삭제할 수 있습니다.`)) {
+      try {
+        console.log('🗑️ 삭제 시작:', projectId, projectTitle);
+        
+        // onDeleteProject prop 사용 (백엔드 API 호출)
+        if (onDeleteProject) {
+          await onDeleteProject(projectId);
+          console.log('✅ 프로젝트 삭제 완료');
+        } else {
+          console.warn('⚠️ onDeleteProject prop이 없음');
+        }
+      } catch (error) {
+        console.error('❌ 프로젝트 삭제 실패:', error);
+        alert('프로젝트 삭제에 실패했습니다. 다시 시도해주세요.');
+      }
+    }
+  };
+
+  const handleSaveProject = async () => {
+    if (!projectForm.title.trim()) {
+      setError('프로젝트명을 입력해주세요.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log('💾 프로젝트 저장 시작');
+      
+      const projectData = {
+        title: projectForm.title,
+        description: projectForm.description,
+        objective: projectForm.objective,
+        evaluation_method: projectForm.evaluation_method,
+        evaluation_mode: projectForm.evaluation_mode,
+        workflow_stage: projectForm.workflow_stage,
+        status: 'draft' as const,
+        created_by: user.id,
+        ...(editingProject && { id: editingProject.id })
+      };
+
+      if (onCreateProject) {
+        await onCreateProject(projectData);
+        resetProjectForm();
+        console.log('✅ 프로젝트 저장 완료');
+      }
+    } catch (error) {
+      console.error('❌ 프로젝트 저장 실패:', error);
+      setError('프로젝트 저장에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateNewProject = async () => {
+    if (!projectForm.title.trim()) {
+      setError('프로젝트명을 입력해주세요.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const projectData = {
+        title: projectForm.title,
+        description: projectForm.description,
+        objective: projectForm.objective,
+        evaluation_method: projectForm.evaluation_method,
+        evaluation_mode: projectForm.evaluation_mode,
+        workflow_stage: projectForm.workflow_stage,
+        status: 'draft' as const,
+        created_by: user.id
+      };
+
+      if (onCreateProject) {
+        const newProject = await onCreateProject(projectData);
+        setNewProjectId(newProject.id);
+        setSelectedProjectId(newProject.id);
+        setNewProjectStep(2); // 평가자 배정으로 이동
+        console.log('✅ 새 프로젝트 생성 완료:', newProject.id);
+      }
+    } catch (error) {
+      console.error('❌ 새 프로젝트 생성 실패:', error);
+      setError('프로젝트 생성에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderMyProjects = () => {
+    // 필터링 및 검색 로직
+    const filteredProjects = (projects || []).filter(project => {
+      const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           project.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = filterStatus === 'all' || project.status === filterStatus;
+      return matchesSearch && matchesFilter;
+    }).sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.title.localeCompare(b.title);
+        case 'date':
+          return new Date(b.last_modified).getTime() - new Date(a.last_modified).getTime();
+        case 'progress':
+          return (b.completion_rate || 0) - (a.completion_rate || 0);
+        case 'status':
+          return a.status.localeCompare(b.status);
+        default:
+          return 0;
+      }
+    });
+
+    return (
+    <div className="space-y-6">
+      {/* 프로젝트 통계 대시보드 */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-base font-medium" style={{ color: 'var(--status-info-text)' }}>전체 프로젝트</p>
+              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).length}</p>
+            </div>
+            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-info-text)' }}>
+              <span className="text-white text-2xl">📊</span>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-base font-medium" style={{ color: 'var(--status-success-text)' }}>진행중</p>
+              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'active').length}</p>
+            </div>
+            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-success-text)' }}>
+              <span className="text-white text-2xl">🚀</span>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-base font-medium" style={{ color: 'var(--accent-primary)' }}>완료됨</p>
+              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'completed').length}</p>
+            </div>
+            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--accent-primary)' }}>
+              <span className="text-white text-2xl">✅</span>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-base font-medium" style={{ color: 'var(--status-warning-text)' }}>평균 진행률</p>
+              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                {(projects || []).length > 0 ? Math.round((projects || []).reduce((sum, p) => sum + (p.completion_rate || 0), 0) / (projects || []).length) : 0}%
+              </p>
+            </div>
+            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-warning-text)' }}>
+              <span className="text-white text-2xl">📈</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 필터 및 검색 컨트롤 */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+          {/* 검색 */}
+          <div className="flex-1 max-w-md">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="프로젝트 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span className="text-gray-400">🔍</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 필터 및 정렬 */}
+          <div className="flex flex-wrap items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">상태:</label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as any)}
+                className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">전체</option>
+                <option value="draft">준비중</option>
+                <option value="active">진행중</option>
+                <option value="completed">완료</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">정렬:</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="date">최신순</option>
+                <option value="name">이름순</option>
+                <option value="progress">진행률순</option>
+                <option value="status">상태순</option>
+              </select>
+            </div>
+
+            {/* 뷰 모드 토글 */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-1 rounded text-sm transition-all ${
+                  viewMode === 'grid' 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                <span className="mr-1">⊞</span>그리드
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1 rounded text-sm transition-all ${
+                  viewMode === 'list' 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                <span className="mr-1">☰</span>리스트
+              </button>
+            </div>
+
+            <div className="flex space-x-2">
+              <Button variant="primary" className="p-3 lg:p-4 text-base lg:text-lg" onClick={() => setIsProjectFormOpen(true)}>
+                ➕ 새 프로젝트
+              </Button>
+              <Button variant="error" className="p-3 lg:p-4 text-base lg:text-lg" onClick={() => handleTabChange('trash')}>
+                🗑️휴지통
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 프로젝트 생성/편집 모달 */}
+      {isProjectFormOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
+              {editingProject ? '프로젝트 편집' : '새 프로젝트 생성'}
+            </h3>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleSaveProject();
+            }}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">프로젝트명</label>
+                <input 
+                  type="text" 
+                  value={projectForm.title}
+                  onChange={(e) => setProjectForm({...projectForm, title: e.target.value})}
+                  className="w-full border border-gray-300 rounded px-3 py-2" 
+                  placeholder="예: AI 도구 선택을 위한 중요도 분석" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">설명</label>
+                <textarea 
+                  value={projectForm.description}
+                  onChange={(e) => setProjectForm({...projectForm, description: e.target.value})}
+                  className="w-full border border-gray-300 rounded px-3 py-2 h-20" 
+                  placeholder="프로젝트의 목적과 배경을 설명해주세요"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">분석 목표</label>
+                <textarea 
+                  value={projectForm.objective}
+                  onChange={(e) => setProjectForm({...projectForm, objective: e.target.value})}
+                  className="w-full border border-gray-300 rounded px-3 py-2 h-16" 
+                  placeholder="이 분석을 통해 달성하고자 하는 목표"
+                />
+              </div>
+              {/* 평가 방법 선택 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">평가 방법</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { value: 'pairwise', label: '쌍대비교', desc: '두 요소를 비교하여 평가', icon: '⚖️' },
+                    { value: 'direct_input', label: '직접입력', desc: '직접 점수를 입력하여 평가', icon: '📝' },
+                    { value: 'practical', label: '실무형', desc: '실무 중심의 평가 방식', icon: '📈' }
+                  ].map((mode) => (
+                    <button
+                      key={mode.value}
+                      type="button"
+                      onClick={() => setProjectForm({
+                        ...projectForm,
+                        evaluation_mode: mode.value as EvaluationMode,
+                        evaluation_method: mode.value === 'direct_input' ? 'direct' : 'pairwise'
+                      })}
+                      className={`p-3 text-left border-2 rounded-lg transition-all ${
+                        projectForm.evaluation_mode === mode.value
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="text-lg">{mode.icon}</span>
+                        <span className="font-medium text-sm">{mode.label}</span>
+                      </div>
+                      <p className="text-xs text-gray-600">{mode.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                  <div className="text-sm text-red-700">{error}</div>
+                </div>
+              )}
+              
+              <div className="flex justify-end space-x-3">
+                <Button variant="secondary" type="button" onClick={resetProjectForm}>
+                  취소
+                </Button>
+                <Button variant="primary" type="submit" disabled={loading}>
+                  {loading ? '처리 중...' : (editingProject ? '수정' : '생성')}
+                </Button>
+              </div>
+            </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 프로젝트 목록 또는 빈 상태 */}
+      {(projects || []).length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">📊</div>
+          <h3 className="text-xl font-medium text-gray-900 mb-2">첫 번째 프로젝트를 시작해보세요</h3>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            AHP 분석을 통해 복잡한 의사결정을 체계적으로 해결할 수 있습니다. 
+            지금 바로 새 프로젝트를 생성하여 시작해보세요.
+          </p>
+          <Button variant="primary" className="p-4 lg:p-5 text-lg lg:text-xl" onClick={() => setIsProjectFormOpen(true)}>
+            ➕ 새 프로젝트 생성
+          </Button>
+          <div className="mt-8 grid grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="text-2xl mb-2">🎯</div>
+              <h4 className="font-medium mb-1">목표 설정</h4>
+              <p className="text-sm text-gray-600">의사결정 목표와 평가 기준을 명확히 정의</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="text-2xl mb-2">⚖️</div>
+              <h4 className="font-medium mb-1">쌍대비교</h4>
+              <p className="text-sm text-gray-600">기준과 대안을 체계적으로 비교 평가</p>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="text-2xl mb-2">📈</div>
+              <h4 className="font-medium mb-1">결과 분석</h4>
+              <p className="text-sm text-gray-600">객관적이고 신뢰할 수 있는 우선순위 도출</p>
+            </div>
+          </div>
+        </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-4xl mb-4">🔍</div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">검색 결과가 없습니다</h3>
+          <p className="text-gray-600 mb-4">
+            다른 검색어를 시도하거나 필터를 조정해보세요.
+          </p>
+          <Button variant="secondary" className="p-3 lg:p-4 text-base lg:text-lg" onClick={() => {
+            setSearchTerm('');
+            setFilterStatus('all');
+          }}>
+            필터 초기화
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* 결과 헤더 */}
+          <div className="flex justify-between items-center">
+            <h4 className="font-medium text-gray-900">
+              {filteredProjects.length}개의 프로젝트
+              {searchTerm && <span className="text-gray-500"> • 검색: "{searchTerm}"</span>}
+              {filterStatus !== 'all' && <span className="text-gray-500"> • 필터: {filterStatus === 'draft' ? '준비중' : filterStatus === 'active' ? '진행중' : '완료'}</span>}
+            </h4>
+          </div>
+
+          {/* 그리드 뷰 */}
+          {viewMode === 'grid' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {filteredProjects.map((project) => (
+                <div key={project.id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                  {/* 프로젝트 헤더 */}
+                  <div className="p-6 border-b border-gray-100">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                          {project.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                          {project.description}
+                        </p>
+                      </div>
+                      <div className="ml-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          project.status === 'active' ? 'bg-green-100 text-green-800' :
+                          project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {project.status === 'active' ? '🚀 진행중' : 
+                           project.status === 'completed' ? '✅ 완료' : '📝 준비중'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 진행률 바 */}
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-gray-700">진행률</span>
+                        <span className="text-sm text-gray-600">{(project.completion_rate || 0)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            (project.completion_rate || 0) >= 80 ? 'bg-green-500' :
+                            (project.completion_rate || 0) >= 50 ? 'bg-blue-500' :
+                            (project.completion_rate || 0) >= 25 ? 'bg-yellow-500' : 'bg-gray-400'
+                          }`}
+                          style={{ width: `${(project.completion_rate || 0)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 워크플로우 상태 */}
+                    <WorkflowStageIndicator currentStage={project.workflow_stage || 'creating'} />
+                  </div>
+
+                  {/* 프로젝트 통계 */}
+                  <div className="p-4 bg-gray-50">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">평가자</span>
+                        <span className="font-medium text-blue-600">{project.evaluator_count}명</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">기준</span>
+                        <span className="font-medium text-purple-600">{project.criteria_count}개</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">대안</span>
+                        <span className="font-medium text-orange-600">{project.alternatives_count}개</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">평가방식</span>
+                        <span className="font-medium text-gray-700 text-xs">
+                          {project.evaluation_method === 'pairwise' ? '쌍대비교' : 
+                           project.evaluation_method === 'direct' ? '직접입력' : '혼합'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 액션 버튼 */}
+                  <div className="p-4 bg-white border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-gray-500">
+                        수정: {project.last_modified}
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleEditProject(project);
+                          }}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="편집"
+                          type="button"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedProjectId(project.id || '');
+                            setActiveProject(project.id || null);
+                            if (externalOnTabChange) {
+                              externalOnTabChange('model-building');
+                            }
+                          }}
+                          className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          title="모델 구성"
+                          type="button"
+                        >
+                          🏗️
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedProjectId(project.id || '');
+                            setActiveProject(project.id || null);
+                            if (externalOnTabChange) {
+                              externalOnTabChange('results-analysis');
+                            }
+                          }}
+                          className="p-2 rounded-lg transition-colors"
+                          style={{ color: 'var(--text-muted)' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = 'var(--accent-primary)';
+                            e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = 'var(--text-muted)';
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                          title="결과 분석"
+                          type="button"
+                        >
+                          📊
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('🗑️ 삭제 버튼 클릭됨:', project.id, project.title);
+                            handleDeleteProject(project.id || '');
+                          }}
+                          className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition-colors border border-red-200"
+                          title="휴지통으로 이동"
+                          type="button"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            ))}
+            </div>
+          )}
+
+          {/* 리스트 뷰 */}
+          {viewMode === 'list' && (
+            <div className="space-y-4">
+              {filteredProjects.map((project) => (
+                <div key={project.id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between">
+                      {/* 프로젝트 정보 */}
+                      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                        {/* 제목과 설명 */}
+                        <div className="lg:col-span-4">
+                          <div className="flex items-center space-x-3">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {project.title}
+                            </h3>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              project.status === 'active' ? 'bg-green-100 text-green-800' :
+                              project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {project.status === 'active' ? '🚀 진행중' : 
+                               project.status === 'completed' ? '✅ 완료' : '📝 준비중'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {project.description}
+                          </p>
+                          <div className="text-xs text-gray-500 mt-2">
+                            수정: {project.last_modified}
+                          </div>
+                        </div>
+
+                        {/* 진행률 */}
+                        <div className="lg:col-span-2">
+                          <div className="text-center">
+                            <div className="text-sm font-medium text-gray-700 mb-1">진행률</div>
+                            <div className="flex items-center justify-center space-x-2">
+                              <div className="w-16 bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className={`h-2 rounded-full transition-all duration-300 ${
+                                    (project.completion_rate || 0) >= 80 ? 'bg-green-500' :
+                                    (project.completion_rate || 0) >= 50 ? 'bg-blue-500' :
+                                    (project.completion_rate || 0) >= 25 ? 'bg-yellow-500' : 'bg-gray-400'
+                                  }`}
+                                  style={{ width: `${(project.completion_rate || 0)}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-medium text-gray-600">
+                                {(project.completion_rate || 0)}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 통계 */}
+                        <div className="lg:col-span-4">
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-center">
+                            <div>
+                              <div className="text-lg font-semibold text-blue-600">{project.evaluator_count}</div>
+                              <div className="text-xs text-gray-500">평가자</div>
+                            </div>
+                            <div>
+                              <div className="text-lg font-semibold text-purple-600">{project.criteria_count}</div>
+                              <div className="text-xs text-gray-500">기준</div>
+                            </div>
+                            <div>
+                              <div className="text-lg font-semibold text-orange-600">{project.alternatives_count}</div>
+                              <div className="text-xs text-gray-500">대안</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-gray-700">
+                                {project.evaluation_method === 'pairwise' ? '쌍대비교' : 
+                                 project.evaluation_method === 'direct' ? '직접입력' : '혼합'}
+                              </div>
+                              <div className="text-xs text-gray-500">평가방식</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 액션 버튼 */}
+                        <div className="lg:col-span-2 flex justify-end space-x-2">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleEditProject(project);
+                            }}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="편집"
+                            type="button"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedProjectId(project.id || '');
+                              setActiveProject(project.id || null);
+                              if (externalOnTabChange) {
+                                externalOnTabChange('model-building');
+                              }
+                            }}
+                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="모델 구성"
+                            type="button"
+                          >
+                            🏗️
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedProjectId(project.id || '');
+                              setActiveProject(project.id || null);
+                              if (externalOnTabChange) {
+                                externalOnTabChange('results-analysis');
+                              }
+                            }}
+                            className="p-2 rounded-lg transition-colors"
+                          style={{ color: 'var(--text-muted)' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = 'var(--accent-primary)';
+                            e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = 'var(--text-muted)';
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                            title="결과 분석"
+                            type="button"
+                          >
+                            📊
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('🗑️ 삭제 버튼 클릭됨 (리스트뷰):', project.id, project.title);
+                              handleDeleteProject(project.id || '');
+                            }}
+                            className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition-colors border border-red-200"
+                            title="휴지통으로 이동"
+                            type="button"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+  const renderProjectCreation = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold">새 프로젝트 생성</h3>
+      
+      {/* 템플릿 선택 */}
+      <Card title="프로젝트 템플릿 선택">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Object.entries(projectTemplates).map(([key, template]) => (
+            <button
+              key={key}
+              onClick={() => setProjectTemplate(key as any)}
+              aria-label={`${template.name} 템플릿 선택 - ${template.desc}`}
+              aria-pressed={projectTemplate === key}
+              className={`p-4 text-center border-2 rounded-lg transition-all ${
+                projectTemplate === key
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+              }`}
+            >
+              <div className="text-2xl mb-2">
+                {key === 'blank' ? '📄' : 
+                 key === 'business' ? '📋' :
+                 key === 'technical' ? '💻' : '📚'}
+              </div>
+              <h4 className="font-medium text-gray-900 mb-1">{template.name}</h4>
+              <p className="text-xs text-gray-600">{template.desc}</p>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card title="프로젝트 생성 단계">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 1 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
+              <div className="text-2xl mb-2">📋</div>
+              <h4 className="font-medium text-gray-900 mb-1">1. 기본 정보</h4>
+              <p className="text-xs text-gray-600">프로젝트명, 설명, 목적</p>
+            </div>
+            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 2 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
+              <div className="text-2xl mb-2">👥</div>
+              <h4 className="font-medium text-gray-900 mb-1">2. 평가자 배정</h4>
+              <p className="text-xs text-gray-600">2-3명 평가자 추가</p>
+            </div>
+            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 3 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
+              <div className="text-2xl mb-2">🎯</div>
+              <h4 className="font-medium text-gray-900 mb-1">3. 기준 설정</h4>
+              <p className="text-xs text-gray-600">평가 기준 정의</p>
+            </div>
+            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 4 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
+              <div className="text-2xl mb-2">✅</div>
+              <h4 className="font-medium text-gray-900 mb-1">4. 완료</h4>
+              <p className="text-xs text-gray-600">프로젝트 생성 완료</p>
+            </div>
+          </div>
+
+          {/* Step 1: 기본 정보 */}
+          {newProjectStep === 1 && (
+            <form className="space-y-4" onSubmit={(e) => {
+              e.preventDefault();
+              handleCreateNewProject();
+            }}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">프로젝트명</label>
+                <input 
+                  type="text" 
+                  value={projectForm.title}
+                  onChange={(e) => setProjectForm({...projectForm, title: e.target.value})}
+                  className="w-full border border-gray-300 rounded px-3 py-2" 
+                  placeholder="예: AI 도구 선택을 위한 중요도 분석" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">설명</label>
+                <textarea 
+                  value={projectForm.description}
+                  onChange={(e) => setProjectForm({...projectForm, description: e.target.value})}
+                  className="w-full border border-gray-300 rounded px-3 py-2 h-20" 
+                  placeholder="프로젝트의 목적과 배경을 설명해주세요"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">분석 목표</label>
+                <textarea 
+                  value={projectForm.objective}
+                  onChange={(e) => setProjectForm({...projectForm, objective: e.target.value})}
+                  className="w-full border border-gray-300 rounded px-3 py-2 h-16" 
+                  placeholder="이 분석을 통해 달성하고자 하는 구체적인 목표"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">평가 방법</label>
+                <select className="w-full border border-gray-300 rounded px-3 py-2">
+                  <option>쌍대비교 (권장)</option>
+                  <option>직접입력</option>
+                  <option>혼합 방식</option>
+                </select>
+              </div>
+              
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                  <div className="text-sm text-red-700">{error}</div>
+                </div>
+              )}
+              
+              <div className="flex justify-end space-x-3">
+                <Button variant="secondary" type="button" onClick={() => handleTabChange('projects')}>
+                  취소
+                </Button>
+                <Button variant="primary" type="submit" disabled={loading}>
+                  {loading ? '생성 중...' : '다음: 평가자 배정'}
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* Step 2: 평가자 배정 */}
+          {newProjectStep === 2 && newProjectId && (
+            <div className="space-y-4">
+              <EvaluatorAssignment 
+                projectId={newProjectId} 
+                onComplete={() => setNewProjectStep(3)} 
+              />
+              <div className="flex justify-between">
+                <Button variant="secondary" onClick={() => setNewProjectStep(1)}>
+                  이전
+                </Button>
+                <Button variant="primary" onClick={() => {
+                  if (projectEvaluators.length > 0) {
+                    setNewProjectStep(3);
+                  } else {
+                    alert('최소 1명 이상의 평가자를 추가해주세요.');
+                  }
+                }}>
+                  다음: 기준 설정
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: 기준 설정 */}
+          {newProjectStep === 3 && (
+            <div className="space-y-4">
+              <div className="text-center py-8">
+                <h3 className="text-lg font-semibold mb-4">평가 기준 설정</h3>
+                <p className="text-gray-600 mb-6">프로젝트 생성이 완료되었습니다. 모델 구축에서 기준을 설정하세요.</p>
+                <Button variant="primary" onClick={() => {
+                  setCurrentStep('criteria');
+                  handleTabChange('model-builder');
+                  setNewProjectStep(1);
+                  setNewProjectId(null);
+                }}>
+                  모델 구축으로 이동
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderEvaluatorManagement = () => {
+    // 선택된 프로젝트 정보 가져오기
+    const currentProject = projects.find(p => p.id === selectedProjectId);
+    
+    return (
+      <EnhancedEvaluatorManagement 
+        projectId={selectedProjectId || undefined}
+        projectName={currentProject?.title || '프로젝트'}
+      />
+    );
+  };
+
+  const renderSurveyLinks = () => {
+    // 선택된 프로젝트 정보 가져오기
+    const currentProject = projects.find(p => p.id === selectedProjectId);
+    
+    // 평가자 목록 가져오기 (실제로는 API에서)
+    const evaluators: any[] = [
+      // 임시 데이터 - 실제로는 EnhancedEvaluatorManagement와 연동
+    ];
+    
+    return (
+      <SurveyLinkManager 
+        projectId={selectedProjectId || undefined}
+        projectName={currentProject?.title || '프로젝트'}
+        evaluators={evaluators}
+      />
+    );
+  };
+
+  const renderProgressMonitoring = () => {
+    return (
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold">진행률 모니터링</h3>
+
+        {/* 3개 카드를 인라인 가로 배열 */}
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'stretch', width: '100%' }}>
+          <div style={{ flex: '1 1 33.333%' }}>
+            <Card title="전체 진행률">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-400">-</div>
+                <div className="text-sm text-gray-500 mt-1">등록된 평가자 없음</div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                  <div className="bg-gray-300 h-2 rounded-full" style={{ width: '0%' }}></div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <div style={{ flex: '1 1 33.333%' }}>
+            <Card title="평균 소요 시간">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-400">-</div>
+                <div className="text-sm text-gray-500 mt-1">데이터 없음</div>
+                <div className="text-xs text-gray-500 mt-2">평가 진행 후 확인 가능</div>
+              </div>
+            </Card>
+          </div>
+
+          <div style={{ flex: '1 1 33.333%' }}>
+            <Card title="일관성 품질">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-400">-</div>
+                <div className="text-sm text-gray-500 mt-1">데이터 없음</div>
+                <div className="text-xs text-gray-500 mt-2">평가 완료 후 확인 가능</div>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        <Card title="평가자별 진행 현황">
+          {/* 빈 상태 메시지 */}
+          <div className="text-center py-12">
+            <div className="text-4xl mb-4">👥</div>
+            <h4 className="text-lg font-medium text-gray-900 mb-2">등록된 평가자가 없습니다</h4>
+            <p className="text-gray-500 mb-6">프로젝트에 평가자를 추가하여 진행률을 모니터링하세요</p>
+            <Button 
+              variant="primary" 
+              onClick={() => handleTabChange('evaluators')}
+            >
+              평가자 추가하기
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
+  const renderResultsAnalysis = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold">결과 분석</h3>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card title="최종 순위">
+          <div className="space-y-3">
+            {[
+              { rank: 1, name: '코딩 작성 속도 향상', weight: 16.959, color: 'text-yellow-600' },
+              { rank: 2, name: '코드 품질 개선 및 최적화', weight: 15.672, color: 'text-gray-500' },
+              { rank: 3, name: '반복 작업 최소화', weight: 13.382, color: 'text-orange-600' },
+              { rank: 4, name: '형상관리 및 배포 지원', weight: 11.591, color: 'text-blue-600' },
+              { rank: 5, name: '디버깅 시간 단축', weight: 10.044, color: 'text-green-600' }
+            ].map((item) => (
+              <div key={item.rank} className="flex justify-between items-center p-3 border rounded">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm ${
+                    item.rank === 1 ? 'bg-yellow-500' :
+                    item.rank === 2 ? 'bg-gray-500' :
+                    item.rank === 3 ? 'bg-orange-500' : 'bg-blue-500'
+                  }`}>
+                    {item.rank}
+                  </div>
+                  <div className="font-medium">{item.name}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold">{item.weight}%</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card title="일관성 분석">
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">0.00192</div>
+              <div className="text-sm text-gray-500">통합 일관성 비율</div>
+              <div className="text-xs text-green-600 mt-1">🟢 매우 우수 (&lt; 0.1)</div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm">기준 일관성</span>
+                <span className="text-sm font-medium text-green-600">0.001</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">대안 일관성 (평균)</span>
+                <span className="text-sm font-medium text-green-600">0.003</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">전체 평가자</span>
+                <span className="text-sm font-medium">26명</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <Card title="민감도 분석">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-medium mb-3">기준 가중치 변화 시뮬레이션</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm">개발 생산성 효율화</span>
+                <input type="range" min="0" max="100" defaultValue="40" className="w-24" />
+                <span className="text-sm font-medium w-12 text-right">40%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">코딩 실무 품질 적합화</span>
+                <input type="range" min="0" max="100" defaultValue="30" className="w-24" />
+                <span className="text-sm font-medium w-12 text-right">30%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">개발 프로세스 자동화</span>
+                <input type="range" min="0" max="100" defaultValue="30" className="w-24" />
+                <span className="text-sm font-medium w-12 text-right">30%</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium mb-3">예상 순위 변화</h4>
+            <div className="text-sm text-gray-600">
+              <p>• 현재 설정에서는 순위 변화 없음</p>
+              <p>• 생산성 가중치 20% 감소 시: 2위↔3위 변동 가능</p>
+              <p>• 품질 가중치 50% 증가 시: 1위↔2위 변동 가능</p>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderExportReports = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold">보고서 내보내기</h3>
+
+      <div className="grid grid-cols-3 gap-8">
+        <Card title="Excel 보고서">
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              상세한 데이터와 계산 과정이 포함된 스프레드시트
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">원시 데이터</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">계산 과정</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">차트</span>
+              </label>
+            </div>
+            <Button variant="primary" className="w-full p-4 lg:p-5 text-lg lg:text-xl" onClick={() => handleExportResults('excel')}>
+              📊 Excel 다운로드
+            </Button>
+          </div>
+        </Card>
+
+        <Card title="PDF 보고서">
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              프레젠테이션용 요약 보고서
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">요약 정보</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">시각화 차트</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" />
+                <span className="ml-2 text-sm">상세 분석</span>
+              </label>
+            </div>
+            <Button variant="primary" className="w-full p-4 lg:p-5 text-lg lg:text-xl" onClick={() => handleExportResults('pdf')}>
+              📄 PDF 다운로드
+            </Button>
+          </div>
+        </Card>
+
+        <Card title="PowerPoint">
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              발표용 슬라이드 자료
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">개요 슬라이드</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">결과 차트</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" />
+                <span className="ml-2 text-sm">분석 상세</span>
+              </label>
+            </div>
+            <Button variant="primary" className="w-full p-4 lg:p-5 text-lg lg:text-xl" onClick={() => handleExportResults('powerpoint')}>
+              🎯 PowerPoint 다운로드
+            </Button>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+
+  // 결과 내보내기 헬퍼 함수
+  const handleExportResults = (format: string, data?: any) => {
+    // 결과 내보내기 로직
+    console.log(`Exporting results to ${format}`, data);
+    alert(`${format.toUpperCase()} 형식으로 결과를 내보내는 기능을 개발 중입니다.`);
+  };
+
   const renderOverview = () => (
     <div className="space-y-6">
 
@@ -553,70 +1733,82 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
       case 'dashboard':
         return renderOverview();
       case 'projects':
+        return renderMyProjects();
+      case 'creation':
+        return renderProjectCreation();
+      case 'model-builder':
         return (
           <div className="text-center py-8">
-            <div className="text-6xl mb-4">📂</div>
-            <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>내 프로젝트</h3>
-            <p className="text-gray-600 mb-4">나의 AHP 분석 프로젝트들을 관리하는 기능이 개발 중입니다.</p>
+            <div className="text-6xl mb-4">🏗️</div>
+            <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>모델 구축</h3>
+            <p className="text-gray-600 mb-4">AHP 모델 구축 기능이 개발 중입니다.</p>
             <Button variant="primary" onClick={() => handleTabChange('dashboard')}>
               대시보드로 돌아가기
             </Button>
           </div>
         );
-      case 'creation':
+      case 'validity-check':
+        return (
+          <ValidityCheck />
+        );
+      case 'evaluators':
+        return renderEvaluatorManagement();
+      case 'survey-links':
+        return renderSurveyLinks();
+      case 'monitoring':
+        return renderProgressMonitoring();
+      case 'analysis':
+        return renderResultsAnalysis();
+      case 'export':
+        return renderExportReports();
+      case 'paper':
+        return (
+          <PaperManagement />
+        );
+      case 'workshop':
+        return (
+          <WorkshopManagement />
+        );
+      case 'decision-support':
+        return (
+          <DecisionSupportSystem />
+        );
+      case 'evaluation-test':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold">새 프로젝트 생성</h3>
-            
-            {/* 템플릿 선택 */}
-            <Card title="프로젝트 템플릿 선택">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.entries(projectTemplates).map(([key, template]) => (
-                  <button
-                    key={key}
-                    onClick={() => setProjectTemplate(key as any)}
-                    aria-label={`${template.name} 템플릿 선택 - ${template.desc}`}
-                    aria-pressed={projectTemplate === key}
-                    className={`p-4 text-center border-2 rounded-lg transition-all ${
-                      projectTemplate === key
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">
-                      {key === 'blank' ? '📄' : 
-                       key === 'business' ? '📋' :
-                       key === 'technical' ? '💻' : '📚'}
-                    </div>
-                    <h4 className="font-medium text-gray-900 mb-1">{template.name}</h4>
-                    <p className="text-xs text-gray-600">{template.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </Card>
-
             <div className="text-center py-8">
-              <div className="text-6xl mb-4">🚀</div>
-              <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>프로젝트 생성 UI</h3>
-              <p className="text-gray-600 mb-4">새 프로젝트 생성 기능이 개발 중입니다.</p>
-              <Button variant="primary" onClick={() => handleTabChange('dashboard')}>
-                대시보드로 돌아가기
-              </Button>
+              <div className="mb-6">
+                <div className="text-6xl mb-4">🧪</div>
+                <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>평가 테스트</h3>
+                <p className="text-gray-600">평가 시스템을 미리 테스트해볼 수 있습니다</p>
+              </div>
             </div>
           </div>
         );
-      case 'validity-check':
+      case 'usage-management':
         return (
-          <div className="space-y-6">
-            <div className="text-center py-8">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>평가문항 확인</h3>
-              <p className="text-gray-600 mb-4">평가문항의 유효성을 검증하는 기능이 개발 중입니다.</p>
-              <Button variant="primary" onClick={() => handleTabChange('dashboard')}>
-                대시보드로 돌아가기
-              </Button>
-            </div>
-          </div>
+          <UsageManagement 
+            user={user}
+            onBack={() => handleTabChange('dashboard')}
+          />
+        );
+      case 'payment':
+        return (
+          <PaymentSystem />
+        );
+      case 'demographic-survey':
+        return (
+          <SurveyManagementSystem 
+            projectId={selectedProjectId || ''}
+          />
+        );
+      case 'trash':
+        return (
+          <TrashBin 
+            onFetchTrashedProjects={onFetchTrashedProjects}
+            onRestoreProject={onRestoreProject}
+            onPermanentDeleteProject={onPermanentDeleteProject}
+          />
         );
       case 'settings':
         return (
