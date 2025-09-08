@@ -47,7 +47,6 @@ def api_root(request):
             'Workshop & Collaboration Tools',
             'Data Export & Reporting'
         ]
-    }
     })
 
 # API 패턴 - 기본 기능만 활성화
