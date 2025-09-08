@@ -850,6 +850,378 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
             </div>
           </div>
         );
+      case 'user-guide':
+        return (
+          <div className="max-w-6xl mx-auto space-y-8">
+            {/* 페이지 헤더 */}
+            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                <span className="text-2xl">📚</span>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">사용자 가이드</h2>
+              <p className="text-lg text-gray-600 leading-relaxed">AHP 플랫폼 사용법과 분석 방법을 익혀보세요</p>
+            </div>
+            
+            {/* 가이드 섹션들 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">🚀</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">시작하기</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">AHP 분석의 기본 개념과 첫 프로젝트 생성 방법</p>
+                <Button variant="outline" className="w-full">가이드 보기</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">🏗️</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">모델 구축</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">계층구조 설정과 기준/대안 정의 방법</p>
+                <Button variant="outline" className="w-full">가이드 보기</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">⚖️</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">쌍대비교</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">쌍대비교 매트릭스 작성과 일관성 검증</p>
+                <Button variant="outline" className="w-full">가이드 보기</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">👥</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">평가자 관리</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">평가자 초대와 권한 설정, 진행률 모니터링</p>
+                <Button variant="outline" className="w-full">가이드 보기</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">결과 분석</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">결과 해석과 보고서 작성, 민감도 분석</p>
+                <Button variant="outline" className="w-full">가이드 보기</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">💡</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">고급 팁</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">효과적인 AHP 분석을 위한 전문가 노하우</p>
+                <Button variant="outline" className="w-full">가이드 보기</Button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'demographic-survey':
+        return (
+          <div className="max-w-5xl mx-auto space-y-8">
+            {/* 페이지 헤더 */}
+            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                <span className="text-2xl">📊</span>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">인구통계학적 설문조사</h2>
+              <p className="text-lg text-gray-600 leading-relaxed">평가자의 배경 정보를 수집하여 더 정확한 분석을 수행하세요</p>
+            </div>
+            
+            {/* 설문 현황 */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <span className="text-2xl">📋</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">총 설문</p>
+                    <p className="text-3xl font-bold text-blue-600">3</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <span className="text-2xl">✅</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">완료</p>
+                    <p className="text-3xl font-bold text-green-600">47</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-orange-100 rounded-lg">
+                    <span className="text-2xl">⏳</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">진행중</p>
+                    <p className="text-3xl font-bold text-orange-600">12</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <span className="text-2xl">📈</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">응답률</p>
+                    <p className="text-3xl font-bold text-purple-600">79%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* 설문 템플릿 */}
+            <div className="bg-white rounded-xl shadow-sm border p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900">설문 템플릿</h3>
+                <Button variant="primary" className="px-6 py-2">새 설문 생성</Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 border rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                  <div className="text-3xl mb-3">👤</div>
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">기본 인구통계</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">연령, 성별, 교육수준, 직업 등 기본적인 배경 정보</p>
+                </div>
+                <div className="p-6 border rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                  <div className="text-3xl mb-3">💼</div>
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">전문성 평가</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">해당 분야 경험, 전문 지식 수준, 의사결정 경험</p>
+                </div>
+                <div className="p-6 border rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                  <div className="text-3xl mb-3">🎯</div>
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">커스텀 설문</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">프로젝트 특성에 맞는 맞춤형 질문 구성</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case 'paper-management':
+        return (
+          <div className="max-w-6xl mx-auto space-y-8">
+            {/* 페이지 헤더 */}
+            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
+                <span className="text-2xl">📝</span>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">논문 작성 관리</h2>
+              <p className="text-lg text-gray-600 leading-relaxed">AHP 분석 결과를 학술 논문으로 체계적으로 작성하세요</p>
+            </div>
+            
+            {/* 논문 현황 통계 */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <span className="text-2xl">📄</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">초안</p>
+                    <p className="text-3xl font-bold text-blue-600">2</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-orange-100 rounded-lg">
+                    <span className="text-2xl">✏️</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">작성중</p>
+                    <p className="text-3xl font-bold text-orange-600">1</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <span className="text-2xl">📋</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">제출 완료</p>
+                    <p className="text-3xl font-bold text-green-600">0</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <span className="text-2xl">🏆</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">게재</p>
+                    <p className="text-3xl font-bold text-purple-600">0</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* 논문 템플릿과 도구 */}
+            <div className="bg-white rounded-xl shadow-sm border p-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-6">논문 작성 도구</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="p-6 border rounded-lg hover:border-purple-300 cursor-pointer transition-colors">
+                  <div className="text-3xl mb-3">📑</div>
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">논문 구조 생성</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">AHP 분석 논문의 표준 구조를 자동으로 생성합니다</p>
+                  <Button variant="outline" className="w-full">구조 생성</Button>
+                </div>
+                
+                <div className="p-6 border rounded-lg hover:border-purple-300 cursor-pointer transition-colors">
+                  <div className="text-3xl mb-3">📊</div>
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">결과 자동 서술</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">분석 결과를 학술적 문체로 자동 서술해드립니다</p>
+                  <Button variant="outline" className="w-full">결과 생성</Button>
+                </div>
+                
+                <div className="p-6 border rounded-lg hover:border-purple-300 cursor-pointer transition-colors">
+                  <div className="text-3xl mb-3">📈</div>
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">그래프 및 표</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">논문에 적합한 고품질 그래프와 표를 생성합니다</p>
+                  <Button variant="outline" className="w-full">차트 생성</Button>
+                </div>
+                
+                <div className="p-6 border rounded-lg hover:border-purple-300 cursor-pointer transition-colors">
+                  <div className="text-3xl mb-3">📚</div>
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">참고문헌 관리</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">AHP 관련 참고문헌을 체계적으로 관리합니다</p>
+                  <Button variant="outline" className="w-full">문헌 관리</Button>
+                </div>
+                
+                <div className="p-6 border rounded-lg hover:border-purple-300 cursor-pointer transition-colors">
+                  <div className="text-3xl mb-3">✍️</div>
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">초록 생성</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">연구 내용을 바탕으로 초록을 자동 생성합니다</p>
+                  <Button variant="outline" className="w-full">초록 작성</Button>
+                </div>
+                
+                <div className="p-6 border rounded-lg hover:border-purple-300 cursor-pointer transition-colors">
+                  <div className="text-3xl mb-3">🔍</div>
+                  <h4 className="font-bold text-lg text-gray-900 mb-2">표절 검사</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">작성된 논문의 독창성을 검증해드립니다</p>
+                  <Button variant="outline" className="w-full">검사 실행</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case 'decision-support':
+        return (
+          <div className="max-w-6xl mx-auto space-y-8">
+            {/* 페이지 헤더 */}
+            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                <span className="text-2xl">🧠</span>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">의사결정 지원</h2>
+              <p className="text-lg text-gray-600 leading-relaxed">AI 기반 의사결정 지원 시스템으로 더 나은 선택을 하세요</p>
+            </div>
+            
+            {/* 지원 도구 현황 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <span className="text-2xl">🤖</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">AI 분석</p>
+                    <p className="text-3xl font-bold text-blue-600">12</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <span className="text-2xl">💡</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">추천</p>
+                    <p className="text-3xl font-bold text-green-600">8</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                <div className="flex items-center">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">시뮬레이션</p>
+                    <p className="text-3xl font-bold text-purple-600">5</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* 지원 도구들 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">🎯</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">목표 우선순위</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">여러 목표 간의 우선순위를 AI가 분석하여 최적의 균형점을 제안합니다</p>
+                <Button variant="primary" className="w-full">분석 시작</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">⚖️</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">리스크 분석</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">각 대안의 잠재적 위험요소를 식별하고 리스크 수준을 평가합니다</p>
+                <Button variant="primary" className="w-full">위험 분석</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">🔮</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">미래 시나리오</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">다양한 미래 상황을 시뮬레이션하여 최적의 전략을 도출합니다</p>
+                <Button variant="primary" className="w-full">시나리오 생성</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">📈</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">민감도 분석</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">기준 가중치 변화가 결과에 미치는 영향을 시각적으로 분석합니다</p>
+                <Button variant="primary" className="w-full">민감도 확인</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">🎲</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Monte Carlo</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">불확실성을 고려한 확률론적 의사결정 분석을 제공합니다</p>
+                <Button variant="primary" className="w-full">확률 분석</Button>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-sm border p-8 hover:shadow-lg transition-all duration-200">
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">🎪</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">그룹 합의</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">여러 평가자의 의견을 종합하여 합의된 결과를 도출합니다</p>
+                <Button variant="primary" className="w-full">합의 도출</Button>
+              </div>
+            </div>
+          </div>
+        );
       case 'settings':
         return (
           <div className="max-w-4xl mx-auto space-y-8">
@@ -1175,15 +1547,16 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
             </div>
           </div>
 
-          {/* 네비게이션 메뉴 - 개선된 스타일링 */}
-          <nav className="space-y-3">
+          {/* 네비게이션 메뉴 - 기존 구조 적용 */}
+          <nav className="space-y-2">
+            {/* 메인 메뉴 */}
             <div className="mb-6">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-2">메인 메뉴</h4>
               {[
-                { id: 'dashboard', label: '대시보드', icon: '🏠' },
+                { id: 'dashboard', label: '내 대시보드', icon: '🏠' },
+                { id: 'user-guide', label: '사용자 가이드', icon: '📚' },
+                { id: 'demographic-survey', label: '인구통계학적 설문조사', icon: '📊' },
                 { id: 'projects', label: '내 프로젝트', icon: '📂' },
-                { id: 'creation', label: '새 프로젝트', icon: '➕' },
-                { id: 'model-builder', label: '모델 구축', icon: '🏗️' }
+                { id: 'creation', label: '새 프로젝트', icon: '➕' }
               ].map((item) => (
                 <button
                   key={item.id}
@@ -1200,36 +1573,38 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
               ))}
             </div>
 
+            {/* 분석 및 관리 메뉴 */}
             <div className="mb-6">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-2">고급 기능</h4>
               {[
-                { id: 'evaluators', label: '평가자 관리', icon: '👥' },
-                { id: 'monitoring', label: '진행률 확인', icon: '📈' },
-                { id: 'analysis', label: '결과 분석', icon: '📊' },
-                { id: 'export', label: '보고서', icon: '📤' }
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleTabChange(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-3 group ${
-                    activeMenu === item.id
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-                  }`}
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  <span className="text-sm font-semibold">{item.label}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="mb-6">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-2">도구</h4>
-              {[
-                { id: 'survey-links', label: '설문 링크', icon: '🔗' },
+                { id: 'model-builder', label: '모델 구축', icon: '🏗️' },
                 { id: 'evaluation-test', label: '평가 테스트', icon: '🧪' },
-                { id: 'workshop', label: '워크샵', icon: '🎯' },
-                { id: 'settings', label: '설정', icon: '⚙️' }
+                { id: 'evaluators', label: '평가자 관리', icon: '👥' },
+                { id: 'monitoring', label: '진행률 모니터링', icon: '📈' },
+                { id: 'analysis', label: '결과 분석', icon: '📊' }
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleTabChange(item.id)}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-3 group ${
+                    activeMenu === item.id
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                >
+                  <span className="text-lg">{item.icon}</span>
+                  <span className="text-sm font-semibold">{item.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* 고급 도구 및 설정 메뉴 */}
+            <div className="mb-6">
+              {[
+                { id: 'paper-management', label: '논문 작성 관리', icon: '📝' },
+                { id: 'export', label: '보고서 내보내기', icon: '📤' },
+                { id: 'workshop', label: '워크샵 관리', icon: '🎯' },
+                { id: 'decision-support', label: '의사결정 지원', icon: '🧠' },
+                { id: 'settings', label: '개인 설정', icon: '⚙️' }
               ].map((item) => (
                 <button
                   key={item.id}
@@ -1285,7 +1660,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
 
         {/* 메인 콘텐츠 영역 - 개선된 여백과 최대 너비 */}
         <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="p-8 max-w-[1400px] mx-auto">
+          <div className="p-12 max-w-[1600px] mx-auto">
           {activeMenu === 'dashboard' && (
             <div className="max-w-7xl mx-auto space-y-8">
               {/* 환영 메시지 */}
@@ -1398,7 +1773,11 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
           )}
 
           {/* 기타 메뉴 콘텐츠 렌더링 */}
-          {activeMenu !== 'dashboard' && renderMenuContent()}
+          {activeMenu !== 'dashboard' && (
+            <div className="space-y-8">
+              {renderMenuContent()}
+            </div>
+          )}
           </div>
         </div>
       </div>
