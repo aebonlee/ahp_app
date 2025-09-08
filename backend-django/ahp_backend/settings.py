@@ -98,7 +98,7 @@ if config('DATABASE_URL', default=None):
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'ahp_app_vuzk',
             'USER': 'ahp_app_vuzk_user',
-            'PASSWORD': 'jBCBoX3bn744oseQswRcaee1ODBmJCZX',
+            'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
             'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
             'PORT': '5432',
             'OPTIONS': {
