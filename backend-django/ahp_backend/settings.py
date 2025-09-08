@@ -45,15 +45,9 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🚨 Emergency: Only accounts app for debugging
+# 🚨 Emergency: No custom apps - Pure Django only
 LOCAL_APPS = [
-    'apps.accounts',       # ✅ Only essential app
-    # 'apps.projects',       # ⏸️ Temporarily disabled
-    # 'apps.common',         # ⏸️ Temporarily disabled
-    # 'apps.evaluations',    # ⏸️ Temporarily disabled 
-    # 'apps.analysis',       # ⏸️ Temporarily disabled
-    # 'apps.workshops',      # ⏸️ Temporarily disabled
-    # 'apps.exports',        # ⏸️ Temporarily disabled
+    # All custom apps temporarily disabled for debugging
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
