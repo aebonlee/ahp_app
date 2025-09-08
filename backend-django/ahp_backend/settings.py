@@ -45,15 +45,16 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🎉 최종 완료: 모든 AHP 앱 활성화
+# 🔧 Migration Fix: Minimal apps for initial deployment
 LOCAL_APPS = [
-    'apps.common',         # ✅ 1단계 완료
-    'apps.accounts',       # ✅ 2단계 완료  
-    'apps.projects',       # ✅ 3단계 완료
-    'apps.evaluations',    # ✅ 4단계 완료
-    'apps.analysis',       # ✅ 4단계 완료
-    'apps.workshops',      # ✅ 5단계 활성화
-    'apps.exports',        # ✅ 5단계 활성화
+    'apps.accounts',       # ✅ MUST BE FIRST - Contains custom User model
+    # Other apps disabled temporarily for migration fix
+    # 'apps.common',         
+    # 'apps.projects',       
+    # 'apps.evaluations',    
+    # 'apps.analysis',       
+    # 'apps.workshops',      
+    # 'apps.exports',        
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
