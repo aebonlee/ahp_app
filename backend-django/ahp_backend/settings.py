@@ -94,8 +94,14 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 
 if config('DATABASE_URL', default=None):
     DATABASES = {
-        'default': dj_database_url.parse(config('DATABASE_URL'))
+        'default': dj_database_url.parse(
+            config('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
+    # psycopg3 support
+    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
 else:
     DATABASES = {
         'default': {
