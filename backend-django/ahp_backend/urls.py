@@ -15,12 +15,20 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
-# 기본 API 패턴만 포함 (배포 성공 후 확장)
+# API 패턴 활성화
 api_patterns = [
-    # Authentication - 배포 성공 후 활성화
-    # path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    # path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    # Authentication
+    path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    
+    # App URLs
+    path('accounts/', include('apps.accounts.urls')),
+    path('projects/', include('apps.projects.urls')),
+    path('evaluations/', include('apps.evaluations.urls')),
+    path('analysis/', include('apps.analysis.urls')),
+    path('workshops/', include('apps.workshops.urls')),
+    path('exports/', include('apps.exports.urls')),
 ]
 
 urlpatterns = [

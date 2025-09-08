@@ -44,15 +44,15 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt',
 ]
 
-# 일단 기본 Django 앱들만 포함 (배포 성공 후 하나씩 추가)
+# Django 앱들 활성화
 LOCAL_APPS = [
-    # 'apps.accounts',
-    # 'apps.projects', 
-    # 'apps.evaluations',
-    # 'apps.analysis',
-    # 'apps.common',
-    # 'apps.workshops',
-    # 'apps.exports',
+    'apps.accounts',
+    'apps.projects', 
+    'apps.evaluations',
+    'apps.analysis',
+    'apps.common',
+    'apps.workshops',
+    'apps.exports',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -162,8 +162,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model - 배포 성공 후 활성화
-# AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model 활성화
+AUTH_USER_MODEL = 'accounts.User'
 
 # Django REST Framework
 REST_FRAMEWORK = {
