@@ -1,9 +1,16 @@
 """
 URLs for Analysis API
 """
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from . import views
 
-# Analysis URLs will be implemented later
+# Create router and register viewsets
+router = DefaultRouter()
+router.register(r'analysis', views.AnalysisViewSet, basename='analysis')
+router.register(r'sensitivity', views.SensitivityAnalysisViewSet, basename='sensitivity')
+
 urlpatterns = [
-    # TODO: Add analysis endpoints
+    # Include router URLs
+    path('', include(router.urls)),
 ]

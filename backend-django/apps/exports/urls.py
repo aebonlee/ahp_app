@@ -7,7 +7,8 @@ from . import views
 
 # Create router and register viewsets
 router = DefaultRouter()
-# router.register(r'exports', views.ExportViewSet, basename='export')
+router.register(r'jobs', views.ExportViewSet, basename='export-job')
+router.register(r'templates', views.ExportTemplateViewSet, basename='export-template')
 
 urlpatterns = [
     # Include router URLs
