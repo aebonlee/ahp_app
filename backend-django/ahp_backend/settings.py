@@ -45,12 +45,12 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🔧 Migration Fix: Minimal apps for initial deployment
+# 🔧 Stage 2: Enable common and projects apps
 LOCAL_APPS = [
-    'apps.accounts',       # ✅ MUST BE FIRST - Contains custom User model
-    # Other apps disabled temporarily for migration fix
-    # 'apps.common',         
-    # 'apps.projects',       
+    'apps.accounts',       # ✅ Stage 1 - Custom User model established
+    'apps.common',         # ✅ Stage 2 - Common utilities
+    'apps.projects',       # ✅ Stage 2 - Project management
+    # Still disabled for gradual deployment:
     # 'apps.evaluations',    
     # 'apps.analysis',       
     # 'apps.workshops',      

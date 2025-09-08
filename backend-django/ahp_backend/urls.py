@@ -21,8 +21,8 @@ from rest_framework_simplejwt.views import (
 def api_root(request):
     """API Root endpoint"""
     return Response({
-        'message': 'AHP Platform Django API v1.0 - Migration Mode',
-        'status': 'Custom User model deployment in progress',
+        'message': 'AHP Platform Django API v1.0 - Stage 2',
+        'status': 'Common and Projects apps enabled',
         'endpoints': {
             'auth': {
                 'token': '/api/v1/auth/token/',
@@ -30,7 +30,9 @@ def api_root(request):
                 'verify': '/api/v1/auth/token/verify/',
             },
             'accounts': '/api/v1/accounts/',
-            # Other endpoints temporarily disabled for migration fix
+            'common': '/api/v1/common/',
+            'projects': '/api/v1/projects/',
+            # Next stage: evaluations, analysis, workshops, exports
         }
     })
 
@@ -44,11 +46,11 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 🔧 Migration Fix: Only accounts enabled initially
-    path('accounts/', include('apps.accounts.urls')),   # ✅ Custom User model app
-    # Other apps disabled temporarily for migration fix
-    # path('common/', include('apps.common.urls')),       
-    # path('projects/', include('apps.projects.urls')),   
+    # App URLs - 🔧 Stage 2: accounts + common + projects
+    path('accounts/', include('apps.accounts.urls')),   # ✅ Stage 1
+    path('common/', include('apps.common.urls')),       # ✅ Stage 2
+    path('projects/', include('apps.projects.urls')),   # ✅ Stage 2
+    # Still disabled for gradual deployment:
     # path('evaluations/', include('apps.evaluations.urls')),  
     # path('analysis/', include('apps.analysis.urls')),   
     # path('workshops/', include('apps.workshops.urls')), 
