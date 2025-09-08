@@ -21,8 +21,8 @@ from rest_framework_simplejwt.views import (
 def api_root(request):
     """API Root endpoint"""
     return Response({
-        'message': 'AHP Platform Django API v1.0 - Stage 2',
-        'status': 'Common and Projects apps enabled',
+        'message': 'AHP Platform Django API v1.0 - Stage 3',
+        'status': 'Core AHP functionality enabled',
         'endpoints': {
             'auth': {
                 'token': '/api/v1/auth/token/',
@@ -32,7 +32,9 @@ def api_root(request):
             'accounts': '/api/v1/accounts/',
             'common': '/api/v1/common/',
             'projects': '/api/v1/projects/',
-            # Next stage: evaluations, analysis, workshops, exports
+            'evaluations': '/api/v1/evaluations/',
+            'analysis': '/api/v1/analysis/',
+            # Final stage: workshops, exports
         }
     })
 
@@ -46,13 +48,13 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 🔧 Stage 2: accounts + common + projects
+    # App URLs - 🔧 Stage 3: + evaluations + analysis
     path('accounts/', include('apps.accounts.urls')),   # ✅ Stage 1
     path('common/', include('apps.common.urls')),       # ✅ Stage 2
     path('projects/', include('apps.projects.urls')),   # ✅ Stage 2
-    # Still disabled for gradual deployment:
-    # path('evaluations/', include('apps.evaluations.urls')),  
-    # path('analysis/', include('apps.analysis.urls')),   
+    path('evaluations/', include('apps.evaluations.urls')),  # ✅ Stage 3
+    path('analysis/', include('apps.analysis.urls')),   # ✅ Stage 3
+    # Final stage:
     # path('workshops/', include('apps.workshops.urls')), 
     # path('exports/', include('apps.exports.urls')),
 ]

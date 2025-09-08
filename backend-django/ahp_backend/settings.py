@@ -45,14 +45,14 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🔧 Stage 2: Enable common and projects apps
+# 🔧 Stage 3: Enable evaluations and analysis apps
 LOCAL_APPS = [
     'apps.accounts',       # ✅ Stage 1 - Custom User model established
     'apps.common',         # ✅ Stage 2 - Common utilities
     'apps.projects',       # ✅ Stage 2 - Project management
-    # Still disabled for gradual deployment:
-    # 'apps.evaluations',    
-    # 'apps.analysis',       
+    'apps.evaluations',    # ✅ Stage 3 - Evaluation processes
+    'apps.analysis',       # ✅ Stage 3 - AHP analysis engine
+    # Final stage:
     # 'apps.workshops',      
     # 'apps.exports',        
 ]
