@@ -45,13 +45,14 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 마이그레이션 완료 후 단계적 활성화
-    # path('accounts/', include('apps.accounts.urls')),
-    # path('projects/', include('apps.projects.urls')),
-    # path('evaluations/', include('apps.evaluations.urls')),
-    # path('analysis/', include('apps.analysis.urls')),
-    # path('workshops/', include('apps.workshops.urls')),
-    # path('exports/', include('apps.exports.urls')),
+    # App URLs - 단계적 활성화
+    path('common/', include('apps.common.urls')),       # ✅ 1단계 활성화
+    # path('accounts/', include('apps.accounts.urls')),  # 2단계 예정
+    # path('projects/', include('apps.projects.urls')),  # 3단계 예정 
+    # path('evaluations/', include('apps.evaluations.urls')),  # 4단계 예정
+    # path('analysis/', include('apps.analysis.urls')),  # 4단계 예정
+    # path('workshops/', include('apps.workshops.urls')),  # 5단계 예정
+    # path('exports/', include('apps.exports.urls')),    # 5단계 예정
 ]
 
 urlpatterns = [

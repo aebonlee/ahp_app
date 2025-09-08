@@ -45,15 +45,15 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 기본 Django 앱만 활성화 - 단계적 배포
+# 1단계: 공통 앱 활성화
 LOCAL_APPS = [
-    # 'apps.accounts',       # 마이그레이션 충돌로 임시 비활성화
-    # 'apps.projects',       # 단계적 활성화 예정
-    # 'apps.evaluations',    # 단계적 활성화 예정
-    # 'apps.analysis',       # 단계적 활성화 예정
-    # 'apps.common',         # 단계적 활성화 예정
-    # 'apps.workshops',      # 단계적 활성화 예정
-    # 'apps.exports',        # 단계적 활성화 예정
+    'apps.common',         # ✅ 1단계 활성화
+    # 'apps.accounts',       # 2단계 예정 
+    # 'apps.projects',       # 3단계 예정
+    # 'apps.evaluations',    # 4단계 예정
+    # 'apps.analysis',       # 4단계 예정
+    # 'apps.workshops',      # 5단계 예정
+    # 'apps.exports',        # 5단계 예정
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
