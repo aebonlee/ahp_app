@@ -94,14 +94,18 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 
 if config('DATABASE_URL', default=None):
     DATABASES = {
-        'default': dj_database_url.parse(
-            config('DATABASE_URL'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'ahp_app_vuzk',
+            'USER': 'ahp_app_vuzk_user',
+            'PASSWORD': 'jBCBoX3bn744oseQswRcaee1ODBmJCZX',
+            'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
+            'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
     }
-    # psycopg3 support
-    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
 else:
     DATABASES = {
         'default': {
