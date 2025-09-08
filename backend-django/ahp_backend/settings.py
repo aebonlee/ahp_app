@@ -45,9 +45,9 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🚨 Emergency: No custom apps - Pure Django only
+# 🔄 Step 1: accounts 앱부터 단계적 활성화
 LOCAL_APPS = [
-    # All custom apps temporarily disabled for debugging
+    'apps.accounts',       # ✅ 사용자 인증 - 필수
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

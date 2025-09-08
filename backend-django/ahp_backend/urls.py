@@ -59,8 +59,8 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 🚨 All custom apps disabled for debugging
-    # All app URLs temporarily disabled
+    # App URLs - 🔄 Step 1: accounts 앱 활성화
+    path('accounts/', include('apps.accounts.urls')),   # ✅ 사용자 인증
 ]
 
 urlpatterns = [
