@@ -261,6 +261,19 @@
   --accent-hover: var(--brand-gold-secondary);
   --accent-focus: rgba(200, 169, 104, 0.35);
   --accent-rgb: 200, 169, 104;
+  --accent-bg-light: rgba(200, 169, 104, 0.1);
+  
+  /* === Gold System (Missing variables) === */
+  --gold-primary: var(--brand-gold-primary);
+  --gold-secondary: var(--brand-gold-secondary);
+  --gold-light: var(--brand-gold-light);
+  --shadow-gold: 0 4px 12px rgba(200, 169, 104, 0.3);
+  
+  /* === Additional Color System === */
+  --color-success: var(--semantic-success);
+  --color-warning: var(--semantic-warning);
+  --color-error: var(--semantic-danger);
+  --color-info: var(--semantic-info);
   
   /* === Status Colors === */
   --status-info-bg: rgba(var(--accent-rgb), 0.1);
