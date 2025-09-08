@@ -1,12 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import Card from '../components/common/Card';
 import Button from '../components/common/Button';
+import CriteriaManagement from '../components/admin/CriteriaManagement';
+import AlternativeManagement from '../components/admin/AlternativeManagement';
+import EvaluatorAssignment from '../components/admin/EvaluatorAssignment';
+import EnhancedEvaluatorManagement from '../components/admin/EnhancedEvaluatorManagement';
+import SurveyLinkManager from '../components/admin/SurveyLinkManager';
+import ModelFinalization from '../components/admin/ModelFinalization';
+import WorkflowStageIndicator, { WorkflowStage } from '../components/workflow/WorkflowStageIndicator';
+import { EvaluationMode } from '../components/evaluation/EvaluationModeSelector';
+import PaymentSystem from '../components/payment/PaymentSystem';
+import WorkshopManagement from '../components/workshop/WorkshopManagement';
+import DecisionSupportSystem from '../components/decision/DecisionSupportSystem';
+import PaperManagement from '../components/paper/PaperManagement';
 import ProjectSelector from '../components/project/ProjectSelector';
+import SurveyManagementSystem from '../components/survey/SurveyManagementSystem';
 import PersonalSettings from '../components/settings/PersonalSettings';
+import UsageManagement from '../components/admin/UsageManagement';
+import ValidityCheck from '../components/validity/ValidityCheck';
+import TrashBin from '../components/admin/TrashBin';
 import type { ProjectData } from '../services/api';
 
 interface PersonalServiceProps {
   user: {
-    id: string | number;
+    id: string | number;  // 백엔드는 number로 보냄
     first_name: string;
     last_name: string;
     email: string;
@@ -16,7 +33,7 @@ interface PersonalServiceProps {
   activeTab?: string;
   onTabChange?: (tab: string) => void;
   onUserUpdate?: (updatedUser: {
-    id: string | number;
+    id: string | number;  // 백엔드는 number로 보냄
     first_name: string;
     last_name: string;
     email: string;
@@ -44,14 +61,16 @@ interface UserProject extends Omit<ProjectData, 'evaluation_method'> {
   criteria_count: number;
   alternatives_count: number;
   last_modified: string;
-  evaluation_method: 'pairwise' | 'direct' | 'mixed';
+  evaluation_method: 'pairwise' | 'direct' | 'mixed'; // 레거시 호환성
 }
 
+
+// 요금제별 할당량 정의
 const PLAN_QUOTAS = {
   'basic': { projects: 3, evaluators: 30 },
   'standard': { projects: 3, evaluators: 50 },
   'premium': { projects: 3, evaluators: 100 },
-  'enterprise': { projects: 3, evaluators: 100 }
+  'enterprise': { projects: 3, evaluators: 100 } // + 10명 단위 추가 가능
 };
 
 const PersonalServicePage: React.FC<PersonalServiceProps> = ({ 
@@ -59,7 +78,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
   activeTab: externalActiveTab,
   onTabChange: externalOnTabChange,
   onUserUpdate,
-  projects: externalProjects = [],
+  projects: externalProjects = [], // 기본값으로 빈 배열 설정
   onCreateProject,
   onDeleteProject,
   onFetchCriteria,
@@ -73,70 +92,216 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
   selectedProjectId: externalSelectedProjectId,
   onSelectProject: externalOnSelectProject
 }) => {
+  // 사용자 정보 내부 상태 관리
   const [user, setUser] = useState(initialUser);
   
-  const userPlan = {
-    planType: 'standard' as const,
+  // 요금제 정보 관리
+  const [userPlan, setUserPlan] = useState<{
+    planType: 'basic' | 'standard' | 'premium' | 'enterprise';
+    additionalEvaluators: number; // 10명 단위 추가 구매
+    planName: string;
+  }>({
+    planType: 'standard',
     additionalEvaluators: 0,
     planName: 'Standard Plan'
-  };
+  });
 
+  // props의 user가 변경될 때 내부 상태도 업데이트
   useEffect(() => {
+    console.log('👀 PersonalServicePage: props user 변경 감지', {
+      이전내부사용자: user,
+      새props사용자: initialUser,
+      변경됨: user.first_name !== initialUser.first_name || user.last_name !== initialUser.last_name
+    });
     if (user.first_name !== initialUser.first_name || user.last_name !== initialUser.last_name) {
       setUser(initialUser);
     }
-  }, [initialUser.first_name, initialUser.last_name, user.first_name, user.last_name]);
+  }, [initialUser.first_name, initialUser.last_name]);
 
+  // 사용자 정보 업데이트 처리
   const handleUserUpdate = (updatedUser: typeof initialUser) => {
+    console.log('🔄 PersonalServicePage: handleUserUpdate 호출!', {
+      이전사용자: user,
+      새사용자: updatedUser,
+      onUserUpdate존재: !!onUserUpdate
+    });
+    
+    // 새로운 객체 참조를 만들어 React 리렌더링 보장
     const newUserObject = {
       ...updatedUser,
+      // 타임스탬프 추가로 강제 리렌더링
       _updated: Date.now()
     };
     
     setUser(newUserObject);
     if (onUserUpdate) {
+      console.log('🚀 PersonalServicePage: App.tsx로 전파!', newUserObject);
       onUserUpdate(newUserObject);
     }
   };
   
+  // props에서 받은 projects를 직접 사용 (내부 state 제거)
   const projects = Array.isArray(externalProjects) ? externalProjects : [];
   
-  const quotas = {
-    currentProjects: projects.length,
-    maxProjects: PLAN_QUOTAS[userPlan.planType].projects,
-    currentEvaluators: 0,
-    maxEvaluators: PLAN_QUOTAS[userPlan.planType].evaluators + (userPlan.additionalEvaluators * 10),
-    remainingProjects: Math.max(0, PLAN_QUOTAS[userPlan.planType].projects - projects.length),
-    remainingEvaluators: Math.max(0, PLAN_QUOTAS[userPlan.planType].evaluators + (userPlan.additionalEvaluators * 10) - 0)
+  // 현재 사용량 및 할당량 계산
+  const getCurrentQuotas = () => {
+    const basePlan = PLAN_QUOTAS[userPlan.planType];
+    const totalEvaluators = basePlan.evaluators + (userPlan.additionalEvaluators * 10);
+    
+    return {
+      maxProjects: basePlan.projects,
+      currentProjects: projects.length,
+      maxEvaluators: totalEvaluators,
+      currentEvaluators: projects.reduce((total, project) => total + (project.evaluator_count || 0), 0),
+      planName: userPlan.planName,
+      additionalEvaluators: userPlan.additionalEvaluators
+    };
   };
-
-  const activeMenu = externalActiveTab === 'personal-service' ? 'dashboard' :
-                     externalActiveTab === 'my-projects' ? 'projects' :
-                     externalActiveTab === 'project-creation' ? 'creation' :
-                     externalActiveTab === 'model-builder' ? 'model-builder' :
-                     externalActiveTab === 'evaluator-management' ? 'evaluators' :
-                     externalActiveTab === 'progress-monitoring' ? 'monitoring' :
-                     externalActiveTab === 'results-analysis' ? 'analysis' :
-                     externalActiveTab === 'export-reports' ? 'export' :
-                     externalActiveTab === 'workshop-management' ? 'workshop' :
-                     externalActiveTab === 'decision-support-system' ? 'decision-support' :
-                     externalActiveTab === 'personal-settings' ? 'settings' :
-                     externalActiveTab === 'evaluation-test' ? 'evaluation-test' :
-                     externalActiveTab === 'user-guide' ? 'user-guide' :
-                     externalActiveTab === 'demographic-survey' ? 'demographic-survey' :
-                     externalActiveTab === 'paper-management' ? 'paper-management' :
-                     externalActiveTab === 'survey-links' ? 'survey-links' :
-                     'dashboard';
-
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(externalSelectedProjectId || '');
+  
+  const quotas = getCurrentQuotas();
+  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [activeProject, setActiveProject] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<'overview' | 'projects' | 'criteria' | 'alternatives' | 'evaluators' | 'finalize'>('overview');
+  const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<UserProject | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [error, setError] = useState<string | null>(null);
+  const [projectForm, setProjectForm] = useState({
+    title: '',
+    description: '',
+    objective: '',
+    evaluation_method: 'pairwise' as 'pairwise' | 'direct' | 'mixed',
+    evaluation_mode: 'practical' as EvaluationMode,
+    workflow_stage: 'creating' as WorkflowStage
+  });
+  const [newProjectStep, setNewProjectStep] = useState(1);
+  const [newProjectId, setNewProjectId] = useState<string | null>(null);
+  const [projectEvaluators, setProjectEvaluators] = useState<any[]>([]);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [projectSelectorConfig, setProjectSelectorConfig] = useState<{
     title: string;
     description: string;
     nextAction: string;
   } | null>(null);
+  // 진행률 모니터링 페이지네이션 상태
+  const [currentMonitoringPage, setCurrentMonitoringPage] = useState(1);
+  
+  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'projects' | 'creation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash'>(() => {
+    // URL 파라미터에서 직접 demographic-survey 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    
+    console.log('🔍 PersonalServicePage 초기화:', { 
+      tabParam, 
+      externalActiveTab,
+      urlSearch: window.location.search 
+    });
+    
+    if (tabParam === 'demographic-survey') {
+      console.log('✅ demographic-survey 탭으로 설정');
+      return 'demographic-survey';
+    }
+    
+    // 기존 externalActiveTab 기반 로직
+    const result = externalActiveTab === 'personal-service' ? 'dashboard' :
+    externalActiveTab === 'my-projects' ? 'projects' :
+    externalActiveTab === 'project-creation' ? 'creation' :
+    externalActiveTab === 'model-builder' ? 'model-builder' :
+    externalActiveTab === 'evaluator-management' ? 'evaluators' :
+    externalActiveTab === 'progress-monitoring' ? 'monitoring' :
+    externalActiveTab === 'results-analysis' ? 'analysis' :
+    externalActiveTab === 'paper-management' ? 'paper' :
+    externalActiveTab === 'export-reports' ? 'export' :
+    externalActiveTab === 'workshop-management' ? 'workshop' :
+    externalActiveTab === 'decision-support-system' ? 'decision-support' :
+    externalActiveTab === 'personal-settings' ? 'settings' :
+    'dashboard';
+    
+    console.log('📊 최종 activeMenu 설정:', result);
+    return result;
+  });
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [projectTemplate, setProjectTemplate] = useState<'blank' | 'business' | 'technical' | 'academic'>('blank');
+  
+  // Project management UI states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'active' | 'completed'>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<'name' | 'date' | 'progress' | 'status'>('date');
+
+  // 현재 사용자의 플랜 정보 (실제로는 API에서 가져와야 함)
+  const currentPlan = 'standard'; // 임시로 Standard Plan으로 설정
+  const planLimits = PLAN_QUOTAS[currentPlan];
+  
+  // 사용량 계산 (안전 가드 추가)
+  const usedProjects = (projects || []).length;
+  const usedEvaluators = (projects || []).reduce((sum, p) => sum + (p.evaluator_count || 0), 0);
+  
+  // 사용 가능한 옵션들 (플랜별로 다를 수 있음)
+  const availableFeatures = {
+    'basic': {
+      'advanced-analysis': false,
+      'group-ahp': false,
+      'realtime-collab': false,
+      'premium-support': false
+    },
+    'standard': {
+      'advanced-analysis': false,
+      'group-ahp': true,
+      'realtime-collab': false,
+      'premium-support': false
+    },
+    'premium': {
+      'advanced-analysis': true,
+      'group-ahp': true,
+      'realtime-collab': true,
+      'premium-support': true
+    },
+    'enterprise': {
+      'advanced-analysis': true,
+      'group-ahp': true,
+      'realtime-collab': true,
+      'premium-support': true
+    }
+  };
+  
+  const currentFeatures = availableFeatures[currentPlan];
+
+  const projectTemplates = {
+    blank: { name: '빈 프로젝트', desc: '처음부터 설정' },
+    business: { name: '비즈니스 결정', desc: '경영 의사결정 템플릿' },
+    technical: { name: '기술 선택', desc: '기술 대안 비교 템플릿' },
+    academic: { name: '연구 분석', desc: '학술 연구용 템플릿' }
+  };
+
+  // 외부에서 activeTab이 변경되면 내부 activeMenu도 업데이트
+  useEffect(() => {
+    if (externalActiveTab) {
+      const menuMap: Record<string, string> = {
+        'personal-service': 'dashboard',
+        'my-projects': 'projects',
+        'project-creation': 'creation',
+        'model-builder': 'model-builder',
+        'validity-check': 'validity-check',
+        'evaluator-management': 'evaluators',
+        'progress-monitoring': 'monitoring',
+        'results-analysis': 'analysis',
+        'export-reports': 'export',
+        'workshop-management': 'workshop',
+        'decision-support-system': 'decision-support',
+        'personal-settings': 'settings',
+        'demographic-survey': 'demographic-survey'
+      };
+      const mappedMenu = menuMap[externalActiveTab] || 'dashboard';
+      setActiveMenu(mappedMenu as any);
+    }
+  }, [externalActiveTab]);
 
   const handleTabChange = (tab: string) => {
+    // 프로젝트 선택이 필요한 메뉴들
     const projectRequiredMenus = ['model-builder', 'monitoring', 'analysis'];
     
     if (projectRequiredMenus.includes(tab)) {
@@ -162,33 +327,50 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
       setShowProjectSelector(true);
       return;
     }
-    
+
     if (externalOnTabChange) {
+      // 내부 메뉴를 외부 activeTab ID로 변환
       const tabMap: Record<string, string> = {
         'dashboard': 'personal-service',
         'projects': 'my-projects',
         'creation': 'project-creation',
         'model-builder': 'model-builder',
+        'validity-check': 'validity-check',
         'evaluators': 'evaluator-management',
         'monitoring': 'progress-monitoring',
         'analysis': 'results-analysis',
         'export': 'export-reports',
         'workshop': 'workshop-management',
         'decision-support': 'decision-support-system',
-        'settings': 'personal-settings'
+        'evaluation-test': 'evaluation-test',
+        'settings': 'personal-settings',
+        'demographic-survey': 'demographic-survey',
+        'trash': 'trash'
       };
       const mappedTab = tabMap[tab] || 'personal-service';
       externalOnTabChange(mappedTab);
+    } else {
+      setActiveMenu(tab as any);
     }
   };
 
   const handleProjectSelect = (project: UserProject) => {
-    const projectId = project.id || '';
-    setSelectedProjectId(projectId);
-    if (externalOnSelectProject) {
-      externalOnSelectProject(projectId);
-    }
+    setActiveProject(project.id || null);
+    setSelectedProjectId(project.id || '');
     setShowProjectSelector(false);
+    
+    if (projectSelectorConfig) {
+      // 선택된 프로젝트와 함께 해당 기능으로 이동
+      if (projectSelectorConfig.nextAction === 'model-builder') {
+        setCurrentStep('criteria');
+        setActiveMenu('model-builder');
+      } else if (projectSelectorConfig.nextAction === 'monitoring') {
+        setActiveMenu('monitoring');
+      } else if (projectSelectorConfig.nextAction === 'analysis') {
+        setActiveMenu('analysis');
+      }
+    }
+    
     setProjectSelectorConfig(null);
   };
 
@@ -197,19 +379,19 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
     setProjectSelectorConfig(null);
   };
 
-  // 원본 PersonalServiceDashboard의 전문적 디자인 완전 적용
   const renderOverview = () => (
     <div className="space-y-6">
-      {/* 프로젝트 현황 대시보드 - 원본과 동일한 Tailwind 구조 */}
+
+      {/* 프로젝트 현황 대시보드 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-base font-medium" style={{ color: 'var(--status-info-text)' }}>프로젝트</p>
               <p className="text-3xl font-bold" style={{ 
-                color: projects.length >= quotas.maxProjects ? 'var(--status-error-text)' : 'var(--text-primary)' 
+                color: (projects || []).length >= getCurrentQuotas().maxProjects ? 'var(--status-error-text)' : 'var(--text-primary)' 
               }}>
-                {projects.length}<span className="text-lg text-gray-500">/{quotas.maxProjects}</span>
+                {(projects || []).length}<span className="text-lg text-gray-500">/{getCurrentQuotas().maxProjects}</span>
               </p>
               <p className="text-sm text-gray-500">{userPlan.planName}</p>
             </div>
@@ -223,9 +405,9 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
             <div>
               <p className="text-base font-medium" style={{ color: 'var(--status-success-text)' }}>평가자</p>
               <p className="text-3xl font-bold" style={{ 
-                color: quotas.currentEvaluators >= quotas.maxEvaluators ? 'var(--status-error-text)' : 'var(--text-primary)' 
+                color: getCurrentQuotas().currentEvaluators >= getCurrentQuotas().maxEvaluators ? 'var(--status-error-text)' : 'var(--text-primary)' 
               }}>
-                {quotas.currentEvaluators}<span className="text-lg text-gray-500">/{quotas.maxEvaluators}</span>
+                {getCurrentQuotas().currentEvaluators}<span className="text-lg text-gray-500">/{getCurrentQuotas().maxEvaluators}</span>
               </p>
               <p className="text-sm text-gray-500">
                 {userPlan.additionalEvaluators > 0 && `+${userPlan.additionalEvaluators * 10}명 추가`}
@@ -240,7 +422,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-base font-medium" style={{ color: 'var(--accent-primary)' }}>진행중</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{projects.filter(p => p.status === 'active').length}</p>
+              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'active').length}</p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--accent-primary)' }}>
               <span className="text-white text-2xl">🚀</span>
@@ -252,7 +434,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
             <div>
               <p className="text-base font-medium" style={{ color: 'var(--status-warning-text)' }}>완료됨</p>
               <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                {projects.filter(p => p.status === 'completed').length}
+                {(projects || []).filter(p => p.status === 'completed').length}
               </p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-warning-text)' }}>
@@ -262,7 +444,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         </div>
       </div>
 
-      {/* 주요 기능 6개 인라인 배치 - 원본과 완전 동일 */}
+      {/* 주요 기능 6개 인라인 배치 */}
       <div className="flex flex-wrap justify-center gap-4">
         {[
           { id: 'creation', label: '새 프로젝트', icon: '🚀', color: 'from-blue-500 to-blue-600' },
@@ -298,7 +480,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         ))}
       </div>
 
-      {/* 빠른 시작 및 빠른 접근 통합 - 원본과 완전 동일 */}
+      {/* 빠른 시작 및 빠른 접근 통합 - 하단에 크게 배치 */}
       <div 
         className="p-8 rounded-xl border-2 transition-all duration-300"
         style={{
@@ -362,6 +544,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
           ))}
         </div>
       </div>
+
     </div>
   );
 
@@ -369,6 +552,72 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
     switch (activeMenu) {
       case 'dashboard':
         return renderOverview();
+      case 'projects':
+        return (
+          <div className="text-center py-8">
+            <div className="text-6xl mb-4">📂</div>
+            <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>내 프로젝트</h3>
+            <p className="text-gray-600 mb-4">나의 AHP 분석 프로젝트들을 관리하는 기능이 개발 중입니다.</p>
+            <Button variant="primary" onClick={() => handleTabChange('dashboard')}>
+              대시보드로 돌아가기
+            </Button>
+          </div>
+        );
+      case 'creation':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">새 프로젝트 생성</h3>
+            
+            {/* 템플릿 선택 */}
+            <Card title="프로젝트 템플릿 선택">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {Object.entries(projectTemplates).map(([key, template]) => (
+                  <button
+                    key={key}
+                    onClick={() => setProjectTemplate(key as any)}
+                    aria-label={`${template.name} 템플릿 선택 - ${template.desc}`}
+                    aria-pressed={projectTemplate === key}
+                    className={`p-4 text-center border-2 rounded-lg transition-all ${
+                      projectTemplate === key
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">
+                      {key === 'blank' ? '📄' : 
+                       key === 'business' ? '📋' :
+                       key === 'technical' ? '💻' : '📚'}
+                    </div>
+                    <h4 className="font-medium text-gray-900 mb-1">{template.name}</h4>
+                    <p className="text-xs text-gray-600">{template.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </Card>
+
+            <div className="text-center py-8">
+              <div className="text-6xl mb-4">🚀</div>
+              <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>프로젝트 생성 UI</h3>
+              <p className="text-gray-600 mb-4">새 프로젝트 생성 기능이 개발 중입니다.</p>
+              <Button variant="primary" onClick={() => handleTabChange('dashboard')}>
+                대시보드로 돌아가기
+              </Button>
+            </div>
+          </div>
+        );
+      case 'validity-check':
+        return (
+          <div className="space-y-6">
+            <div className="text-center py-8">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>평가문항 확인</h3>
+              <p className="text-gray-600 mb-4">평가문항의 유효성을 검증하는 기능이 개발 중입니다.</p>
+              <Button variant="primary" onClick={() => handleTabChange('dashboard')}>
+                대시보드로 돌아가기
+              </Button>
+            </div>
+          </div>
+        );
       case 'settings':
         return (
           <PersonalSettings
@@ -381,14 +630,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
           <div className="text-center py-8">
             <div className="text-6xl mb-4">🚧</div>
             <h3 className="text-xl font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-              {activeMenu === 'projects' && '내 프로젝트'}
-              {activeMenu === 'creation' && '새 프로젝트 생성'}
-              {activeMenu === 'evaluators' && '평가자 관리'}
-              {activeMenu === 'monitoring' && '진행률 모니터링'}
-              {activeMenu === 'analysis' && '결과 분석'}
-              {activeMenu === 'export' && '보고서 내보내기'}
-              {activeMenu === 'workshop' && '워크샵 관리'}
-              {activeMenu === 'decision-support' && '의사결정 지원'}
+              {activeMenu} 기능
             </h3>
             <p className="text-gray-600 mb-4">이 기능은 개발 중입니다. 빠른 시일 내에 완성하여 제공하겠습니다.</p>
             <Button variant="primary" onClick={() => handleTabChange('dashboard')}>
@@ -425,6 +667,9 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
                         {externalActiveTab === 'export-reports' && '📤'}
                         {externalActiveTab === 'workshop-management' && '🎯'}
                         {externalActiveTab === 'decision-support-system' && '🧠'}
+                        {externalActiveTab === 'validity-check' && '🔍'}
+                        {externalActiveTab === 'demographic-survey' && '📄'}
+                        {externalActiveTab === 'trash' && '🗑️'}
                       </span>
                       {externalActiveTab === 'my-projects' && '내 프로젝트'}
                       {externalActiveTab === 'project-creation' && '새 프로젝트 생성'}
@@ -432,9 +677,12 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
                       {externalActiveTab === 'progress-monitoring' && '진행률 모니터링'}
                       {externalActiveTab === 'results-analysis' && '결과 분석'}
                       {externalActiveTab === 'export-reports' && '보고서 내보내기'}
-                      {externalActiveTab === 'workshop-management' && '워크샵 관리'}
+                      {externalActiveTab === 'workshop-management' && '워크숍 관리'}
                       {externalActiveTab === 'decision-support-system' && '의사결정 지원'}
                       {externalActiveTab === 'personal-settings' && '개인 설정'}
+                      {externalActiveTab === 'validity-check' && '평가문항 확인'}
+                      {externalActiveTab === 'demographic-survey' && '인구통계학적 설문'}
+                      {externalActiveTab === 'trash' && '휴지통'}
                     </h1>
                     <p className="text-gray-600 mt-2">
                       {externalActiveTab === 'my-projects' && '나의 AHP 분석 프로젝트들을 관리합니다'}
@@ -446,6 +694,9 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
                       {externalActiveTab === 'workshop-management' && '협업 의사결정 워크숍을 관리합니다'}
                       {externalActiveTab === 'decision-support-system' && '과학적 의사결정 지원 도구를 제공합니다'}
                       {externalActiveTab === 'personal-settings' && '개인 계정 및 환경 설정을 관리합니다'}
+                      {externalActiveTab === 'validity-check' && '평가문항의 유효성을 검증합니다'}
+                      {externalActiveTab === 'demographic-survey' && '연구를 위한 인구통계학적 정보를 수집합니다'}
+                      {externalActiveTab === 'trash' && '삭제된 프로젝트를 관리합니다'}
                     </p>
                   </div>
                 </div>
