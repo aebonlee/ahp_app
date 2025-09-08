@@ -24,6 +24,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'ahp-app-vuzk.onrender.com',
     'ahp-django-backend.onrender.com',
+    'ahp-django-backend-new.onrender.com',
     '.onrender.com',
     'aebonlee.github.io'
 ]
@@ -92,29 +93,21 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-if config('DATABASE_URL', default=None):
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if DATABASE_URL:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'ahp_app',
-            'USER': 'ahp_app_user',
-            'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
-            'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a',
-            'PORT': '5432',
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
-        }
+        'default': dj_database_url.parse(DATABASE_URL)
     }
 else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'ahp_db',
-            'USER': 'postgres',
-            'PASSWORD': 'password',
-            'HOST': 'localhost',
-            'PORT': '5432',
+            'NAME': config('DB_NAME', default='ahp_db'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default='password'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432', cast=int),
         }
     }
 
