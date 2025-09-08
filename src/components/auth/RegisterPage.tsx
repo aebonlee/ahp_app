@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Input from '../common/Input';
 import Card from '../common/Card';
+import useDjangoAuth from '../../hooks/useDjangoAuth';
 
 interface RegisterPageProps {
   onRegister: (email: string, password: string, role?: string) => Promise<void>;
@@ -19,19 +20,37 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [organization, setOrganization] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const { register, isLoading } = useDjangoAuth();
+  
+  const isFormLoading = loading || isLoading;
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
 
     if (!email) {
-      errors.email = 'Email is required';
+      errors.email = '이메일은 필수입니다';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = '올바른 이메일 주소를 입력하세요';
     }
 
     if (!password) {
-      errors.password = 'Password is required';
+      errors.password = '비밀번호는 필수입니다';
+    } else if (password.length < 6) {
+      errors.password = '비밀번호는 6자 이상이어야 합니다';
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = '비밀번호 확인은 필수입니다';
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = '비밀번호가 일치하지 않습니다';
+    }
+
+    if (!fullName) {
+      errors.fullName = '이름은 필수입니다';
     }
 
     setValidationErrors(errors);
@@ -46,7 +65,22 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
     }
 
     try {
-      await onRegister(email, password, 'user');
+      // Django 회원가입 시스템 사용
+      const result = await register({
+        username: email,
+        email: email,
+        password: password,
+        password_confirm: confirmPassword,
+        full_name: fullName,
+        organization: organization
+      });
+      
+      if (result.success) {
+        // 성공적으로 회원가입되면 기존 onRegister 호출하여 앱 상태 업데이트
+        await onRegister(email, password, 'user');
+      } else {
+        console.error('Django register failed:', result.message);
+      }
     } catch (err) {
       console.error('Register failed:', err);
     }
@@ -228,6 +262,26 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
             )}
 
             <Input
+              id="fullName"
+              type="text"
+              label="이름"
+              placeholder="실명을 입력하세요"
+              value={fullName}
+              onChange={setFullName}
+              error={validationErrors.fullName}
+              required
+              variant="bordered"
+              icon={
+                <svg style={{
+                  width: '1.25rem',
+                  height: '1.25rem'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              }
+            />
+
+            <Input
               id="email"
               type="email"
               label="이메일 주소"
@@ -248,6 +302,24 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
             />
 
             <Input
+              id="organization"
+              type="text"
+              label="소속 기관 (선택사항)"
+              placeholder="소속 기관을 입력하세요"
+              value={organization}
+              onChange={setOrganization}
+              variant="bordered"
+              icon={
+                <svg style={{
+                  width: '1.25rem',
+                  height: '1.25rem'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              }
+            />
+
+            <Input
               id="password"
               type="password"
               label="비밀번호"
@@ -263,6 +335,26 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
                   height: '1.25rem'
                 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              }
+            />
+
+            <Input
+              id="confirmPassword"
+              type="password"
+              label="비밀번호 확인"
+              placeholder="비밀번호를 다시 입력하세요"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              error={validationErrors.confirmPassword}
+              required
+              variant="bordered"
+              icon={
+                <svg style={{
+                  width: '1.25rem',
+                  height: '1.25rem'
+                }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               }
             />
@@ -296,7 +388,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
                 }}></div>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={isFormLoading}
                   style={{
                     position: 'relative',
                     width: '100%',
@@ -307,28 +399,28 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
                     fontSize: '1.125rem',
                     borderRadius: '0.75rem',
                     border: 'none',
-                    cursor: loading ? 'not-allowed' : 'pointer',
+                    cursor: isFormLoading ? 'not-allowed' : 'pointer',
                     transition: 'all 0.3s',
                     transform: 'scale(1)',
                     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                    opacity: loading ? 0.6 : 1
+                    opacity: isFormLoading ? 0.6 : 1
                   }}
                   onMouseEnter={(e) => {
-                    if (!loading) {
+                    if (!isFormLoading) {
                       e.currentTarget.style.background = 'linear-gradient(to right, #6d28d9, #5b21b6)';
                       e.currentTarget.style.transform = 'scale(1.05)';
                       e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!loading) {
+                    if (!isFormLoading) {
                       e.currentTarget.style.background = 'linear-gradient(to right, #7c3aed, #6d28d9)';
                       e.currentTarget.style.transform = 'scale(1)';
                       e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
                     }
                   }}
                 >
-                  {loading ? (
+                  {isFormLoading ? (
                     <span style={{
                       display: 'flex',
                       alignItems: 'center',

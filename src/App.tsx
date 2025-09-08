@@ -36,6 +36,7 @@ import SupportPage from './components/support/SupportPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
+import { DjangoAuthProvider } from './hooks/useDjangoAuth';
 // DEMO 데이터 제거 - 실제 DB만 사용
 
 function App() {
@@ -1797,16 +1798,44 @@ function App() {
   // 로그인한 사용자만 Layout과 함께 렌더링
   if (user) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Layout
-          user={user}
-          activeTab={activeTab}
-          onTabChange={changeTab}
-          onLogout={handleLogout}
-          onModeSwitch={handleModeSwitch}
-        >
-          {renderContent()}
-        </Layout>
+      <DjangoAuthProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Layout
+            user={user}
+            activeTab={activeTab}
+            onTabChange={changeTab}
+            onLogout={handleLogout}
+            onModeSwitch={handleModeSwitch}
+          >
+            {renderContent()}
+          </Layout>
+          <ApiErrorModal
+            isVisible={showApiErrorModal}
+            onClose={handleCloseApiError}
+            onRetry={handleApiRetry}
+          />
+          {trashOverflowData && (
+            <TrashOverflowModal
+              trashedProjects={trashOverflowData.trashedProjects}
+              projectToDelete={trashOverflowData.projectToDelete}
+              onPermanentDelete={permanentDeleteProject}
+              onCancel={handleTrashOverflowCancel}
+              onDeleteAfterCleanup={handleTrashOverflow}
+            />
+          )}
+        </div>
+      </DjangoAuthProvider>
+    );
+  }
+
+  // 로그인하지 않은 사용자는 Layout 없이 렌더링 (홈페이지, 로그인, 회원가입)
+  return (
+    <DjangoAuthProvider>
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: 'var(--bg-secondary, #f9fafb)'
+      }}>
+        {renderContent()}
         <ApiErrorModal
           isVisible={showApiErrorModal}
           onClose={handleCloseApiError}
@@ -1822,31 +1851,7 @@ function App() {
           />
         )}
       </div>
-    );
-  }
-
-  // 로그인하지 않은 사용자는 Layout 없이 렌더링 (홈페이지, 로그인, 회원가입)
-  return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: 'var(--bg-secondary, #f9fafb)'
-    }}>
-      {renderContent()}
-      <ApiErrorModal
-        isVisible={showApiErrorModal}
-        onClose={handleCloseApiError}
-        onRetry={handleApiRetry}
-      />
-      {trashOverflowData && (
-        <TrashOverflowModal
-          trashedProjects={trashOverflowData.trashedProjects}
-          projectToDelete={trashOverflowData.projectToDelete}
-          onPermanentDelete={permanentDeleteProject}
-          onCancel={handleTrashOverflowCancel}
-          onDeleteAfterCleanup={handleTrashOverflow}
-        />
-      )}
-    </div>
+    </DjangoAuthProvider>
   );
 }
 

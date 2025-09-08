@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Input from '../common/Input';
 import Card from '../common/Card';
+import useDjangoAuth from '../../hooks/useDjangoAuth';
 
 interface ServiceLoginPageProps {
   onLogin: (email: string, password: string, role?: string) => Promise<void>;
@@ -20,6 +21,9 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const { login, isLoading } = useDjangoAuth();
+  
+  const isFormLoading = loading || isLoading;
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -46,10 +50,14 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
     }
 
     try {
-      // 서비스 로그인 시 역할을 'evaluator'로 설정
-      // 실제 역할(admin/user)은 백엔드에서 이메일 기반으로 결정
-      const role = 'evaluator';
-      await onLogin(email, password, role);
+      // Django 인증 시스템 사용
+      const result = await login(email, password);
+      if (result.success) {
+        // 성공적으로 로그인되면 기존 onLogin 호출하여 앱 상태 업데이트
+        await onLogin(email, password, 'evaluator');
+      } else {
+        console.error('Django login failed:', result.message);
+      }
     } catch (err) {
       console.error('Login failed:', err);
     }
@@ -283,12 +291,12 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
               }}></div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isFormLoading}
                 style={{
                   position: 'relative',
                   width: '100%',
                   padding: '1rem 2rem',
-                  background: loading ? '#9ca3af' : 'linear-gradient(to right, #2563eb, #1d4ed8)',
+                  background: isFormLoading ? '#9ca3af' : 'linear-gradient(to right, #2563eb, #1d4ed8)',
                   color: 'white',
                   fontWeight: '700',
                   fontSize: '1.125rem',
@@ -296,13 +304,13 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
                   borderRadius: '0.75rem',
                   border: 'none',
                   transition: 'all 0.3s',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.6 : 1,
-                  transform: loading ? 'none' : 'scale(1)',
-                  boxShadow: loading ? 'none' : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                  cursor: isFormLoading ? 'not-allowed' : 'pointer',
+                  opacity: isFormLoading ? 0.6 : 1,
+                  transform: isFormLoading ? 'none' : 'scale(1)',
+                  boxShadow: isFormLoading ? 'none' : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
                 }}
                 onMouseEnter={(e) => {
-                  if (!loading) {
+                  if (!isFormLoading) {
                     (e.currentTarget as HTMLButtonElement).style.background = 'linear-gradient(to right, #1d4ed8, #1e40af)';
                     (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
                     (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
@@ -313,7 +321,7 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!loading) {
+                  if (!isFormLoading) {
                     (e.currentTarget as HTMLButtonElement).style.background = 'linear-gradient(to right, #2563eb, #1d4ed8)';
                     (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                     (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
@@ -324,7 +332,7 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
                   }
                 }}
               >
-                {loading ? (
+                {isFormLoading ? (
                   <span style={{
                     display: 'flex',
                     alignItems: 'center',

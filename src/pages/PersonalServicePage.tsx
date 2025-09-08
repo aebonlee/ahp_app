@@ -5,6 +5,8 @@ import CriteriaManagement from '../components/admin/CriteriaManagement';
 import AlternativeManagement from '../components/admin/AlternativeManagement';
 import EvaluatorAssignment from '../components/admin/EvaluatorAssignment';
 import EnhancedEvaluatorManagement from '../components/admin/EnhancedEvaluatorManagement';
+import DjangoEvaluatorManagement from '../components/admin/DjangoEvaluatorManagement';
+import DjangoProjectManagement from '../components/admin/DjangoProjectManagement';
 import SurveyLinkManager from '../components/admin/SurveyLinkManager';
 import ModelFinalization from '../components/admin/ModelFinalization';
 import WorkflowStageIndicator, { WorkflowStage } from '../components/workflow/WorkflowStageIndicator';
@@ -450,24 +452,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
       case 'dashboard':
         return renderOverview();
       case 'projects':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>내 프로젝트</h2>
-              <Button
-                onClick={() => handleTabChange('creation')}
-                style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}
-              >
-                새 프로젝트 생성
-              </Button>
-            </div>
-            <div className="text-center py-8">
-              <p style={{ color: 'var(--text-secondary)' }}>
-                아직 생성된 프로젝트가 없습니다. 새 프로젝트를 만들어보세요!
-              </p>
-            </div>
-          </div>
-        );
+        return <DjangoProjectManagement />;
       case 'creation':
         return (
           <div className="space-y-6">
@@ -491,16 +476,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
           </div>
         );
       case 'evaluators':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>평가자 관리</h2>
-            <div className="text-center py-8">
-              <p style={{ color: 'var(--text-secondary)' }}>
-                평가자 관리 기능을 구현 중입니다.
-              </p>
-            </div>
-          </div>
-        );
+        return <DjangoEvaluatorManagement />;
       case 'survey-links':
         return (
           <div className="space-y-6">
