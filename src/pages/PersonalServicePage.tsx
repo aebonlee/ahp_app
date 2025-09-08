@@ -138,23 +138,24 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
   
   const quotas = getCurrentQuotas();
   
-  const [activeMenu, setActiveMenu] = useState<string>(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
-    if (tabParam === 'demographic-survey') return 'demographic-survey';
-    return externalActiveTab === 'personal-service' ? 'dashboard' :
-           externalActiveTab === 'my-projects' ? 'projects' :
-           externalActiveTab === 'project-creation' ? 'creation' :
-           externalActiveTab === 'model-builder' ? 'model-builder' :
-           externalActiveTab === 'evaluator-management' ? 'evaluators' :
-           externalActiveTab === 'progress-monitoring' ? 'monitoring' :
-           externalActiveTab === 'results-analysis' ? 'analysis' :
-           externalActiveTab === 'export-reports' ? 'export' :
-           externalActiveTab === 'workshop-management' ? 'workshop' :
-           externalActiveTab === 'decision-support-system' ? 'decision-support' :
-           externalActiveTab === 'personal-settings' ? 'settings' :
-           'dashboard';
-  });
+  // activeTab을 외부에서 받은 값으로 매핑
+  const activeMenu = externalActiveTab === 'personal-service' ? 'dashboard' :
+                     externalActiveTab === 'my-projects' ? 'projects' :
+                     externalActiveTab === 'project-creation' ? 'creation' :
+                     externalActiveTab === 'model-builder' ? 'model-builder' :
+                     externalActiveTab === 'evaluator-management' ? 'evaluators' :
+                     externalActiveTab === 'progress-monitoring' ? 'monitoring' :
+                     externalActiveTab === 'results-analysis' ? 'analysis' :
+                     externalActiveTab === 'export-reports' ? 'export' :
+                     externalActiveTab === 'workshop-management' ? 'workshop' :
+                     externalActiveTab === 'decision-support-system' ? 'decision-support' :
+                     externalActiveTab === 'personal-settings' ? 'settings' :
+                     externalActiveTab === 'evaluation-test' ? 'evaluation-test' :
+                     externalActiveTab === 'user-guide' ? 'user-guide' :
+                     externalActiveTab === 'demographic-survey' ? 'demographic-survey' :
+                     externalActiveTab === 'paper-management' ? 'paper-management' :
+                     externalActiveTab === 'survey-links' ? 'survey-links' :
+                     'dashboard';
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>(externalSelectedProjectId || '');
   const [loading, setLoading] = useState(false);
@@ -210,8 +211,6 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
       };
       const mappedTab = tabMap[tab] || 'personal-service';
       externalOnTabChange(mappedTab);
-    } else {
-      setActiveMenu(tab);
     }
   };
 
@@ -220,9 +219,6 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
     setSelectedProjectId(projectId);
     if (externalOnSelectProject) {
       externalOnSelectProject(projectId);
-    }
-    if (projectSelectorConfig) {
-      setActiveMenu(projectSelectorConfig.nextAction);
     }
     setShowProjectSelector(false);
     setProjectSelectorConfig(null);
@@ -240,7 +236,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
                 <span className="text-2xl">🏠</span>
               </div>
@@ -389,7 +392,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-4xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                 <span className="text-2xl">➕</span>
               </div>
@@ -435,7 +445,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
                 <span className="text-2xl">🏧</span>
               </div>
@@ -579,7 +596,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                 <span className="text-2xl">📈</span>
               </div>
@@ -686,7 +710,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
                 <span className="text-2xl">📊</span>
               </div>
@@ -756,7 +787,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                 <span className="text-2xl">📤</span>
               </div>
@@ -854,7 +892,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
                 <span className="text-2xl">📚</span>
               </div>
@@ -924,7 +969,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-5xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                 <span className="text-2xl">📊</span>
               </div>
@@ -1010,7 +1062,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
                 <span className="text-2xl">📝</span>
               </div>
@@ -1119,7 +1178,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                 <span className="text-2xl">🧠</span>
               </div>
@@ -1226,7 +1292,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-4xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
                 <span className="text-2xl">⚙️</span>
               </div>
@@ -1258,7 +1331,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
                 <span className="text-2xl">🔗</span>
               </div>
@@ -1339,7 +1419,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
                 <span className="text-2xl">🧪</span>
               </div>
@@ -1403,7 +1490,14 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         return (
           <div className="max-w-6xl mx-auto space-y-8">
             {/* 페이지 헤더 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div style={{
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-light)',
+              padding: 'var(--spacing-8, 2rem)',
+              textAlign: 'center' as const
+            }}>
               <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
                 <span className="text-2xl">🎯</span>
               </div>
@@ -1529,138 +1623,9 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* 왼쪽 사이드바 */}
-      <div className="w-64 bg-white shadow-lg flex-shrink-0">
-        <div className="p-6">
-          {/* 사용자 프로필 */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-              <span className="text-white text-xl font-bold">
-                {user.first_name[0]}{user.last_name[0]}
-              </span>
-            </div>
-            <h3 className="font-semibold text-gray-900">{user.first_name} {user.last_name}</h3>
-            <p className="text-sm text-gray-500">{user.email}</p>
-            <div className="mt-2 px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full inline-block">
-              {userPlan.planName}
-            </div>
-          </div>
-
-          {/* 네비게이션 메뉴 - 기존 구조 적용 */}
-          <nav className="space-y-2">
-            {/* 메인 메뉴 */}
-            <div className="mb-6">
-              {[
-                { id: 'dashboard', label: '내 대시보드', icon: '🏠' },
-                { id: 'user-guide', label: '사용자 가이드', icon: '📚' },
-                { id: 'demographic-survey', label: '인구통계학적 설문조사', icon: '📊' },
-                { id: 'projects', label: '내 프로젝트', icon: '📂' },
-                { id: 'creation', label: '새 프로젝트', icon: '➕' }
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleTabChange(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-3 group ${
-                    activeMenu === item.id
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-                  }`}
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  <span className="text-sm font-semibold">{item.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* 분석 및 관리 메뉴 */}
-            <div className="mb-6">
-              {[
-                { id: 'model-builder', label: '모델 구축', icon: '🏗️' },
-                { id: 'evaluation-test', label: '평가 테스트', icon: '🧪' },
-                { id: 'evaluators', label: '평가자 관리', icon: '👥' },
-                { id: 'monitoring', label: '진행률 모니터링', icon: '📈' },
-                { id: 'analysis', label: '결과 분석', icon: '📊' }
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleTabChange(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-3 group ${
-                    activeMenu === item.id
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-                  }`}
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  <span className="text-sm font-semibold">{item.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* 고급 도구 및 설정 메뉴 */}
-            <div className="mb-6">
-              {[
-                { id: 'paper-management', label: '논문 작성 관리', icon: '📝' },
-                { id: 'export', label: '보고서 내보내기', icon: '📤' },
-                { id: 'workshop', label: '워크샵 관리', icon: '🎯' },
-                { id: 'decision-support', label: '의사결정 지원', icon: '🧠' },
-                { id: 'settings', label: '개인 설정', icon: '⚙️' }
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleTabChange(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-3 group ${
-                    activeMenu === item.id
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-                  }`}
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  <span className="text-sm font-semibold">{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </nav>
-        </div>
-      </div>
-
-      {/* 오른쪽 메인 콘텐츠 */}
-      <div className="flex-1 flex flex-col">
-        {/* 상단 헤더 - 개선된 버전 */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="px-8 py-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-              <div className="mb-4 lg:mb-0">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">개인 서비스</h1>
-                <p className="text-lg text-gray-600 leading-relaxed">AHP 의사결정 분석 전문 플랫폼에서 체계적인 분석을 수행하세요</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="bg-blue-50 px-4 py-3 rounded-lg">
-                  <div className="flex items-center">
-                    <span className="text-blue-600 mr-2">📊</span>
-                    <div>
-                      <div className="text-sm text-blue-600 font-medium">프로젝트</div>
-                      <div className="text-lg font-bold text-blue-800">{projects.length}/{quotas.maxProjects}</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-green-50 px-4 py-3 rounded-lg">
-                  <div className="flex items-center">
-                    <span className="text-green-600 mr-2">👥</span>
-                    <div>
-                      <div className="text-sm text-green-600 font-medium">평가자</div>
-                      <div className="text-lg font-bold text-green-800">{quotas.currentEvaluators}/{quotas.maxEvaluators}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 메인 콘텐츠 영역 - 개선된 여백과 최대 너비 */}
-        <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="p-12 max-w-[1600px] mx-auto">
+    <div className="w-full">
+      {/* 페이지 콘텐츠 영역 */}
+      <div className="p-8 max-w-7xl mx-auto">
           {activeMenu === 'dashboard' && (
             <div className="max-w-7xl mx-auto space-y-8">
               {/* 환영 메시지 */}
@@ -1778,8 +1743,6 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
               {renderMenuContent()}
             </div>
           )}
-          </div>
-        </div>
       </div>
 
       {/* Project Selector Modal */}
