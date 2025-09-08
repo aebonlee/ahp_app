@@ -45,10 +45,11 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🔄 Step 2: projects 앱 추가
+# 🔄 Step 3: evaluations 앱 추가
 LOCAL_APPS = [
     'apps.accounts',       # ✅ 사용자 인증 - 필수
     'apps.projects',       # ✅ 프로젝트 관리 - 핵심
+    'apps.evaluations',    # ✅ AHP 평가 - 핵심
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

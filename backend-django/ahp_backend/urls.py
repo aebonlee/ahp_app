@@ -59,9 +59,10 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 🔄 Step 2: projects 앱 추가
+    # App URLs - 🔄 Step 3: evaluations 앱 추가
     path('accounts/', include('apps.accounts.urls')),   # ✅ 사용자 인증
     path('projects/', include('apps.projects.urls')),   # ✅ 프로젝트 관리
+    path('evaluations/', include('apps.evaluations.urls')),  # ✅ AHP 평가
 ]
 
 urlpatterns = [
