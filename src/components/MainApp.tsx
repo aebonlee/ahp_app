@@ -21,7 +21,7 @@ const MainApp: React.FC = () => {
         <div className="loading-spinner"></div>
         <p>시스템 로딩 중...</p>
         
-        <style jsx>{`
+        <style>{`
           .loading-container {
             display: flex;
             flex-direction: column;
@@ -78,15 +78,27 @@ const MainApp: React.FC = () => {
 
   // 로그인된 사용자 - 역할에 따른 렌더링
   const renderMainContent = () => {
+    // Convert Django User to ExtendedUser format (for components that need it)
+    const extendedUser = {
+      id: user.id.toString(),
+      email: user.email,
+      first_name: user.fullName.split(' ')[0] || '',
+      last_name: user.fullName.split(' ').slice(1).join(' ') || '',
+      role: (user.isAdmin ? 'super_admin' : user.isProjectManager ? 'admin' : 'evaluator') as 'super_admin' | 'admin' | 'service_tester' | 'evaluator',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
     // 관리자인 경우
     if (user.isAdmin || user.isProjectManager) {
       switch (activeTab) {
         case 'admin-dashboard':
-          return <EnhancedSuperAdminDashboard />;
+          return <EnhancedSuperAdminDashboard user={extendedUser} />;
         case 'personal-service':
-          return <PersonalServicePage />;
+          return <PersonalServicePage user={extendedUser} />;
         default:
-          return <HomePage />;
+          return <HomePage onLoginClick={() => {}} />;
       }
     }
 
@@ -94,21 +106,30 @@ const MainApp: React.FC = () => {
     if (user.isEvaluator) {
       switch (activeTab) {
         case 'personal-service':
-          return <PersonalServicePage />;
+          return <PersonalServicePage user={extendedUser} />;
         default:
-          return <HomePage />;
+          return <HomePage onLoginClick={() => {}} />;
       }
     }
 
     // 기본 사용자
-    return <HomePage />;
+    return <HomePage onLoginClick={() => {}} />;
+  };
+
+  // Convert Django User to Layout user format
+  const layoutUser = {
+    id: user.id.toString(),
+    first_name: user.fullName.split(' ')[0] || '',
+    last_name: user.fullName.split(' ').slice(1).join(' ') || '',
+    email: user.email,
+    role: (user.isAdmin ? 'super_admin' : user.isProjectManager ? 'admin' : 'evaluator') as 'super_admin' | 'admin' | 'service_tester' | 'evaluator',
   };
 
   return (
     <Layout 
-      user={user}
+      user={layoutUser}
       activeTab={activeTab}
-      setActiveTab={setActiveTab}
+      onTabChange={setActiveTab}
     >
       {renderMainContent()}
     </Layout>

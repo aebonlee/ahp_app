@@ -34,15 +34,5 @@ jobs:
         run: npm run build
         env:
           CI: false
-          REACT_APP_API_URL: https://ahp-platform.onrender.com
+          REACT_APP_API_URL: https://ahp-django-backend-new.onrender.com
           DISABLE_ESLINT_PLUGIN: true
-      
-      - name: Install backend dependencies
-        working-directory: ./backend
-        run: npm install
-      
-      - name: Build backend
-        working-directory: ./backend
-        run: npm run build
-        env:
-          CI: false

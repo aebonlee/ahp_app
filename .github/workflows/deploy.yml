@@ -37,7 +37,7 @@ jobs:
         env:
           CI: false
           PUBLIC_URL: /ahp_app
-          REACT_APP_API_URL: https://ahp-platform.onrender.com
+          REACT_APP_API_URL: https://ahp-django-backend-new.onrender.com
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4

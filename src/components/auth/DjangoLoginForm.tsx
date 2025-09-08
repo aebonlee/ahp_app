@@ -118,7 +118,7 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .django-login-form {
           display: flex;
           justify-content: center;
