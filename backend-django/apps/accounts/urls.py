@@ -21,4 +21,7 @@ urlpatterns = [
     # User data endpoints
     path('dashboard/', views.user_dashboard, name='user-dashboard'),
     path('search/', views.search_users, name='search-users'),
+    
+    # Web frontend specific endpoints
+    path('', include('apps.accounts.web_urls')),
 ]
