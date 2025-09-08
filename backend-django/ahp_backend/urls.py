@@ -48,9 +48,9 @@ api_patterns = [
     # App URLs - 단계적 활성화
     path('common/', include('apps.common.urls')),       # ✅ 1단계 완료
     path('accounts/', include('apps.accounts.urls')),   # ✅ 2단계 완료
-    path('projects/', include('apps.projects.urls')),   # ✅ 3단계 활성화 
-    # path('evaluations/', include('apps.evaluations.urls')),  # 4단계 예정
-    # path('analysis/', include('apps.analysis.urls')),  # 4단계 예정
+    path('projects/', include('apps.projects.urls')),   # ✅ 3단계 완료
+    path('evaluations/', include('apps.evaluations.urls')),  # ✅ 4단계 활성화
+    path('analysis/', include('apps.analysis.urls')),   # ✅ 4단계 활성화
     # path('workshops/', include('apps.workshops.urls')),  # 5단계 예정
     # path('exports/', include('apps.exports.urls')),    # 5단계 예정
 ]

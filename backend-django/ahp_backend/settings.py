@@ -45,13 +45,13 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 3단계: 프로젝트 앱 활성화
+# 4단계: 평가 및 분석 앱 활성화
 LOCAL_APPS = [
     'apps.common',         # ✅ 1단계 완료
-    'apps.accounts',       # ✅ 2단계 완료
-    'apps.projects',       # ✅ 3단계 활성화
-    # 'apps.evaluations',    # 4단계 예정
-    # 'apps.analysis',       # 4단계 예정
+    'apps.accounts',       # ✅ 2단계 완료  
+    'apps.projects',       # ✅ 3단계 완료
+    'apps.evaluations',    # ✅ 4단계 활성화
+    'apps.analysis',       # ✅ 4단계 활성화
     # 'apps.workshops',      # 5단계 예정
     # 'apps.exports',        # 5단계 예정
 ]
