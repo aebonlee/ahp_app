@@ -215,7 +215,8 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
     }
   };
 
-  const handleProjectSelect = (projectId: string) => {
+  const handleProjectSelect = (project: UserProject) => {
+    const projectId = project.id || '';
     setSelectedProjectId(projectId);
     if (externalOnSelectProject) {
       externalOnSelectProject(projectId);
