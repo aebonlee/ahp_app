@@ -46,14 +46,9 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🎉 Step 5 FINAL: 전체 AHP 플랫폼 완성
+# 🚀 긴급 배포: 최소 핵심 기능만 활성화
 LOCAL_APPS = [
     'apps.accounts',       # ✅ 사용자 인증 - 필수
-    'apps.projects',       # ✅ 프로젝트 관리 - 핵심
-    'apps.evaluations',    # ✅ AHP 평가 - 핵심
-    'apps.analysis',       # ✅ 고급 분석 - 중요
-    'apps.common',         # ✅ 공통 기능 - 지원
-    'apps.exports',        # ✅ 데이터 내보내기 - 부가
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

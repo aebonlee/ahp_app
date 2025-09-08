@@ -21,10 +21,10 @@ from rest_framework_simplejwt.views import (
 def api_root(request):
     """API Root endpoint"""
     return Response({
-        'message': 'AHP Platform Django API v1.0 - PRODUCTION READY',
-        'status': 'Complete AHP Platform - All Features Enabled',
+        'message': 'AHP Platform Django API v1.0 - EMERGENCY DEPLOY',
+        'status': 'Minimal Core Features - Account Only',
         'version': '1.0.0',
-        'deployment': 'Stage 4 Final - All Apps Active',
+        'deployment': 'Emergency Deploy - Account App Only',
         'endpoints': {
             'auth': {
                 'token': '/api/v1/auth/token/',
@@ -32,20 +32,10 @@ def api_root(request):
                 'verify': '/api/v1/auth/token/verify/',
             },
             'accounts': '/api/v1/accounts/',
-            'common': '/api/v1/common/',
-            'projects': '/api/v1/projects/',
-            'evaluations': '/api/v1/evaluations/',
-            'analysis': '/api/v1/analysis/',
-            'workshops': '/api/v1/workshops/',
-            'exports': '/api/v1/exports/',
         },
         'features': [
             'User Management & Authentication',
-            'AHP Project Management',
-            'Pairwise Comparison Evaluations',
-            'Advanced AHP Analysis & Calculations',
-            'Workshop & Collaboration Tools',
-            'Data Export & Reporting'
+            'Basic JWT Token Authentication',
         ]
     })
 
@@ -59,13 +49,8 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 🎉 Step 5 FINAL: 전체 AHP 플랫폼 완성
+    # App URLs - 🚀 긴급 배포: 최소 기능만 활성화
     path('accounts/', include('apps.accounts.urls')),   # ✅ 사용자 인증
-    path('projects/', include('apps.projects.urls')),   # ✅ 프로젝트 관리
-    path('evaluations/', include('apps.evaluations.urls')),  # ✅ AHP 평가
-    path('analysis/', include('apps.analysis.urls')),   # ✅ 고급 분석
-    path('common/', include('apps.common.urls')),       # ✅ 공통 기능
-    path('exports/', include('apps.exports.urls')),     # ✅ 데이터 내보내기
 ]
 
 urlpatterns = [
