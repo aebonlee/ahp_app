@@ -28,6 +28,32 @@ body {
   flex-direction: column;
 }
 
+/* Luxury scrollbar styling for sidebar */
+.scrollbar-luxury {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-primary, #d4af37) var(--bg-elevated, #ffffff);
+}
+
+.scrollbar-luxury::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-luxury::-webkit-scrollbar-track {
+  background: var(--bg-elevated, #ffffff);
+  border-radius: 3px;
+}
+
+.scrollbar-luxury::-webkit-scrollbar-thumb {
+  background: var(--gold-primary, #d4af37);
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.scrollbar-luxury::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-secondary, #b8941f);
+  width: 8px;
+}
+
 /* Ensure components use proper variables */
 .min-h-screen {
   min-height: 100vh;
