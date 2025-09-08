@@ -17,7 +17,7 @@ import PairwiseComparison from './components/comparison/PairwiseComparison';
 import ResultsDashboard from './components/results/ResultsDashboard';
 import LandingPage from './components/admin/LandingPage';
 import EnhancedSuperAdminDashboard from './components/admin/EnhancedSuperAdminDashboard';
-import PersonalServiceDashboard from './components/admin/PersonalServiceDashboard';
+import PersonalServicePage from './pages/PersonalServicePage';
 import ModelBuilding from './components/admin/ModelBuilding';
 import EvaluationResults from './components/admin/EvaluationResults';
 import ProjectCompletion from './components/admin/ProjectCompletion';
@@ -1243,7 +1243,7 @@ function App() {
       case 'welcome':
         // 로그인 후에는 모두 personal-service로 통합
         return (
-          <PersonalServiceDashboard 
+          <PersonalServicePage 
             user={user}
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -1387,9 +1387,9 @@ function App() {
       case 'workshop-management':
       case 'decision-support-system':
       case 'personal-settings':
-        console.log('🎯 PersonalServiceDashboard 렌더링:', { activeTab, userId: user.id, userRole: user.role });
+        console.log('🎯 PersonalServicePage 렌더링:', { activeTab, userId: user.id, userRole: user.role });
         return (
-          <PersonalServiceDashboard 
+          <PersonalServicePage 
             user={user}
             activeTab={activeTab}
             onTabChange={setActiveTab}
