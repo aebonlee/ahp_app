@@ -59,14 +59,14 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 🎉 Stage 4 FINAL: Complete AHP Platform
-    path('accounts/', include('apps.accounts.urls')),   # ✅ Stage 1
-    path('common/', include('apps.common.urls')),       # ✅ Stage 2
-    path('projects/', include('apps.projects.urls')),   # ✅ Stage 2
-    path('evaluations/', include('apps.evaluations.urls')),  # ✅ Stage 3
-    path('analysis/', include('apps.analysis.urls')),   # ✅ Stage 3
-    # path('workshops/', include('apps.workshops.urls')), # ⏸️ Temporarily disabled
-    path('exports/', include('apps.exports.urls')),     # ✅ Stage 4
+    # App URLs - 🔧 Emergency: Minimal Apps Only
+    path('accounts/', include('apps.accounts.urls')),   # ✅ Essential
+    path('projects/', include('apps.projects.urls')),   # ✅ Core
+    # path('common/', include('apps.common.urls')),       # ⏸️ Disabled
+    # path('evaluations/', include('apps.evaluations.urls')),  # ⏸️ Disabled
+    # path('analysis/', include('apps.analysis.urls')),   # ⏸️ Disabled
+    # path('workshops/', include('apps.workshops.urls')), # ⏸️ Disabled
+    # path('exports/', include('apps.exports.urls')),     # ⏸️ Disabled
 ]
 
 urlpatterns = [

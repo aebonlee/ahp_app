@@ -45,15 +45,15 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🎉 Stage 4 FINAL: Complete AHP Platform - All Apps Enabled
+# 🔧 Emergency: Minimal Apps for Stable Deployment
 LOCAL_APPS = [
-    'apps.accounts',       # ✅ Stage 1 - Custom User model established
-    'apps.common',         # ✅ Stage 2 - Common utilities
-    'apps.projects',       # ✅ Stage 2 - Project management
-    'apps.evaluations',    # ✅ Stage 3 - Evaluation processes
-    'apps.analysis',       # ✅ Stage 3 - AHP analysis engine
-    # 'apps.workshops',      # ⏸️ Stage 4 - Temporarily disabled
-    'apps.exports',        # ✅ Stage 4 - Data export functionality
+    'apps.accounts',       # ✅ Stage 1 - Essential for authentication
+    'apps.projects',       # ✅ Stage 2 - Core functionality
+    # 'apps.common',         # ⏸️ Temporarily disabled
+    # 'apps.evaluations',    # ⏸️ Temporarily disabled 
+    # 'apps.analysis',       # ⏸️ Temporarily disabled
+    # 'apps.workshops',      # ⏸️ Temporarily disabled
+    # 'apps.exports',        # ⏸️ Temporarily disabled
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
