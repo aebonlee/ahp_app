@@ -35,7 +35,7 @@ def api_root(request):
         }
     })
 
-# API 패턴 활성화
+# API 패턴 - 기본 기능만 활성화
 api_patterns = [
     # API Root
     path('', api_root, name='api_root'),
@@ -45,13 +45,13 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs
-    path('accounts/', include('apps.accounts.urls')),
-    path('projects/', include('apps.projects.urls')),
-    path('evaluations/', include('apps.evaluations.urls')),
-    path('analysis/', include('apps.analysis.urls')),
-    path('workshops/', include('apps.workshops.urls')),
-    path('exports/', include('apps.exports.urls')),
+    # App URLs - 마이그레이션 완료 후 단계적 활성화
+    # path('accounts/', include('apps.accounts.urls')),
+    # path('projects/', include('apps.projects.urls')),
+    # path('evaluations/', include('apps.evaluations.urls')),
+    # path('analysis/', include('apps.analysis.urls')),
+    # path('workshops/', include('apps.workshops.urls')),
+    # path('exports/', include('apps.exports.urls')),
 ]
 
 urlpatterns = [

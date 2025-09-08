@@ -45,15 +45,15 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# Django 앱들 활성화
+# 기본 Django 앱만 활성화 - 단계적 배포
 LOCAL_APPS = [
-    'apps.accounts',
-    'apps.projects', 
-    'apps.evaluations',
-    'apps.analysis',
-    'apps.common',
-    'apps.workshops',
-    'apps.exports',
+    # 'apps.accounts',       # 마이그레이션 충돌로 임시 비활성화
+    # 'apps.projects',       # 단계적 활성화 예정
+    # 'apps.evaluations',    # 단계적 활성화 예정
+    # 'apps.analysis',       # 단계적 활성화 예정
+    # 'apps.common',         # 단계적 활성화 예정
+    # 'apps.workshops',      # 단계적 활성화 예정
+    # 'apps.exports',        # 단계적 활성화 예정
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -163,8 +163,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model 활성화
-AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model 비활성화 - 배포 완료 후 활성화
+# AUTH_USER_MODEL = 'accounts.User'
 
 # Django REST Framework
 REST_FRAMEWORK = {
