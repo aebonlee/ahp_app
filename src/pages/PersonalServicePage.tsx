@@ -235,15 +235,8 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
       case 'dashboard':
         return (
           <div className="space-y-8">
-            {/* 페이지 헤더 */}
-            <div style={{
-              backgroundColor: 'var(--bg-elevated)',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-sm)',
-              border: '1px solid var(--border-light)',
-              padding: 'var(--spacing-8, 2rem)',
-              textAlign: 'center' as const
-            }}>
+            {/* 페이지 헤더 - 개선된 디자인 */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
                 <span className="text-2xl">🏠</span>
               </div>
@@ -253,7 +246,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
             
             {/* 통계 카드 섹션 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-8 rounded-xl shadow-sm border">
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200">
                 <div className="flex items-center">
                   <div className="p-3 bg-blue-100 rounded-lg">
                     <span className="text-2xl">📊</span>
@@ -264,7 +257,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm border">
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200">
                 <div className="flex items-center">
                   <div className="p-3 bg-green-100 rounded-lg">
                     <span className="text-2xl">👥</span>
@@ -275,7 +268,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm border">
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200">
                 <div className="flex items-center">
                   <div className="p-3 bg-purple-100 rounded-lg">
                     <span className="text-2xl">📈</span>
@@ -291,7 +284,7 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
             </div>
             
             {/* 최근 활동 */}
-            <div className="bg-white rounded-xl shadow-sm border p-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
               <h3 className="text-xl font-bold text-gray-900 mb-6">최근 활동</h3>
               {projects.length === 0 ? (
                 <div className="text-center py-12">
@@ -1623,9 +1616,9 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
   };
 
   return (
-    <div className="w-full">
-      {/* 페이지 콘텐츠 영역 */}
-      <div className="p-8 max-w-7xl mx-auto">
+    <div className="w-full bg-gray-50 min-h-screen">
+      {/* 페이지 콘텐츠 영역 - 개선된 여백과 최대 너비 */}
+      <div className="p-12 max-w-[1600px] mx-auto">
           {activeMenu === 'dashboard' && (
             <div className="max-w-7xl mx-auto space-y-8">
               {/* 환영 메시지 */}
