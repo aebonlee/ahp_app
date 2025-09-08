@@ -59,9 +59,9 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 🔧 Emergency: Minimal Apps Only
-    path('accounts/', include('apps.accounts.urls')),   # ✅ Essential
-    path('projects/', include('apps.projects.urls')),   # ✅ Core
+    # App URLs - 🚨 Emergency: Only accounts for debugging
+    path('accounts/', include('apps.accounts.urls')),   # ✅ Only essential
+    # path('projects/', include('apps.projects.urls')),   # ⏸️ Disabled
     # path('common/', include('apps.common.urls')),       # ⏸️ Disabled
     # path('evaluations/', include('apps.evaluations.urls')),  # ⏸️ Disabled
     # path('analysis/', include('apps.analysis.urls')),   # ⏸️ Disabled

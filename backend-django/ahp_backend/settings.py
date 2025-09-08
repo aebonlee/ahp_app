@@ -45,10 +45,10 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🔧 Emergency: Minimal Apps for Stable Deployment
+# 🚨 Emergency: Only accounts app for debugging
 LOCAL_APPS = [
-    'apps.accounts',       # ✅ Stage 1 - Essential for authentication
-    'apps.projects',       # ✅ Stage 2 - Core functionality
+    'apps.accounts',       # ✅ Only essential app
+    # 'apps.projects',       # ⏸️ Temporarily disabled
     # 'apps.common',         # ⏸️ Temporarily disabled
     # 'apps.evaluations',    # ⏸️ Temporarily disabled 
     # 'apps.analysis',       # ⏸️ Temporarily disabled

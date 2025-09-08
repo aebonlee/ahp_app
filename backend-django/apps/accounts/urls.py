@@ -13,15 +13,7 @@ urlpatterns = [
     # Include router URLs
     path('', include(router.urls)),
     
-    # Authentication endpoints
+    # Basic authentication endpoints only
     path('register/', views.register, name='register'),
     path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    
-    # User data endpoints
-    path('dashboard/', views.user_dashboard, name='user-dashboard'),
-    path('search/', views.search_users, name='search-users'),
-    
-    # Web frontend specific endpoints
-    path('', include('apps.accounts.web_urls')),
 ]
