@@ -9,14 +9,37 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
     TokenVerifyView,
 )
 
+@api_view(['GET'])
+def api_root(request):
+    """API Root endpoint"""
+    return Response({
+        'message': 'AHP Platform Django API v1.0',
+        'endpoints': {
+            'auth': {
+                'token': '/api/v1/auth/token/',
+                'refresh': '/api/v1/auth/token/refresh/',
+                'verify': '/api/v1/auth/token/verify/',
+            },
+            'accounts': '/api/v1/accounts/',
+            'projects': '/api/v1/projects/',
+            'evaluations': '/api/v1/evaluations/',
+            'analysis': '/api/v1/analysis/',
+        }
+    })
+
 # API 패턴 활성화
 api_patterns = [
+    # API Root
+    path('', api_root, name='api_root'),
+    
     # Authentication
     path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
