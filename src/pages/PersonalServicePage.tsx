@@ -391,23 +391,26 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
       {/* 메인 기능 버튼들 */}
       <div className="flex flex-wrap justify-center gap-4">
         {[
-          { id: 'creation', label: '새 프로젝트', icon: '🚀', color: 'from-blue-500 to-blue-600' },
-          { id: 'projects', label: '내 프로젝트', icon: '📂', color: 'from-green-500 to-green-600' },
-          { id: 'model-builder', label: '모델 구성', icon: '🏗️', color: 'from-purple-500 to-purple-600' },
-          { id: 'evaluators', label: '평가자 관리', icon: '👥', color: 'from-orange-500 to-orange-600' },
-          { id: 'monitoring', label: '진행률 모니터링', icon: '📈', color: 'from-teal-500 to-teal-600' },
-          { id: 'analysis', label: '결과 분석', icon: '📊', color: 'from-red-500 to-red-600' },
+          { id: 'creation', label: '새 프로젝트', icon: '🚀', color: '#3B82F6' },
+          { id: 'projects', label: '내 프로젝트', icon: '📂', color: '#10B981' },
+          { id: 'model-builder', label: '모델 구성', icon: '🏗️', color: '#8B5CF6' },
+          { id: 'evaluators', label: '평가자 관리', icon: '👥', color: '#F59E0B' },
+          { id: 'monitoring', label: '진행률 모니터링', icon: '📈', color: '#14B8A6' },
+          { id: 'analysis', label: '결과 분석', icon: '📊', color: '#EF4444' },
         ].map((item) => (
           <button
             key={item.id}
             onClick={() => handleTabChange(item.id)}
             className="inline-flex items-center px-6 py-3 rounded-xl border-2 border-transparent transition-all duration-300 hover:scale-105 hover:shadow-lg"
             style={{
-              background: `linear-gradient(135deg, var(--${item.color.split(' ')[0].replace('from-', '')}), var(--${item.color.split(' ')[2].replace('to-', '')}))`,
+              background: `linear-gradient(135deg, ${item.color}, ${item.color}CC)`,
               color: 'white'
             }}
           >
-            <div className={`w-8 h-8 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center mr-3`}>
+            <div 
+              className="w-8 h-8 rounded-lg flex items-center justify-center mr-3"
+              style={{ backgroundColor: `${item.color}20` }}
+            >
               <span className="text-white text-lg">{item.icon}</span>
             </div>
             <span className="font-medium">{item.label}</span>
