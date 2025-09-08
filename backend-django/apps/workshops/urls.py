@@ -7,8 +7,8 @@ from . import views
 
 # Create router and register viewsets
 router = DefaultRouter()
-router.register(r'workshops', views.WorkshopViewSet, basename='workshop')
 router.register(r'sessions', views.WorkshopSessionViewSet, basename='workshop-session')
+router.register(r'participants', views.WorkshopParticipantViewSet, basename='workshop-participant')
 
 urlpatterns = [
     # Include router URLs

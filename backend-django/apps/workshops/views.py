@@ -5,24 +5,24 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
-from django.db import transaction, models
+from django.db import models
 
 from .models import WorkshopSession, WorkshopParticipant
 from apps.common.permissions import IsOwnerOrReadOnly
 
 
-class WorkshopViewSet(viewsets.ModelViewSet):
-    """ViewSet for managing workshops"""
+class WorkshopSessionViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing workshop sessions"""
     
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     
     def get_queryset(self):
-        """Filter workshops based on user permissions"""
+        """Filter workshop sessions based on user permissions"""
         user = self.request.user
         if user.is_superuser:
             return WorkshopSession.objects.all()
         
-        # Users can see workshops they organize or participate in
+        # Users can see sessions they facilitate or participate in
         return WorkshopSession.objects.filter(
             models.Q(facilitator=user) |
             models.Q(participants__user=user)
@@ -44,7 +44,7 @@ class WorkshopViewSet(viewsets.ModelViewSet):
         
         if workshop.facilitator != request.user:
             return Response(
-                {'error': 'Only the organizer can start the session'},
+                {'error': 'Only the facilitator can start the session'},
                 status=status.HTTP_403_FORBIDDEN
             )
         
@@ -65,6 +65,29 @@ class WorkshopViewSet(viewsets.ModelViewSet):
             WorkshopSessionSerializer(workshop).data,
             status=status.HTTP_200_OK
         )
+    
+    @action(detail=True, methods=['post'])
+    def end_session(self, request, pk=None):
+        """End a workshop session"""
+        workshop = self.get_object()
+        
+        if workshop.facilitator != request.user:
+            return Response(
+                {'error': 'Only the facilitator can end the session'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        if workshop.status != 'in_progress':
+            return Response(
+                {'error': 'Session is not in progress'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        workshop.status = 'completed'
+        workshop.ended_at = timezone.now()
+        workshop.save()
+        
+        return Response({'message': 'Session ended successfully'})
     
     @action(detail=True, methods=['post'])
     def join(self, request, pk=None):
@@ -107,43 +130,20 @@ class WorkshopViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class WorkshopSessionViewSet(viewsets.ModelViewSet):
-    """ViewSet for managing workshop sessions"""
+class WorkshopParticipantViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing workshop participants"""
     
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        """Filter sessions based on workshop permissions"""
+        """Filter participants based on workshop permissions"""
         user = self.request.user
-        return WorkshopSession.objects.filter(
-            models.Q(facilitator=user) |
-            models.Q(participants__user=user)
-        ).distinct().select_related('facilitator', 'project')
+        return WorkshopParticipant.objects.filter(
+            models.Q(workshop__facilitator=user) |
+            models.Q(user=user)
+        ).distinct().select_related('workshop', 'user')
     
     def get_serializer_class(self):
         """Return appropriate serializer"""
-        from .serializers import WorkshopSessionSerializer
-        return WorkshopSessionSerializer
-    
-    @action(detail=True, methods=['post'])
-    def end_session(self, request, pk=None):
-        """End a workshop session"""
-        session = self.get_object()
-        
-        if session.workshop.facilitator != request.user:
-            return Response(
-                {'error': 'Only the organizer can end the session'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        if session.status != 'in_progress':
-            return Response(
-                {'error': 'Session is not in progress'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        session.status = 'completed'
-        session.ended_at = timezone.now()
-        session.save()
-        
-        return Response({'message': 'Session ended successfully'})
+        from .serializers import WorkshopParticipantSerializer
+        return WorkshopParticipantSerializer
