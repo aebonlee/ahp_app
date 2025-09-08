@@ -65,7 +65,7 @@ api_patterns = [
     path('projects/', include('apps.projects.urls')),   # ✅ Stage 2
     path('evaluations/', include('apps.evaluations.urls')),  # ✅ Stage 3
     path('analysis/', include('apps.analysis.urls')),   # ✅ Stage 3
-    path('workshops/', include('apps.workshops.urls')), # ✅ Stage 4
+    # path('workshops/', include('apps.workshops.urls')), # ⏸️ Temporarily disabled
     path('exports/', include('apps.exports.urls')),     # ✅ Stage 4
 ]
 

@@ -52,7 +52,7 @@ LOCAL_APPS = [
     'apps.projects',       # ✅ Stage 2 - Project management
     'apps.evaluations',    # ✅ Stage 3 - Evaluation processes
     'apps.analysis',       # ✅ Stage 3 - AHP analysis engine
-    'apps.workshops',      # ✅ Stage 4 - Workshop management
+    # 'apps.workshops',      # ⏸️ Stage 4 - Temporarily disabled
     'apps.exports',        # ✅ Stage 4 - Data export functionality
 ]
 
