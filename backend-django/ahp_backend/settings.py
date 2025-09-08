@@ -45,10 +45,10 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 1단계: 공통 앱 활성화
+# 2단계: 계정 앱 활성화
 LOCAL_APPS = [
-    'apps.common',         # ✅ 1단계 활성화
-    # 'apps.accounts',       # 2단계 예정 
+    'apps.common',         # ✅ 1단계 완료
+    'apps.accounts',       # ✅ 2단계 활성화
     # 'apps.projects',       # 3단계 예정
     # 'apps.evaluations',    # 4단계 예정
     # 'apps.analysis',       # 4단계 예정
@@ -163,8 +163,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model 비활성화 - 배포 완료 후 활성화
-# AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model 활성화 - 2단계
+AUTH_USER_MODEL = 'accounts.User'
 
 # Django REST Framework
 REST_FRAMEWORK = {

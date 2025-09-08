@@ -46,8 +46,8 @@ api_patterns = [
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
     # App URLs - 단계적 활성화
-    path('common/', include('apps.common.urls')),       # ✅ 1단계 활성화
-    # path('accounts/', include('apps.accounts.urls')),  # 2단계 예정
+    path('common/', include('apps.common.urls')),       # ✅ 1단계 완료
+    path('accounts/', include('apps.accounts.urls')),   # ✅ 2단계 활성화
     # path('projects/', include('apps.projects.urls')),  # 3단계 예정 
     # path('evaluations/', include('apps.evaluations.urls')),  # 4단계 예정
     # path('analysis/', include('apps.analysis.urls')),  # 4단계 예정
