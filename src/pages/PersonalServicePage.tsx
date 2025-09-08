@@ -234,85 +234,256 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
     switch (activeMenu) {
       case 'dashboard':
         return (
-          <div className="space-y-8">
-            {/* 페이지 헤더 - 개선된 디자인 */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                <span className="text-2xl">🏠</span>
+          <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base, #f8fafc)' }}>
+            {/* 고급 헤더 섹션 - EnhancedDashboard 스타일 */}
+            <Card variant="glass" className="mb-8">
+              <div className="text-center py-8">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6"
+                     style={{ 
+                       background: 'linear-gradient(135deg, var(--gold-primary, #d4af37) 0%, var(--gold-secondary, #b8941f) 100%)',
+                       boxShadow: 'var(--shadow-gold)'
+                     }}>
+                  <span className="text-3xl">🏠</span>
+                </div>
+                <h1 className="text-4xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+                  개인 서비스 대시보드
+                </h1>
+                <p className="text-xl" style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                  {user.first_name}님의 AHP 프로젝트와 분석 현황을 확인하세요
+                </p>
+                <div className="flex justify-center space-x-4 mt-6">
+                  <div className="flex items-center space-x-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-elevated)' }}>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>플랜:</span>
+                    <span className="font-semibold" style={{ color: 'var(--gold-primary)' }}>{userPlan.planName}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-elevated)' }}>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>가입일:</span>
+                    <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>2025-01-01</span>
+                  </div>
+                </div>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">대시보드</h2>
-              <p className="text-lg text-gray-600 leading-relaxed">프로젝트 현황과 통계를 한눈에 확인하세요</p>
-            </div>
+            </Card>
             
-            {/* 통계 카드 섹션 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200">
-                <div className="flex items-center">
-                  <div className="p-3 bg-blue-100 rounded-lg">
-                    <span className="text-2xl">📊</span>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 mb-1">전체 프로젝트</p>
-                    <p className="text-3xl font-bold text-blue-600">{projects.length}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200">
-                <div className="flex items-center">
-                  <div className="p-3 bg-green-100 rounded-lg">
-                    <span className="text-2xl">👥</span>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 mb-1">참여 평가자</p>
-                    <p className="text-3xl font-bold text-green-600">{quotas.currentEvaluators}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200">
-                <div className="flex items-center">
-                  <div className="p-3 bg-purple-100 rounded-lg">
-                    <span className="text-2xl">📈</span>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 mb-1">완료율</p>
-                    <p className="text-3xl font-bold text-purple-600">
-                      {projects.length > 0 ? Math.round((projects.filter(p => p.status === 'completed').length / projects.length) * 100) : 0}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* 최근 활동 */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">최근 활동</h3>
-              {projects.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-6">📋</div>
-                  <h4 className="text-xl font-semibold text-gray-900 mb-3">아직 프로젝트가 없습니다</h4>
-                  <p className="text-gray-600 mb-8 text-lg leading-relaxed">첫 번째 AHP 프로젝트를 생성하여 의사결정 분석을 시작해보세요.</p>
-                  <Button variant="primary" onClick={() => handleTabChange('creation')} className="px-8 py-3 text-lg">
-                    새 프로젝트 시작하기
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {projects.slice(0, 3).map((project) => (
-                    <div key={project.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-lg border">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                          <span className="text-lg">📊</span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900 text-lg">{project.title}</h4>
-                          <p className="text-gray-600 mt-1">{project.status}</p>
-                        </div>
+            {/* 고급 메트릭 카드 - SuperAdminDashboard 스타일 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card variant="elevated" hoverable className="group">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 rounded-xl" style={{ backgroundColor: 'var(--accent-bg-light)' }}>
+                        <span className="text-2xl">📊</span>
                       </div>
-                      <span className="text-sm text-gray-500">{project.last_modified}</span>
+                      <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>총 프로젝트</h3>
                     </div>
-                  ))}
+                    <div className="space-y-1">
+                      <div className="text-3xl font-bold" style={{ color: 'var(--accent-primary)' }}>
+                        {projects.length}
+                        <span className="text-lg ml-1" style={{ color: 'var(--text-muted)' }}>/ {PLAN_QUOTAS[userPlan.planType].projects}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-20 h-2 rounded-full" style={{ backgroundColor: 'var(--bg-muted)' }}>
+                          <div 
+                            className="h-2 rounded-full transition-all duration-700"
+                            style={{ 
+                              width: `${(projects.length / PLAN_QUOTAS[userPlan.planType].projects) * 100}%`,
+                              background: 'linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)'
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>+12% 이번 달</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-4xl opacity-20 group-hover:opacity-40 transition-opacity duration-300">
+                    📈
+                  </div>
                 </div>
-              )}
+              </Card>
+              
+              <Card variant="elevated" hoverable className="group">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 rounded-xl bg-green-100">
+                        <span className="text-2xl">👥</span>
+                      </div>
+                      <h3 className="text-sm font-medium text-gray-600">활성 평가자</h3>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-3xl font-bold text-green-600">
+                        {quotas.currentEvaluators}
+                        <span className="text-lg text-gray-400 ml-1">/ {quotas.maxEvaluators}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all duration-700"
+                            style={{ width: `${(quotas.currentEvaluators / quotas.maxEvaluators) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-blue-600 font-medium">85% 활성</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-4xl opacity-20 group-hover:opacity-40 transition-opacity duration-300">
+                    ✅
+                  </div>
+                </div>
+              </Card>
+              
+              <Card variant="elevated" hoverable className="group">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 rounded-xl bg-purple-100">
+                        <span className="text-2xl">🎯</span>
+                      </div>
+                      <h3 className="text-sm font-medium text-gray-600">완료율</h3>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-3xl font-bold text-purple-600">
+                        {projects.length > 0 ? Math.round((projects.filter(p => p.status === 'completed').length / projects.length) * 100) : 0}%
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-700"
+                            style={{ width: `${projects.length > 0 ? (projects.filter(p => p.status === 'completed').length / projects.length) * 100 : 0}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-orange-600 font-medium">평균 7일</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-4xl opacity-20 group-hover:opacity-40 transition-opacity duration-300">
+                    ⚡
+                  </div>
+                </div>
+              </Card>
+              
+              <Card variant="elevated" hoverable className="group">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 rounded-xl" style={{ backgroundColor: 'var(--gold-light, #f5e6b8)' }}>
+                        <span className="text-2xl">💎</span>
+                      </div>
+                      <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>품질 점수</h3>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-3xl font-bold" style={{ color: 'var(--gold-primary)' }}>
+                        98.5<span className="text-lg text-gray-400 ml-1">/100</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="h-2 rounded-full transition-all duration-700"
+                            style={{ 
+                              width: '98.5%',
+                              background: 'linear-gradient(90deg, var(--gold-primary) 0%, var(--gold-secondary) 100%)'
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>우수</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-4xl opacity-20 group-hover:opacity-40 transition-opacity duration-300">
+                    ⭐
+                  </div>
+                </div>
+              </Card>
+            </div>
+            
+            {/* 실시간 차트 및 분석 */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+              <div className="lg:col-span-2">
+                <Card title="프로젝트 진행 현황" variant="glass" className="h-full">
+                  <div className="space-y-6">
+                    {projects.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="text-6xl mb-6">📊</div>
+                        <h4 className="text-xl font-semibold text-gray-900 mb-3">프로젝트 분석 대기 중</h4>
+                        <p className="text-gray-600 mb-6">첫 번째 프로젝트를 생성하여 상세한 분석을 시작하세요</p>
+                        <Button variant="primary" onClick={() => handleTabChange('creation')}>
+                          <span className="mr-2">🚀</span>프로젝트 생성하기
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {[{name: '계획', value: 25, color: '#3B82F6'}, {name: '진행', value: 45, color: '#10B981'}, {name: '완료', value: 30, color: '#8B5CF6'}].map((status, index) => (
+                          <div key={status.name} className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: status.color }} />
+                              <span className="font-medium text-gray-900">{status.name}</span>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <div className="w-32 bg-gray-200 rounded-full h-3">
+                                <div 
+                                  className="h-3 rounded-full transition-all duration-700"
+                                  style={{ width: `${status.value}%`, backgroundColor: status.color }}
+                                />
+                              </div>
+                              <span className="text-sm font-bold w-8 text-right">{status.value}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </div>
+              
+              <div className="space-y-6">
+                <Card title="빠른 액션" variant="bordered">
+                  <div className="space-y-3">
+                    {[
+                      {icon: '🚀', label: '새 프로젝트', action: 'creation', gradient: 'from-blue-500 to-blue-600'},
+                      {icon: '👥', label: '평가자 초대', action: 'evaluators', gradient: 'from-green-500 to-green-600'},
+                      {icon: '📊', label: '결과 분석', action: 'analysis', gradient: 'from-purple-500 to-purple-600'},
+                      {icon: '📤', label: '보고서 내보내기', action: 'export', gradient: 'from-orange-500 to-orange-600'}
+                    ].map((item) => (
+                      <Button 
+                        key={item.action}
+                        variant="ghost" 
+                        onClick={() => handleTabChange(item.action)}
+                        className="w-full justify-start group hover:scale-105 transition-all duration-200"
+                      >
+                        <div className={`p-2 rounded-lg bg-gradient-to-r ${item.gradient} mr-3 group-hover:shadow-lg transition-all duration-200`}>
+                          <span className="text-white">{item.icon}</span>
+                        </div>
+                        <span className="font-medium">{item.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </Card>
+                
+                <Card title="최근 활동" variant="outlined">
+                  <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+                    {projects.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="text-4xl mb-3">📝</div>
+                        <p className="text-sm text-gray-500">활동 내역이 없습니다</p>
+                      </div>
+                    ) : (
+                      projects.slice(0, 5).map((project, index) => (
+                        <div key={project.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm">📊</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-medium text-gray-900 truncate">{project.title}</p>
+                              <span className="text-xs text-gray-500">방금 전</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">{project.status === 'completed' ? '프로젝트가 완료되었습니다' : '평가가 진행 중입니다'}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </Card>
+              </div>
             </div>
           </div>
         );
