@@ -1,24 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import CriteriaManagement from '../components/admin/CriteriaManagement';
-import AlternativeManagement from '../components/admin/AlternativeManagement';
-import EvaluatorAssignment from '../components/admin/EvaluatorAssignment';
-import EnhancedEvaluatorManagement from '../components/admin/EnhancedEvaluatorManagement';
-import SurveyLinkManager from '../components/admin/SurveyLinkManager';
-import ModelFinalization from '../components/admin/ModelFinalization';
-import WorkflowStageIndicator, { WorkflowStage } from '../components/workflow/WorkflowStageIndicator';
-import { EvaluationMode } from '../components/evaluation/EvaluationModeSelector';
-import PaymentSystem from '../components/payment/PaymentSystem';
-import WorkshopManagement from '../components/workshop/WorkshopManagement';
-import DecisionSupportSystem from '../components/decision/DecisionSupportSystem';
-import PaperManagement from '../components/paper/PaperManagement';
 import ProjectSelector from '../components/project/ProjectSelector';
-import SurveyManagementSystem from '../components/survey/SurveyManagementSystem';
 import PersonalSettings from '../components/settings/PersonalSettings';
-import UsageManagement from '../components/admin/UsageManagement';
-import ValidityCheck from '../components/validity/ValidityCheck';
-import TrashBin from '../components/admin/TrashBin';
 import type { ProjectData } from '../services/api';
 
 interface PersonalServiceProps {
@@ -92,21 +75,17 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
 }) => {
   const [user, setUser] = useState(initialUser);
   
-  const [userPlan, setUserPlan] = useState<{
-    planType: 'basic' | 'standard' | 'premium' | 'enterprise';
-    additionalEvaluators: number;
-    planName: string;
-  }>({
-    planType: 'standard',
+  const userPlan = {
+    planType: 'standard' as const,
     additionalEvaluators: 0,
     planName: 'Standard Plan'
-  });
+  };
 
   useEffect(() => {
     if (user.first_name !== initialUser.first_name || user.last_name !== initialUser.last_name) {
       setUser(initialUser);
     }
-  }, [initialUser.first_name, initialUser.last_name]);
+  }, [initialUser.first_name, initialUser.last_name, user.first_name, user.last_name]);
 
   const handleUserUpdate = (updatedUser: typeof initialUser) => {
     const newUserObject = {
@@ -150,8 +129,6 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
                      'dashboard';
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>(externalSelectedProjectId || '');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [projectSelectorConfig, setProjectSelectorConfig] = useState<{
     title: string;
@@ -227,11 +204,8 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
         {/* 프로젝트 현황 대시보드 - 원본 디자인 */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
-          gap: 'var(--spacing-4, 1rem)',
-          '@media (min-width: 768px)': {
-            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))'
-          }
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: 'var(--spacing-4, 1rem)'
         }}>
           <div style={{
             borderRadius: 'var(--radius-lg, 0.5rem)',
@@ -434,14 +408,8 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
           
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-            gap: 'var(--spacing-4, 1rem)',
-            '@media (min-width: 768px)': {
-              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))'
-            },
-            '@media (min-width: 1024px)': {
-              gridTemplateColumns: 'repeat(6, minmax(0, 1fr))'
-            }
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: 'var(--spacing-4, 1rem)'
           }}>
             {[
               { id: 'user-guide', label: '사용자 가이드', icon: '📚', color: 'from-blue-500 to-blue-600' },
@@ -562,10 +530,8 @@ const PersonalServicePage: React.FC<PersonalServiceProps> = ({
       {renderMenuContent()}
       {showProjectSelector && projectSelectorConfig && (
         <ProjectSelector
-          isOpen={showProjectSelector}
-          onClose={handleProjectSelectorCancel}
-          projects={projects}
-          onSelectProject={handleProjectSelect}
+          onProjectSelect={handleProjectSelect}
+          onCancel={handleProjectSelectorCancel}
           title={projectSelectorConfig.title}
           description={projectSelectorConfig.description}
         />
