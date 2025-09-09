@@ -212,7 +212,7 @@ export const authAPI = {
     apiClient.post('/api/login/', data),
   
   // 회원가입
-  register: (data: { username: string; email: string; password: string }) =>
+  register: (data: { username: string; email: string; password: string; first_name?: string; last_name?: string }) =>
     apiClient.post('/api/register/', data),
   
   // 사용자 정보 조회
