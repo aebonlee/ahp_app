@@ -2,10 +2,12 @@
 Simple Service Models - 완전한 AHP 기능
 """
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 import json
+
+User = get_user_model()
 
 
 class SimpleProject(models.Model):
