@@ -234,104 +234,61 @@ const ImprovedPersonalServicePage: React.FC<PersonalServiceProps> = ({
           />
         );
       case 'demographic-survey':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">📊 인구통계학적 설문조사</h2>
-            <DemographicSurvey />
-          </div>
-        );
+        return <DemographicSurvey />;
       case 'my-projects':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">📂 내 프로젝트</h2>
-            <MyProjects />
-          </div>
-        );
+        return <MyProjects />;
       case 'project-creation':
         return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">➕ 새 프로젝트 생성</h2>
-            <p className="text-gray-600">새로운 AHP 프로젝트를 생성할 수 있습니다.</p>
-          </div>
+          <ProjectCreation 
+            onProjectCreated={() => {
+              handleTabChange('projects');
+            }}
+            onCancel={() => handleTabChange('dashboard')}
+            createProject={onCreateProject}
+          />
         );
       case 'model-builder':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">🏗️ 모델 구축</h2>
-            <p className="text-gray-600">계층적 의사결정 모델을 구축합니다.</p>
-          </div>
-        );
+        return <ModelBuilder />;
       case 'evaluator-management':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">👥 평가자 관리</h2>
-            <EvaluatorManagement />
-          </div>
-        );
+        return <EvaluatorManagement />;
       case 'trash':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">🗑️ 휴지통</h2>
-            <TrashBin />
-          </div>
-        );
+        return <TrashBin />;
       case 'progress-monitoring':
         return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">📈 진행률 모니터링</h2>
-            <p className="text-gray-600">실시간으로 평가 진행률을 모니터링합니다.</p>
-          </div>
+          <RealTimeParticipantMonitor 
+            projectId={projects.length > 0 ? projects[0].id?.toString() || 'demo-project' : 'demo-project'}
+            onParticipantSelect={(participantId) => {
+              console.log('Selected participant:', participantId);
+            }}
+          />
         );
       case 'results-analysis':
         return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">📊 결과 분석</h2>
-            <p className="text-gray-600">평가 결과를 분석하고 시각화합니다.</p>
-            <div className="bg-blue-50 p-4 rounded-lg mt-4">
-              <p className="text-blue-800">결과 분석 컴포넌트가 여기에 표시됩니다.</p>
-            </div>
-          </div>
+          <ResultsAnalysis 
+            projectId={projects.length > 0 ? projects[0].id?.toString() || 'demo-project' : 'demo-project'}
+            evaluationMode="practical"
+          />
         );
       case 'paper-management':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">📝 논문 작성 관리</h2>
-            <p className="text-gray-600">AHP 결과를 바탕으로 논문을 작성하고 관리합니다.</p>
-            <div className="bg-green-50 p-4 rounded-lg mt-4">
-              <p className="text-green-800">논문 관리 컴포넌트가 여기에 표시됩니다.</p>
-            </div>
-          </div>
-        );
+        return <PaperManagement />;
       case 'export-reports':
         return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">📤 보고서 내보내기</h2>
-            <p className="text-gray-600">다양한 형식으로 결과 보고서를 내보냅니다.</p>
-            <div className="bg-purple-50 p-4 rounded-lg mt-4">
-              <p className="text-purple-800">보고서 내보내기 컴포넌트가 여기에 표시됩니다.</p>
-            </div>
-          </div>
+          <ExportManager 
+            projectId={projects.length > 0 ? projects[0].id?.toString() || 'demo-project' : 'demo-project'}
+            projectData={projects.length > 0 ? projects[0] : { title: 'Demo Project', description: 'Demo project for export' }}
+            onExportComplete={(result) => {
+              if (result.success) {
+                alert('Export completed successfully!');
+              } else {
+                alert('Export failed: ' + result.error);
+              }
+            }}
+          />
         );
       case 'workshop-management':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">🎯 워크숍 관리</h2>
-            <p className="text-gray-600">평가 워크숍을 관리하고 진행합니다.</p>
-            <div className="bg-yellow-50 p-4 rounded-lg mt-4">
-              <p className="text-yellow-800">워크숍 관리 컴포넌트가 여기에 표시됩니다.</p>
-            </div>
-          </div>
-        );
+        return <WorkshopManagement />;
       case 'decision-support-system':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">🧠 의사결정 지원</h2>
-            <p className="text-gray-600">AHP 결과를 활용한 의사결정을 지원합니다.</p>
-            <div className="bg-indigo-50 p-4 rounded-lg mt-4">
-              <p className="text-indigo-800">의사결정 지원 컴포넌트가 여기에 표시됩니다.</p>
-            </div>
-          </div>
-        );
+        return <DecisionSupportSystem />;
       case 'personal-settings':
         return (
           <PersonalSettings 
