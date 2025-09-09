@@ -1,9 +1,9 @@
-// 세션 관리 서비스 (Cookie 기반)
+// 세션 관리 서비스 (서버 전용 - 브라우저 스토리지 사용 금지)
 class SessionService {
   private static instance: SessionService;
   private sessionTimer: NodeJS.Timeout | null = null;
   private warningTimer: NodeJS.Timeout | null = null;
-  private readonly SESSION_DURATION = 2 * 60 * 60 * 1000; // 2시간 (밀리초) - 더 긴 세션
+  private readonly SESSION_DURATION = 2 * 60 * 60 * 1000; // 2시간 (밀리초) - 서버가 관리
   private readonly WARNING_TIME = 10 * 60 * 1000; // 10분 전 경고 (밀리초)
   private logoutCallback: (() => void) | null = null;
 
@@ -12,7 +12,7 @@ class SessionService {
     this.setupActivityListeners();
   }
   
-  // 사용자 활동 감지 리스너 설정
+  // 사용자 활동 감지 리스너 설정 (서버 세션 활성화용)
   private setupActivityListeners(): void {
     const activityEvents = ['click', 'scroll', 'keypress', 'mousemove'];
     let lastActivity = Date.now();
@@ -22,13 +22,27 @@ class SessionService {
       // 5초 이내의 중복 활동은 무시 (과도한 업데이트 방지)
       if (now - lastActivity > 5000) {
         lastActivity = now;
-        localStorage.setItem('last_activity', now.toString());
+        // localStorage 사용 금지 - 서버가 활동을 자동 추적
+        this.notifyServerActivity();
       }
     };
     
     activityEvents.forEach(event => {
       document.addEventListener(event, handleActivity, true);
     });
+  }
+
+  // 서버에 활동 알림 (브라우저 스토리지 대신)
+  private async notifyServerActivity(): Promise<void> {
+    try {
+      await fetch('https://ahp-django-backend.onrender.com/accounts/web/activity/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      // 활동 알림 실패는 무시 (필수가 아님)
+    }
   }
 
   public static getInstance(): SessionService {
@@ -38,23 +52,28 @@ class SessionService {
     return SessionService.instance;
   }
 
-  // 세션 초기화 (Cookie 기반 인증으로 변경)
-  private initializeSession(): void {
-    // 쿠키 기반 인증에서는 서버가 세션 관리를 담당
-    // 클라이언트는 세션 상태 확인만 수행
-    this.checkSessionStatus();
-    
-    // 페이지 로드 시 기존 세션이 있으면 타이머 재시작
-    const loginTime = localStorage.getItem('login_time');
-    if (loginTime) {
-      const elapsed = Date.now() - parseInt(loginTime);
-      if (elapsed < this.SESSION_DURATION) {
-        // 남은 시간만큼 타이머 설정
-        this.resumeSessionTimer(this.SESSION_DURATION - elapsed);
-      } else {
-        // 세션 만료
-        this.forceLogout();
-      }
+  // 세션 초기화 (서버 전용 - localStorage 사용 금지)
+  private async initializeSession(): Promise<void> {
+    // 서버에서 세션 상태 확인
+    const isValid = await this.checkServerSession();
+    if (isValid) {
+      console.log('서버 세션 확인됨');
+    } else {
+      console.log('서버 세션 없음');
+    }
+  }
+
+  // 서버 세션 확인 (브라우저 스토리지 대신)
+  private async checkServerSession(): Promise<boolean> {
+    try {
+      const response = await fetch('https://ahp-django-backend.onrender.com/accounts/web/session-check/', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
     }
   }
 
@@ -101,21 +120,22 @@ class SessionService {
     }, remainingTime);
   }
 
-  // 세션 연장
-  public extendSession(): void {
-    // 로그인 시간 갱신
-    localStorage.setItem('login_time', Date.now().toString());
-    localStorage.setItem('last_activity', Date.now().toString());
-    
-    this.startSessionTimer(); // 타이머 재시작
-    this.hideSessionWarning();
-    
-    // AEBON 특별 세션 권한 - aebon은 더 긴 세션
-    const userInfo = localStorage.getItem('current_user');
-    const isAebon = userInfo && JSON.parse(userInfo).first_name?.toLowerCase() === 'aebon';
-    const sessionDuration = isAebon ? '8시간' : '2시간';
-    
-    console.log(`세션이 ${sessionDuration} 연장되었습니다.${isAebon ? ' (AEBON 특별 권한)' : ''}`);
+  // 세션 연장 (서버에서 처리)
+  public async extendSession(): Promise<void> {
+    try {
+      // 서버에 세션 연장 요청 (localStorage 사용 금지)
+      await fetch('https://ahp-django-backend.onrender.com/accounts/web/extend-session/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      this.startSessionTimer(); // 타이머 재시작
+      this.hideSessionWarning();
+      console.log('서버에서 세션이 연장되었습니다.');
+    } catch (error) {
+      console.error('세션 연장 실패:', error);
+    }
   }
 
   // 마지막 활동 시간 업데이트 (Cookie 기반에서는 불필요)
@@ -124,25 +144,28 @@ class SessionService {
     // 클라이언트에서는 별도 저장 불필요
   }
 
-  // 세션 상태 확인 (클라이언트 사이드)
+  // 세션 상태 확인 (서버에서만 확인)
   public async isSessionValid(): Promise<boolean> {
-    // localStorage에서 로그인 시간 확인
-    const loginTime = localStorage.getItem('login_time');
-    if (!loginTime) return false;
-    
-    // 30분 경과 여부 확인
-    const elapsed = Date.now() - parseInt(loginTime);
-    return elapsed < this.SESSION_DURATION;
+    return await this.checkServerSession();
   }
 
-  // 남은 세션 시간 (클라이언트 사이드 계산)
+  // 남은 세션 시간 (서버에서 계산)
   public async getRemainingTime(): Promise<number> {
-    const loginTime = localStorage.getItem('login_time');
-    if (!loginTime) return 0;
-    
-    const elapsed = Date.now() - parseInt(loginTime);
-    const remaining = Math.max(0, this.SESSION_DURATION - elapsed);
-    return Math.floor(remaining / 60000); // 분 단위로 반환
+    try {
+      const response = await fetch('https://ahp-django-backend.onrender.com/accounts/web/session-time/', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.remaining_minutes || 0;
+      }
+      return 0;
+    } catch (error) {
+      return 0;
+    }
   }
 
   // 세션 경고 표시
@@ -283,9 +306,7 @@ class SessionService {
     setTimeout(() => {
       logoutDiv.remove();
       
-      // localStorage 세션 정보 삭제
-      localStorage.removeItem('login_time');
-      localStorage.removeItem('last_activity');
+      // localStorage 사용 금지 - 서버에서 세션 삭제됨
       
       console.log('세션이 만료되어 로그아웃되었습니다.');
       
@@ -328,9 +349,9 @@ class SessionService {
     }
   }
 
-  // 세션 상태 확인 (Cookie 기반에서는 토큰 반환 불필요)
+  // 세션 상태 확인 (서버 전용)
   public async checkSessionStatus(): Promise<boolean> {
-    return await this.isSessionValid();
+    return await this.checkServerSession();
   }
 
   // 세션 새로고침

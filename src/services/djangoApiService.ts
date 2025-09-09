@@ -17,11 +17,10 @@ interface ApiResponse<T = any> {
 
 class DjangoApiService {
   private baseURL: string;
-  private accessToken: string | null;
 
   constructor() {
     this.baseURL = process.env.REACT_APP_DJANGO_API_URL || 'https://ahp-django-backend.onrender.com';
-    this.accessToken = localStorage.getItem('django_access_token');
+    // localStorage 사용 금지 - 서버 세션만 사용
   }
 
   private async request<T = any>(
@@ -30,6 +29,7 @@ class DjangoApiService {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     const config: RequestInit = {
+      credentials: 'include', // httpOnly 쿠키 사용
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -37,31 +37,10 @@ class DjangoApiService {
       ...options,
     };
 
-    // JWT 토큰 추가
-    if (this.accessToken) {
-      config.headers = {
-        ...config.headers,
-        'Authorization': `Bearer ${this.accessToken}`,
-      };
-    }
-
+    // localStorage 사용 금지 - httpOnly 쿠키만 사용
     try {
       const response = await fetch(url, config);
       const data = await response.json();
-
-      // 토큰 만료 시 자동 갱신
-      if (response.status === 401 && this.accessToken) {
-        const refreshed = await this.refreshToken();
-        if (refreshed) {
-          config.headers = {
-            ...config.headers,
-            'Authorization': `Bearer ${this.accessToken}`,
-          };
-          const retryResponse = await fetch(url, config);
-          return retryResponse.json();
-        }
-      }
-
       return data;
     } catch (error) {
       console.error('Django API request failed:', error);
@@ -69,20 +48,14 @@ class DjangoApiService {
     }
   }
 
-  // Authentication Methods
+  // Authentication Methods (서버 세션 전용)
   async login(username: string, password: string): Promise<ApiResponse> {
     const response = await this.request('/accounts/web/login/', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     });
 
-    if (response.success && response.tokens) {
-      this.accessToken = response.tokens.access;
-      localStorage.setItem('django_access_token', response.tokens.access);
-      localStorage.setItem('django_refresh_token', response.tokens.refresh);
-      localStorage.setItem('django_user', JSON.stringify(response.user));
-    }
-
+    // localStorage 사용 금지 - 서버가 httpOnly 쿠키로 세션 관리
     return response;
   }
 
@@ -99,51 +72,17 @@ class DjangoApiService {
       body: JSON.stringify(userData),
     });
 
-    if (response.success && response.tokens) {
-      this.accessToken = response.tokens.access;
-      localStorage.setItem('django_access_token', response.tokens.access);
-      localStorage.setItem('django_refresh_token', response.tokens.refresh);
-      localStorage.setItem('django_user', JSON.stringify(response.user));
-    }
+    // localStorage 사용 금지 - 서버가 httpOnly 쿠키로 세션 관리
 
     return response;
   }
 
   async logout(): Promise<ApiResponse> {
-    const refreshToken = localStorage.getItem('django_refresh_token');
     const response = await this.request('/accounts/web/logout/', {
-      method: 'POST',
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      method: 'POST'
     });
-
-    this.clearTokens();
+    // localStorage 사용 금지 - 서버에서 세션 삭제됨
     return response;
-  }
-
-  async refreshToken(): Promise<boolean> {
-    const refreshToken = localStorage.getItem('django_refresh_token');
-    if (!refreshToken) return false;
-
-    try {
-      const response = await this.request('/auth/token/refresh/', {
-        method: 'POST',
-        body: JSON.stringify({ refresh: refreshToken }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.access) {
-        this.accessToken = response.access;
-        localStorage.setItem('django_access_token', response.access);
-        return true;
-      }
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-    }
-
-    this.clearTokens();
-    return false;
   }
 
   // User Profile Methods
@@ -294,21 +233,23 @@ class DjangoApiService {
     return this.request(`/analysis/${projectId}/consensus_metrics/`);
   }
 
-  // Utility Methods
-  clearTokens(): void {
-    this.accessToken = null;
-    localStorage.removeItem('django_access_token');
-    localStorage.removeItem('django_refresh_token');
-    localStorage.removeItem('django_user');
+  // Utility Methods (서버 세션 전용)
+  async isAuthenticated(): Promise<boolean> {
+    try {
+      const response = await this.request('/accounts/web/session-check/');
+      return response.success && !!response.user;
+    } catch (error) {
+      return false;
+    }
   }
 
-  isAuthenticated(): boolean {
-    return !!this.accessToken;
-  }
-
-  getCurrentUser(): any {
-    const userStr = localStorage.getItem('django_user');
-    return userStr ? JSON.parse(userStr) : null;
+  async getCurrentUser(): Promise<any> {
+    try {
+      const response = await this.request('/accounts/web/session-check/');
+      return response.user || null;
+    } catch (error) {
+      return null;
+    }
   }
 
   // Test Methods (Development only)

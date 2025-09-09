@@ -37,23 +37,23 @@ export const DjangoAuthProvider: React.FC<{ children: ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 페이지 로드 시 저장된 사용자 정보 확인
+    // 페이지 로드 시 서버 세션 확인 (localStorage 사용 금지)
     const initAuth = async () => {
       try {
-        const savedUser = djangoApiService.getCurrentUser();
-        if (savedUser && djangoApiService.isAuthenticated()) {
-          // 토큰이 유효한지 서버에 확인
+        const savedUser = await djangoApiService.getCurrentUser();
+        if (savedUser && await djangoApiService.isAuthenticated()) {
+          // 서버 세션이 유효한지 확인
           const response = await djangoApiService.getUserProfile();
           if (response.success) {
             setUser(response.user);
           } else {
-            // 토큰 무효 시 로그아웃
-            djangoApiService.clearTokens();
+            // 세션 무효 시 로그아웃
+            await djangoApiService.logout();
           }
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        djangoApiService.clearTokens();
+        await djangoApiService.logout();
       } finally {
         setIsLoading(false);
       }
