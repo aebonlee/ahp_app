@@ -22,8 +22,12 @@ python manage.py migrate
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
-# Create superuser script (optional - 오류 발생 시 스킵)
-echo "Creating superuser (optional)..."
+# Create superuser using management command
+echo "Creating admin account..."
+python manage.py create_admin || echo "Admin creation failed, continuing..."
+
+# Create superuser script (fallback - 오류 발생 시 스킵)
+echo "Creating superuser (fallback)..."
 python manage.py shell -c "
 try:
     from django.contrib.auth import get_user_model
