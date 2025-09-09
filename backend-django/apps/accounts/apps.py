@@ -8,14 +8,12 @@ class AccountsConfig(AppConfig):
     def ready(self):
         """Django 앱 시작 시 실행 - aebon 계정 자동 생성"""
         try:
-            from django.contrib.auth import get_user_model
+            from django.contrib.auth.models import User
             import os
             
             # migration 중이거나 테스트 중일 때는 실행하지 않음
             if 'migrate' in os.sys.argv or 'test' in os.sys.argv:
                 return
-                
-            User = get_user_model()
             
             # aebon 계정이 없으면 생성
             if not User.objects.filter(username='aebon').exists():

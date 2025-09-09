@@ -10,9 +10,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ahp_backend.settings')
 django.setup()
 
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from django.contrib.auth.models import User
 
 # 관리자 계정들 생성
 admin_accounts = [

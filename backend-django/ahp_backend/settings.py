@@ -222,8 +222,8 @@ LOGGING = {
 # Rate Limiting (기본 설정)
 RATELIMIT_ENABLE = True
 
-# Custom User Model 활성화 - AEBON 특별 권한을 위해 필요
-AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model 일시적 비활성화 - Migration 문제 해결
+# AUTH_USER_MODEL = 'accounts.User'
 
 # DRF 완전한 설정
 REST_FRAMEWORK = {
