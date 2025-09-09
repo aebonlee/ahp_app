@@ -32,9 +32,9 @@ try:
         User.objects.create_superuser(
             username='admin',
             email='admin@ahp-platform.com',
-            password='AHP2025!Admin'
+            password='ahp2025admin'
         )
-        print('Superuser created: admin / AHP2025!Admin')
+        print('Superuser created: admin / ahp2025admin')
     else:
         print('Superuser already exists')
 except Exception as e:
