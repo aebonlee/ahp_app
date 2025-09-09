@@ -120,53 +120,127 @@ function App() {
     isVisible: boolean;
   } | null>(null);
 
-  // 세션 서비스 초기화 및 세션 복원
+  // JWT 토큰 기반 세션 관리
   useEffect(() => {
     sessionService.setLogoutCallback(() => {
       setUser(null);
       setActiveTab('home');
     });
     
-    // 페이지 새로고침 시 세션 복원
-    const restoreSession = () => {
-      const savedUser = localStorage.getItem('current_user');
-      const loginTime = localStorage.getItem('login_time');
+    // Django JWT 토큰으로 세션 복원
+    const restoreSessionFromJWT = async () => {
+      const djangoToken = localStorage.getItem('django_access_token');
+      const djangoUser = localStorage.getItem('django_user');
       
-      if (savedUser && loginTime) {
+      if (djangoToken && djangoUser) {
         try {
-          const userInfo = JSON.parse(savedUser);
-          const elapsed = Date.now() - parseInt(loginTime);
-          const sessionDuration = userInfo.first_name?.toLowerCase() === 'aebon' 
-            ? 8 * 60 * 60 * 1000 // aebon: 8시간
-            : 2 * 60 * 60 * 1000; // 일반 사용자: 2시간
-          
-          if (elapsed < sessionDuration) {
-            console.log('🔄 세션 복원 중...', userInfo.first_name);
-            setUser(userInfo);
+          // Django 백엔드에 토큰 검증 요청
+          const response = await fetch(`${API_BASE_URL}/api/auth/verify/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${djangoToken}`,
+            }
+          });
+
+          if (response.ok) {
+            const userInfo = JSON.parse(djangoUser);
+            console.log('🔄 JWT 토큰으로 세션 복원 성공:', userInfo.username || userInfo.first_name);
             
-            // aebon은 super-admin으로, 다른 사용자는 personal-service로
-            if (userInfo.first_name?.toLowerCase() === 'aebon' || userInfo.role === 'super_admin') {
+            // 사용자 정보 설정
+            const enhancedUser = {
+              ...userInfo,
+              id: userInfo.id || userInfo.pk,
+              role: userInfo.is_superuser ? 'super_admin' : 
+                    userInfo.is_staff ? 'admin' : 'evaluator',
+              admin_type: userInfo.is_superuser ? 'super' : 'personal',
+              canSwitchModes: userInfo.is_superuser || userInfo.username?.toLowerCase() === 'aebon'
+            };
+            
+            setUser(enhancedUser);
+            
+            // aebon 또는 superuser는 super-admin으로, 다른 사용자는 personal-service로
+            if (enhancedUser.canSwitchModes) {
               setActiveTab('super-admin');
             } else {
               setActiveTab('personal-service');
             }
-          } else {
-            // 세션 만료
+            
+            // localStorage 업데이트
+            localStorage.setItem('current_user', JSON.stringify(enhancedUser));
+            localStorage.setItem('login_time', Date.now().toString());
+            
+          } else if (response.status === 401) {
+            // 토큰 만료 - refresh 시도
+            console.log('🔄 토큰 만료, refresh 시도 중...');
+            const refreshToken = localStorage.getItem('django_refresh_token');
+            
+            if (refreshToken) {
+              const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh/`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refresh: refreshToken })
+              });
+              
+              if (refreshResponse.ok) {
+                const refreshData = await refreshResponse.json();
+                localStorage.setItem('django_access_token', refreshData.access);
+                console.log('✅ 토큰 갱신 성공');
+                // 갱신 후 재시도
+                await restoreSessionFromJWT();
+                return;
+              }
+            }
+            
+            // refresh 실패 시 로그아웃
             console.log('⏰ 세션 만료 - 자동 로그아웃');
-            localStorage.removeItem('current_user');
-            localStorage.removeItem('login_time');
-            localStorage.removeItem('last_activity');
+            clearAllSessionData();
+          } else {
+            console.log('❌ JWT 검증 실패');
+            clearAllSessionData();
           }
         } catch (error) {
-          console.error('세션 복원 실패:', error);
-          localStorage.removeItem('current_user');
-          localStorage.removeItem('login_time');
-          localStorage.removeItem('last_activity');
+          console.error('JWT 세션 복원 실패:', error);
+          clearAllSessionData();
+        }
+      } else {
+        // 기존 localStorage 방식으로 폴백 (마이그레이션 호환성)
+        const savedUser = localStorage.getItem('current_user');
+        const loginTime = localStorage.getItem('login_time');
+        
+        if (savedUser && loginTime) {
+          try {
+            const userInfo = JSON.parse(savedUser);
+            const elapsed = Date.now() - parseInt(loginTime);
+            const sessionDuration = 2 * 60 * 60 * 1000; // 2시간
+            
+            if (elapsed < sessionDuration) {
+              console.log('🔄 localStorage 폴백 세션 복원:', userInfo.first_name);
+              setUser(userInfo);
+              setActiveTab(userInfo.role === 'super_admin' ? 'super-admin' : 'personal-service');
+            } else {
+              clearAllSessionData();
+            }
+          } catch (error) {
+            console.error('localStorage 세션 복원 실패:', error);
+            clearAllSessionData();
+          }
         }
       }
     };
     
-    restoreSession();
+    const clearAllSessionData = () => {
+      localStorage.removeItem('current_user');
+      localStorage.removeItem('login_time');
+      localStorage.removeItem('last_activity');
+      localStorage.removeItem('django_access_token');
+      localStorage.removeItem('django_refresh_token');
+      localStorage.removeItem('django_user');
+    };
+    
+    restoreSessionFromJWT();
   }, []);
 
   // URL 파라미터 변경 감지 (로그인 후에만 적용)
@@ -508,12 +582,11 @@ function App() {
     setLoginError('');
 
     try {
-      console.log('🔍 백엔드 로그인 시도:', { email });
+      console.log('🔍 Django JWT 로그인 시도:', { email });
       
-      // 백엔드 로그인
-      const response = await fetch(`${API_BASE_URL}/api/login/`, {
+      // Django JWT 로그인
+      const response = await fetch('https://ahp-django-backend.onrender.com/accounts/web/login/', {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -522,11 +595,20 @@ function App() {
 
       const data = await response.json();
       
-      if (response.ok) {
+      if (response.ok && data.success) {
+        console.log('✅ Django 로그인 성공:', data);
+        
+        // JWT 토큰 저장
+        if (data.tokens) {
+          localStorage.setItem('django_access_token', data.tokens.access);
+          localStorage.setItem('django_refresh_token', data.tokens.refresh);
+          localStorage.setItem('django_user', JSON.stringify(data.user));
+        }
+        
         // AEBON SPECIAL HANDLING - aebon 사용자를 super admin으로 강제 설정
         let enhancedUser = { ...data.user };
         
-        if (data.user.email === 'aebon@example.com' || data.user.first_name?.toLowerCase() === 'aebon' || data.user.email?.includes('aebon')) {
+        if (data.user.email === 'aebon@example.com' || data.user.first_name?.toLowerCase() === 'aebon' || data.user.email?.includes('aebon') || data.user.username?.toLowerCase() === 'aebon') {
           enhancedUser = {
             ...data.user,
             role: 'super_admin',
@@ -537,10 +619,13 @@ function App() {
           };
           console.log('👑 AEBON 최고관리자로 로그인 성공!');
         } else {
-          // admin 역할일 때 admin_type을 'personal'로 설정
+          // 역할 매핑
           enhancedUser = {
             ...data.user,
-            admin_type: data.user.role === 'admin' ? 'personal' : data.user.admin_type
+            role: data.user.is_superuser ? 'super_admin' : 
+                  data.user.is_staff ? 'admin' : 'evaluator',
+            admin_type: data.user.is_superuser ? 'super' : 'personal',
+            canSwitchModes: data.user.is_superuser
           };
         }
         
@@ -591,23 +676,29 @@ function App() {
     // 세션 서비스 로그아웃 처리
     await sessionService.logout();
     
-    // 세션 정보 및 사용자 정보 삭제
+    try {
+      // Django JWT 토큰으로 로그아웃
+      const djangoToken = localStorage.getItem('django_access_token');
+      if (djangoToken) {
+        await fetch('https://ahp-django-backend.onrender.com/accounts/web/logout/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${djangoToken}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Django 로그아웃 API 호출 실패:', error);
+    }
+    
+    // 모든 세션 정보 및 사용자 정보 삭제
     localStorage.removeItem('login_time');
     localStorage.removeItem('last_activity');
     localStorage.removeItem('current_user');
-    
-    try {
-      // 백엔드 로그아웃 API 호출
-      await fetch(`${API_BASE_URL}/api/logout/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    } catch (error) {
-      console.error('Logout API call failed:', error);
-    }
+    localStorage.removeItem('django_access_token');
+    localStorage.removeItem('django_refresh_token');
+    localStorage.removeItem('django_user');
     
     // 상태 초기화
     setUser(null);
