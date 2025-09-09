@@ -82,12 +82,16 @@ const StyledLoginForm: React.FC<StyledLoginFormProps> = ({
     setLocalError('');
 
     try {
+      console.log('🔐 로그인 시도:', { username: formData.username, password: '***' });
       const response = await apiService.authAPI.login({
         username: formData.username,
         password: formData.password
       });
 
+      console.log('📥 로그인 응답:', response);
+
       if (response.error) {
+        console.error('❌ 로그인 에러:', response.error);
         throw new Error(response.error);
       }
 
