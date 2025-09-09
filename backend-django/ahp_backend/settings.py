@@ -46,14 +46,15 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🎉 전체 AHP 플랫폼 완성 - 유료 요금제
+# 🎉 전체 AHP 플랫폼 완성 - Migration 안전 배포
 LOCAL_APPS = [
-    'apps.accounts',       # ✅ 사용자 인증 시스템
-    'apps.projects',       # ✅ 프로젝트 관리
-    'apps.evaluations',    # ✅ AHP 쌍대비교 평가
-    'apps.analysis',       # ✅ 고급 분석 엔진
-    'apps.common',         # ✅ 공통 기능
-    'apps.exports',        # ✅ 데이터 내보내기
+    # Migration 충돌 해결을 위해 일시적으로 비활성화
+    # 'apps.accounts',       # ✅ 사용자 인증 시스템
+    # 'apps.projects',       # ✅ 프로젝트 관리
+    # 'apps.evaluations',    # ✅ AHP 쌍대비교 평가
+    # 'apps.analysis',       # ✅ 고급 분석 엔진
+    # 'apps.common',         # ✅ 공통 기능
+    # 'apps.exports',        # ✅ 데이터 내보내기
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -95,15 +96,8 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ahp_app',
-        'USER': 'ahp_app_user',
-        'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
-        'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -148,8 +142,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model 활성화
-AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model 일시적 비활성화 - Migration 충돌 해결
+# AUTH_USER_MODEL = 'accounts.User'
 
 # Django REST Framework
 REST_FRAMEWORK = {

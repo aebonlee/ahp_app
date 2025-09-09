@@ -60,13 +60,13 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 🎉 전체 AHP 플랫폼 완성
-    path('accounts/', include('apps.accounts.urls')),   # ✅ 사용자 인증
-    path('projects/', include('apps.projects.urls')),   # ✅ 프로젝트 관리
-    path('evaluations/', include('apps.evaluations.urls')),  # ✅ AHP 평가
-    path('analysis/', include('apps.analysis.urls')),   # ✅ 고급 분석
-    path('common/', include('apps.common.urls')),       # ✅ 공통 기능
-    path('exports/', include('apps.exports.urls')),     # ✅ 데이터 내보내기
+    # App URLs - Migration 안전 배포를 위해 일시적 비활성화
+    # path('accounts/', include('apps.accounts.urls')),   # ✅ 사용자 인증
+    # path('projects/', include('apps.projects.urls')),   # ✅ 프로젝트 관리
+    # path('evaluations/', include('apps.evaluations.urls')),  # ✅ AHP 평가
+    # path('analysis/', include('apps.analysis.urls')),   # ✅ 고급 분석
+    # path('common/', include('apps.common.urls')),       # ✅ 공통 기능
+    # path('exports/', include('apps.exports.urls')),     # ✅ 데이터 내보내기
 ]
 
 urlpatterns = [
