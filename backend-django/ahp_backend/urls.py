@@ -321,7 +321,7 @@ urlpatterns = [
     path('api/register/', register_api, name='register'),
     path('api/logout/', logout_api, name='logout'),
     path('api/user/', user_info_api, name='user_info'),
-    path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API - 관리자 생성용
+    # path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API - 보안상 비활성화
     
     
     # Health checks
