@@ -38,6 +38,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 class SimpleProjectViewSet(viewsets.ModelViewSet):
     """프로덕션 최적화된 프로젝트 ViewSet"""
+    queryset = SimpleProject.objects.all()
     serializer_class = SimpleProjectSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -195,6 +196,7 @@ class SimpleProjectViewSet(viewsets.ModelViewSet):
 
 class SimpleCriteriaViewSet(viewsets.ModelViewSet):
     """최적화된 AHP 평가기준 ViewSet"""
+    queryset = SimpleCriteria.objects.all()
     serializer_class = SimpleCriteriaSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -222,6 +224,7 @@ class SimpleCriteriaViewSet(viewsets.ModelViewSet):
 
 class SimpleComparisonViewSet(viewsets.ModelViewSet):
     """최적화된 쌍대비교 ViewSet"""
+    queryset = SimpleComparison.objects.all()
     serializer_class = SimpleComparisonSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter]
@@ -250,6 +253,7 @@ class SimpleComparisonViewSet(viewsets.ModelViewSet):
 
 class SimpleResultViewSet(viewsets.ReadOnlyModelViewSet):
     """최적화된 AHP 결과 ViewSet (읽기 전용)"""
+    queryset = SimpleResult.objects.all()
     serializer_class = SimpleResultSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter]
@@ -270,6 +274,7 @@ class SimpleResultViewSet(viewsets.ReadOnlyModelViewSet):
 
 class SimpleDataViewSet(viewsets.ModelViewSet):
     """최적화된 프로젝트 데이터 ViewSet"""
+    queryset = SimpleData.objects.all()
     serializer_class = SimpleDataSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
