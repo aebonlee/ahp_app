@@ -9,7 +9,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -18,6 +19,7 @@ from rest_framework_simplejwt.views import (
 )
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def api_root(request):
     """API Root endpoint"""
     return Response({
