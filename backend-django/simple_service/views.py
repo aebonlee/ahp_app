@@ -17,7 +17,11 @@ import math
 import logging
 import time
 import os
-import psutil
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 from .models import SimpleProject, SimpleData, SimpleCriteria, SimpleComparison, SimpleResult
 from .serializers import (
     SimpleProjectSerializer, SimpleDataSerializer, SimpleCriteriaSerializer, 
@@ -334,15 +338,18 @@ def health_check(request):
         }
     
     # 시스템 리소스 정보
-    try:
-        memory = psutil.virtual_memory()
-        health_data['system'] = {
-            'memory_usage_percent': round(memory.percent, 2),
-            'memory_available_mb': round(memory.available / 1024 / 1024, 2),
-            'cpu_percent': round(psutil.cpu_percent(interval=0.1), 2)
-        }
-    except:
-        health_data['system'] = {'status': 'unavailable'}
+    if HAS_PSUTIL:
+        try:
+            memory = psutil.virtual_memory()
+            health_data['system'] = {
+                'memory_usage_percent': round(memory.percent, 2),
+                'memory_available_mb': round(memory.available / 1024 / 1024, 2),
+                'cpu_percent': round(psutil.cpu_percent(interval=0.1), 2)
+            }
+        except:
+            health_data['system'] = {'status': 'unavailable'}
+    else:
+        health_data['system'] = {'status': 'psutil not available'}
     
     health_data['response_time_ms'] = round((time.time() - start_time) * 1000, 2)
     
