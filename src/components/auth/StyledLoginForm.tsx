@@ -95,7 +95,12 @@ const StyledLoginForm: React.FC<StyledLoginFormProps> = ({
         throw new Error(response.error);
       }
 
+      // Django 백엔드 응답 형식에 맞게 처리
       const userResponse = response as any;
+      if (!userResponse.success) {
+        console.error('❌ 로그인 실패:', userResponse.message);
+        throw new Error(userResponse.message || '로그인에 실패했습니다.');
+      }
       const userData = {
         id: userResponse.user?.id || 1,
         username: userResponse.user?.username || formData.username,

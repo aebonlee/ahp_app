@@ -279,7 +279,7 @@ class SessionService {
     
     // 서버에 로그아웃 요청
     try {
-      await fetch('/api/auth/logout', {
+      await fetch('https://ahp-django-backend.onrender.com/api/logout/', {
         credentials: 'include',
         method: 'POST'
       });
@@ -310,9 +310,9 @@ class SessionService {
   // 세션 새로고침
   private async refreshSession(): Promise<void> {
     try {
-      await fetch('/api/auth/profile', {
+      await fetch('https://ahp-django-backend.onrender.com/api/user/', {
         credentials: 'include',
-        method: 'POST'
+        method: 'GET'
       });
     } catch (error) {
       console.error('세션 새로고침 실패:', error);
