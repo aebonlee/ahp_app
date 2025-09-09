@@ -20,25 +20,23 @@ export interface APIResponse<T = any> {
   previous?: string | null;
 }
 
-// Django API 클라이언트 (JWT 인증 지원)
+// Django API 클라이언트 (세션 기반 인증 지원)
 class APIClient {
   private baseURL: string;
-  private token: string | null = null;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
-    // 저장된 JWT 토큰 복원
-    this.token = localStorage.getItem('jwt_token');
   }
 
+  // 세션 기반 인증에서는 토큰 관리가 불필요
   setToken(token: string) {
-    this.token = token;
-    localStorage.setItem('jwt_token', token);
+    // 세션 기반에서는 사용하지 않음
+    console.log('세션 기반 인증에서는 토큰 설정이 불필요합니다.');
   }
 
   clearToken() {
-    this.token = null;
-    localStorage.removeItem('jwt_token');
+    // 세션 기반에서는 사용하지 않음
+    console.log('세션 기반 인증에서는 토큰 클리어가 불필요합니다.');
   }
 
   private async request<T>(
@@ -52,13 +50,8 @@ class APIClient {
         ...options.headers as Record<string, string>,
       };
 
-      // JWT 토큰이 있으면 Authorization 헤더 추가
-      if (this.token) {
-        headers['Authorization'] = `Bearer ${this.token}`;
-      }
-
       const response = await fetch(`${this.baseURL}${endpoint}`, {
-        credentials: 'include', // CORS 쿠키 포함
+        credentials: 'include', // 세션 쿠키 포함
         ...options,
         headers,
       });
@@ -66,10 +59,6 @@ class APIClient {
       const data = await response.json();
 
       if (!response.ok) {
-        // 인증 오류 시 토큰 제거
-        if (response.status === 401) {
-          this.clearToken();
-        }
         return { error: data.message || data.error || 'Request failed' };
       }
 

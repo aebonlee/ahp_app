@@ -253,7 +253,7 @@ function App() {
       
       try {
         // 백엔드에서 현재 로그인 상태 확인
-        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+        const response = await fetch(`${API_BASE_URL}/api/user/`, {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
