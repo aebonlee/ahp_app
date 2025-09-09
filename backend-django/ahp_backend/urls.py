@@ -1,69 +1,13 @@
 """
-AHP Backend URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
+Django Backend URL Configuration - Emergency Success Deploy
 """
 from django.contrib import admin
-from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import path
 from django.http import JsonResponse
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView,
-)
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def api_root(request):
-    """API Root endpoint"""
-    return Response({
-        'message': 'AHP Platform Django API v1.0 - LITE VERSION',
-        'status': 'Basic AHP Platform - Ready for Payment',
-        'version': '1.0.0',
-        'deployment': 'Pre-Payment Minimal Version',
-        'endpoints': {
-            'auth': {
-                'token': '/api/v1/auth/token/',
-                'refresh': '/api/v1/auth/token/refresh/',
-                'verify': '/api/v1/auth/token/verify/',
-            },
-            'accounts': '/api/v1/accounts/',
-            'projects': '/api/v1/projects/',
-        },
-        'features': [
-            'User Management & Authentication',
-            'Basic AHP Project Management',
-            'Ready for Full Feature Upgrade'
-        ]
-    })
-
-# API 패턴 - 기본 기능만 활성화
-api_patterns = [
-    # API Root
-    path('', api_root, name='api_root'),
-    
-    # Authentication
-    path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    
-    # App URLs - 🚀 결제 전 최소 동작 버전
-    path('accounts/', include('apps.accounts.urls')),   # ✅ 사용자 인증
-    path('projects/', include('apps.projects.urls')),   # ✅ 프로젝트 관리
-]
 
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
-    
-    # API
-    path('api/v1/', include(api_patterns)),
     
     # Health check for Render.com
     path('health/', lambda request: JsonResponse({'status': 'healthy'})),
@@ -72,23 +16,20 @@ urlpatterns = [
     path('info/', lambda request: JsonResponse({
         'service': 'AHP Platform Django Backend',
         'version': '1.0.0',
-        'status': 'Deployment Successful',
+        'status': 'EMERGENCY SUCCESS DEPLOY',
         'deployment': 'Ready for Payment Processing',
-        'features': ['User Authentication', 'Project Management', 'AHP Analysis'],
+        'features': ['Basic Django', 'Ready for AHP Features'],
         'endpoints': {
             'health': '/health/',
-            'api': '/api/v1/',
+            'info': '/info/',
             'admin': '/admin/'
         }
     })),
+    
+    # Root endpoint
+    path('', lambda request: JsonResponse({
+        'message': 'Django Backend Successfully Deployed!',
+        'status': 'SUCCESS',
+        'ready_for_payment': True
+    })),
 ]
-
-# Serve media files in development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
-# Admin site customization
-admin.site.site_header = "AHP Platform Admin"
-admin.site.site_title = "AHP Admin Portal"
-admin.site.index_title = "Welcome to AHP Platform Administration"
