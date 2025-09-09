@@ -204,7 +204,7 @@ urlpatterns = [
     path('api/login/', login_api, name='login'),
     path('api/register/', register_api, name='register'),
     path('api/user/', user_info_api, name='user_info'),
-    path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API
+    # path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API - 비활성화
     
     
     # Health check for Render.com
