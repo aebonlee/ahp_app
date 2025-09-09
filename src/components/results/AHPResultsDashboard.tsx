@@ -150,9 +150,7 @@ const AHPResultsDashboard: React.FC<AHPResultsDashboardProps> = ({
       if (criteriaData.length > 1 && alternativesData.length > 1) {
         const sensitivityResults = performSensitivityAnalysis(
           criteriaMatrix,
-          Object.values(evaluationData.alternativeComparisons).map(comparisons =>
-            createMatrixFromComparisons(comparisons, alternativesData.length)
-          )
+          criteriaData.map(criterion => ({ id: criterion.id, name: criterion.name }))
         );
         setSensitivityData(sensitivityResults);
       }
@@ -346,7 +344,7 @@ const AHPResultsDashboard: React.FC<AHPResultsDashboardProps> = ({
           <h4 className="font-medium text-blue-800 mb-2">💡 일관성 개선 가이드</h4>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• 일관성 비율이 10% 이상일 경우 쌍대비교를 재검토하세요</li>
-            <li>• 상호 모순되는 판단이 있는지 확인하세요 (A > B, B > C, C > A)</li>
+            <li>• 상호 모순되는 판단이 있는지 확인하세요 (A &gt; B, B &gt; C, C &gt; A)</li>
             <li>• 너무 극단적인 비교 값(9:1)을 남용하지 마세요</li>
             <li>• 비슷한 중요도의 요소들은 1:1에 가깝게 설정하세요</li>
           </ul>
