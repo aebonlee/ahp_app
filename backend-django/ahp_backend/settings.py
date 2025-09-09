@@ -39,18 +39,12 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    # 모든 서드파티 앱 비활성화 - 순수 Django만
+    'rest_framework',  # 최소한의 DRF만 추가
 ]
 
-# 🎉 전체 AHP 플랫폼 완성 - Migration 안전 배포
+# 간단하고 안전한 서비스 앱
 LOCAL_APPS = [
-    # Migration 충돌 해결을 위해 일시적으로 비활성화
-    # 'apps.accounts',       # ✅ 사용자 인증 시스템
-    # 'apps.projects',       # ✅ 프로젝트 관리
-    # 'apps.evaluations',    # ✅ AHP 쌍대비교 평가
-    # 'apps.analysis',       # ✅ 고급 분석 엔진
-    # 'apps.common',         # ✅ 공통 기능
-    # 'apps.exports',        # ✅ 데이터 내보내기
+    'simple_service',      # ✅ 간단한 AHP 서비스
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -139,6 +133,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom User Model 일시적 비활성화 - Migration 충돌 해결
 # AUTH_USER_MODEL = 'accounts.User'
 
-# 모든 복잡한 설정 제거 - 순수 Django만
-
-# 로깅 설정도 제거 - 최대한 단순화
+# DRF 최소 설정
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}

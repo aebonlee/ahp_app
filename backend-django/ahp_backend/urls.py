@@ -1,12 +1,19 @@
 """
-Django Backend URLs with Login API
+Django Backend URLs with Simple Service API
 """
 from django.contrib import admin
 from django.contrib.auth import authenticate, login
-from django.urls import path
+from django.urls import path, include
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.routers import DefaultRouter
 import json
+
+# Simple Service API Router
+router = DefaultRouter()
+from simple_service.views import SimpleProjectViewSet, SimpleDataViewSet, service_status
+router.register(r'projects', SimpleProjectViewSet)
+router.register(r'data', SimpleDataViewSet)
 
 @csrf_exempt
 def login_api(request):
@@ -150,15 +157,27 @@ urlpatterns = [
         'ready_for_payment': True
     })),
     
+    # Simple Service API
+    path('api/service/', include(router.urls)),
+    path('api/service/status/', service_status, name='service_status'),
+    
     # Root endpoint
     path('', lambda request: JsonResponse({
-        'message': 'Django Backend with Login API',
+        'message': 'Django Backend - Simple AHP Service',
         'status': 'SUCCESS',
         'deployment': 'SUCCESSFUL',
+        'features': {
+            'authentication': 'Basic Login/Register',
+            'projects': 'Simple Project Management',
+            'data_storage': 'Key-Value Data Storage'
+        },
         'api_endpoints': {
             'login': '/api/login/',
             'register': '/api/register/',
             'user_info': '/api/user/',
+            'service_status': '/api/service/status/',
+            'projects': '/api/service/projects/',
+            'data': '/api/service/data/',
             'admin': '/admin/'
         },
         'test_credentials': {
