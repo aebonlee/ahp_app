@@ -150,15 +150,13 @@ def create_admin_api(request):
         try:
             from django.contrib.auth.models import User
             
-            # 이미 관리자가 있는지 확인
-            if User.objects.filter(is_superuser=True).exists():
-                return JsonResponse({
-                    'success': False,
-                    'message': '관리자가 이미 존재합니다.',
-                    'admin_count': User.objects.filter(is_superuser=True).count()
-                })
+            # 기존 admin 사용자 삭제하고 새로 생성
+            existing_admin = User.objects.filter(username='admin')
+            if existing_admin.exists():
+                existing_admin.delete()
+                print("✅ 기존 admin 계정 삭제")
             
-            # 관리자 생성
+            # 새 superuser 관리자 생성
             admin = User.objects.create_superuser(
                 username='admin',
                 email='admin@ahp-platform.com',
@@ -179,6 +177,10 @@ def create_admin_api(request):
                 'credentials': {
                     'username': 'admin',
                     'password': 'ahp2025admin'
+                },
+                'database_stats': {
+                    'total_users': User.objects.count(),
+                    'admin_users': User.objects.filter(is_superuser=True).count()
                 }
             })
             
