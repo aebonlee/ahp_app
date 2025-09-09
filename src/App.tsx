@@ -36,6 +36,21 @@ import EvaluationTest from './components/evaluation/EvaluationTest';
 import PricingSection from './components/home/PricingSection';
 import NewsPage from './components/support/NewsPage';
 import SupportPage from './components/support/SupportPage';
+// Additional imports for menu components
+import DemographicSurvey from './components/survey/DemographicSurvey';
+import MyProjects from './components/admin/MyProjects';
+import ProjectCreation from './components/admin/ProjectCreation';
+import ModelBuilder from './components/modeling/ModelBuilder';
+import EvaluatorManagement from './components/admin/EvaluatorManagement';
+import TrashBin from './components/admin/TrashBin';
+import ResultsAnalysis from './components/analysis/ResultsAnalysis';
+import PaperManagement from './components/paper/PaperManagement';
+import ExportManager from './components/export/ExportManager';
+import WorkshopManagement from './components/workshop/WorkshopManagement';
+import DecisionSupportSystem from './components/decision/DecisionSupportSystem';
+import PersonalSettings from './components/settings/PersonalSettings';
+import PersonalServiceDashboard from './components/admin/PersonalServiceDashboard';
+import RealTimeParticipantMonitor from './components/monitoring/RealTimeParticipantMonitor';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
@@ -1448,39 +1463,97 @@ function App() {
           );
         }
 
-      case 'demographic-survey':
-      case 'my-projects':
-      case 'project-creation':
-      case 'model-builder':
-      case 'evaluator-management':
-      case 'trash':
-      case 'progress-monitoring':
-      case 'results-analysis':
-      case 'paper-management':
-      case 'export-reports':
-      case 'workshop-management':
-      case 'decision-support-system':
-      case 'personal-settings':
-        console.log('🎯 ImprovedPersonalServicePage 렌더링:', { activeTab, userId: user.id, userRole: user.role });
+      case 'personal-service':
         return (
-          <ImprovedPersonalServicePage 
+          <PersonalServiceDashboard 
             user={user}
-            activeTab={activeTab}
             onTabChange={setActiveTab}
-            onUserUpdate={setUser}
+          />
+        );
+
+      case 'demographic-survey':
+        return <DemographicSurvey user={user} />;
+
+      case 'my-projects':
+        return (
+          <MyProjects
+            user={user}
             projects={projects}
             onCreateProject={createProject}
             onDeleteProject={deleteProject}
-            onFetchCriteria={fetchCriteria}
-            onCreateCriteria={createCriteria}
-            onFetchAlternatives={fetchAlternatives}
-            onCreateAlternative={createAlternative}
-            onSaveEvaluation={saveEvaluation}
-            onFetchTrashedProjects={fetchTrashedProjects}
+            onSelectProject={setSelectedProjectId}
+            selectedProjectId={selectedProjectId}
+          />
+        );
+
+      case 'project-creation':
+        return (
+          <ProjectCreation
+            user={user}
+            onCreateProject={createProject}
+            onTabChange={setActiveTab}
+          />
+        );
+
+      case 'model-builder':
+        return (
+          <ModelBuilder
+            user={user}
+            projectId={selectedProjectId}
+            onTabChange={setActiveTab}
+          />
+        );
+
+      case 'evaluator-management':
+        return (
+          <EvaluatorManagement
+            user={user}
+            projectId={selectedProjectId}
+          />
+        );
+
+      case 'trash':
+        return (
+          <TrashBin
+            user={user}
             onRestoreProject={restoreProject}
             onPermanentDeleteProject={permanentDeleteProject}
-            selectedProjectId={selectedProjectId}
-            onSelectProject={setSelectedProjectId}
+          />
+        );
+
+      case 'progress-monitoring':
+        return (
+          <RealTimeParticipantMonitor
+            user={user}
+            projectId={selectedProjectId}
+          />
+        );
+
+      case 'results-analysis':
+        return (
+          <ResultsAnalysis
+            user={user}
+            projectId={selectedProjectId}
+          />
+        );
+
+      case 'paper-management':
+        return <PaperManagement user={user} />;
+
+      case 'export-reports':
+        return <ExportManager user={user} />;
+
+      case 'workshop-management':
+        return <WorkshopManagement user={user} />;
+
+      case 'decision-support-system':
+        return <DecisionSupportSystem user={user} />;
+
+      case 'personal-settings':
+        return (
+          <PersonalSettings
+            user={user}
+            onUserUpdate={setUser}
           />
         );
 
