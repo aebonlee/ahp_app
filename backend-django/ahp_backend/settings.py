@@ -46,9 +46,14 @@ THIRD_PARTY_APPS = [
     'django_filters',
 ]
 
-# 🚀 긴급 배포: 최소 핵심 기능만 활성화
+# 🎉 유료 요금제: 전체 AHP 플랫폼 완성
 LOCAL_APPS = [
     'apps.accounts',       # ✅ 사용자 인증 - 필수
+    'apps.projects',       # ✅ 프로젝트 관리 - 핵심
+    'apps.evaluations',    # ✅ AHP 평가 - 핵심
+    'apps.analysis',       # ✅ 고급 분석 - 중요
+    'apps.common',         # ✅ 공통 기능 - 지원
+    'apps.exports',        # ✅ 데이터 내보내기 - 부가
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -88,23 +93,19 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASE_URL = config('DATABASE_URL', default=None)
-
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ahp_app',
+        'USER': 'ahp_app_user',
+        'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
+        'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='ahp_db'),
-            'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD', default='password'),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432', cast=int),
-        }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -137,9 +138,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
 
 # Media files
 MEDIA_URL = '/media/'
