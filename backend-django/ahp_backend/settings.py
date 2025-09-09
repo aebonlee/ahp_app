@@ -43,15 +43,15 @@ THIRD_PARTY_APPS = [
     'corsheaders',  # 프론트엔드 연동
 ]
 
-# 간단하고 안전한 서비스 앱
+# 간단하고 안전한 서비스 앱 - User 모델 충돌 해결을 위해 일시 단순화
 LOCAL_APPS = [
-    'simple_service',      # ✅ 간단한 AHP 서비스
-    'apps.accounts',       # ✅ AEBON 사용자 관리
-    'apps.projects',       # ✅ 프로젝트 관리
-    'apps.evaluations',    # ✅ 평가 관리
-    'apps.analysis',       # ✅ 분석 관리
-    'apps.exports',        # ✅ 내보내기 관리
-    'apps.common',         # ✅ 공통 유틸리티
+    'simple_service',      # ✅ 간단한 AHP 서비스만 활성화
+    # 'apps.accounts',       # ❌ 일시 비활성화 - User 모델 충돌 해결
+    # 'apps.projects',       # ❌ 일시 비활성화 - get_user_model() 의존성
+    # 'apps.evaluations',    # ❌ 일시 비활성화 - get_user_model() 의존성
+    # 'apps.analysis',       # ❌ 일시 비활성화 - get_user_model() 의존성
+    # 'apps.exports',        # ❌ 일시 비활성화 - get_user_model() 의존성
+    # 'apps.common',         # ❌ 일시 비활성화 - get_user_model() 의존성
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
