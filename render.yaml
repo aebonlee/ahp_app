@@ -2,16 +2,14 @@ services:
   - type: web
     name: ahp-django-backend
     runtime: python
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --no-input"
-    startCommand: "gunicorn wsgi:application --bind 0.0.0.0:$PORT"
+    buildCommand: "cd backend-django && pip install --upgrade pip && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --no-input && python manage.py shell -c \"from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@ahp-platform.com', 'ahp2025admin') if not User.objects.filter(username='admin').exists() else None\""
+    startCommand: "cd backend-django && gunicorn ahp_backend.wsgi:application --bind 0.0.0.0:$PORT"
     plan: free
     envVars:
       - key: PYTHON_VERSION
-        value: 3.13.4
+        value: 3.11.0
       - key: DEBUG
         value: "False"
       - key: SECRET_KEY
-        value: "django-insecure-ahp2025-production-secret-key-change-me"
-      - key: DATABASE_URL
-        value: "postgresql://ahp_app_vuzk_user:YOUR_PASSWORD@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app_vuzk"
+        value: "django-insecure-simple-deploy-key-for-success"
     healthCheckPath: /health/
