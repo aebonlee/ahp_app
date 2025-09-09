@@ -233,7 +233,7 @@ const StyledLoginForm: React.FC<StyledLoginFormProps> = ({
                     value={formData.username}
                     onChange={handleInputChange}
                     className="form-input with-icon"
-                    placeholder="testuser 또는 test@example.com"
+                    placeholder="admin 또는 admin@ahp-platform.com"
                     required
                     disabled={displayLoading}
                   />
@@ -429,7 +429,7 @@ const StyledLoginForm: React.FC<StyledLoginFormProps> = ({
             <div className="info-box">
               <div className="info-row">
                 <span className="info-label">테스트 계정:</span>
-                <span className="info-value">testuser / testpass123</span>
+                <span className="info-value">admin / ahp2025admin</span>
               </div>
             </div>
           </div>
