@@ -6,6 +6,23 @@ import InteractiveCharts from '../visualization/InteractiveCharts';
 import SystemManagement from './SystemManagement';
 import { subscriptionService } from '../../services/subscriptionService';
 import { ExtendedUser, SubscriptionPlan, UserSubscription } from '../../types/subscription';
+import { useAuth } from '../../hooks/useAuth';
+
+// AEBON EXCLUSIVE PRIVILEGES - Duplicate from useAuth.tsx for display purposes
+const AEBON_EXCLUSIVE_PERMISSIONS = [
+  'SYSTEM_ADMIN',           // System-wide administration
+  'USER_MANAGEMENT',        // Complete user lifecycle management
+  'ROLE_ASSIGNMENT',        // Assign any role to any user
+  'PROJECT_OVERRIDE',       // Override any project settings
+  'DATA_EXPORT_ALL',        // Export all system data
+  'AUDIT_LOGS',            // View all audit logs
+  'SYSTEM_SETTINGS',       // Modify system-wide settings
+  'DATABASE_ACCESS',       // Direct database operations
+  'BACKUP_RESTORE',        // System backup and restore
+  'SUBSCRIPTION_MANAGEMENT', // Manage all subscriptions
+  'BILLING_ACCESS',        // Access billing information
+  'ANALYTICS_FULL'         // Full analytics access
+];
 
 interface SystemStats {
   totalUsers: number;
@@ -72,6 +89,15 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   activeTab: externalActiveTab,
   onTabChange: externalOnTabChange
 }) => {
+  // AEBON EXCLUSIVE ACCESS CONTROL
+  const { 
+    isAebon, 
+    isSuperAdmin, 
+    canManageUsers, 
+    canAccessSystemSettings, 
+    hasAebonPrivilege 
+  } = useAuth();
+  
   const [activeMenu, setActiveMenu] = useState<string>(
     externalActiveTab || 'overview'
   );
@@ -771,6 +797,105 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
     <SystemManagement className="space-y-6" />
   );
 
+  // AEBON EXCLUSIVE RENDER FUNCTIONS - Only accessible by aebon
+  const renderAebonControlCenter = () => (
+    <div className="space-y-6">
+      <Card title="👑 AEBON 최고 권한 제어센터" className="border-purple-200">
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-lg">
+          <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center">
+            <span className="mr-2">🎯</span>
+            ULTIMATE ADMIN PRIVILEGES
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {AEBON_EXCLUSIVE_PERMISSIONS.map((permission, index) => (
+              <div key={index} className="bg-white p-4 rounded-lg border border-purple-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-purple-900">{permission}</span>
+                  <span className="text-green-500">✓</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 flex space-x-4">
+            <Button variant="primary" className="bg-purple-600 hover:bg-purple-700">
+              시스템 완전 제어
+            </Button>
+            <Button variant="error">
+              긴급 정지
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderDatabaseManagement = () => (
+    <div className="space-y-6">
+      <Card title="🗄️ 데이터베이스 직접 관리" className="border-blue-200">
+        <div className="bg-blue-50 p-6 rounded-lg">
+          <p className="text-blue-800 mb-4">⚠️ 이 섹션은 aebon만 접근 가능합니다.</p>
+          <div className="space-y-4">
+            <Button variant="primary">PostgreSQL 관리</Button>
+            <Button variant="secondary">데이터 백업 실행</Button>
+            <Button variant="error">데이터베이스 복원</Button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderBillingManagement = () => (
+    <div className="space-y-6">
+      <Card title="💰 빌링 및 수익 관리" className="border-green-200">
+        <div className="bg-green-50 p-6 rounded-lg">
+          <p className="text-green-800 mb-4">💎 전체 수익 및 결제 관리</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white p-4 rounded border">
+              <div className="text-2xl font-bold text-green-600">$123,456</div>
+              <div className="text-sm text-gray-600">총 수익</div>
+            </div>
+            <div className="bg-white p-4 rounded border">
+              <div className="text-2xl font-bold text-blue-600">$12,345</div>
+              <div className="text-sm text-gray-600">이번 달 수익</div>
+            </div>
+            <div className="bg-white p-4 rounded border">
+              <div className="text-2xl font-bold text-purple-600">1,234</div>
+              <div className="text-sm text-gray-600">활성 구독</div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderAdvancedAnalytics = () => (
+    <div className="space-y-6">
+      <Card title="📈 고급 분석 및 인사이트" className="border-orange-200">
+        <div className="bg-orange-50 p-6 rounded-lg">
+          <p className="text-orange-800 mb-4">🔍 전체 시스템 상세 분석</p>
+          <div className="space-y-4">
+            <div>사용자 행동 패턴 분석</div>
+            <div>수익 최적화 제안</div>
+            <div>보안 위험 요소 식별</div>
+            <div>성능 개선 권고사항</div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderUnauthorized = () => (
+    <div className="space-y-6">
+      <Card title="🚫 접근 거부" className="border-red-200">
+        <div className="bg-red-50 p-6 rounded-lg text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h3 className="text-xl font-bold text-red-900 mb-2">권한이 없습니다</h3>
+          <p className="text-red-700">이 섹션은 aebon 최고관리자만 접근할 수 있습니다.</p>
+        </div>
+      </Card>
+    </div>
+  );
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -791,6 +916,15 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
         return renderSystemLogs();
       case 'system':
         return renderSystemManagement();
+      // AEBON EXCLUSIVE CASES - Only aebon can access these
+      case 'aebon-control':
+        return isAebon ? renderAebonControlCenter() : renderUnauthorized();
+      case 'database':
+        return isAebon ? renderDatabaseManagement() : renderUnauthorized();
+      case 'billing':
+        return isAebon ? renderBillingManagement() : renderUnauthorized();
+      case 'analytics':
+        return isAebon ? renderAdvancedAnalytics() : renderUnauthorized();
       case 'overview':
       default:
         return renderOverview();
@@ -806,10 +940,20 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <span className="text-4xl mr-3">🛡️</span>
-                  고급 관리자 대시보드
+                  <span className="text-4xl mr-3">{isAebon ? '👑' : '🛡️'}</span>
+                  {isAebon ? 'AEBON 최고 관리자 대시보드' : '고급 관리자 대시보드'}
+                  {isAebon && (
+                    <span className="ml-3 px-3 py-1 text-sm font-semibold text-white bg-purple-600 rounded-full animate-pulse">
+                      ULTIMATE ACCESS
+                    </span>
+                  )}
                 </h1>
-                <p className="text-gray-600 mt-2">시스템 전반의 운영 상황을 모니터링하고 관리합니다</p>
+                <p className="text-gray-600 mt-2">
+                  {isAebon 
+                    ? '🎯 시스템의 모든 권한과 기능을 완전히 제어할 수 있습니다' 
+                    : '시스템 전반의 운영 상황을 모니터링하고 관리합니다'
+                  }
+                </p>
               </div>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
@@ -840,7 +984,14 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
               { id: 'subscriptions', name: '구독 관리', icon: '💳' },
               { id: 'security', name: '보안 모니터링', icon: '🔒' },
               { id: 'system', name: '시스템 관리', icon: '⚙️' },
-              { id: 'logs', name: '시스템 로그', icon: '📝' }
+              { id: 'logs', name: '시스템 로그', icon: '📝' },
+              // AEBON EXCLUSIVE TABS - Only aebon can see these
+              ...(isAebon ? [
+                { id: 'aebon-control', name: '👑 AEBON 제어센터', icon: '👑' },
+                { id: 'database', name: '🗄️ 데이터베이스', icon: '🗄️' },
+                { id: 'billing', name: '💰 빌링 관리', icon: '💰' },
+                { id: 'analytics', name: '📈 고급 분석', icon: '📈' }
+              ] : [])
             ].map(tab => (
               <button
                 key={tab.id}

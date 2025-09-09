@@ -36,8 +36,17 @@ const UserRoleAssignment: React.FC<UserRoleAssignmentProps> = ({
   onComplete,
   onBack
 }) => {
-  // Auth context에서 관리자 권한 확인
-  const { user: authUser, isAdmin, isSuperAdmin, hasRole } = useAuth();
+  // Auth context에서 관리자 권한 확인 - AEBON EXCLUSIVE ACCESS
+  const { 
+    user: authUser, 
+    isAdmin, 
+    isSuperAdmin, 
+    hasRole,
+    isAebon,
+    canManageUsers,
+    canOverrideProjects,
+    hasAebonPrivilege 
+  } = useAuth();
   
   const [users, setUsers] = useState<User[]>([]);
   const [projectRoles, setProjectRoles] = useState<ProjectRole[]>([]);
@@ -290,12 +299,17 @@ const UserRoleAssignment: React.FC<UserRoleAssignmentProps> = ({
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-gray-900">사용자 역할 배정</h2>
-            {isSuperAdmin && (
+            {isAebon && (
+              <span className="px-3 py-1 text-xs font-semibold text-white bg-purple-600 rounded-full animate-pulse">
+                👑 AEBON - ULTIMATE ADMIN
+              </span>
+            )}
+            {isSuperAdmin && !isAebon && (
               <span className="px-3 py-1 text-xs font-semibold text-white bg-red-600 rounded-full">
                 🔴 Super Admin
               </span>
             )}
-            {isAdmin && !isSuperAdmin && (
+            {isAdmin && !isSuperAdmin && !isAebon && (
               <span className="px-3 py-1 text-xs font-semibold text-white bg-blue-600 rounded-full">
                 🔵 Admin
               </span>
