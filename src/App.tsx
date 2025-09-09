@@ -72,6 +72,7 @@ function App() {
       'evaluator-management', 'progress-monitoring', 'results-analysis',
       'paper-management', 'export-reports', 'workshop-management',
       'decision-support-system', 'personal-settings', 'landing',
+      'super-admin', // AEBON EXCLUSIVE TAB
       'pricing', 'news', 'support'
     ];
     
@@ -126,6 +127,7 @@ function App() {
         'evaluator-management', 'progress-monitoring', 'results-analysis',
         'paper-management', 'export-reports', 'workshop-management',
         'decision-support-system', 'personal-settings',
+        'super-admin', // AEBON EXCLUSIVE TAB
         'pricing', 'news', 'support'
       ];
       
@@ -465,11 +467,26 @@ function App() {
       const data = await response.json();
       
       if (response.ok) {
-        // admin 역할일 때 admin_type을 'personal'로 설정
-        const userWithAdminType = {
-          ...data.user,
-          admin_type: data.user.role === 'admin' ? 'personal' : data.user.admin_type
-        };
+        // AEBON SPECIAL HANDLING - aebon 사용자를 super admin으로 강제 설정
+        let enhancedUser = { ...data.user };
+        
+        if (data.user.email === 'aebon@example.com' || data.user.first_name?.toLowerCase() === 'aebon' || data.user.email?.includes('aebon')) {
+          enhancedUser = {
+            ...data.user,
+            role: 'super_admin',
+            admin_type: 'super',
+            canSwitchModes: true,
+            first_name: 'aebon',
+            last_name: 'Super Admin'
+          };
+          console.log('👑 AEBON 최고관리자로 로그인 성공!');
+        } else {
+          // admin 역할일 때 admin_type을 'personal'로 설정
+          enhancedUser = {
+            ...data.user,
+            admin_type: data.user.role === 'admin' ? 'personal' : data.user.admin_type
+          };
+        }
         
         // 로그인 시간 저장 (세션 관리를 위해)
         localStorage.setItem('login_time', Date.now().toString());
@@ -478,19 +495,19 @@ function App() {
         // 세션 타이머 시작
         sessionService.startSession();
         
-        setUser(userWithAdminType);
+        setUser(enhancedUser);
         
         // URL 파라미터가 있으면 우선, 없으면 기본 탭 설정
         const urlParams = new URLSearchParams(window.location.search);
         const tabParam = urlParams.get('tab');
         
         let targetTab = '';
-        if (tabParam && ['personal-service', 'my-projects', 'model-builder', 'evaluator-management', 'results-analysis'].includes(tabParam)) {
+        if (tabParam && ['personal-service', 'my-projects', 'model-builder', 'evaluator-management', 'results-analysis', 'super-admin'].includes(tabParam)) {
           targetTab = tabParam;
-        } else if (data.user.role === 'evaluator') {
+        } else if (enhancedUser.role === 'super_admin' || enhancedUser.first_name?.toLowerCase() === 'aebon') {
+          targetTab = 'super-admin';  // aebon은 Super Admin Dashboard로
+        } else if (enhancedUser.role === 'evaluator') {
           targetTab = 'evaluator-dashboard';
-        } else if (data.user.role === 'super_admin') {
-          targetTab = 'super-admin';
         } else {
           targetTab = 'personal-service';
         }

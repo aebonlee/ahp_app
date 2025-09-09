@@ -236,11 +236,18 @@ const ImprovedPersonalServicePage: React.FC<PersonalServiceProps> = ({
   };
 
   // 주요 메뉴 항목들 (핵심 기능만)
+  // AEBON SPECIAL MENU - Only for aebon user
+  const isAebon = user.first_name?.toLowerCase() === 'aebon' || user.role === 'super_admin';
+  
   const mainMenuItems = [
     { id: 'dashboard', label: '대시보드', icon: '🏠', description: '현황 및 빠른 작업' },
     { id: 'projects', label: '프로젝트 관리', icon: '📊', description: '향상된 프로젝트 관리' },
     { id: 'django-projects', label: '기존 프로젝트', icon: '📂', description: '기존 Django 프로젝트' },
-    { id: 'settings', label: '계정 설정', icon: '⚙️', description: '개인정보 및 환경설정' }
+    { id: 'settings', label: '계정 설정', icon: '⚙️', description: '개인정보 및 환경설정' },
+    // AEBON EXCLUSIVE MENU ITEM
+    ...(isAebon ? [
+      { id: 'super-admin', label: '👑 Super Admin', icon: '👑', description: 'AEBON 최고관리자 대시보드' }
+    ] : [])
   ];
 
   return (
@@ -251,17 +258,33 @@ const ImprovedPersonalServicePage: React.FC<PersonalServiceProps> = ({
           <div className="py-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  AHP 개인 서비스 💼
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                  {isAebon ? '👑 AEBON 개인 서비스' : 'AHP 개인 서비스'} 💼
+                  {isAebon && (
+                    <span className="ml-3 px-3 py-1 text-sm font-semibold text-white bg-purple-600 rounded-full animate-pulse">
+                      ULTIMATE ACCESS
+                    </span>
+                  )}
                 </h1>
                 <p className="text-gray-600 mt-2">
-                  체계적이고 과학적인 의사결정을 위한 AHP 플랫폼
+                  {isAebon 
+                    ? '🎯 최고관리자 전용 - 모든 시스템 기능에 완전 접근 가능' 
+                    : '체계적이고 과학적인 의사결정을 위한 AHP 플랫폼'
+                  }
                 </p>
               </div>
               <div className="flex items-center space-x-4">
                 <div className="text-right">
                   <div className="text-sm text-gray-600">안녕하세요!</div>
-                  <div className="font-semibold text-gray-900">{user.first_name} {user.last_name}</div>
+                  <div className="font-semibold text-gray-900 flex items-center">
+                    {isAebon && <span className="mr-2">👑</span>}
+                    {user.first_name} {user.last_name}
+                    {isAebon && (
+                      <span className="ml-2 px-2 py-1 text-xs font-bold text-white bg-purple-500 rounded">
+                        ULTIMATE ADMIN
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
                   {user.first_name[0]}{user.last_name[0]}
