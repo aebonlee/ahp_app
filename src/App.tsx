@@ -5,6 +5,7 @@ import Layout from './components/layout/Layout';
 import LoginForm from './components/auth/LoginForm';
 import DjangoLoginForm from './components/auth/DjangoLoginForm';
 import ModernLoginForm from './components/auth/ModernLoginForm';
+import StyledLoginForm from './components/auth/StyledLoginForm';
 // import LoginSelectionPage from './components/auth/LoginSelectionPage';
 // import RegisterPage from './components/auth/RegisterPage';
 // import ServiceLoginPage from './components/auth/ServiceLoginPage';
@@ -1195,7 +1196,7 @@ function App() {
         
         case 'login':
           return (
-            <ModernLoginForm
+            <StyledLoginForm
               onLogin={(userData) => {
                 // Django 로그인 성공 시 사용자 상태 설정
                 const userWithAdminType = {
