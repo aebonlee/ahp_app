@@ -20,7 +20,7 @@ class DjangoApiService {
   private accessToken: string | null;
 
   constructor() {
-    this.baseURL = process.env.REACT_APP_DJANGO_API_URL || 'https://ahp-django-backend-new.onrender.com/api/v1';
+    this.baseURL = process.env.REACT_APP_DJANGO_API_URL || 'https://ahp-django-backend.onrender.com';
     this.accessToken = localStorage.getItem('django_access_token');
   }
 

@@ -20,7 +20,7 @@ import PairwiseComparison from './components/comparison/PairwiseComparison';
 import ResultsDashboard from './components/results/ResultsDashboard';
 import LandingPage from './components/admin/LandingPage';
 import EnhancedSuperAdminDashboard from './components/admin/EnhancedSuperAdminDashboard';
-import PersonalServicePage from './pages/PersonalServicePage';
+import ImprovedPersonalServicePage from './pages/ImprovedPersonalServicePage';
 import ModelBuilding from './components/admin/ModelBuilding';
 import EvaluationResults from './components/admin/EvaluationResults';
 import ProjectCompletion from './components/admin/ProjectCompletion';
@@ -318,7 +318,7 @@ function App() {
       console.log('🔍 백엔드 연결 확인 중...');
       setBackendStatus('checking');
       
-      const response = await fetch(`${API_BASE_URL}/api/health`, {
+      const response = await fetch(`${API_BASE_URL}/api/health/`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -356,7 +356,7 @@ function App() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5초 타임아웃
       
-      const response = await fetch(`${API_BASE_URL}/api/health`, {
+      const response = await fetch(`${API_BASE_URL}/api/health/`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -1255,7 +1255,7 @@ function App() {
       case 'welcome':
         // 로그인 후에는 모두 personal-service로 통합
         return (
-          <PersonalServicePage 
+          <ImprovedPersonalServicePage 
             user={user}
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -1399,9 +1399,9 @@ function App() {
       case 'workshop-management':
       case 'decision-support-system':
       case 'personal-settings':
-        console.log('🎯 PersonalServicePage 렌더링:', { activeTab, userId: user.id, userRole: user.role });
+        console.log('🎯 ImprovedPersonalServicePage 렌더링:', { activeTab, userId: user.id, userRole: user.role });
         return (
-          <PersonalServicePage 
+          <ImprovedPersonalServicePage 
             user={user}
             activeTab={activeTab}
             onTabChange={setActiveTab}
