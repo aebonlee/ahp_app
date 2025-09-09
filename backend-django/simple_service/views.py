@@ -11,8 +11,13 @@ from django.core.cache import cache
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django_ratelimit.decorators import ratelimit
+from django.db import connection
+from django.utils import timezone
 import math
 import logging
+import time
+import os
+import psutil
 from .models import SimpleProject, SimpleData, SimpleCriteria, SimpleComparison, SimpleResult
 from .serializers import (
     SimpleProjectSerializer, SimpleDataSerializer, SimpleCriteriaSerializer, 
@@ -287,25 +292,108 @@ class SimpleDataViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
+def health_check(request):
+    """상세한 헬스체크 API"""
+    start_time = time.time()
+    health_data = {
+        'status': 'healthy',
+        'timestamp': timezone.now(),
+        'version': '2.0',
+        'environment': os.environ.get('NODE_ENV', 'production')
+    }
+    
+    try:
+        # 데이터베이스 연결 확인
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            db_response_time = time.time() - start_time
+            health_data['database'] = {
+                'status': 'connected',
+                'response_time_ms': round(db_response_time * 1000, 2)
+            }
+    except Exception as e:
+        health_data['database'] = {
+            'status': 'error',
+            'error': str(e)
+        }
+        health_data['status'] = 'unhealthy'
+    
+    try:
+        # 캐시 확인
+        cache_key = 'health_check_test'
+        cache.set(cache_key, 'test', 10)
+        cache_value = cache.get(cache_key)
+        health_data['cache'] = {
+            'status': 'working' if cache_value == 'test' else 'error'
+        }
+        cache.delete(cache_key)
+    except Exception as e:
+        health_data['cache'] = {
+            'status': 'error',
+            'error': str(e)
+        }
+    
+    # 시스템 리소스 정보
+    try:
+        memory = psutil.virtual_memory()
+        health_data['system'] = {
+            'memory_usage_percent': round(memory.percent, 2),
+            'memory_available_mb': round(memory.available / 1024 / 1024, 2),
+            'cpu_percent': round(psutil.cpu_percent(interval=0.1), 2)
+        }
+    except:
+        health_data['system'] = {'status': 'unavailable'}
+    
+    health_data['response_time_ms'] = round((time.time() - start_time) * 1000, 2)
+    
+    status_code = 200 if health_data['status'] == 'healthy' else 503
+    return Response(health_data, status=status_code)
+
+@api_view(['GET'])
 def service_status(request):
-    """서비스 상태 확인"""
+    """서비스 상태 확인 (기존 호환성)"""
+    from django.contrib.auth.models import User
+    
+    try:
+        stats = {
+            'projects_count': SimpleProject.objects.count(),
+            'criteria_count': SimpleCriteria.objects.count(),
+            'comparisons_count': SimpleComparison.objects.count(),
+            'results_count': SimpleResult.objects.count(),
+            'data_count': SimpleData.objects.count(),
+            'users_count': User.objects.count(),
+            'active_users_count': User.objects.filter(is_active=True).count()
+        }
+    except Exception:
+        stats = {'error': 'Database unavailable'}
+    
     return Response({
         'message': 'AHP Service is Running - Frontend Ready',
         'status': 'SUCCESS',
-        'version': '2.0',
+        'version': '2.0.1',  # 버전 업데이트
         'features': {
             'projects': True,
             'criteria': True,
             'comparisons': True,
             'weight_calculation': True,
-            'jwt_auth': True,
-            'cors_enabled': True
+            'authentication': True,
+            'cors_enabled': True,
+            'pagination': True,
+            'search': True,
+            'caching': True,
+            'rate_limiting': True,
+            'logging': True,
+            'health_monitoring': True
         },
-        'stats': {
-            'projects_count': SimpleProject.objects.count(),
-            'criteria_count': SimpleCriteria.objects.count(),
-            'comparisons_count': SimpleComparison.objects.count(),
-            'results_count': SimpleResult.objects.count(),
-            'data_count': SimpleData.objects.count()
+        'stats': stats,
+        'endpoints': {
+            'health': '/health/',
+            'projects': '/api/service/projects/',
+            'auth': {
+                'login': '/api/login/',
+                'register': '/api/register/',
+                'logout': '/api/logout/',
+                'user_info': '/api/user/'
+            }
         }
     })

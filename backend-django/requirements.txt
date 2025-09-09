@@ -7,3 +7,4 @@ setuptools==75.1.0
 psycopg2-binary==2.9.7
 django-ratelimit==4.1.0
 django-extensions==3.2.3
+psutil==6.1.0

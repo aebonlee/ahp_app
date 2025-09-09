@@ -13,7 +13,7 @@ import json
 router = DefaultRouter()
 from simple_service.views import (
     SimpleProjectViewSet, SimpleDataViewSet, SimpleCriteriaViewSet, 
-    SimpleComparisonViewSet, SimpleResultViewSet, service_status
+    SimpleComparisonViewSet, SimpleResultViewSet, service_status, health_check
 )
 router.register(r'projects', SimpleProjectViewSet)
 router.register(r'criteria', SimpleCriteriaViewSet)
@@ -324,8 +324,9 @@ urlpatterns = [
     # path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API - 비활성화
     
     
-    # Health check for Render.com
-    path('health/', lambda request: JsonResponse({'status': 'healthy'})),
+    # Health checks
+    path('health/', lambda request: JsonResponse({'status': 'healthy'})),  # Simple health check for Render.com
+    path('api/health/', health_check, name='health_check'),  # Detailed health check
     
     # Success endpoint
     path('success/', lambda request: JsonResponse({

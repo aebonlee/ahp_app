@@ -13,6 +13,7 @@ pip install -r requirements.txt
 
 # Create logs directory
 mkdir -p logs
+chmod 755 logs
 
 # Run basic Django migrations only
 echo "Running basic Django migrations..."
