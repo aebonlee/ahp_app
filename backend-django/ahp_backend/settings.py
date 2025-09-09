@@ -46,6 +46,12 @@ THIRD_PARTY_APPS = [
 # 간단하고 안전한 서비스 앱
 LOCAL_APPS = [
     'simple_service',      # ✅ 간단한 AHP 서비스
+    'apps.accounts',       # ✅ AEBON 사용자 관리
+    'apps.projects',       # ✅ 프로젝트 관리
+    'apps.evaluations',    # ✅ 평가 관리
+    'apps.analysis',       # ✅ 분석 관리
+    'apps.exports',        # ✅ 내보내기 관리
+    'apps.common',         # ✅ 공통 유틸리티
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -165,10 +171,10 @@ if not DEBUG:
         'https://ahp-django-backend.onrender.com',
     ]
     
-    # Session Security
+    # Session Security - AEBON gets extended session
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_AGE = 3600  # 1 hour
+    SESSION_COOKIE_AGE = 8 * 3600  # 8 hours for aebon, 2 hours for others (handled in middleware)
     
     # SSL Settings
     SECURE_SSL_REDIRECT = True
@@ -216,8 +222,8 @@ LOGGING = {
 # Rate Limiting (기본 설정)
 RATELIMIT_ENABLE = True
 
-# Custom User Model 일시적 비활성화 - Migration 충돌 해결
-# AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model 활성화 - AEBON 특별 권한을 위해 필요
+AUTH_USER_MODEL = 'accounts.User'
 
 # DRF 완전한 설정
 REST_FRAMEWORK = {

