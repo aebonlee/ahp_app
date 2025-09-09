@@ -67,6 +67,20 @@ urlpatterns = [
     
     # Health check for Render.com
     path('health/', lambda request: JsonResponse({'status': 'healthy'})),
+    
+    # Public API info for deployment verification
+    path('info/', lambda request: JsonResponse({
+        'service': 'AHP Platform Django Backend',
+        'version': '1.0.0',
+        'status': 'Deployment Successful',
+        'deployment': 'Ready for Payment Processing',
+        'features': ['User Authentication', 'Project Management', 'AHP Analysis'],
+        'endpoints': {
+            'health': '/health/',
+            'api': '/api/v1/',
+            'admin': '/admin/'
+        }
+    })),
 ]
 
 # Serve media files in development
