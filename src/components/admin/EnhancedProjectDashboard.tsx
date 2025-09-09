@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import { useAuth } from '../../hooks/useAuth';
 import ProjectCreationForm, { ProjectFormData, ProjectStatus } from './ProjectCreationForm';
 import ModelConfiguration from './ModelConfiguration';
 import HelpModal from '../common/HelpModal';
@@ -13,6 +14,9 @@ interface Project extends ProjectFormData {
 }
 
 const EnhancedProjectDashboard: React.FC = () => {
+  // Auth context에서 관리자 권한 확인
+  const { user, isAdmin, isSuperAdmin, hasRole } = useAuth();
+  
   const [projects, setProjects] = useState<Project[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -192,9 +196,22 @@ const EnhancedProjectDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">프로젝트 관리</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-gray-900">프로젝트 관리</h2>
+            {isSuperAdmin && (
+              <span className="px-3 py-1 text-xs font-semibold text-white bg-red-600 rounded-full">
+                🔴 Super Admin
+              </span>
+            )}
+            {isAdmin && !isSuperAdmin && (
+              <span className="px-3 py-1 text-xs font-semibold text-white bg-blue-600 rounded-full">
+                🔵 Admin
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-gray-600">
             AHP 의사결정 프로젝트를 생성하고 관리합니다
+            {user?.username && <span className="ml-2 text-gray-500">• 로그인: {user.username}</span>}
           </p>
         </div>
         <div className="flex space-x-2">

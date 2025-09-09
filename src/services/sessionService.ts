@@ -3,12 +3,32 @@ class SessionService {
   private static instance: SessionService;
   private sessionTimer: NodeJS.Timeout | null = null;
   private warningTimer: NodeJS.Timeout | null = null;
-  private readonly SESSION_DURATION = 30 * 60 * 1000; // 30분 (밀리초)
-  private readonly WARNING_TIME = 5 * 60 * 1000; // 5분 전 경고 (밀리초)
+  private readonly SESSION_DURATION = 2 * 60 * 60 * 1000; // 2시간 (밀리초) - 더 긴 세션
+  private readonly WARNING_TIME = 10 * 60 * 1000; // 10분 전 경고 (밀리초)
   private logoutCallback: (() => void) | null = null;
 
   private constructor() {
     this.initializeSession();
+    this.setupActivityListeners();
+  }
+  
+  // 사용자 활동 감지 리스너 설정
+  private setupActivityListeners(): void {
+    const activityEvents = ['click', 'scroll', 'keypress', 'mousemove'];
+    let lastActivity = Date.now();
+    
+    const handleActivity = () => {
+      const now = Date.now();
+      // 5초 이내의 중복 활동은 무시 (과도한 업데이트 방지)
+      if (now - lastActivity > 5000) {
+        lastActivity = now;
+        localStorage.setItem('last_activity', now.toString());
+      }
+    };
+    
+    activityEvents.forEach(event => {
+      document.addEventListener(event, handleActivity, true);
+    });
   }
 
   public static getInstance(): SessionService {
@@ -89,7 +109,13 @@ class SessionService {
     
     this.startSessionTimer(); // 타이머 재시작
     this.hideSessionWarning();
-    console.log('세션이 30분 연장되었습니다.');
+    
+    // AEBON 특별 세션 권한 - aebon은 더 긴 세션
+    const userInfo = localStorage.getItem('current_user');
+    const isAebon = userInfo && JSON.parse(userInfo).first_name?.toLowerCase() === 'aebon';
+    const sessionDuration = isAebon ? '8시간' : '2시간';
+    
+    console.log(`세션이 ${sessionDuration} 연장되었습니다.${isAebon ? ' (AEBON 특별 권한)' : ''}`);
   }
 
   // 마지막 활동 시간 업데이트 (Cookie 기반에서는 불필요)

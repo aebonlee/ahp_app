@@ -105,12 +105,53 @@ function App() {
     isVisible: boolean;
   } | null>(null);
 
-  // 세션 서비스 초기화
+  // 세션 서비스 초기화 및 세션 복원
   useEffect(() => {
     sessionService.setLogoutCallback(() => {
       setUser(null);
       setActiveTab('home');
     });
+    
+    // 페이지 새로고침 시 세션 복원
+    const restoreSession = () => {
+      const savedUser = localStorage.getItem('current_user');
+      const loginTime = localStorage.getItem('login_time');
+      
+      if (savedUser && loginTime) {
+        try {
+          const userInfo = JSON.parse(savedUser);
+          const elapsed = Date.now() - parseInt(loginTime);
+          const sessionDuration = userInfo.first_name?.toLowerCase() === 'aebon' 
+            ? 8 * 60 * 60 * 1000 // aebon: 8시간
+            : 2 * 60 * 60 * 1000; // 일반 사용자: 2시간
+          
+          if (elapsed < sessionDuration) {
+            console.log('🔄 세션 복원 중...', userInfo.first_name);
+            setUser(userInfo);
+            
+            // aebon은 super-admin으로, 다른 사용자는 personal-service로
+            if (userInfo.first_name?.toLowerCase() === 'aebon' || userInfo.role === 'super_admin') {
+              setActiveTab('super-admin');
+            } else {
+              setActiveTab('personal-service');
+            }
+          } else {
+            // 세션 만료
+            console.log('⏰ 세션 만료 - 자동 로그아웃');
+            localStorage.removeItem('current_user');
+            localStorage.removeItem('login_time');
+            localStorage.removeItem('last_activity');
+          }
+        } catch (error) {
+          console.error('세션 복원 실패:', error);
+          localStorage.removeItem('current_user');
+          localStorage.removeItem('login_time');
+          localStorage.removeItem('last_activity');
+        }
+      }
+    };
+    
+    restoreSession();
   }, []);
 
   // URL 파라미터 변경 감지 (로그인 후에만 적용)
@@ -497,6 +538,9 @@ function App() {
         
         setUser(enhancedUser);
         
+        // 사용자 정보를 localStorage에 저장 (세션 관리용)
+        localStorage.setItem('current_user', JSON.stringify(enhancedUser));
+        
         // URL 파라미터가 있으면 우선, 없으면 기본 탭 설정
         const urlParams = new URLSearchParams(window.location.search);
         const tabParam = urlParams.get('tab');
@@ -532,9 +576,10 @@ function App() {
     // 세션 서비스 로그아웃 처리
     await sessionService.logout();
     
-    // 세션 정보 삭제
+    // 세션 정보 및 사용자 정보 삭제
     localStorage.removeItem('login_time');
     localStorage.removeItem('last_activity');
+    localStorage.removeItem('current_user');
     
     try {
       // 백엔드 로그아웃 API 호출
