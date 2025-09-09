@@ -41,7 +41,6 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'corsheaders',  # 프론트엔드 연동
-    'rest_framework_simplejwt',  # JWT 인증
 ]
 
 # 간단하고 안전한 서비스 앱
@@ -155,17 +154,6 @@ REST_FRAMEWORK = {
     ]
 }
 
-# JWT 설정
-from datetime import timedelta
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': True,
-    'SIGNING_KEY': SECRET_KEY,
-    'ALGORITHM': 'HS256',
-}
 
 # CORS 설정 (프론트엔드 연동)
 CORS_ALLOWED_ORIGINS = [

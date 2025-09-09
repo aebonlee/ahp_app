@@ -7,7 +7,6 @@ from django.urls import path, include
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 import json
 
 # Simple Service API Router
@@ -153,9 +152,6 @@ urlpatterns = [
     path('api/register/', register_api, name='register'),
     path('api/user/', user_info_api, name='user_info'),
     
-    # JWT 토큰 엔드포인트 (프론트엔드용)
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # Health check for Render.com
     path('health/', lambda request: JsonResponse({'status': 'healthy'})),
@@ -197,8 +193,6 @@ urlpatterns = [
             'comparisons': '/api/service/comparisons/',
             'results': '/api/service/results/',
             'data': '/api/service/data/',
-            'jwt_token': '/api/token/',
-            'jwt_refresh': '/api/token/refresh/',
             'admin': '/admin/'
         },
         'test_credentials': {
