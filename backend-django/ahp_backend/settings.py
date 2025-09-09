@@ -7,15 +7,17 @@ Optimized for academic research and decision support systems.
 
 import os
 from pathlib import Path
+from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-emergency-success-deploy-key'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-ahp-production-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -38,17 +40,26 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    # DRF 패키지 임시 비활성화로 성공 배포 보장
+    'rest_framework',
+    'corsheaders',
+    'rest_framework_simplejwt',
+    'django_filters',
 ]
 
-# 🎯 긴급 성공 배포를 위한 최소 설정
+# 🎉 전체 AHP 플랫폼 완성 - 유료 요금제
 LOCAL_APPS = [
-    # 모든 커스텀 앱 비활성화로 확실한 성공 보장
+    'apps.accounts',       # ✅ 사용자 인증 시스템
+    'apps.projects',       # ✅ 프로젝트 관리
+    'apps.evaluations',    # ✅ AHP 쌍대비교 평가
+    'apps.analysis',       # ✅ 고급 분석 엔진
+    'apps.common',         # ✅ 공통 기능
+    'apps.exports',        # ✅ 데이터 내보내기
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -84,8 +95,15 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ahp_app',
+        'USER': 'ahp_app_user',
+        'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
+        'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 
@@ -130,13 +148,51 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model 비활성화 - 기본 User 사용
-# AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model 활성화
+AUTH_USER_MODEL = 'accounts.User'
 
-# DRF/JWT/CORS 설정 비활성화 - 성공 배포 우선
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
+
+# JWT Settings
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
+# CORS Settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React dev server
+    "http://127.0.0.1:3000",
+    "https://aebonlee.github.io",  # GitHub Pages
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 
 # Logging Configuration
 LOGGING = {
