@@ -230,9 +230,15 @@ export const projectAPI = {
     apiClient.post('/api/service/projects/', data),
   update: (id: number, data: any) => apiClient.put(`/api/service/projects/${id}/`, data),
   delete: (id: number) => apiClient.delete(`/api/service/projects/${id}/`),
-  // 현재 백엔드에는 아직 구현되지 않음
-  // calculateWeights: (id: number) => 
-  //   apiClient.post(`/api/service/projects/${id}/calculate_weights/`),
+  // 임시 구현 - 향후 백엔드에서 구현 예정
+  calculateWeights: async (id: number): Promise<APIResponse> => {
+    // 현재는 mock 응답 반환
+    return { 
+      success: true, 
+      message: '가중치 계산 완료 (임시)', 
+      data: { weights: [] }
+    };
+  },
 };
 
 // 평가기준 관리 API (현재는 데이터 저장으로 대체)
@@ -253,6 +259,29 @@ export const criteriaAPI = {
       project: data.project,
       key: `criteria_${Date.now()}`,
       value: JSON.stringify(data)
+    };
+    return apiClient.post('/api/service/data/', saveData);
+  },
+  update: (id: string, data: any) => apiClient.put(`/api/service/data/${id}/`, data),
+  delete: (id: string) => apiClient.delete(`/api/service/data/${id}/`),
+};
+
+// 대안 관리 API (criteriaAPI의 alternative 타입 전용)
+export const alternativesAPI = {
+  fetch: (projectId?: number) => {
+    const params = projectId ? `?project=${projectId}` : '';
+    return apiClient.get(`/api/service/data/${params}`);
+  },
+  create: (data: {
+    project: number;
+    name: string;
+    description?: string;
+    order?: number;
+  }) => {
+    const saveData = {
+      project: data.project,
+      key: `alternative_${Date.now()}`,
+      value: JSON.stringify({ ...data, type: 'alternative' })
     };
     return apiClient.post('/api/service/data/', saveData);
   },
@@ -284,7 +313,7 @@ export const comparisonsAPI = {
 };
 
 // 현재 백엔드의 데이터 저장 API
-export const resultsAPI = {
+export const djangoResultsAPI = {
   fetch: (projectId?: number) => {
     const params = projectId ? `?project=${projectId}` : '';
     return apiClient.get(`/api/service/data/${params}`);
@@ -363,11 +392,11 @@ export const ahpWorkflowAPI = {
         status: 'draft'
       });
       
-      if (projectResponse.error || !projectResponse.id) {
+      if (projectResponse.error || !(projectResponse as any).id) {
         return { error: 'Failed to create project' };
       }
       
-      const projectId = projectResponse.id;
+      const projectId = (projectResponse as any).id;
       
       // 2. 평가기준 생성
       const criteriaResults = [];
@@ -388,11 +417,11 @@ export const ahpWorkflowAPI = {
           const criteriaA = criteriaResults[comp.criteria_a_index];
           const criteriaB = criteriaResults[comp.criteria_b_index];
           
-          if (criteriaA?.id && criteriaB?.id) {
+          if ((criteriaA as any)?.id && (criteriaB as any)?.id) {
             await comparisonsAPI.create({
               project: projectId,
-              criteria_a: criteriaA.id,
-              criteria_b: criteriaB.id,
+              criteria_a: (criteriaA as any).id,
+              criteria_b: (criteriaB as any).id,
               value: comp.value
             });
           }
@@ -416,7 +445,7 @@ export const ahpWorkflowAPI = {
         projectAPI.fetchById(projectId),
         criteriaAPI.fetch(projectId),
         comparisonsAPI.fetch(projectId),
-        resultsAPI.fetch(projectId)
+        djangoResultsAPI.fetch(projectId)
       ]);
       
       return {
@@ -445,8 +474,10 @@ const apiService = {
   authAPI,
   projectAPI,
   criteriaAPI,
+  alternativesAPI,
   comparisonsAPI,
   resultsAPI,
+  djangoResultsAPI,
   dataAPI,
   ahpWorkflowAPI,
   

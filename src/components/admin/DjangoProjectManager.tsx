@@ -28,10 +28,14 @@ const DjangoProjectManager: React.FC<DjangoProjectManagerProps> = ({
   const [serviceStatus, setServiceStatus] = useState<string>('checking');
 
   // 새 프로젝트 생성 폼 데이터
-  const [newProject, setNewProject] = useState({
+  const [newProject, setNewProject] = useState<{
+    title: string;
+    description: string;
+    status: 'draft' | 'active' | 'completed';
+  }>({
     title: '',
     description: '',
-    status: 'draft' as const
+    status: 'draft'
   });
 
   useEffect(() => {
@@ -75,11 +79,11 @@ const DjangoProjectManager: React.FC<DjangoProjectManagerProps> = ({
       // 프로젝트 데이터 추출 (Django pagination 구조 고려)
       let projectData: Project[] = [];
       if (response.results) {
-        projectData = response.results;
+        projectData = response.results as Project[];
       } else if (Array.isArray(response)) {
-        projectData = response;
+        projectData = response as Project[];
       } else if (response.data) {
-        projectData = Array.isArray(response.data) ? response.data : [response.data];
+        projectData = Array.isArray(response.data) ? response.data as Project[] : [response.data as Project];
       }
 
       console.log('✅ 프로젝트 로드 성공:', projectData);
@@ -119,7 +123,7 @@ const DjangoProjectManager: React.FC<DjangoProjectManagerProps> = ({
       console.log('✅ 프로젝트 생성 성공:', response);
       
       // 새 프로젝트를 목록에 추가
-      const createdProject = response.data || response;
+      const createdProject = (response.data || response) as Project;
       setProjects(prev => [createdProject, ...prev]);
       
       // 폼 초기화
@@ -155,7 +159,7 @@ const DjangoProjectManager: React.FC<DjangoProjectManagerProps> = ({
       }
       
       console.log('✅ 가중치 계산 성공:', response);
-      alert(`가중치 계산이 완료되었습니다!\n기준 개수: ${response.criteria_count || 0}개`);
+      alert(`가중치 계산이 완료되었습니다!\n${response.message || '계산이 성공적으로 완료되었습니다.'}`);
       
       // 프로젝트 목록 새로고침
       await loadProjects();

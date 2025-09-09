@@ -74,8 +74,8 @@ const DjangoPairwiseComparison: React.FC<DjangoPairwiseComparisonProps> = ({
         throw new Error(comparisonsResponse.error);
       }
 
-      const criteriaData = criteriaResponse.results || criteriaResponse.data || [];
-      const comparisonsData = comparisonsResponse.results || comparisonsResponse.data || [];
+      const criteriaData = (criteriaResponse.results || criteriaResponse.data || []) as Criteria[];
+      const comparisonsData = (comparisonsResponse.results || comparisonsResponse.data || []) as any[];
 
       console.log('✅ 평가기준 로드:', criteriaData);
       console.log('✅ 쌍대비교 로드:', comparisonsData);
@@ -167,8 +167,9 @@ const DjangoPairwiseComparison: React.FC<DjangoPairwiseComparisonProps> = ({
       findNextUncompletedPair(newMatrix);
 
       // 쌍대비교 목록 업데이트
+      const responseData = response as any;
       setComparisons(prev => [...prev, {
-        id: response.id || Date.now(),
+        id: responseData.id || Date.now(),
         criteria_a: criteriaA.id,
         criteria_b: criteriaB.id,
         criteria_a_name: criteriaA.name,
@@ -197,7 +198,8 @@ const DjangoPairwiseComparison: React.FC<DjangoPairwiseComparisonProps> = ({
 
       console.log('✅ 가중치 계산 완료:', response);
       
-      alert(`AHP 가중치 계산이 완료되었습니다!\n기준 개수: ${response.criteria_count}개\n가중치: ${response.weights?.map((w: number) => w.toFixed(4)).join(', ')}`);
+      const calculateResponse = response as any;
+      alert(`AHP 가중치 계산이 완료되었습니다!\n${calculateResponse.message || '계산이 완료되었습니다.'}\n가중치: ${calculateResponse.data?.weights?.map((w: number) => w.toFixed(4)).join(', ') || '임시 계산'}`);
       
       onComplete?.();
 

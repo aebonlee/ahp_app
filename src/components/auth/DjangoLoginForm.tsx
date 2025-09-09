@@ -87,15 +87,16 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
       }
 
       // 로그인 성공 시 사용자 데이터 처리
-      if (response.success && response.user) {
+      const userResponse = response as any;
+      if (response.success && userResponse.user) {
         const userData = {
-          id: response.user.id || 1,
-          username: response.user.username || formData.username,
-          email: response.user.email || formData.username,
-          first_name: response.user.first_name || formData.username,
-          last_name: response.user.last_name || '',
-          role: response.user.is_superuser ? 'super_admin' : 
-                response.user.is_staff ? 'admin' : 'evaluator'
+          id: userResponse.user.id || 1,
+          username: userResponse.user.username || formData.username,
+          email: userResponse.user.email || formData.username,
+          first_name: userResponse.user.first_name || formData.username,
+          last_name: userResponse.user.last_name || '',
+          role: userResponse.user.is_superuser ? 'super_admin' : 
+                userResponse.user.is_staff ? 'admin' : 'evaluator'
         };
         
         console.log('✅ Django 로그인 성공:', userData);

@@ -10,7 +10,7 @@ import PersonalServicePage from '../pages/PersonalServicePage';
 import EnhancedSuperAdminDashboard from './admin/EnhancedSuperAdminDashboard';
 
 const MainApp: React.FC = () => {
-  const { user, isAuthenticated, isLoading } = useDjangoAuth();
+  const { user, isAuthenticated, isLoading, login } = useDjangoAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [showRegister, setShowRegister] = useState(false);
 
@@ -67,11 +67,12 @@ const MainApp: React.FC = () => {
 
     return (
       <DjangoLoginForm 
-        onSuccess={() => {
-          // 로그인 성공 후 추가 로직 (필요시)
-          console.log('Django 로그인 성공');
+        onLogin={async (userData) => {
+          // 로그인 성공 후 사용자 데이터 처리
+          console.log('Django 로그인 성공:', userData);
+          // useDjangoAuth 훅이 상태를 관리하므로 별도 처리 불필요
         }}
-        onRegisterClick={() => setShowRegister(true)}
+        onRegister={() => setShowRegister(true)}
       />
     );
   }

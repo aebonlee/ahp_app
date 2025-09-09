@@ -166,12 +166,11 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     }
     
     const criterionData = {
-      project_id: Number(projectId),
+      project: Number(projectId),
       name: newCriterion.name,
-      description: newCriterion.description || null,
-      parent_id: newCriterion.parentId || null,
-      level,
-      order_index: getAllCriteria(criteria).filter(c => c.level === level).length + 1
+      description: newCriterion.description || undefined,
+      type: 'criteria' as const,
+      order: getAllCriteria(criteria).filter(c => c.level === level).length + 1
     };
 
     try {
@@ -283,7 +282,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     // 기본 AHP 템플릿 구조
     const templateCriteria = [
       {
-        project_id: Number(projectId),
+        project: Number(projectId),
         name: '프로젝트 목표',
         description: '최종 달성하고자 하는 목표를 입력하세요',
         parent_id: null,
@@ -291,7 +290,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         order_index: 1
       },
       {
-        project_id: Number(projectId),
+        project: Number(projectId),
         name: '기준 1',
         description: '첫 번째 평가 기준',
         parent_id: null,
@@ -299,7 +298,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         order_index: 1
       },
       {
-        project_id: Number(projectId),
+        project: Number(projectId),
         name: '기준 2', 
         description: '두 번째 평가 기준',
         parent_id: null,
@@ -340,12 +339,11 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       // 가져온 기준들을 PostgreSQL에 저장
       for (const criterion of importedCriteria) {
         const criterionData = {
-          project_id: Number(projectId),
+          project: Number(projectId),
           name: criterion.name,
-          description: criterion.description || null,
-          parent_id: criterion.parent_id,
-          level: criterion.level,
-          order_index: criterion.level
+          description: criterion.description || undefined,
+          type: 'criteria' as const,
+          order: criterion.level
         };
         
         await apiService.criteriaAPI.create(criterionData);
