@@ -380,7 +380,7 @@ function App() {
 
   const validateSession = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/user/`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -420,7 +420,7 @@ function App() {
 
     try {
       // 백엔드 회원가입 처리
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/api/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -453,7 +453,7 @@ function App() {
       console.log('🔍 백엔드 로그인 시도:', { email });
       
       // 백엔드 로그인
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/login/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -521,7 +521,7 @@ function App() {
     
     try {
       // 백엔드 로그아웃 API 호출
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      await fetch(`${API_BASE_URL}/api/logout/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
