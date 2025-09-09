@@ -1,25 +1,102 @@
 """
-Simple Service Views - 최소한의 API
+Simple Service Views - 프로덕션 최적화된 API
 """
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from django.db import transaction
+from django.db.models import Count, Prefetch, Q
+from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django_ratelimit.decorators import ratelimit
 import math
+import logging
 from .models import SimpleProject, SimpleData, SimpleCriteria, SimpleComparison, SimpleResult
 from .serializers import (
     SimpleProjectSerializer, SimpleDataSerializer, SimpleCriteriaSerializer, 
     SimpleComparisonSerializer, SimpleResultSerializer
 )
 
+logger = logging.getLogger(__name__)
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 
 class SimpleProjectViewSet(viewsets.ModelViewSet):
-    """간단한 프로젝트 ViewSet"""
-    queryset = SimpleProject.objects.all()
+    """프로덕션 최적화된 프로젝트 ViewSet"""
     serializer_class = SimpleProjectSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at', 'updated_at', 'title', 'status']
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        """최적화된 쿼리셋"""
+        queryset = SimpleProject.objects.select_related('created_by').prefetch_related(
+            Prefetch('criteria', queryset=SimpleCriteria.objects.select_related('parent')),
+            'comparisons__created_by',
+            'results__criteria'
+        ).annotate(
+            criteria_count=Count('criteria'),
+            comparisons_count=Count('comparisons')
+        )
+        
+        # 필터링
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+            
+        user_filter = self.request.query_params.get('my_projects')
+        if user_filter and self.request.user.is_authenticated:
+            queryset = queryset.filter(created_by=self.request.user)
+            
+        return queryset
+    
+    @method_decorator(ratelimit(key='user', rate='10/m', method='POST', block=True))
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
     
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+        logger.info(f"Project created: {serializer.instance.title} by {self.request.user.username}")
+    
+    def perform_update(self, serializer):
+        serializer.save()
+        # 캐시 무효화
+        cache.delete(f"project_stats_{serializer.instance.id}")
+        logger.info(f"Project updated: {serializer.instance.title}")
+    
+    @method_decorator(cache_page(300))  # 5분 캐싱
+    @action(detail=True, methods=['get'])
+    def stats(self, request, pk=None):
+        """프로젝트 통계"""
+        project = self.get_object()
+        cache_key = f"project_stats_{project.id}"
+        stats = cache.get(cache_key)
+        
+        if stats is None:
+            stats = {
+                'criteria_count': project.criteria.count(),
+                'comparisons_count': project.comparisons.count(),
+                'results_count': project.results.count(),
+                'completion_rate': project.completion_rate,
+                'created_at': project.created_at,
+                'last_updated': project.updated_at,
+                'created_by': {
+                    'username': project.created_by.username,
+                    'first_name': project.created_by.first_name,
+                    'last_name': project.created_by.last_name,
+                }
+            }
+            cache.set(cache_key, stats, 300)  # 5분 캐싱
+            
+        return Response(stats)
     
     @action(detail=True, methods=['post'])
     def calculate_weights(self, request, pk=None):
@@ -108,51 +185,105 @@ class SimpleProjectViewSet(viewsets.ModelViewSet):
 
 
 class SimpleCriteriaViewSet(viewsets.ModelViewSet):
-    """AHP 평가기준 ViewSet"""
-    queryset = SimpleCriteria.objects.all()
+    """최적화된 AHP 평가기준 ViewSet"""
     serializer_class = SimpleCriteriaSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description']
+    ordering_fields = ['order', 'name', 'created_at']
+    ordering = ['order']
     
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = SimpleCriteria.objects.select_related('project', 'parent').prefetch_related('children')
+        
         project_id = self.request.query_params.get('project')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+            
+        type_filter = self.request.query_params.get('type')
+        if type_filter:
+            queryset = queryset.filter(type=type_filter)
+            
         return queryset
+    
+    @method_decorator(ratelimit(key='user', rate='20/m', method='POST', block=True))
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
 
 class SimpleComparisonViewSet(viewsets.ModelViewSet):
-    """쌍대비교 ViewSet"""
-    queryset = SimpleComparison.objects.all()
+    """최적화된 쌍대비교 ViewSet"""
     serializer_class = SimpleComparisonSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['created_at', 'value']
+    ordering = ['-created_at']
     
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = SimpleComparison.objects.select_related(
+            'project', 'criteria_a', 'criteria_b', 'created_by'
+        )
+        
         project_id = self.request.query_params.get('project')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+            
         return queryset
+    
+    @method_decorator(ratelimit(key='user', rate='30/m', method='POST', block=True))
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
     
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+        logger.info(f"Comparison created by {self.request.user.username}")
 
 
 class SimpleResultViewSet(viewsets.ReadOnlyModelViewSet):
-    """AHP 결과 ViewSet (읽기 전용)"""
-    queryset = SimpleResult.objects.all()
+    """최적화된 AHP 결과 ViewSet (읽기 전용)"""
     serializer_class = SimpleResultSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['rank', 'weight', 'created_at']
+    ordering = ['rank']
     
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = SimpleResult.objects.select_related(
+            'project', 'criteria', 'created_by'
+        )
+        
         project_id = self.request.query_params.get('project')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+            
         return queryset
 
 
 class SimpleDataViewSet(viewsets.ModelViewSet):
-    """간단한 데이터 ViewSet"""
-    queryset = SimpleData.objects.all()
+    """최적화된 프로젝트 데이터 ViewSet"""
     serializer_class = SimpleDataSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['key', 'value']
+    ordering_fields = ['created_at', 'updated_at', 'key']
+    ordering = ['-updated_at']
+    
+    def get_queryset(self):
+        queryset = SimpleData.objects.select_related('project')
+        
+        project_id = self.request.query_params.get('project')
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+            
+        key_filter = self.request.query_params.get('key')
+        if key_filter:
+            queryset = queryset.filter(key__icontains=key_filter)
+            
+        return queryset
+    
+    @method_decorator(ratelimit(key='user', rate='50/m', method='POST', block=True))
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
 
 @api_view(['GET'])

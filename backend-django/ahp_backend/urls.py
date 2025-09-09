@@ -21,48 +21,80 @@ router.register(r'comparisons', SimpleComparisonViewSet)
 router.register(r'results', SimpleResultViewSet)
 router.register(r'data', SimpleDataViewSet)
 
+from django_ratelimit.decorators import ratelimit
+import logging
+
+logger = logging.getLogger(__name__)
+
 @csrf_exempt
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def login_api(request):
-    """간단한 로그인 API"""
+    """보안이 강화된 로그인 API"""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            username = data.get('username')
-            password = data.get('password')
+            username = data.get('username', '').strip()
+            password = data.get('password', '')
+            
+            if not username or not password:
+                return JsonResponse({
+                    'success': False,
+                    'message': '사용자명과 비밀번호를 모두 입력해주세요.'
+                }, status=400)
             
             # 이메일로도 로그인 가능
+            original_username = username
             if '@' in username:
                 from django.contrib.auth.models import User
                 try:
                     user_obj = User.objects.get(email=username)
                     username = user_obj.username
                 except User.DoesNotExist:
-                    pass
+                    logger.warning(f"Login attempt with non-existent email: {username}")
             
             user = authenticate(request, username=username, password=password)
             
             if user is not None:
-                login(request, user)
-                return JsonResponse({
-                    'success': True,
-                    'message': '로그인 성공!',
-                    'user': {
-                        'username': user.username,
-                        'email': user.email,
-                        'is_staff': user.is_staff,
-                        'is_superuser': user.is_superuser
-                    }
-                })
+                if user.is_active:
+                    login(request, user)
+                    logger.info(f"Successful login: {user.username} from {request.META.get('REMOTE_ADDR')}")
+                    return JsonResponse({
+                        'success': True,
+                        'message': '로그인 성공!',
+                        'user': {
+                            'id': user.id,
+                            'username': user.username,
+                            'email': user.email,
+                            'first_name': user.first_name,
+                            'last_name': user.last_name,
+                            'is_staff': user.is_staff,
+                            'is_superuser': user.is_superuser,
+                            'last_login': user.last_login,
+                            'date_joined': user.date_joined
+                        }
+                    })
+                else:
+                    return JsonResponse({
+                        'success': False,
+                        'message': '비활성화된 계정입니다. 관리자에게 문의하세요.'
+                    }, status=401)
             else:
+                logger.warning(f"Failed login attempt: {original_username} from {request.META.get('REMOTE_ADDR')}")
                 return JsonResponse({
                     'success': False,
                     'message': '아이디 또는 비밀번호가 올바르지 않습니다.'
                 }, status=401)
-        except Exception as e:
+        except json.JSONDecodeError:
             return JsonResponse({
                 'success': False,
-                'message': str(e)
+                'message': '잘못된 JSON 형식입니다.'
             }, status=400)
+        except Exception as e:
+            logger.error(f"Login API error: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': '서버 오류가 발생했습니다.'
+            }, status=500)
     
     return JsonResponse({
         'message': 'POST 요청으로 로그인하세요',
@@ -73,17 +105,58 @@ def login_api(request):
     })
 
 @csrf_exempt
+@ratelimit(key='ip', rate='3/m', method='POST', block=True)
 def register_api(request):
-    """간단한 회원가입 API"""
+    """보안이 강화된 회원가입 API"""
     if request.method == 'POST':
         try:
             from django.contrib.auth.models import User
+            from django.contrib.auth.password_validation import validate_password
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
+            import re
+            
             data = json.loads(request.body)
             
-            username = data.get('username')
-            email = data.get('email')
-            password = data.get('password')
+            username = data.get('username', '').strip()
+            email = data.get('email', '').strip()
+            password = data.get('password', '')
+            first_name = data.get('first_name', '').strip()
+            last_name = data.get('last_name', '').strip()
             
+            # 입력값 검증
+            if not username or not email or not password:
+                return JsonResponse({
+                    'success': False,
+                    'message': '사용자명, 이메일, 비밀번호는 필수 항목입니다.'
+                }, status=400)
+            
+            # 사용자명 형식 검증 (영숫자, 언더스코어만 허용)
+            if not re.match(r'^[a-zA-Z0-9_]{3,30}$', username):
+                return JsonResponse({
+                    'success': False,
+                    'message': '사용자명은 3-30자의 영문, 숫자, 언더스코어만 사용 가능합니다.'
+                }, status=400)
+            
+            # 이메일 형식 검증
+            try:
+                validate_email(email)
+            except ValidationError:
+                return JsonResponse({
+                    'success': False,
+                    'message': '올바른 이메일 주소를 입력해주세요.'
+                }, status=400)
+            
+            # 비밀번호 강도 검증
+            try:
+                validate_password(password)
+            except ValidationError as e:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'비밀번호 요구사항: {", ".join(e.messages)}'
+                }, status=400)
+            
+            # 중복 검사
             if User.objects.filter(username=username).exists():
                 return JsonResponse({
                     'success': False,
@@ -96,25 +169,40 @@ def register_api(request):
                     'message': '이미 등록된 이메일입니다.'
                 }, status=400)
             
+            # 사용자 생성
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password=password
+                password=password,
+                first_name=first_name,
+                last_name=last_name
             )
+            
+            logger.info(f"New user registered: {username} ({email}) from {request.META.get('REMOTE_ADDR')}")
             
             return JsonResponse({
                 'success': True,
-                'message': '회원가입 성공!',
+                'message': '회원가입이 완료되었습니다! 로그인해주세요.',
                 'user': {
+                    'id': user.id,
                     'username': user.username,
-                    'email': user.email
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'date_joined': user.date_joined
                 }
             })
-        except Exception as e:
+        except json.JSONDecodeError:
             return JsonResponse({
                 'success': False,
-                'message': str(e)
+                'message': '잘못된 JSON 형식입니다.'
             }, status=400)
+        except Exception as e:
+            logger.error(f"Registration API error: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': '서버 오류가 발생했습니다.'
+            }, status=500)
     
     return JsonResponse({
         'message': 'POST 요청으로 회원가입하세요',
@@ -131,10 +219,15 @@ def user_info_api(request):
         return JsonResponse({
             'authenticated': True,
             'user': {
+                'id': request.user.id,
                 'username': request.user.username,
                 'email': request.user.email,
+                'first_name': request.user.first_name,
+                'last_name': request.user.last_name,
                 'is_staff': request.user.is_staff,
-                'is_superuser': request.user.is_superuser
+                'is_superuser': request.user.is_superuser,
+                'last_login': request.user.last_login,
+                'date_joined': request.user.date_joined
             }
         })
     else:
@@ -142,6 +235,29 @@ def user_info_api(request):
             'authenticated': False,
             'message': '로그인이 필요합니다.'
         })
+
+@csrf_exempt
+def logout_api(request):
+    """로그아웃 API"""
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            username = request.user.username
+            from django.contrib.auth import logout
+            logout(request)
+            logger.info(f"User logged out: {username}")
+            return JsonResponse({
+                'success': True,
+                'message': '로그아웃되었습니다.'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': '로그인되어 있지 않습니다.'
+            }, status=400)
+    
+    return JsonResponse({
+        'message': 'POST 요청으로 로그아웃하세요'
+    })
 
 @csrf_exempt
 def create_admin_api(request):
@@ -203,6 +319,7 @@ urlpatterns = [
     # API 엔드포인트
     path('api/login/', login_api, name='login'),
     path('api/register/', register_api, name='register'),
+    path('api/logout/', logout_api, name='logout'),
     path('api/user/', user_info_api, name='user_info'),
     # path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API - 비활성화
     
