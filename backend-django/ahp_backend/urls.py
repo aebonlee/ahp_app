@@ -21,10 +21,10 @@ from rest_framework_simplejwt.views import (
 def api_root(request):
     """API Root endpoint"""
     return Response({
-        'message': 'AHP Platform Django API v1.0 - PRODUCTION READY',
-        'status': 'Complete AHP Platform - All Features Enabled',
+        'message': 'AHP Platform Django API v1.0 - LITE VERSION',
+        'status': 'Basic AHP Platform - Ready for Payment',
         'version': '1.0.0',
-        'deployment': 'Paid Tier - Full Platform Active',
+        'deployment': 'Pre-Payment Minimal Version',
         'endpoints': {
             'auth': {
                 'token': '/api/v1/auth/token/',
@@ -33,18 +33,11 @@ def api_root(request):
             },
             'accounts': '/api/v1/accounts/',
             'projects': '/api/v1/projects/',
-            'evaluations': '/api/v1/evaluations/',
-            'analysis': '/api/v1/analysis/',
-            'common': '/api/v1/common/',
-            'exports': '/api/v1/exports/',
         },
         'features': [
             'User Management & Authentication',
-            'AHP Project Management',
-            'Pairwise Comparison Evaluations',
-            'Advanced AHP Analysis & Calculations',
-            'System Activity Logging',
-            'Data Export & Reporting'
+            'Basic AHP Project Management',
+            'Ready for Full Feature Upgrade'
         ]
     })
 
@@ -58,13 +51,9 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # App URLs - 🎉 유료 요금제: 전체 AHP 플랫폼 완성
+    # App URLs - 🚀 결제 전 최소 동작 버전
     path('accounts/', include('apps.accounts.urls')),   # ✅ 사용자 인증
     path('projects/', include('apps.projects.urls')),   # ✅ 프로젝트 관리
-    path('evaluations/', include('apps.evaluations.urls')),  # ✅ AHP 평가
-    path('analysis/', include('apps.analysis.urls')),   # ✅ 고급 분석
-    path('common/', include('apps.common.urls')),       # ✅ 공통 기능
-    path('exports/', include('apps.exports.urls')),     # ✅ 데이터 내보내기
 ]
 
 urlpatterns = [

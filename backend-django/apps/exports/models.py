@@ -57,8 +57,8 @@ class ExportTemplate(models.Model):
         return f"{self.name} ({self.format})"
 
 
-class ExportHistory(models.Model):
-    """Track export history"""
+class ExportJob(models.Model):
+    """Export job tracking"""
     
     STATUS_CHOICES = [
         ('pending', '대기중'),
@@ -72,14 +72,15 @@ class ExportHistory(models.Model):
     # Export details
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='exports')
     template = models.ForeignKey(ExportTemplate, on_delete=models.SET_NULL, null=True, blank=True)
+    export_type = models.CharField(max_length=30, default='analysis')
     format = models.CharField(max_length=10)
     
     # User info
-    exported_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     
     # File info
     file_name = models.CharField(max_length=255)
-    file_path = models.CharField(max_length=500, blank=True)
+    file_url = models.URLField(blank=True)
     file_size = models.IntegerField(null=True, blank=True)
     
     # Status
