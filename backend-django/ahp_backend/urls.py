@@ -143,6 +143,57 @@ def user_info_api(request):
             'message': '로그인이 필요합니다.'
         })
 
+@csrf_exempt
+def create_admin_api(request):
+    """임시 관리자 생성 API (배포 후 즉시 제거 필요)"""
+    if request.method == 'POST':
+        try:
+            from django.contrib.auth.models import User
+            
+            # 이미 관리자가 있는지 확인
+            if User.objects.filter(is_superuser=True).exists():
+                return JsonResponse({
+                    'success': False,
+                    'message': '관리자가 이미 존재합니다.',
+                    'admin_count': User.objects.filter(is_superuser=True).count()
+                })
+            
+            # 관리자 생성
+            admin = User.objects.create_superuser(
+                username='admin',
+                email='admin@ahp-platform.com',
+                password='ahp2025admin',
+                first_name='Admin',
+                last_name='User'
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': '관리자 계정이 생성되었습니다!',
+                'admin': {
+                    'username': admin.username,
+                    'email': admin.email,
+                    'is_superuser': admin.is_superuser,
+                    'is_staff': admin.is_staff
+                },
+                'credentials': {
+                    'username': 'admin',
+                    'password': 'ahp2025admin'
+                }
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'관리자 생성 실패: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({
+        'message': '관리자 계정 생성 API',
+        'method': 'POST',
+        'note': '임시 API - 생성 후 즉시 제거 예정'
+    })
+
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
@@ -151,6 +202,7 @@ urlpatterns = [
     path('api/login/', login_api, name='login'),
     path('api/register/', register_api, name='register'),
     path('api/user/', user_info_api, name='user_info'),
+    path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API
     
     
     # Health check for Render.com
