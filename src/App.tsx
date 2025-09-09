@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import sessionService from './services/sessionService';
 import Layout from './components/layout/Layout';
 import LoginForm from './components/auth/LoginForm';
+import DjangoLoginForm from './components/auth/DjangoLoginForm';
 // import LoginSelectionPage from './components/auth/LoginSelectionPage';
 // import RegisterPage from './components/auth/RegisterPage';
 // import ServiceLoginPage from './components/auth/ServiceLoginPage';
@@ -1192,14 +1193,22 @@ function App() {
           />;
         
         case 'login':
-        return (
-          <LoginForm
-            onLogin={handleLogin}
-            onRegister={handleRegisterClick}
-            loading={loginLoading}
-            error={loginError}
-          />
-        );
+          return (
+            <DjangoLoginForm
+              onLogin={(userData) => {
+                // Django 로그인 성공 시 사용자 상태 설정
+                const userWithAdminType = {
+                  ...userData,
+                  admin_type: userData.role === 'admin' ? 'personal' : userData.admin_type
+                };
+                setUser(userWithAdminType);
+                setActiveTab('personal-service');
+              }}
+              onRegister={handleRegisterClick}
+              loading={loginLoading}
+              error={loginError}
+            />
+          );
 
         case 'register':
           if (!registerMode) return null;

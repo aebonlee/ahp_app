@@ -7,12 +7,19 @@ from django.urls import path, include
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 import json
 
 # Simple Service API Router
 router = DefaultRouter()
-from simple_service.views import SimpleProjectViewSet, SimpleDataViewSet, service_status
+from simple_service.views import (
+    SimpleProjectViewSet, SimpleDataViewSet, SimpleCriteriaViewSet, 
+    SimpleComparisonViewSet, SimpleResultViewSet, service_status
+)
 router.register(r'projects', SimpleProjectViewSet)
+router.register(r'criteria', SimpleCriteriaViewSet)
+router.register(r'comparisons', SimpleComparisonViewSet)
+router.register(r'results', SimpleResultViewSet)
 router.register(r'data', SimpleDataViewSet)
 
 @csrf_exempt
@@ -146,6 +153,10 @@ urlpatterns = [
     path('api/register/', register_api, name='register'),
     path('api/user/', user_info_api, name='user_info'),
     
+    # JWT 토큰 엔드포인트 (프론트엔드용)
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
     # Health check for Render.com
     path('health/', lambda request: JsonResponse({'status': 'healthy'})),
     
@@ -167,9 +178,14 @@ urlpatterns = [
         'status': 'SUCCESS',
         'deployment': 'SUCCESSFUL',
         'features': {
-            'authentication': 'Basic Login/Register',
-            'projects': 'Simple Project Management',
-            'data_storage': 'Key-Value Data Storage'
+            'authentication': 'Basic Login/Register + JWT',
+            'projects': 'AHP Project Management',
+            'criteria': 'Evaluation Criteria Management',
+            'comparisons': 'Pairwise Comparisons',
+            'weight_calculation': 'Automated Weight Calculation',
+            'results': 'AHP Results & Rankings',
+            'data_storage': 'Key-Value Data Storage',
+            'cors_enabled': 'Frontend Integration Ready'
         },
         'api_endpoints': {
             'login': '/api/login/',
@@ -177,7 +193,12 @@ urlpatterns = [
             'user_info': '/api/user/',
             'service_status': '/api/service/status/',
             'projects': '/api/service/projects/',
+            'criteria': '/api/service/criteria/',
+            'comparisons': '/api/service/comparisons/',
+            'results': '/api/service/results/',
             'data': '/api/service/data/',
+            'jwt_token': '/api/token/',
+            'jwt_refresh': '/api/token/refresh/',
             'admin': '/admin/'
         },
         'test_credentials': {

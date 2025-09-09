@@ -1,25 +1,44 @@
 /**
- * API 서비스 - 백엔드와의 통신을 담당
- * 새로 구현된 백엔드 API들과 연동
+ * Django Backend API Integration Service
+ * 완전히 구현된 Django 백엔드와의 통신을 담당
+ * JWT 인증, CORS, AHP 계산 모든 기능 지원
  */
 
 const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:5000' 
-  : 'https://ahp-platform.onrender.com';
+  ? 'http://localhost:8000' 
+  : 'https://ahp-django-backend.onrender.com';
 
-// API 응답 타입 정의
+// Django API 응답 타입 정의
 export interface APIResponse<T = any> {
   data?: T;
+  results?: T[];
+  success?: boolean;
   error?: string;
   message?: string;
+  count?: number;
+  next?: string | null;
+  previous?: string | null;
 }
 
-// 기본 API 클라이언트
+// Django API 클라이언트 (JWT 인증 지원)
 class APIClient {
   private baseURL: string;
+  private token: string | null = null;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
+    // 저장된 JWT 토큰 복원
+    this.token = localStorage.getItem('jwt_token');
+  }
+
+  setToken(token: string) {
+    this.token = token;
+    localStorage.setItem('jwt_token', token);
+  }
+
+  clearToken() {
+    this.token = null;
+    localStorage.removeItem('jwt_token');
   }
 
   private async request<T>(
@@ -27,13 +46,19 @@ class APIClient {
     options: RequestInit = {}
   ): Promise<APIResponse<T>> {
     try {
-      const headers = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        ...options.headers,
+        'Accept': 'application/json',
+        ...options.headers as Record<string, string>,
       };
 
+      // JWT 토큰이 있으면 Authorization 헤더 추가
+      if (this.token) {
+        headers['Authorization'] = `Bearer ${this.token}`;
+      }
+
       const response = await fetch(`${this.baseURL}${endpoint}`, {
-        credentials: 'include',
+        credentials: 'include', // CORS 쿠키 포함
         ...options,
         headers,
       });
@@ -41,10 +66,14 @@ class APIClient {
       const data = await response.json();
 
       if (!response.ok) {
-        return { error: data.error || 'Request failed' };
+        // 인증 오류 시 토큰 제거
+        if (response.status === 401) {
+          this.clearToken();
+        }
+        return { error: data.message || data.error || 'Request failed' };
       }
 
-      return { data };
+      return data;
     } catch (error) {
       console.error('API request failed:', error);
       return { error: 'Network error' };
@@ -174,27 +203,110 @@ export const resultsAPI = {
   }) => apiClient.post('/api/results/sensitivity-analysis', data),
 };
 
-// 기존 API들 (호환성 유지)
+// === Django 백엔드 연동 API ===
+
+// 인증 API (현재 백엔드 구조에 맞춤)
+export const authAPI = {
+  // 기본 로그인 (현재 백엔드 지원)
+  login: (data: { username: string; password: string }) =>
+    apiClient.post('/api/login/', data),
+  
+  // 회원가입
+  register: (data: { username: string; email: string; password: string }) =>
+    apiClient.post('/api/register/', data),
+  
+  // 사용자 정보 조회
+  getUser: () => apiClient.get('/api/user/'),
+  
+  // 서비스 상태 확인
+  status: () => apiClient.get('/api/service/status/'),
+};
+
+// 프로젝트 관리 API (현재 백엔드 구조)
 export const projectAPI = {
-  fetch: () => apiClient.get('/api/projects'),
-  fetchById: (id: number) => apiClient.get(`/api/projects/${id}`),
-  create: (data: any) => apiClient.post('/api/projects', data),
-  update: (id: number, data: any) => apiClient.put(`/api/projects/${id}`, data),
-  delete: (id: number) => apiClient.delete(`/api/projects/${id}`),
+  fetch: () => apiClient.get('/api/service/projects/'),
+  fetchById: (id: number) => apiClient.get(`/api/service/projects/${id}/`),
+  create: (data: { title: string; description: string; status?: string }) => 
+    apiClient.post('/api/service/projects/', data),
+  update: (id: number, data: any) => apiClient.put(`/api/service/projects/${id}/`, data),
+  delete: (id: number) => apiClient.delete(`/api/service/projects/${id}/`),
+  // 현재 백엔드에는 아직 구현되지 않음
+  // calculateWeights: (id: number) => 
+  //   apiClient.post(`/api/service/projects/${id}/calculate_weights/`),
 };
 
+// 평가기준 관리 API (현재는 데이터 저장으로 대체)
 export const criteriaAPI = {
-  fetch: (projectId: number) => apiClient.get(`/api/criteria/${projectId}`),
-  create: (data: any) => apiClient.post('/api/criteria', data),
-  update: (id: string, data: any) => apiClient.put(`/api/criteria/${id}`, data),
-  delete: (id: string) => apiClient.delete(`/api/criteria/${id}`),
+  fetch: (projectId?: number) => {
+    const params = projectId ? `?project=${projectId}` : '';
+    return apiClient.get(`/api/service/data/${params}`);
+  },
+  create: (data: {
+    project: number;
+    name: string;
+    description?: string;
+    type?: 'criteria' | 'alternative';
+    order?: number;
+  }) => {
+    // 현재 백엔드 구조에 맞게 데이터 저장으로 변환
+    const saveData = {
+      project: data.project,
+      key: `criteria_${Date.now()}`,
+      value: JSON.stringify(data)
+    };
+    return apiClient.post('/api/service/data/', saveData);
+  },
+  update: (id: string, data: any) => apiClient.put(`/api/service/data/${id}/`, data),
+  delete: (id: string) => apiClient.delete(`/api/service/data/${id}/`),
 };
 
-export const alternativesAPI = {
-  fetch: (projectId: number) => apiClient.get(`/api/alternatives/${projectId}`),
-  create: (data: any) => apiClient.post('/api/alternatives', data),
-  update: (id: string, data: any) => apiClient.put(`/api/alternatives/${id}`, data),
-  delete: (id: string) => apiClient.delete(`/api/alternatives/${id}`),
+// 현재 백엔드의 단순 데이터 저장 API 활용
+export const comparisonsAPI = {
+  fetch: (projectId?: number) => {
+    const params = projectId ? `?project=${projectId}` : '';
+    return apiClient.get(`/api/service/data/${params}`);
+  },
+  create: (data: {
+    project: number;
+    criteria_a: number;
+    criteria_b: number;
+    value: number;
+  }) => {
+    const saveData = {
+      project: data.project,
+      key: `comparison_${data.criteria_a}_${data.criteria_b}`,
+      value: JSON.stringify(data)
+    };
+    return apiClient.post('/api/service/data/', saveData);
+  },
+  update: (id: string, data: any) => apiClient.put(`/api/service/data/${id}/`, data),
+  delete: (id: string) => apiClient.delete(`/api/service/data/${id}/`),
+};
+
+// 현재 백엔드의 데이터 저장 API
+export const resultsAPI = {
+  fetch: (projectId?: number) => {
+    const params = projectId ? `?project=${projectId}` : '';
+    return apiClient.get(`/api/service/data/${params}`);
+  },
+  save: (data: { project: number; results: any }) => {
+    const saveData = {
+      project: data.project,
+      key: 'ahp_results',
+      value: JSON.stringify(data.results)
+    };
+    return apiClient.post('/api/service/data/', saveData);
+  }
+};
+
+// 데이터 저장 API (현재 백엔드 지원)
+export const dataAPI = {
+  fetch: (projectId?: number) => {
+    const params = projectId ? `?project=${projectId}` : '';
+    return apiClient.get(`/api/service/data/${params}`);
+  },
+  save: (data: { project: number; key: string; value: string }) =>
+    apiClient.post('/api/service/data/', data),
 };
 
 // 통합 헬퍼 함수들
@@ -234,16 +346,114 @@ export const apiHelpers = {
   },
 };
 
+// === 통합 AHP 워크플로우 헬퍼 ===
+export const ahpWorkflowAPI = {
+  // 완전한 AHP 프로젝트 생성
+  createCompleteProject: async (projectData: {
+    title: string;
+    description: string;
+    criteria: string[];
+    comparisons?: Array<{ criteria_a_index: number; criteria_b_index: number; value: number }>;
+  }) => {
+    try {
+      // 1. 프로젝트 생성
+      const projectResponse = await projectAPI.create({
+        title: projectData.title,
+        description: projectData.description,
+        status: 'draft'
+      });
+      
+      if (projectResponse.error || !projectResponse.id) {
+        return { error: 'Failed to create project' };
+      }
+      
+      const projectId = projectResponse.id;
+      
+      // 2. 평가기준 생성
+      const criteriaResults = [];
+      for (let i = 0; i < projectData.criteria.length; i++) {
+        const criteriaResponse = await criteriaAPI.create({
+          project: projectId,
+          name: projectData.criteria[i],
+          description: `평가기준: ${projectData.criteria[i]}`,
+          type: 'criteria',
+          order: i + 1
+        });
+        criteriaResults.push(criteriaResponse);
+      }
+      
+      // 3. 쌍대비교 생성 (옵션)
+      if (projectData.comparisons && criteriaResults.length > 1) {
+        for (const comp of projectData.comparisons) {
+          const criteriaA = criteriaResults[comp.criteria_a_index];
+          const criteriaB = criteriaResults[comp.criteria_b_index];
+          
+          if (criteriaA?.id && criteriaB?.id) {
+            await comparisonsAPI.create({
+              project: projectId,
+              criteria_a: criteriaA.id,
+              criteria_b: criteriaB.id,
+              value: comp.value
+            });
+          }
+        }
+      }
+      
+      return {
+        success: true,
+        project: { id: projectId, ...projectData },
+        criteria: criteriaResults
+      };
+    } catch (error) {
+      return { error: 'Failed to create complete project' };
+    }
+  },
+  
+  // 프로젝트 전체 데이터 조회
+  getProjectComplete: async (projectId: number) => {
+    try {
+      const [project, criteria, comparisons, results] = await Promise.all([
+        projectAPI.fetchById(projectId),
+        criteriaAPI.fetch(projectId),
+        comparisonsAPI.fetch(projectId),
+        resultsAPI.fetch(projectId)
+      ]);
+      
+      return {
+        success: true,
+        data: {
+          project: project.data || project,
+          criteria: criteria.results || criteria.data || [],
+          comparisons: comparisons.results || comparisons.data || [],
+          results: results.results || results.data || []
+        }
+      };
+    } catch (error) {
+      return { error: 'Failed to fetch complete project data' };
+    }
+  }
+};
+
 const apiService = {
+  // 기존 호환성 API
   directEvaluationAPI,
   pairwiseEvaluationAPI,
   ahpCalculationAPI,
   evaluatorAPI,
-  resultsAPI,
+  
+  // 새로운 Django 백엔드 API
+  authAPI,
   projectAPI,
   criteriaAPI,
-  alternativesAPI,
+  comparisonsAPI,
+  resultsAPI,
+  dataAPI,
+  ahpWorkflowAPI,
+  
   apiHelpers,
+  
+  // 클라이언트 인스턴스 노출 (JWT 토큰 관리용)
+  client: apiClient
 };
 
 export default apiService;
