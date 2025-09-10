@@ -97,40 +97,63 @@ class UserManagementService {
 
       const data = await response.json();
       
-      // JWT 토큰이 있는 경우 저장하고 사용자 정보 가져오기
+      // JWT 토큰이 있는 경우 처리
       if (data.access) {
-        // 사용자 정보 가져오기
-        const userResponse = await fetch(`${API_BASE_URL}/api/user/`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${data.access}`
-          },
-        });
+        // 사용자 정보 가져오기 시도
+        try {
+          const userResponse = await fetch(`${API_BASE_URL}/api/user/`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${data.access}`
+            },
+          });
 
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          
-          // 사용자 데이터를 우리 타입 시스템에 맞게 변환
-          this.currentUser = {
-            id: userData.id || userData.user_id || 1,
-            username: userData.username || username,
-            email: userData.email || '',
-            first_name: userData.first_name || '',
-            last_name: userData.last_name || '',
-            user_type: this.determineUserType(userData, username),
-            is_active: userData.is_active !== false,
-            date_joined: userData.date_joined || new Date().toISOString(),
-            last_login: userData.last_login || new Date().toISOString()
-          };
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            
+            // 사용자 데이터를 우리 타입 시스템에 맞게 변환
+            this.currentUser = {
+              id: userData.id || userData.user_id || 1,
+              username: userData.username || username,
+              email: userData.email || '',
+              first_name: userData.first_name || '',
+              last_name: userData.last_name || '',
+              user_type: this.determineUserType(userData, username),
+              is_active: userData.is_active !== false,
+              date_joined: userData.date_joined || new Date().toISOString(),
+              last_login: userData.last_login || new Date().toISOString()
+            };
 
-          return {
-            success: true,
-            user: this.currentUser,
-            token: data.access
-          };
+            return {
+              success: true,
+              user: this.currentUser,
+              token: data.access
+            };
+          }
+        } catch (error) {
+          console.warn('Failed to fetch user info, creating basic user from login data:', error);
         }
+        
+        // 사용자 정보를 가져올 수 없는 경우 로그인 데이터로 기본 사용자 생성
+        this.currentUser = {
+          id: data.user_id || 1,
+          username: data.username || username,
+          email: data.email || username.includes('@') ? username : '',
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
+          user_type: this.determineUserType(data, username),
+          is_active: true,
+          date_joined: new Date().toISOString(),
+          last_login: new Date().toISOString()
+        };
+
+        return {
+          success: true,
+          user: this.currentUser,
+          token: data.access
+        };
       }
 
       return {
