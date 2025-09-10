@@ -433,7 +433,8 @@ def create_admin_api(request):
     """임시 관리자 생성 API (배포 후 즉시 제거 필요)"""
     if request.method == 'POST':
         try:
-            from django.contrib.auth.models import User
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
             
             # 기존 admin 사용자 삭제하고 새로 생성
             existing_admin = User.objects.filter(username='admin')
