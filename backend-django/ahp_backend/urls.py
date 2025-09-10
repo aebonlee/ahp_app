@@ -351,6 +351,82 @@ def logout_api(request):
     })
 
 @csrf_exempt
+def list_users_api(request):
+    """회원 DB 내역 조회 API"""
+    if request.method == 'GET':
+        try:
+            from django.contrib.auth import get_user_model
+            from super_admin.models import CustomUser
+            
+            User = get_user_model()
+            
+            # 전체 사용자 정보 조회
+            users = []
+            for user in User.objects.all().order_by('-date_joined'):
+                # 사용자 타입 결정
+                if user.is_superuser:
+                    user_type = 'super_admin'
+                elif user.is_staff:
+                    user_type = 'admin'
+                elif hasattr(user, 'user_type'):
+                    user_type = user.user_type
+                else:
+                    user_type = 'personal_service'
+                
+                users.append({
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'full_name': user.get_full_name(),
+                    'user_type': user_type,
+                    'subscription_tier': getattr(user, 'subscription_tier', 'free'),
+                    'is_active': user.is_active,
+                    'is_staff': user.is_staff,
+                    'is_superuser': user.is_superuser,
+                    'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+                    'last_login': user.last_login.isoformat() if user.last_login else None,
+                })
+            
+            # 통계 정보
+            stats = {
+                'total_users': User.objects.count(),
+                'active_users': User.objects.filter(is_active=True).count(),
+                'staff_users': User.objects.filter(is_staff=True).count(),
+                'super_users': User.objects.filter(is_superuser=True).count(),
+            }
+            
+            # 타입별 통계
+            type_stats = {}
+            if hasattr(CustomUser, 'USER_TYPES'):
+                for user_type, display_name in CustomUser.USER_TYPES:
+                    count = User.objects.filter(user_type=user_type).count()
+                    type_stats[user_type] = {
+                        'name': display_name,
+                        'count': count
+                    }
+            
+            return JsonResponse({
+                'success': True,
+                'users': users,
+                'stats': stats,
+                'type_stats': type_stats,
+                'total': len(users)
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'회원 조회 실패: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({
+        'message': '회원 DB 조회 API',
+        'method': 'GET'
+    })
+
+@csrf_exempt
 def create_admin_api(request):
     """임시 관리자 생성 API (배포 후 즉시 제거 필요)"""
     if request.method == 'POST':
@@ -420,6 +496,7 @@ urlpatterns = [
     path('api/logout/', logout_api, name='logout'),
     path('api/user/', user_info_api, name='user_info'),
     path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API - 로그인 테스트용 활성화
+    path('api/users/list/', list_users_api, name='list_users'),  # 회원 DB 조회 API
     
     
     # Health checks
