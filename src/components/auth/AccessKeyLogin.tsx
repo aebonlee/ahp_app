@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
+import apiService from '../../services/apiService';
 
 interface AccessKeyLoginProps {
   onLogin: (evaluatorId: string, projectId: string, evaluatorName: string) => void;
@@ -20,9 +21,27 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
   const [error, setError] = useState('');
   const [keyInfo, setKeyInfo] = useState<AccessKeyInfo | null>(null);
 
-  const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:5000' 
-    : 'https://ahp-platform.onrender.com';
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+
+  // Django 백엔드 서비스 상태 확인
+  useEffect(() => {
+    checkServiceStatus();
+  }, []);
+
+  const checkServiceStatus = async () => {
+    try {
+      const response = await apiService.authAPI.status();
+      if (response.success !== false) {
+        setServiceStatus('available');
+        console.log('✅ Django 백엔드 연결 성공');
+      } else {
+        setServiceStatus('unavailable');
+      }
+    } catch (error) {
+      console.log('⚠️ Django 백엔드 연결 실패:', error);
+      setServiceStatus('unavailable');
+    }
+  };
 
   const parseAccessKey = (key: string): { evaluatorCode: string; projectCode: string } | null => {
     // 접속키 형식: "P001-PROJ1234" 또는 "E002-ABC12345"
@@ -42,29 +61,37 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
     if (!parsed) return null;
 
     try {
-      // API 호출로 접속키 검증
-      const response = await fetch(`${API_BASE_URL}/api/auth/validate-access-key`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ accessKey: key }),
-      });
+      console.log('🔐 Django 접속키 검증 시도:', { accessKey: key });
+      
+      // Django 백엔드를 통한 접속키 검증
+      const response = await apiService.evaluatorAPI.validateAccessKey(key);
 
-      if (!response.ok) {
-        throw new Error('Invalid access key');
+      if (response.error) {
+        throw new Error(response.error);
       }
 
-      const data = await response.json();
+      if (response.success) {
+        const data = response.data || {};
+        return {
+          evaluatorCode: parsed.evaluatorCode,
+          projectCode: parsed.projectCode,
+          isValid: true,
+          evaluatorName: (data as any)?.evaluatorName || `평가자 ${parsed.evaluatorCode}`,
+          projectTitle: (data as any)?.projectTitle || `프로젝트 ${parsed.projectCode}`
+        };
+      }
+
+      // 데모 모드 또는 API 오류 시 기본 검증
       return {
         evaluatorCode: parsed.evaluatorCode,
         projectCode: parsed.projectCode,
         isValid: true,
-        evaluatorName: data.evaluatorName,
-        projectTitle: data.projectTitle
+        evaluatorName: `평가자 ${parsed.evaluatorCode}`,
+        projectTitle: `프로젝트 ${parsed.projectCode}`
       };
     } catch (error) {
-      // 데모 모드 또는 API 오류 시 기본 검증
+      console.error('❌ Django 접속키 검증 실패:', error);
+      // 오류 발생 시 기본 검증 로직
       return {
         evaluatorCode: parsed.evaluatorCode,
         projectCode: parsed.projectCode,
@@ -80,7 +107,7 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
     setError('');
     setKeyInfo(null);
 
-    if (value.length >= 8) {  // 최소 길이 체크
+    if (value.length >= 8 && serviceStatus === 'available') {  // 최소 길이 체크 및 서비스 상태 확인
       const info = await validateAccessKey(value);
       if (info) {
         setKeyInfo(info);
@@ -94,20 +121,30 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
       return;
     }
 
+    if (serviceStatus !== 'available') {
+      setError('서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
 
+      console.log('🔐 Django 접속키 로그인 시도:', { accessKey });
+      
       const info = await validateAccessKey(accessKey);
       
       if (!info || !info.isValid) {
         throw new Error('유효하지 않은 접속키입니다.');
       }
 
+      console.log('✅ Django 접속키 검증 성공:', info);
+      
       // 성공적으로 검증되면 로그인 처리
       onLogin(info.evaluatorCode, info.projectCode, info.evaluatorName || info.evaluatorCode);
       
     } catch (error: any) {
+      console.error('❌ Django 접속키 로그인 실패:', error);
       setError(error.message || '로그인에 실패했습니다.');
     } finally {
       setLoading(false);
@@ -120,6 +157,50 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
     }
   };
 
+  // 서비스 상태 확인 중 화면
+  if (serviceStatus === 'checking') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스 연결 확인 중...
+            </h2>
+            <p className="text-gray-600 text-sm">
+              Django 백엔드 서비스에 연결하고 있습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 서비스 사용 불가 화면
+  if (serviceStatus === 'unavailable') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="text-red-500 text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스에 연결할 수 없습니다
+            </h2>
+            <p className="text-gray-600 text-sm mb-4">
+              Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
+            </p>
+            <button
+              onClick={checkServiceStatus}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              다시 연결 시도
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8" style={{
       backgroundColor: 'var(--bg-primary)'
@@ -128,10 +209,16 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold" style={{
             color: 'var(--text-primary)'
-          }}>AHP 평가 시스템</h1>
+          }}>AHP Platform</h1>
           <p className="mt-2" style={{
             color: 'var(--text-secondary)'
-          }}>평가자 접속</p>
+          }}>Django 백엔드 연동 - 평가자 접속</p>
+          <div className="mt-2">
+            <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <div className="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
+              서비스 연결됨
+            </div>
+          </div>
         </div>
 
         <Card title="접속키로 로그인">

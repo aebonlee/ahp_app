@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
+import apiService from '../../services/apiService';
 
 interface LoginSelectionPageProps {
   onRegisterSelect: () => void;
@@ -10,6 +11,71 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
   onRegisterSelect, 
   onServiceSelect 
 }) => {
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+
+  // Django 백엔드 서비스 상태 확인
+  useEffect(() => {
+    checkServiceStatus();
+  }, []);
+
+  const checkServiceStatus = async () => {
+    try {
+      const response = await apiService.authAPI.status();
+      if (response.success !== false) {
+        setServiceStatus('available');
+        console.log('✅ Django 백엔드 연결 성공');
+      } else {
+        setServiceStatus('unavailable');
+      }
+    } catch (error) {
+      console.log('⚠️ Django 백엔드 연결 실패:', error);
+      setServiceStatus('unavailable');
+    }
+  };
+  // 서비스 상태 확인 중 화면
+  if (serviceStatus === 'checking') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스 연결 확인 중...
+            </h2>
+            <p className="text-gray-600 text-sm">
+              Django 백엔드 서비스에 연결하고 있습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 서비스 사용 불가 화면
+  if (serviceStatus === 'unavailable') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="text-red-500 text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스에 연결할 수 없습니다
+            </h2>
+            <p className="text-gray-600 text-sm mb-4">
+              Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
+            </p>
+            <button
+              onClick={checkServiceStatus}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              다시 연결 시도
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -119,7 +185,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
             }}>
-              AHP for Paper
+              AHP Platform
             </h1>
             <div style={{
               position: 'absolute',
@@ -140,7 +206,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
             marginBottom: '0.5rem',
             color: '#374151'
           }}>
-            전문가급 의사결정 지원 시스템
+            Django 백엔드 연동 - 전문가급 의사결정 지원 시스템
           </p>
           <p style={{
             fontSize: '0.875rem',
@@ -148,7 +214,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
             letterSpacing: '0.025em',
             color: '#6b7280'
           }}>
-            Analytic Hierarchy Process Decision Support System
+            Django + PostgreSQL + React - Analytic Hierarchy Process Decision Support System
           </p>
         </div>
 
@@ -560,7 +626,13 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
           <p style={{
             fontWeight: '400',
             color: '#6b7280'
-          }}>Powered by Advanced Analytics & Decision Intelligence</p>
+          }}>Powered by Django + React + PostgreSQL - Advanced Analytics & Decision Intelligence</p>
+          <p style={{
+            fontSize: '0.75rem',
+            fontWeight: '400',
+            color: '#9ca3af',
+            marginTop: '0.25rem'
+          }}>🔒 세션 기반 인증으로 PostgreSQL 데이터베이스에서 안전하게 관리됩니다</p>
         </div>
       </div>
     </div>

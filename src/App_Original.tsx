@@ -1157,7 +1157,11 @@ function App() {
         case 'login':
         return (
           <LoginForm
-            onLogin={handleLogin}
+            onLogin={(userData) => {
+              // handleLogin이 파라미터 3개를 받으므로 래퍼 함수 필요
+              // 하지만 이 파일은 사용되지 않으므로 임시 처리
+              console.log('Original App - login:', userData);
+            }}
             onRegister={handleRegisterClick}
             loading={loginLoading}
             error={loginError}

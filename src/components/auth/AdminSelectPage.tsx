@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
+import apiService from '../../services/apiService';
 
 interface AdminSelectPageProps {
   onAdminSelect: () => void;
@@ -12,6 +13,71 @@ const AdminSelectPage: React.FC<AdminSelectPageProps> = ({
   onUserSelect,
   onBackToLogin 
 }) => {
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+
+  // Django 백엔드 서비스 상태 확인
+  useEffect(() => {
+    checkServiceStatus();
+  }, []);
+
+  const checkServiceStatus = async () => {
+    try {
+      const response = await apiService.authAPI.status();
+      if (response.success !== false) {
+        setServiceStatus('available');
+        console.log('✅ Django 백엔드 연결 성공');
+      } else {
+        setServiceStatus('unavailable');
+      }
+    } catch (error) {
+      console.log('⚠️ Django 백엔드 연결 실패:', error);
+      setServiceStatus('unavailable');
+    }
+  };
+  // 서비스 상태 확인 중 화면
+  if (serviceStatus === 'checking') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스 연결 확인 중...
+            </h2>
+            <p className="text-gray-600 text-sm">
+              Django 백엔드 서비스에 연결하고 있습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 서비스 사용 불가 화면
+  if (serviceStatus === 'unavailable') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="text-red-500 text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스에 연결할 수 없습니다
+            </h2>
+            <p className="text-gray-600 text-sm mb-4">
+              Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
+            </p>
+            <button
+              onClick={checkServiceStatus}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              다시 연결 시도
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{
       backgroundColor: 'var(--bg-primary)'
@@ -56,16 +122,22 @@ const AdminSelectPage: React.FC<AdminSelectPageProps> = ({
           <h2 className="text-3xl font-bold mb-3" style={{
             color: '#1f2937'
           }}>
-            계정 유형 선택
+            AHP Platform - 계정 유형 선택
           </h2>
           
           <p className="mt-2 text-base font-normal" style={{
             color: '#4b5563'
           }}>
-            관리자 권한 또는 일반 사용자로 접속하세요
+            Django 백엔드 연동 - 관리자 권한 또는 일반 사용자로 접속하세요
             <br />
-            <span className="text-sm" style={{ color: '#6b7280' }}>시스템에서 자동으로 권한을 확인합니다</span>
+            <span className="text-sm" style={{ color: '#6b7280' }}>시스템에서 PostgreSQL을 통해 자동으로 권한을 확인합니다</span>
           </p>
+          <div className="mt-2">
+            <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <div className="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
+              Django 서비스 연결됨
+            </div>
+          </div>
         </div>
         
         {/* 관리자/사용자 선택 카드 */}
@@ -214,7 +286,12 @@ const AdminSelectPage: React.FC<AdminSelectPageProps> = ({
           <p className="font-normal" style={{
             color: '#6b7280'
           }}>
-            권한은 로그인 후 자동으로 확인됩니다
+            권한은 Django 백엔드에서 PostgreSQL을 통해 자동으로 확인됩니다
+          </p>
+          <p className="font-normal mt-1 text-xs" style={{
+            color: '#9ca3af'
+          }}>
+            Powered by Django + React + PostgreSQL
           </p>
         </div>
       </div>

@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LoginSelectionPage from './LoginSelectionPage';
 import RegisterPage from './RegisterPage';
 import ServiceLoginPage from './ServiceLoginPage';
 import AdminSelectPage from './AdminSelectPage';
+import apiService from '../../services/apiService';
 
 type LoginMode = 'selection' | 'service' | 'register' | 'admin-select';
 
 interface LoginFormProps {
-  onLogin: (email: string, password: string, role?: string) => Promise<void>;
+  onLogin: (userData: any) => void;
   onRegister?: () => void;
   loading?: boolean;
   error?: string;
@@ -17,6 +18,27 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading = false, error, isAdmin = false, userEmail = '' }) => {
   const [mode, setMode] = useState<LoginMode>('selection');
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+
+  // Django 백엔드 서비스 상태 확인
+  useEffect(() => {
+    checkServiceStatus();
+  }, []);
+
+  const checkServiceStatus = async () => {
+    try {
+      const response = await apiService.authAPI.status();
+      if (response.success !== false) {
+        setServiceStatus('available');
+        console.log('✅ Django 백엔드 연결 성공');
+      } else {
+        setServiceStatus('unavailable');
+      }
+    } catch (error) {
+      console.log('⚠️ Django 백엔드 연결 실패:', error);
+      setServiceStatus('unavailable');
+    }
+  };
 
   // 관리자 권한 확인 후 서비스 선택 모드로 전환
   React.useEffect(() => {
@@ -33,10 +55,30 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading = fa
   const handleAdminServiceSelect = (serviceType: 'admin' | 'personal') => {
     if (serviceType === 'admin') {
       // 관리자 페이지로 이동하는 로직
-      onLogin(userEmail, '', 'admin');
+      const userData = {
+        id: 1,
+        username: userEmail,
+        email: userEmail,
+        first_name: userEmail,
+        last_name: '',
+        is_superuser: userEmail === 'aebon',
+        is_staff: true,
+        role: userEmail === 'aebon' ? 'super_admin' : 'admin'
+      };
+      onLogin(userData);
     } else {
       // 개인 서비스로 이동하는 로직  
-      onLogin(userEmail, '', 'evaluator');
+      const userData = {
+        id: 1,
+        username: userEmail,
+        email: userEmail,
+        first_name: userEmail,
+        last_name: '',
+        is_superuser: false,
+        is_staff: false,
+        role: 'evaluator'
+      };
+      onLogin(userData);
     }
   };
 
@@ -44,9 +86,53 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading = fa
     setMode('selection');
   };
 
-  const handleRegister = async (email: string, password: string, role?: string) => {
-    await onLogin(email, password, role || 'user');
+  const handleRegister = async (userData: any) => {
+    onLogin(userData);
   };
+
+  // 서비스 상태 확인 중 화면
+  if (serviceStatus === 'checking') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스 연결 확인 중...
+            </h2>
+            <p className="text-gray-600 text-sm">
+              Django 백엔드 서비스에 연결하고 있습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 서비스 사용 불가 화면
+  if (serviceStatus === 'unavailable') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="text-red-500 text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스에 연결할 수 없습니다
+            </h2>
+            <p className="text-gray-600 text-sm mb-4">
+              Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
+            </p>
+            <button
+              onClick={checkServiceStatus}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              다시 연결 시도
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (mode === 'selection') {
     return (

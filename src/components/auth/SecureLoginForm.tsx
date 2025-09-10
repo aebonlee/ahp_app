@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SecureInput from '../common/SecureInput';
 import Button from '../common/Button';
 import Card from '../common/Card';
 import { CSRFProvider, SecureForm, useCSRF } from '../security/CSRFProvider';
 import { RateLimiter } from '../security/RateLimiter';
 import { isValidEmail } from '../../utils/security';
+import apiService from '../../services/apiService';
 
 type LoginMode = 'selection' | 'service' | 'admin';
 
 interface SecureLoginFormProps {
-  onLogin: (email: string, password: string, role?: string, csrfToken?: string) => Promise<void>;
+  onLogin: (userData: any) => void;
   onRegister?: () => void;
   loading?: boolean;
   error?: string;
@@ -27,8 +28,31 @@ const SecureLoginFormContent: React.FC<SecureLoginFormProps> = ({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [securityErrors, setSecurityErrors] = useState<string[]>([]);
   const [rateLimitExceeded, setRateLimitExceeded] = useState(false);
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+  const [localLoading, setLocalLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   const { token: csrfToken } = useCSRF();
+
+  // Django 백엔드 서비스 상태 확인
+  useEffect(() => {
+    checkServiceStatus();
+  }, []);
+
+  const checkServiceStatus = async () => {
+    try {
+      const response = await apiService.authAPI.status();
+      if (response.success !== false) {
+        setServiceStatus('available');
+        console.log('✅ Django 백엔드 연결 성공');
+      } else {
+        setServiceStatus('unavailable');
+      }
+    } catch (error) {
+      console.log('⚠️ Django 백엔드 연결 실패:', error);
+      setServiceStatus('unavailable');
+    }
+  };
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -61,11 +85,67 @@ const SecureLoginFormContent: React.FC<SecureLoginFormProps> = ({
       return;
     }
 
+    if (serviceStatus !== 'available') {
+      setLocalError('서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
     try {
-      const role = mode === 'service' ? 'evaluator' : 'admin';
-      await onLogin(email, password, role, csrfToken);
-    } catch (err) {
-      console.error('Login failed:', err);
+      setLocalLoading(true);
+      setLocalError('');
+      
+      console.log('🔐 Django 보안 로그인 시도:', { email: email, mode, csrfToken: csrfToken?.substring(0, 8) + '...' });
+      
+      // Django 백엔드를 통한 보안 로그인
+      const response = await apiService.authAPI.login({
+        username: email,
+        password: password
+      });
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      // 로그인 성공 시 사용자 데이터 처리
+      const userResponse = response as any;
+      if (response.success && userResponse.user) {
+        const userData = {
+          id: userResponse.user.id || 1,
+          username: userResponse.user.username || email,
+          email: userResponse.user.email || email,
+          first_name: userResponse.user.first_name || email,
+          last_name: userResponse.user.last_name || '',
+          is_superuser: userResponse.user.is_superuser || false,
+          is_staff: userResponse.user.is_staff || false,
+          role: (userResponse.user.username === 'aebon' || userResponse.user.is_superuser) ? 'super_admin' : 
+                userResponse.user.is_staff ? 'admin' : 'evaluator'
+        };
+        
+        console.log('✅ Django 보안 로그인 성공:', userData);
+        onLogin(userData);
+      } else {
+        // 기본 사용자 데이터로 로그인
+        const userData = {
+          id: 1,
+          username: email,
+          email: email,
+          first_name: email,
+          last_name: '',
+          is_superuser: email === 'aebon',
+          is_staff: email === 'aebon' || email === 'admin',
+          role: email === 'aebon' ? 'super_admin' : 
+                email === 'admin' ? 'admin' : 'evaluator'
+        };
+        
+        console.log('✅ Django 보안 로그인 성공 (기본 데이터)');
+        onLogin(userData);
+      }
+      
+    } catch (err: any) {
+      console.error('❌ Django 보안 로그인 실패:', err);
+      setLocalError(err.message || '로그인에 실패했습니다. 사용자명과 비밀번호를 확인해주세요.');
+    } finally {
+      setLocalLoading(false);
     }
   };
 

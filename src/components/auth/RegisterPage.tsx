@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Input from '../common/Input';
 import Card from '../common/Card';
-import useDjangoAuth from '../../hooks/useDjangoAuth';
+import apiService from '../../services/apiService';
 
 interface RegisterPageProps {
-  onRegister: (email: string, password: string, role?: string) => Promise<void>;
+  onRegister: (userData: any) => void;
   onBackToSelection: () => void;
   onSwitchToLogin: () => void;
   loading?: boolean;
@@ -24,9 +24,31 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
   const [fullName, setFullName] = useState('');
   const [organization, setOrganization] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const { register, isLoading } = useDjangoAuth();
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+  const [localLoading, setLocalLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
   
-  const isFormLoading = loading || isLoading;
+  const isFormLoading = loading || localLoading;
+
+  // Django 백엔드 서비스 상태 확인
+  useEffect(() => {
+    checkServiceStatus();
+  }, []);
+
+  const checkServiceStatus = async () => {
+    try {
+      const response = await apiService.authAPI.status();
+      if (response.success !== false) {
+        setServiceStatus('available');
+        console.log('✅ Django 백엔드 연결 성공');
+      } else {
+        setServiceStatus('unavailable');
+      }
+    } catch (error) {
+      console.log('⚠️ Django 백엔드 연결 실패:', error);
+      setServiceStatus('unavailable');
+    }
+  };
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -64,27 +86,105 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
       return;
     }
 
+    if (serviceStatus !== 'available') {
+      setLocalError('서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
     try {
-      // Django 회원가입 시스템 사용
-      const result = await register({
+      setLocalLoading(true);
+      setLocalError('');
+      
+      console.log('🔐 Django 회원가입 시도:', { email, fullName });
+
+      // Django 백엔드를 통한 회원가입
+      // 클라이언트 측에서 비밀번호 확인
+      if (password !== confirmPassword) {
+        setLocalError('비밀번호가 일치하지 않습니다.');
+        return;
+      }
+      
+      const response = await apiService.authAPI.register({
         username: email,
         email: email,
         password: password,
-        password_confirm: confirmPassword,
-        full_name: fullName,
-        organization: organization
+        first_name: fullName.split(' ')[0] || fullName,
+        last_name: fullName.split(' ').slice(1).join(' ') || ''
       });
-      
-      if (result.success) {
-        // 성공적으로 회원가입되면 기존 onRegister 호출하여 앱 상태 업데이트
-        await onRegister(email, password, 'user');
-      } else {
-        console.error('Django register failed:', result.message);
+
+      if (response.error) {
+        throw new Error(response.error);
       }
-    } catch (err) {
-      console.error('Register failed:', err);
+
+      // 회원가입 성공 시 사용자 데이터 처리
+      const data = response.data || {};
+      const userData = {
+        id: (data as any)?.id || 1,
+        username: email,
+        email: email,
+        first_name: fullName.split(' ')[0] || fullName,
+        last_name: fullName.split(' ').slice(1).join(' ') || '',
+        is_superuser: false,
+        is_staff: false,
+        role: 'evaluator'
+      };
+      
+      console.log('✅ Django 회원가입 성공:', userData);
+      onRegister(userData);
+      
+    } catch (err: any) {
+      console.error('❌ Django 회원가입 실패:', err);
+      setLocalError(err.message || '회원가입에 실패했습니다.');
+    } finally {
+      setLocalLoading(false);
     }
   };
+
+  const displayError = error || localError;
+
+  // 서비스 상태 확인 중 화면
+  if (serviceStatus === 'checking') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스 연결 확인 중...
+            </h2>
+            <p className="text-gray-600 text-sm">
+              Django 백엔드 서비스에 연결하고 있습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 서비스 사용 불가 화면
+  if (serviceStatus === 'unavailable') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="text-red-500 text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              서비스에 연결할 수 없습니다
+            </h2>
+            <p className="text-gray-600 text-sm mb-4">
+              Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
+            </p>
+            <button
+              onClick={checkServiceStatus}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              다시 연결 시도
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -207,7 +307,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
             marginBottom: '0.75rem',
             color: '#1f2937'
           }}>
-            회원가입
+            AHP Platform - 회원가입
           </h2>
           
           <p style={{
@@ -216,7 +316,27 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
             fontWeight: 'normal',
             color: '#4b5563'
           }}>
-            AHP 분석 서비스에 가입하여 전문적인 의사결정을 시작하세요
+            Django 백엔드 연동 - AHP 분석 서비스에 가입하여 전문적인 의사결정을 시작하세요
+            <br /><div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '9999px',
+              fontSize: '0.75rem',
+              fontWeight: '500',
+              backgroundColor: '#dcfce7',
+              color: '#16a34a',
+              marginTop: '0.5rem'
+            }}>
+              <span style={{
+                width: '0.5rem',
+                height: '0.5rem',
+                backgroundColor: '#22c55e',
+                borderRadius: '50%',
+                marginRight: '0.25rem'
+              }}></span>
+              Django 서비스 연결됨
+            </div>
           </p>
         </div>
         
@@ -232,7 +352,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
             flexDirection: 'column',
             gap: '1.5rem'
           }} onSubmit={handleSubmit}>
-            {error && (
+            {displayError && (
               <div style={{
                 background: 'rgba(239, 68, 68, 0.1)',
                 border: '2px solid rgba(248, 113, 113, 0.3)',
@@ -256,7 +376,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
                     fontSize: '0.875rem',
                     color: '#dc2626',
                     fontWeight: '500'
-                  }}>{error}</p>
+                  }}>{displayError}</p>
                 </div>
               </div>
             )}
@@ -440,7 +560,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
                           opacity: 0.75
                         }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      가입 처리 중...
+                      Django 가입 처리 중...
                     </span>
                   ) : (
                     <span style={{
@@ -455,7 +575,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({
                       }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                       </svg>
-                      계정 생성하기
+                      Django 계정 생성하기
                     </span>
                   )}
                 </button>

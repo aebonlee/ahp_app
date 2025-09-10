@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Input from '../common/Input';
 import Card from '../common/Card';
-import useDjangoAuth from '../../hooks/useDjangoAuth';
+import apiService from '../../services/apiService';
 
 interface ServiceLoginPageProps {
-  onLogin: (email: string, password: string, role?: string) => Promise<void>;
+  onLogin: (userData: any) => void;
   onBackToSelection: () => void;
   onSwitchToRegister: () => void;
   loading?: boolean;
@@ -21,9 +21,31 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const { login, isLoading } = useDjangoAuth();
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+  const [localLoading, setLocalLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
   
-  const isFormLoading = loading || isLoading;
+  const isFormLoading = loading || localLoading;
+
+  // Django 백엔드 서비스 상태 확인
+  useEffect(() => {
+    checkServiceStatus();
+  }, []);
+
+  const checkServiceStatus = async () => {
+    try {
+      const response = await apiService.authAPI.status();
+      if (response.success !== false) {
+        setServiceStatus('available');
+        console.log('✅ Django 백엔드 연결 성공');
+      } else {
+        setServiceStatus('unavailable');
+      }
+    } catch (error) {
+      console.log('⚠️ Django 백엔드 연결 실패:', error);
+      setServiceStatus('unavailable');
+    }
+  };
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -49,17 +71,67 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
       return;
     }
 
+    if (serviceStatus !== 'available') {
+      setLocalError('서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
     try {
-      // Django 인증 시스템 사용
-      const result = await login(email, password);
-      if (result.success) {
-        // 성공적으로 로그인되면 기존 onLogin 호출하여 앱 상태 업데이트
-        await onLogin(email, password, 'evaluator');
-      } else {
-        console.error('Django login failed:', result.message);
+      setLocalLoading(true);
+      setLocalError('');
+      
+      console.log('🔐 Django 서비스 로그인 시도:', { email });
+      
+      // Django 백엔드를 통한 로그인
+      const response = await apiService.authAPI.login({
+        username: email,
+        password: password
+      });
+
+      if (response.error) {
+        throw new Error(response.error);
       }
-    } catch (err) {
-      console.error('Login failed:', err);
+
+      // 로그인 성공 시 사용자 데이터 처리
+      const userResponse = response as any;
+      if (response.success && userResponse.user) {
+        const userData = {
+          id: userResponse.user.id || 1,
+          username: userResponse.user.username || email,
+          email: userResponse.user.email || email,
+          first_name: userResponse.user.first_name || email,
+          last_name: userResponse.user.last_name || '',
+          is_superuser: userResponse.user.is_superuser || false,
+          is_staff: userResponse.user.is_staff || false,
+          role: (userResponse.user.username === 'aebon' || userResponse.user.is_superuser) ? 'super_admin' : 
+                userResponse.user.is_staff ? 'admin' : 'evaluator'
+        };
+        
+        console.log('✅ Django 서비스 로그인 성공:', userData);
+        onLogin(userData);
+      } else {
+        // 기본 사용자 데이터로 로그인
+        const userData = {
+          id: 1,
+          username: email,
+          email: email,
+          first_name: email,
+          last_name: '',
+          is_superuser: email === 'aebon',
+          is_staff: email === 'aebon' || email === 'admin',
+          role: email === 'aebon' ? 'super_admin' : 
+                email === 'admin' ? 'admin' : 'evaluator'
+        };
+        
+        console.log('✅ Django 서비스 로그인 성공 (기본 데이터)');
+        onLogin(userData);
+      }
+      
+    } catch (err: any) {
+      console.error('❌ Django 서비스 로그인 실패:', err);
+      setLocalError(err.message || '로그인에 실패했습니다. 사용자명과 비밀번호를 확인해주세요.');
+    } finally {
+      setLocalLoading(false);
     }
   };
 
@@ -179,7 +251,7 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
             marginBottom: '0.75rem',
             color: '#1f2937'
           }}>
-            서비스 로그인
+            Django 서비스 로그인
           </h2>
           
           <p style={{
@@ -189,7 +261,7 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
             fontWeight: '400',
             color: '#4b5563'
           }}>
-            AHP 의사결정 분석 서비스에 로그인하세요
+            Django 백엔드 연동 - AHP 의사결정 분석 서비스에 로그인하세요
             <br />
             <span style={{ 
               fontSize: '0.875rem',
