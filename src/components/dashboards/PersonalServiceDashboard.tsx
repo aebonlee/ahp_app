@@ -9,6 +9,23 @@ interface PersonalServiceDashboardProps {
 }
 
 const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ user }) => {
+  // Provide default subscription if undefined
+  const safeUser = {
+    ...user,
+    subscription: user.subscription || {
+      tier: 'basic',
+      status: 'trial',
+      trial_ends_at: new Date().toISOString(),
+      days_remaining: 30,
+      storage_limit: 5,
+      features: ['기본 기능'],
+      limits: {
+        projects: 5,
+        evaluators_per_project: 10
+      }
+    }
+  };
+
   const [activeTab, setActiveTab] = useState('overview');
   const [projectStats, setProjectStats] = useState({
     totalProjects: 0,
@@ -85,20 +102,20 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             color: 'var(--text-secondary)',
             margin: 0
           }}>
-            {user.first_name} {user.last_name} • {user.subscription?.tier || 'Basic'} 플랜
+            {safeUser.first_name} {safeUser.last_name} • {safeUser.subscription.tier} 플랜
           </p>
         </div>
         
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <div style={{
             padding: '0.5rem 1rem',
-            backgroundColor: getSubscriptionStatusColor(user.subscription?.status || 'trial'),
+            backgroundColor: getSubscriptionStatusColor(safeUser.subscription.status),
             color: 'white',
             borderRadius: '0.5rem',
             fontSize: '0.875rem',
             fontWeight: '600'
           }}>
-            {getSubscriptionStatusText(user.subscription?.status || 'trial')}
+            {getSubscriptionStatusText(safeUser.subscription.status)}
           </div>
           
           <Button
@@ -112,7 +129,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
       </div>
 
       {/* 구독 상태 알림 */}
-      {user.subscription?.status === 'trial' && (
+      {safeUser.subscription.status === 'trial' && (
         <div style={{
           padding: '1rem',
           backgroundColor: '#dbeafe',
@@ -139,7 +156,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                 color: '#3730a3',
                 margin: '0.25rem 0 0 0'
               }}>
-                체험 종료일: {user.subscription?.trial_ends_at || '미정'} • 남은 일수: {user.subscription?.days_remaining || 0}일
+                체험 종료일: {safeUser.subscription.trial_ends_at} • 남은 일수: {safeUser.subscription.days_remaining}일
               </p>
             </div>
             <Button variant="primary" size="sm">
@@ -275,7 +292,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     marginTop: '0.5rem'
                   }}>
                     <div style={{
-                      width: `${(projectStats.storageUsed / user.subscription.storage_limit) * 100}%`,
+                      width: `${(projectStats.storageUsed / safeUser.subscription.storage_limit) * 100}%`,
                       height: '100%',
                       backgroundColor: '#dc2626',
                       borderRadius: '2px'
@@ -299,7 +316,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     color: 'var(--text-primary)',
                     marginBottom: '1rem'
                   }}>
-                    현재 플랜: {(user.subscription?.tier || 'basic').toUpperCase()}
+                    현재 플랜: {safeUser.subscription.tier.toUpperCase()}
                   </h4>
                   
                   <div style={{ display: 'grid', gap: '0.5rem' }}>
@@ -310,7 +327,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     }}>
                       <span style={{ color: 'var(--text-secondary)' }}>프로젝트</span>
                       <span style={{ color: 'var(--text-primary)' }}>
-                        {projectStats.totalProjects} / {user.subscription?.limits?.projects === 999 ? '무제한' : user.subscription?.limits?.projects || 5}
+                        {projectStats.totalProjects} / {safeUser.subscription.limits.projects === 999 ? '무제한' : safeUser.subscription.limits.projects}
                       </span>
                     </div>
                     <div style={{
@@ -320,7 +337,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     }}>
                       <span style={{ color: 'var(--text-secondary)' }}>평가자</span>
                       <span style={{ color: 'var(--text-primary)' }}>
-                        {user.subscription?.limits?.evaluators_per_project || 10}명/프로젝트
+                        {safeUser.subscription.limits.evaluators_per_project}명/프로젝트
                       </span>
                     </div>
                     <div style={{
@@ -330,7 +347,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     }}>
                       <span style={{ color: 'var(--text-secondary)' }}>저장공간</span>
                       <span style={{ color: 'var(--text-primary)' }}>
-                        {projectStats.storageUsed}GB / {user.subscription?.storage_limit || 5}GB
+                        {projectStats.storageUsed}GB / {safeUser.subscription.storage_limit}GB
                       </span>
                     </div>
                   </div>
@@ -353,7 +370,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     display: 'grid',
                     gap: '0.25rem'
                   }}>
-                    {user.subscription.features.slice(0, 5).map((feature, index) => (
+                    {safeUser.subscription.features.slice(0, 5).map((feature, index) => (
                       <li key={index} style={{
                         fontSize: '0.875rem',
                         color: 'var(--text-secondary)',

@@ -164,7 +164,7 @@ function App() {
   }
 
   return (
-    <Router>
+    <Router basename="/ahp_app">
       <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
         <Routes>
           {/* Public Routes */}
