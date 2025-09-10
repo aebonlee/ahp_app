@@ -44,12 +44,18 @@ function App() {
       try {
         setLoading(true);
         
-        // Check if user is already authenticated via Django session
+        // 임시: Django 백엔드 연결이 완전히 설정될 때까지 자동 로그인 비활성화
+        // TODO: Django 백엔드가 완전히 구축되면 아래 코드를 활성화
+        /*
         const isAuth = await userManagementService.isAuthenticated();
         if (isAuth) {
           const user = userManagementService.getCurrentUser();
           setCurrentUser(user);
         }
+        */
+        
+        // 현재는 항상 로그인 폼을 보여줌
+        setCurrentUser(null);
       } catch (error) {
         console.error('App initialization error:', error);
         setAuthError('앱 초기화 중 오류가 발생했습니다.');
