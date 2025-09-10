@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { userManagementService } from '../../services/userManagementService';
@@ -24,6 +25,7 @@ interface ProjectAssignment {
 }
 
 const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [assignments, setAssignments] = useState<ProjectAssignment[]>([]);
   const [evaluationStats, setEvaluationStats] = useState({
@@ -102,7 +104,7 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
 
   const handleLogout = async () => {
     await userManagementService.logout();
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   const getStatusColor = (status: string) => {

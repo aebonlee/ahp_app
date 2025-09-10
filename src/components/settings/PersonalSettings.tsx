@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { useColorTheme, ColorTheme } from '../../hooks/useColorTheme';
@@ -71,6 +72,7 @@ interface UserSettings {
 }
 
 const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUserUpdate }) => {
+  const navigate = useNavigate();
   const { currentTheme, changeColorTheme } = useColorTheme();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'workflow' | 'notifications' | 'display' | 'privacy' | 'data'>('profile');
   

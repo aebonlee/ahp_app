@@ -174,6 +174,29 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, error }) => {
               />
             </div>
 
+            {/* 테스트 계정 정보 */}
+            <div style={{
+              backgroundColor: '#f0f9ff',
+              border: '1px solid #0ea5e9',
+              borderRadius: '0.5rem',
+              padding: '1rem',
+              marginBottom: '1rem'
+            }}>
+              <h4 style={{
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: '#0369a1',
+                marginBottom: '0.5rem'
+              }}>
+                🧪 테스트 계정
+              </h4>
+              <div style={{ fontSize: '0.75rem', color: '#0c4a6e', lineHeight: '1.4' }}>
+                <div><strong>AEBON 슈퍼 관리자:</strong> aebon_new / AebonAdmin2024!</div>
+                <div><strong>테스트 관리자:</strong> testadmin / TestAdmin2024!</div>
+                <div><strong>간단한 테스트:</strong> simpletest / Simple123!</div>
+              </div>
+            </div>
+
             {/* 에러 메시지 */}
             {error && (
               <div style={{

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { userManagementService } from '../../services/userManagementService';
@@ -10,6 +11,7 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [systemStats, setSystemStats] = useState({
     totalUsers: 0,
@@ -34,7 +36,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
   const handleLogout = async () => {
     await userManagementService.logout();
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   // AEBON이거나 슈퍼 관리자인 경우 향상된 대시보드 사용

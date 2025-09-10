@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { userManagementService } from '../../services/userManagementService';
@@ -9,6 +10,8 @@ interface PersonalServiceDashboardProps {
 }
 
 const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ user }) => {
+  const navigate = useNavigate();
+  
   // Provide default subscription if undefined
   const safeUser = {
     ...user,
@@ -52,7 +55,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
 
   const handleLogout = async () => {
     await userManagementService.logout();
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   const getSubscriptionStatusColor = (status: string) => {
