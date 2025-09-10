@@ -26,6 +26,55 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def determine_user_type(user):
+    """사용자 타입 결정 함수"""
+    # 1. 슈퍼유저 확인
+    if user.is_superuser:
+        return 'super_admin'
+    
+    # 2. 스태프 확인  
+    if user.is_staff:
+        return 'admin'
+    
+    # 3. CustomUser 모델의 user_type 사용
+    if hasattr(user, 'user_type'):
+        return user.user_type
+    
+    # 4. 사용자명 기반 타입 결정
+    username_lower = user.username.lower()
+    email_lower = user.email.lower()
+    
+    # 관리자 계정들
+    admin_usernames = ['admin', 'administrator', 'aebon', 'testadmin', 'system_admin']
+    if any(admin in username_lower for admin in admin_usernames) or 'admin@' in email_lower:
+        return 'admin'
+    
+    # 평가자 계정들
+    evaluator_usernames = ['evaluator', 'eval']
+    if any(eval_name in username_lower for eval_name in evaluator_usernames):
+        return 'evaluator'
+    
+    # 기본값: 개인서비스 사용자
+    return 'personal_service_user'
+
+def get_redirect_url_by_user_type(user_type, user):
+    """사용자 타입별 리다이렉트 URL 결정"""
+    
+    base_urls = {
+        'super_admin': '/super-admin/',
+        'admin': '/admin/',
+        'evaluator': '/evaluator-dashboard/',
+        'personal_service_user': '/personal-dashboard/',
+        'enterprise': '/enterprise-dashboard/'
+    }
+    
+    # 특별한 사용자들 (aebon 등)
+    if user.username.lower() == 'aebon' or 'aebon' in user.email.lower():
+        return '/super-admin/'
+    
+    # 일반적인 타입별 라우팅
+    return base_urls.get(user_type, '/personal-dashboard/')
+
 @csrf_exempt
 @ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def login_api(request):
@@ -74,18 +123,30 @@ def login_api(request):
                     else:
                         logger.info(f"Successful login: {user.username} from {request.META.get('REMOTE_ADDR')}")
                     
-                    # Enhanced user data with aebon privileges
+                    # 사용자 권한 및 타입 결정
+                    user_type = determine_user_type(user)
+                    redirect_url = get_redirect_url_by_user_type(user_type, user)
+                    
+                    # Enhanced user data with role-based information
                     user_data = {
-                        'id': user.id,
+                        'id': str(user.id),
                         'username': user.username,
                         'email': user.email,
                         'first_name': user.first_name,
                         'last_name': user.last_name,
                         'is_staff': user.is_staff,
                         'is_superuser': user.is_superuser,
-                        'last_login': user.last_login,
-                        'date_joined': user.date_joined
+                        'last_login': user.last_login.isoformat() if user.last_login else None,
+                        'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+                        'user_type': user_type,
+                        'redirect_url': redirect_url
                     }
+                    
+                    # Add user type specific data
+                    if hasattr(user, 'user_type'):
+                        user_data['user_type_display'] = user.get_user_type_display()
+                        user_data['subscription_tier'] = getattr(user, 'subscription_tier', 'free')
+                        user_data['subscription_tier_display'] = getattr(user, 'get_subscription_tier_display', lambda: 'Free')()
                     
                     # Add aebon special flags
                     if is_aebon:
@@ -99,8 +160,9 @@ def login_api(request):
                     
                     return JsonResponse({
                         'success': True,
-                        'message': '로그인 성공!' + (' 👑 AEBON ULTIMATE ACCESS' if is_aebon else ''),
-                        'user': user_data
+                        'message': f'로그인 성공!' + (' 👑 AEBON ULTIMATE ACCESS' if is_aebon else f' - {user_type} 권한'),
+                        'user': user_data,
+                        'redirect': redirect_url
                     })
                 else:
                     return JsonResponse({
@@ -345,6 +407,12 @@ urlpatterns = [
     # Admin - Super Admin System
     path('admin/', admin.site.urls),
     path('super-admin/', include('super_admin.urls')),
+    
+    # Dashboard Routes - Role-based Access
+    path('personal-dashboard/', include('dashboards.urls')),
+    path('evaluator-dashboard/', include('dashboards.urls')),
+    path('enterprise-dashboard/', include('dashboards.urls')),
+    path('dashboard/', include('dashboards.urls')),  # Generic dashboard redirect
     
     # API 엔드포인트
     path('api/login/', login_api, name='login'),

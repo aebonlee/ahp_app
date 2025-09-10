@@ -47,6 +47,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'super_admin',         # ✅ 총 관리자 시스템 (회원, 결제, 프로젝트 관리)
     'simple_service',      # ✅ 간단한 AHP 서비스만 활성화
+    'dashboards',          # ✅ 권한별 대시보드 시스템
     # 'apps.accounts',       # ❌ 일시 비활성화 - User 모델 충돌 해결
     # 'apps.projects',       # ❌ 일시 비활성화 - get_user_model() 의존성
     # 'apps.evaluations',    # ❌ 일시 비활성화 - get_user_model() 의존성

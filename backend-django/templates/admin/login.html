@@ -221,11 +221,43 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            animation: slideIn 0.3s ease;
         }
         
         .error-message i {
             font-size: 16px;
             flex-shrink: 0;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #065f46;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            border-left: 4px solid #10b981;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .success-message i {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .info-box {
@@ -429,13 +461,99 @@
     </div>
     
     <script>
-        // Form submission loading state
-        document.querySelector('form').addEventListener('submit', function() {
+        // Form submission with API integration
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+            
             const container = document.querySelector('.login-container');
             const button = document.querySelector('.login-button');
+            const form = e.target;
             
+            // Show loading state
             container.classList.add('loading');
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 로그인 중...';
+            
+            // Get form data
+            const formData = new FormData(form);
+            const username = formData.get('username');
+            const password = formData.get('password');
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.remove());
+            
+            // API login request
+            fetch('/api/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Success - redirect based on user type
+                    button.innerHTML = '<i class="fas fa-check"></i> 로그인 성공!';
+                    button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    
+                    // Show success message
+                    showMessage('success', data.message);
+                    
+                    // Redirect based on user permissions
+                    setTimeout(() => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        } else if (data.user.is_superuser || data.user.user_type === 'super_admin') {
+                            window.location.href = '/super-admin/';
+                        } else if (data.user.is_staff || data.user.user_type === 'admin') {
+                            window.location.href = '/admin/';
+                        } else {
+                            window.location.href = '/personal-dashboard/';
+                        }
+                    }, 1500);
+                } else {
+                    // Error handling
+                    showMessage('error', data.message);
+                    resetForm();
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                showMessage('error', '서버 연결 오류가 발생했습니다.');
+                resetForm();
+            });
+            
+            function resetForm() {
+                container.classList.remove('loading');
+                button.innerHTML = '<i class="fas fa-sign-in-alt"></i> 관리자 로그인';
+                button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            }
+            
+            function showMessage(type, message) {
+                const existing = document.querySelector('.error-message');
+                if (existing) existing.remove();
+                
+                const messageEl = document.createElement('div');
+                messageEl.className = type === 'success' ? 'success-message' : 'error-message';
+                messageEl.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                    <div>${message}</div>
+                `;
+                
+                const form = document.querySelector('form');
+                form.parentNode.insertBefore(messageEl, form);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.remove();
+                    }
+                }, 5000);
+            }
         });
         
         // Auto-focus and set attributes on Django form fields
