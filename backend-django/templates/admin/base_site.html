@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | AHP Platform 관리자{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <i class="fas fa-crown"></i>
+        AHP Platform 관리자
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
