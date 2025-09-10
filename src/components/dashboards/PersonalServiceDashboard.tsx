@@ -85,20 +85,20 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             color: 'var(--text-secondary)',
             margin: 0
           }}>
-            {user.first_name} {user.last_name} • {user.subscription.tier} 플랜
+            {user.first_name} {user.last_name} • {user.subscription?.tier || 'Basic'} 플랜
           </p>
         </div>
         
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <div style={{
             padding: '0.5rem 1rem',
-            backgroundColor: getSubscriptionStatusColor(user.subscription.status),
+            backgroundColor: getSubscriptionStatusColor(user.subscription?.status || 'trial'),
             color: 'white',
             borderRadius: '0.5rem',
             fontSize: '0.875rem',
             fontWeight: '600'
           }}>
-            {getSubscriptionStatusText(user.subscription.status)}
+            {getSubscriptionStatusText(user.subscription?.status || 'trial')}
           </div>
           
           <Button
@@ -112,7 +112,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
       </div>
 
       {/* 구독 상태 알림 */}
-      {user.subscription.status === 'trial' && (
+      {user.subscription?.status === 'trial' && (
         <div style={{
           padding: '1rem',
           backgroundColor: '#dbeafe',
@@ -139,7 +139,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                 color: '#3730a3',
                 margin: '0.25rem 0 0 0'
               }}>
-                체험 종료일: {user.subscription.trial_ends_at} • 남은 일수: {user.subscription.days_remaining}일
+                체험 종료일: {user.subscription?.trial_ends_at || '미정'} • 남은 일수: {user.subscription?.days_remaining || 0}일
               </p>
             </div>
             <Button variant="primary" size="sm">
@@ -299,7 +299,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     color: 'var(--text-primary)',
                     marginBottom: '1rem'
                   }}>
-                    현재 플랜: {user.subscription.tier.toUpperCase()}
+                    현재 플랜: {(user.subscription?.tier || 'basic').toUpperCase()}
                   </h4>
                   
                   <div style={{ display: 'grid', gap: '0.5rem' }}>
@@ -310,7 +310,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     }}>
                       <span style={{ color: 'var(--text-secondary)' }}>프로젝트</span>
                       <span style={{ color: 'var(--text-primary)' }}>
-                        {projectStats.totalProjects} / {user.subscription.limits.projects === 999 ? '무제한' : user.subscription.limits.projects}
+                        {projectStats.totalProjects} / {user.subscription?.limits?.projects === 999 ? '무제한' : user.subscription?.limits?.projects || 5}
                       </span>
                     </div>
                     <div style={{
@@ -320,7 +320,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     }}>
                       <span style={{ color: 'var(--text-secondary)' }}>평가자</span>
                       <span style={{ color: 'var(--text-primary)' }}>
-                        {user.subscription.limits.evaluators_per_project}명/프로젝트
+                        {user.subscription?.limits?.evaluators_per_project || 10}명/프로젝트
                       </span>
                     </div>
                     <div style={{
@@ -330,7 +330,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                     }}>
                       <span style={{ color: 'var(--text-secondary)' }}>저장공간</span>
                       <span style={{ color: 'var(--text-primary)' }}>
-                        {projectStats.storageUsed}GB / {user.subscription.storage_limit}GB
+                        {projectStats.storageUsed}GB / {user.subscription?.storage_limit || 5}GB
                       </span>
                     </div>
                   </div>

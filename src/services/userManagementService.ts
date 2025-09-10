@@ -489,11 +489,11 @@ class UserManagementService {
     
     switch (this.currentUser.user_type) {
       case 'admin':
-        return this.isAebonUser() ? '/admin/super' : '/admin/dashboard';
+        return this.isAebonUser() ? '/admin/super' : '/admin';
       case 'personal_service_user':
-        return '/personal/dashboard';
+        return '/personal';
       case 'evaluator':
-        return '/evaluator/dashboard';
+        return '/evaluator';
       default:
         return '/';
     }
