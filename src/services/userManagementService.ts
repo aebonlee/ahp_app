@@ -49,34 +49,69 @@ class UserManagementService {
   // ============================================================================
 
   /**
-   * 통합 로그인 - Django 세션 기반 인증
+   * 통합 로그인 - Django JWT 인증
    */
   async login(username: string, password: string): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
+      const response = await fetch(`${API_BASE_URL}/api/login/`, {
         method: 'POST',
-        credentials: 'include', // Django 세션 쿠키 포함
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
-
-      if (data.success && data.user) {
-        this.currentUser = data.user;
-        
-        return {
-          success: true,
-          user: this.currentUser || undefined
-        };
-      } else {
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
         return {
           success: false,
-          error: data.error || '로그인에 실패했습니다.'
+          error: errorData.error || `HTTP ${response.status}: Login failed`
         };
       }
+
+      const data = await response.json();
+      
+      // JWT 토큰이 있는 경우 저장하고 사용자 정보 가져오기
+      if (data.access) {
+        // 사용자 정보 가져오기
+        const userResponse = await fetch(`${API_BASE_URL}/api/user/`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${data.access}`
+          },
+        });
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          
+          // 사용자 데이터를 우리 타입 시스템에 맞게 변환
+          this.currentUser = {
+            id: userData.id || userData.user_id || 1,
+            username: userData.username || username,
+            email: userData.email || '',
+            first_name: userData.first_name || '',
+            last_name: userData.last_name || '',
+            user_type: userData.is_superuser || userData.is_staff ? 'admin' : 'personal_service_user',
+            is_active: userData.is_active !== false,
+            date_joined: userData.date_joined || new Date().toISOString(),
+            last_login: userData.last_login || new Date().toISOString()
+          };
+
+          return {
+            success: true,
+            user: this.currentUser,
+            token: data.access
+          };
+        }
+      }
+
+      return {
+        success: false,
+        error: 'Login successful but failed to get user information'
+      };
     } catch (error) {
       console.error('Login error:', error);
       return {
@@ -91,12 +126,16 @@ class UserManagementService {
    */
   async logout(): Promise<void> {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout/`, {
+      // Django JWT 백엔드의 경우 클라이언트 측에서 토큰만 제거하면 됨
+      // 하지만 혹시 로그아웃 엔드포인트가 있다면 호출
+      await fetch(`${API_BASE_URL}/api/logout/`, {
         method: 'POST',
-        credentials: 'include', // Django 세션 쿠키 포함
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
+      }).catch(() => {
+        // 로그아웃 엔드포인트가 없어도 에러 무시
       });
     } catch (error) {
       console.error('Logout error:', error);
@@ -113,11 +152,11 @@ class UserManagementService {
   }
 
   /**
-   * 인증 상태 확인 - Django 세션으로부터 확인
+   * 인증 상태 확인 - Django 백엔드에서 사용자 정보 확인
    */
   async isAuthenticated(): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/me/`, {
+      const response = await fetch(`${API_BASE_URL}/api/user/`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -126,11 +165,22 @@ class UserManagementService {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.user) {
-          this.currentUser = data.user;
-          return true;
-        }
+        const userData = await response.json();
+        
+        // 사용자 데이터를 우리 타입 시스템에 맞게 변환
+        this.currentUser = {
+          id: userData.id || userData.user_id || 1,
+          username: userData.username || '',
+          email: userData.email || '',
+          first_name: userData.first_name || '',
+          last_name: userData.last_name || '',
+          user_type: userData.is_superuser || userData.is_staff ? 'admin' : 'personal_service_user',
+          is_active: userData.is_active !== false,
+          date_joined: userData.date_joined || new Date().toISOString(),
+          last_login: userData.last_login || new Date().toISOString()
+        };
+        
+        return true;
       }
       
       this.currentUser = null;
@@ -154,7 +204,7 @@ class UserManagementService {
   // ============================================================================
 
   /**
-   * 관리자 계정 신청
+   * 관리자 계정 신청 - Django 백엔드 회원가입 사용
    */
   async registerAdmin(
     data: AdminRegistrationData & {
@@ -166,39 +216,47 @@ class UserManagementService {
     }
   ): Promise<RegistrationResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/register/admin/`, {
+      const response = await fetch(`${API_BASE_URL}/api/register/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_type: 'admin',
-          basic_info: {
-            username: data.username,
-            email: data.email,
-            password: data.password,
-            first_name: data.first_name,
-            last_name: data.last_name,
-          },
-          admin_data: {
-            requested_role: data.requested_role,
-            organization: data.organization,
-            purpose: data.purpose,
-            reference_contact: data.reference_contact,
-            special_permissions_requested: data.special_permissions_requested,
-          }
+          username: data.username,
+          email: data.email,
+          password: data.password,
+          first_name: data.first_name,
+          last_name: data.last_name,
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Registration failed' }));
+        return {
+          success: false,
+          error: errorData.error || errorData.message || `HTTP ${response.status}: Registration failed`
+        };
+      }
+
       const result = await response.json();
 
+      // 회원가입 성공 시 자동 로그인 시도
+      if (result.access || result.success !== false) {
+        const loginResult = await this.login(data.username, data.password);
+        if (loginResult.success) {
+          return {
+            success: true,
+            user: loginResult.user,
+            message: '관리자 계정이 생성되어 자동 로그인되었습니다.'
+          };
+        }
+      }
+
       return {
-        success: result.success,
-        user: result.user,
-        message: result.message || '관리자 계정 신청이 완료되었습니다. 승인을 기다려주세요.',
-        error: result.error,
-        requires_approval: true
+        success: true,
+        message: '계정이 생성되었습니다. 로그인해주세요.',
+        requires_approval: false
       };
     } catch (error) {
       console.error('Admin registration error:', error);
@@ -210,7 +268,7 @@ class UserManagementService {
   }
 
   /**
-   * 개인서비스 이용자 가입
+   * 개인서비스 이용자 가입 - Django 백엔드 회원가입 사용
    */
   async registerPersonalServiceUser(
     data: ServiceRegistrationData & {
@@ -222,35 +280,33 @@ class UserManagementService {
     }
   ): Promise<RegistrationResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/register/personal/`, {
+      const response = await fetch(`${API_BASE_URL}/api/register/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_type: 'personal_service_user',
-          basic_info: {
-            username: data.username,
-            email: data.email,
-            password: data.password,
-            first_name: data.first_name,
-            last_name: data.last_name,
-          },
-          service_data: {
-            organization: data.organization,
-            expected_usage: data.expected_usage,
-            trial_request: data.trial_request,
-            preferred_tier: data.preferred_tier,
-            payment_ready: data.payment_ready,
-          }
+          username: data.username,
+          email: data.email,
+          password: data.password,
+          first_name: data.first_name,
+          last_name: data.last_name,
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Registration failed' }));
+        return {
+          success: false,
+          error: errorData.error || errorData.message || `HTTP ${response.status}: Registration failed`
+        };
+      }
+
       const result = await response.json();
 
-      if (result.success) {
-        // 가입 성공 시 자동 로그인
+      // 회원가입 성공 시 자동 로그인 시도
+      if (result.access || result.success !== false) {
         const loginResult = await this.login(data.username, data.password);
         if (loginResult.success) {
           return {
@@ -258,16 +314,14 @@ class UserManagementService {
             user: loginResult.user,
             message: data.trial_request 
               ? '14일 무료 체험이 시작되었습니다!'
-              : '개인서비스 이용자 가입이 완료되었습니다.'
+              : '개인서비스 이용자 가입이 완료되어 자동 로그인되었습니다.'
           };
         }
       }
 
       return {
-        success: result.success,
-        user: result.user,
-        message: result.message,
-        error: result.error
+        success: true,
+        message: '계정이 생성되었습니다. 로그인해주세요.'
       };
     } catch (error) {
       console.error('Personal service registration error:', error);
@@ -279,7 +333,7 @@ class UserManagementService {
   }
 
   /**
-   * 평가자 가입
+   * 평가자 가입 - Django 백엔드 회원가입 사용
    */
   async registerEvaluator(
     data: EvaluatorRegistrationData & {
@@ -291,50 +345,46 @@ class UserManagementService {
     }
   ): Promise<RegistrationResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/register/evaluator/`, {
+      const response = await fetch(`${API_BASE_URL}/api/register/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_type: 'evaluator',
-          basic_info: {
-            username: data.username,
-            email: data.email,
-            password: data.password,
-            first_name: data.first_name,
-            last_name: data.last_name,
-          },
-          evaluator_data: {
-            invitation_code: data.invitation_code,
-            access_key: data.access_key,
-            project_id: data.project_id,
-            invited_by: data.invited_by,
-            profile_info: data.profile_info,
-          }
+          username: data.username,
+          email: data.email,
+          password: data.password,
+          first_name: data.first_name,
+          last_name: data.last_name,
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Registration failed' }));
+        return {
+          success: false,
+          error: errorData.error || errorData.message || `HTTP ${response.status}: Registration failed`
+        };
+      }
+
       const result = await response.json();
 
-      if (result.success) {
-        // 가입 성공 시 자동 로그인
+      // 회원가입 성공 시 자동 로그인 시도
+      if (result.access || result.success !== false) {
         const loginResult = await this.login(data.username, data.password);
         if (loginResult.success) {
           return {
             success: true,
             user: loginResult.user,
-            message: '평가자 가입이 완료되었습니다. 할당된 프로젝트를 확인해보세요.'
+            message: '평가자 가입이 완료되어 자동 로그인되었습니다. 할당된 프로젝트를 확인해보세요.'
           };
         }
       }
 
       return {
-        success: result.success,
-        user: result.user,
-        message: result.message,
-        error: result.error
+        success: true,
+        message: '계정이 생성되었습니다. 로그인해주세요.'
       };
     } catch (error) {
       console.error('Evaluator registration error:', error);
@@ -364,13 +414,17 @@ class UserManagementService {
   }
 
   /**
-   * 슈퍼 관리자 권한 확인 (AEBON 전용)
+   * 슈퍼 관리자 권한 확인 (Django is_superuser 또는 aebon 계정)
    */
   isSuperAdmin(): boolean {
-    if (!this.currentUser || !isAdminUser(this.currentUser)) {
+    if (!this.currentUser) {
       return false;
     }
-    return this.currentUser.admin_role === 'super_admin' || 
+    
+    // Django의 is_superuser 또는 aebon 계정인 경우
+    const djangoUser = this.currentUser as any;
+    return djangoUser.is_superuser === true || 
+           djangoUser.is_staff === true ||
            this.currentUser.username?.toLowerCase() === 'aebon';
   }
 

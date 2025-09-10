@@ -12,16 +12,23 @@ const TEST_CREDENTIALS = {
   email: 'admin@ahp-platform.com'
 };
 
-// 다양한 로그인 엔드포인트 시도
+// 확인된 실제 API 엔드포인트들
 const LOGIN_ENDPOINTS = [
-  '/api/auth/login/',
-  '/auth/login/',
-  '/login/',
+  '/api/login/',  // 실제 확인된 로그인 엔드포인트
+  '/api/register/' // 실제 확인된 회원가입 엔드포인트
+];
+
+const API_ENDPOINTS = [
   '/api/login/',
-  '/api/token/',
-  '/token/',
-  '/api/users/login/',
-  '/users/login/'
+  '/api/register/',
+  '/api/user/',
+  '/api/service/status/',
+  '/api/service/projects/',
+  '/api/service/criteria/',
+  '/api/service/comparisons/',
+  '/api/service/results/',
+  '/api/service/data/',
+  '/admin/'
 ];
 
 // 로그인 시도 함수
@@ -155,30 +162,187 @@ async function runFullTest() {
   return results;
 }
 
+// 실제 Django 백엔드 테스트 함수들
+async function testRealLogin() {
+  console.log('🔐 Testing Django Backend Login...');
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/login/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(TEST_CREDENTIALS)
+    });
+    
+    console.log(`Login Response Status: ${response.status}`);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ LOGIN SUCCESS!', data);
+      
+      // 토큰이 있으면 사용자 정보 가져오기
+      if (data.access) {
+        console.log('🔑 JWT Token received, fetching user info...');
+        const userResponse = await fetch(`${BACKEND_URL}/api/user/`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${data.access}`
+          }
+        });
+        
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          console.log('👤 USER INFO:', userData);
+          
+          return {
+            success: true,
+            token: data.access,
+            user: userData
+          };
+        }
+      }
+    } else {
+      const errorData = await response.json();
+      console.log('❌ LOGIN FAILED:', errorData);
+    }
+  } catch (error) {
+    console.error('💥 LOGIN ERROR:', error);
+  }
+}
+
+async function testCreateAebonAccount() {
+  console.log('👑 Creating AEBON Super Admin Account...');
+  
+  const aebonData = {
+    username: 'aebon',
+    email: 'aebon@ahp-system.com',
+    password: 'AebonAdmin2024!',
+    first_name: 'Aebon',
+    last_name: 'Super'
+  };
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/register/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(aebonData)
+    });
+    
+    console.log(`Register Response Status: ${response.status}`);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ AEBON ACCOUNT CREATED!', data);
+      
+      // 바로 로그인 테스트
+      console.log('🔐 Testing aebon login...');
+      const loginResponse = await fetch(`${BACKEND_URL}/api/login/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'aebon',
+          password: 'AebonAdmin2024!'
+        })
+      });
+      
+      if (loginResponse.ok) {
+        const loginData = await loginResponse.json();
+        console.log('🎉 AEBON LOGIN SUCCESS!', loginData);
+        return { success: true, account: aebonData, login: loginData };
+      }
+    } else {
+      const errorData = await response.json();
+      console.log('❌ AEBON CREATION FAILED:', errorData);
+    }
+  } catch (error) {
+    console.error('💥 AEBON CREATION ERROR:', error);
+  }
+}
+
+async function testServiceEndpoints() {
+  console.log('🛠️ Testing Service Endpoints...');
+  
+  // 먼저 로그인해서 토큰 획득
+  const loginResult = await testRealLogin();
+  if (!loginResult?.success) {
+    console.log('❌ Need to login first');
+    return;
+  }
+  
+  const token = loginResult.token;
+  console.log('🔑 Using token for service tests...');
+  
+  const serviceEndpoints = [
+    '/api/service/status/',
+    '/api/service/projects/',
+    '/api/user/' // 사용자 정보 재확인
+  ];
+  
+  for (const endpoint of serviceEndpoints) {
+    try {
+      const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.text();
+      console.log(`${response.ok ? '✅' : '❌'} ${endpoint}: ${response.status} - ${data.substring(0, 200)}`);
+    } catch (error) {
+      console.log(`💥 ${endpoint}: ERROR - ${error.message}`);
+    }
+  }
+}
+
 // 사용법 출력
 console.log(`
-🔧 Django Backend Test Tool
-===========================
+🔧 Django Backend Integration Test Tool
+=======================================
+
+확인된 API 엔드포인트:
+- POST /api/login/ (로그인)
+- POST /api/register/ (회원가입)  
+- GET /api/user/ (사용자 정보)
+- GET /api/service/* (서비스 API들)
 
 사용 가능한 함수들:
 
-1. runFullTest()
-   - 전체 API 검사 및 로그인 테스트
+1. testRealLogin()
+   - 실제 admin 계정으로 로그인 테스트
 
-2. testLogin('/endpoint', {username, password})
-   - 특정 엔드포인트로 로그인 테스트
+2. testCreateAebonAccount()
+   - aebon 슈퍼 관리자 계정 생성 및 로그인
 
-3. checkServerRoot()
-   - 서버 루트 응답 확인
+3. testServiceEndpoints()  
+   - 서비스 API 엔드포인트들 테스트
 
-4. checkAPIInfo()
-   - API 문서 엔드포인트 확인
+4. runFullTest()
+   - 전체 API 탐색 (이전 버전)
 
-테스트 시작하려면:
-runFullTest()
+실제 연동 테스트 시작:
+testRealLogin()
+
+aebon 계정 생성:
+testCreateAebonAccount()
 `);
 
 // 전역 함수로 노출
+window.testRealLogin = testRealLogin;
+window.testCreateAebonAccount = testCreateAebonAccount;
+window.testServiceEndpoints = testServiceEndpoints;
 window.runFullTest = runFullTest;
 window.testLogin = testLogin;
 window.checkServerRoot = checkServerRoot;
