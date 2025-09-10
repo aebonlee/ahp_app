@@ -29,13 +29,27 @@ class Command(BaseCommand):
                 self.style.SUCCESS(f'Updated superuser "{username}" password and permissions')
             )
         else:
-            User.objects.create_superuser(
+            # CustomUser 모델 사용
+            admin_user = User(
                 username=username,
                 email=email,
-                password=password,
                 first_name='Admin',
-                last_name='User'
+                last_name='User',
+                is_staff=True,
+                is_superuser=True,
+                is_active=True
             )
+            admin_user.set_password(password)
+            
+            # CustomUser 필드 설정
+            if hasattr(admin_user, 'user_type'):
+                admin_user.user_type = 'super_admin'
+            if hasattr(admin_user, 'subscription_tier'):
+                admin_user.subscription_tier = 'unlimited'
+            if hasattr(admin_user, 'is_verified'):
+                admin_user.is_verified = True
+                
+            admin_user.save()
             self.stdout.write(
                 self.style.SUCCESS(f'Successfully created superuser "{username}"')
             )
