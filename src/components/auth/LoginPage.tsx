@@ -191,9 +191,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, error }) => {
                 🧪 테스트 계정
               </h4>
               <div style={{ fontSize: '0.75rem', color: '#0c4a6e', lineHeight: '1.4' }}>
-                <div><strong>AEBON 슈퍼 관리자:</strong> aebon_new / AebonAdmin2024!</div>
-                <div><strong>테스트 관리자:</strong> testadmin / TestAdmin2024!</div>
-                <div><strong>간단한 테스트:</strong> simpletest / Simple123!</div>
+                <div><strong>관리자 계정:</strong> admin / ahp2025admin</div>
+                <div><strong>이메일 로그인:</strong> admin@ahp-platform.com / ahp2025admin</div>
+                <div style={{ marginTop: '0.5rem', fontStyle: 'italic', color: '#0369a1' }}>
+                  * Django 백엔드에 실제 존재하는 계정입니다
+                </div>
               </div>
             </div>
 

@@ -53,8 +53,8 @@ class UserManagementService {
       return 'admin';
     }
     
-    // 테스트 계정별 유형 지정
-    const adminUsernames = ['aebon_new', 'aebon', 'testadmin', 'system_admin'];
+    // 백엔드 실제 계정별 유형 지정
+    const adminUsernames = ['admin', 'admin@ahp-platform.com', 'aebon_new', 'aebon', 'testadmin', 'system_admin'];
     const evaluatorUsernames = ['evaluator01', 'evaluator02', 'evaluator03'];
     
     if (adminUsernames.includes(username.toLowerCase())) {
