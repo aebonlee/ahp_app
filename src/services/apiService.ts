@@ -237,17 +237,23 @@ export const criteriaAPI = {
     return apiClient.get(`/api/service/data/${params}`);
   },
   create: (data: {
-    project: number;
+    project?: number;
+    project_id?: number;
     name: string;
-    description?: string;
+    description?: string | null;
     type?: 'criteria' | 'alternative';
     order?: number;
+    level?: number;
+    parent_id?: number | null;
   }) => {
     // 현재 백엔드 구조에 맞게 데이터 저장으로 변환
     const saveData = {
-      project: data.project,
+      project: data.project || data.project_id,
       key: `criteria_${Date.now()}`,
-      value: JSON.stringify(data)
+      value: JSON.stringify({
+        ...data,
+        project: data.project || data.project_id,
+      })
     };
     return apiClient.post('/api/service/data/', saveData);
   },
@@ -262,15 +268,22 @@ export const alternativesAPI = {
     return apiClient.get(`/api/service/data/${params}`);
   },
   create: (data: {
-    project: number;
+    project?: number;
+    project_id?: number;
     name: string;
-    description?: string;
+    description?: string | null;
     order?: number;
+    order_index?: number;
   }) => {
     const saveData = {
-      project: data.project,
+      project: data.project || data.project_id,
       key: `alternative_${Date.now()}`,
-      value: JSON.stringify({ ...data, type: 'alternative' })
+      value: JSON.stringify({ 
+        ...data, 
+        project: data.project || data.project_id,
+        order: data.order || data.order_index,
+        type: 'alternative' 
+      })
     };
     return apiClient.post('/api/service/data/', saveData);
   },

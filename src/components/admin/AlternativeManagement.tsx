@@ -106,10 +106,10 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
     const maxOrder = Math.max(...alternatives.map(alt => alt.order), 0);
     
     const alternativeData = {
-      project: Number(projectId),
+      project_id: Number(projectId),
       name: newAlternative.name,
-      description: newAlternative.description || undefined,
-      order: maxOrder + 1
+      description: newAlternative.description || null,
+      order_index: maxOrder + 1
     };
 
     try {
@@ -152,7 +152,7 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
     try {
       const updateData = {
         name: editingAlternative.name,
-        description: editingAlternative.description || undefined
+        description: editingAlternative.description || null
       };
       
       const response = await apiService.alternativesAPI.update(editingId, updateData);
