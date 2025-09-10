@@ -98,20 +98,24 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
     setLoading(false);
   };
 
-  const loadExistingLinks = () => {
-    // 저장된 링크 로드 (localStorage 또는 API)
-    const savedLinks = localStorage.getItem('surveyLinks');
-    if (savedLinks) {
-      setSurveyLinks(JSON.parse(savedLinks));
+  const loadExistingLinks = async () => {
+    // 서버에서 설문 링크 로드 (Django session 기반)
+    try {
+      const response = await fetch(`/api/survey-links/?project_id=${projectId}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSurveyLinks(data.links || []);
+      }
+    } catch (error) {
+      console.error('Failed to load survey links from server:', error);
+      setSurveyLinks([]);
     }
   };
 
-  // 링크 저장
-  useEffect(() => {
-    if (surveyLinks.length > 0) {
-      localStorage.setItem('surveyLinks', JSON.stringify(surveyLinks));
-    }
-  }, [surveyLinks]);
+  // 링크는 서버에 자동 저장됨 - localStorage 사용 안함
 
   // 링크 복사
   const handleCopyLink = (link: string, linkId: string) => {

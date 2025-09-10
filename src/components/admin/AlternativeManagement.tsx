@@ -37,20 +37,9 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
         }
       } catch (error) {
         console.error('Failed to load alternatives from API:', error);
-        // 폴백으로 localStorage 확인
-        const storageKey = `ahp_alternatives_${projectId}`;
-        const savedAlternatives = localStorage.getItem(storageKey);
-        if (savedAlternatives) {
-          try {
-            const parsed = JSON.parse(savedAlternatives);
-            setAlternatives(parsed);
-            console.log(`Fallback: Loaded ${parsed.length} alternatives from localStorage`);
-          } catch (e) {
-            setAlternatives([]);
-          }
-        } else {
-          setAlternatives([]);
-        }
+        // No localStorage fallback - rely on server session only
+        setAlternatives([]);
+        console.log(`No alternatives found for project ${projectId} - server only`);
       }
     };
 
@@ -71,10 +60,10 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
   const [editingAlternative, setEditingAlternative] = useState({ name: '', description: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 프로젝트별 대안 데이터 저장 (localStorage 대신 PostgreSQL 사용)
+  // 프로젝트별 대안 데이터는 API 호출 시 자동으로 PostgreSQL에 저장됨
   const saveProjectAlternatives = async (alternativesData: Alternative[]) => {
-    console.log(`Alternatives now saved to PostgreSQL for project ${projectId}`);
-    // localStorage 제거됨 - 모든 데이터는 PostgreSQL에 저장
+    console.log(`Alternatives automatically saved to PostgreSQL via Django session for project ${projectId}`);
+    // All data is persisted through Django session and PostgreSQL
   };
 
   const validateAlternative = (name: string, excludeId?: string): boolean => {

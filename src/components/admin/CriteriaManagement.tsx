@@ -45,20 +45,9 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         }
       } catch (error) {
         console.error('Failed to load criteria from API:', error);
-        // 폴백으로 localStorage 확인
-        const storageKey = `ahp_criteria_${projectId}`;
-        const savedCriteria = localStorage.getItem(storageKey);
-        if (savedCriteria) {
-          try {
-            const parsed = JSON.parse(savedCriteria);
-            setCriteria(parsed);
-            console.log(`Fallback: Loaded ${parsed.length} criteria from localStorage`);
-          } catch (e) {
-            setCriteria([]);
-          }
-        } else {
-          setCriteria([]);
-        }
+        // No localStorage fallback - rely on server session only
+        setCriteria([]);
+        console.log(`No criteria found for project ${projectId} - server only`);
       }
     };
 
@@ -79,11 +68,10 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
   const [newCriterion, setNewCriterion] = useState({ name: '', description: '', parentId: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 프로젝트별 기준 데이터 저장
+  // 프로젝트별 기준 데이터는 API 호출 시 자동으로 PostgreSQL에 저장됨
   const saveProjectCriteria = (criteriaData: Criterion[]) => {
-    const storageKey = `ahp_criteria_${projectId}`;
-    localStorage.setItem(storageKey, JSON.stringify(criteriaData));
-    console.log(`Saved ${getAllCriteria(criteriaData).length} criteria for project ${projectId}`);
+    console.log(`Criteria automatically saved to PostgreSQL via Django session for project ${projectId}`);
+    // All data is persisted through Django session and PostgreSQL
   };
 
   const validateCriterion = (name: string): boolean => {

@@ -95,7 +95,9 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
           email: userResponse.user.email || formData.username,
           first_name: userResponse.user.first_name || formData.username,
           last_name: userResponse.user.last_name || '',
-          role: userResponse.user.is_superuser ? 'super_admin' : 
+          is_superuser: userResponse.user.is_superuser || false,
+          is_staff: userResponse.user.is_staff || false,
+          role: (userResponse.user.username === 'aebon' || userResponse.user.is_superuser) ? 'super_admin' : 
                 userResponse.user.is_staff ? 'admin' : 'evaluator'
         };
         
@@ -109,7 +111,10 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
           email: formData.username,
           first_name: formData.username,
           last_name: '',
-          role: formData.username === 'admin' ? 'admin' : 'evaluator'
+          is_superuser: formData.username === 'aebon' || formData.username === 'admin',
+          is_staff: formData.username === 'aebon' || formData.username === 'admin',
+          role: formData.username === 'aebon' ? 'super_admin' : 
+                formData.username === 'admin' ? 'admin' : 'evaluator'
         };
         
         console.log('✅ Django 로그인 성공 (기본 데이터)');

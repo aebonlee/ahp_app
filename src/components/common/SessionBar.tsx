@@ -133,19 +133,13 @@ const SessionBar: React.FC = () => {
                     <div className="bg-white p-4 rounded-lg border">
                       <div className="text-gray-600 text-sm mb-1">로그인 시간</div>
                       <div className="font-medium text-gray-900">
-                        {localStorage.getItem('login_time') ? 
-                          new Date(parseInt(localStorage.getItem('login_time') || '0')).toLocaleString() : 
-                          '정보 없음'
-                        }
+                        서버에서 관리됨
                       </div>
                     </div>
                     <div className="bg-white p-4 rounded-lg border">
                       <div className="text-gray-600 text-sm mb-1">마지막 활동</div>
                       <div className="font-medium text-gray-900">
-                        {localStorage.getItem('last_activity') ? 
-                          new Date(parseInt(localStorage.getItem('last_activity') || '0')).toLocaleString() : 
-                          '정보 없음'
-                        }
+                        서버에서 추적됨
                       </div>
                     </div>
                   </div>

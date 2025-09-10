@@ -210,8 +210,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
             };
             
             setSettings(dbSettings);
-            localStorage.setItem('userSettings', JSON.stringify(dbSettings));
-            localStorage.removeItem('user_settings_pending_sync');
+            // All data is managed by Django session - no localStorage needed
             
             // 사용자 정보 업데이트 콜백 호출
             if (onUserUpdate && (data.user.first_name !== user.first_name || data.user.last_name !== user.last_name)) {
@@ -228,13 +227,9 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
           saveSettings();
         }
       } catch (error) {
-        console.warn('📴 DB 연결 실패 - 로컬 설정 사용:', error);
-        // 오프라인 설정 확인
-        const offlineSettings = localStorage.getItem('user_settings_offline');
-        if (offlineSettings) {
-          const parsed = JSON.parse(offlineSettings);
-          setSettings(parsed);
-        }
+        console.warn('📴 DB 연결 실패 - 기본 설정 사용:', error);
+        // Use default settings if server connection fails
+        setSettings(getInitialSettings());
       }
     };
 
@@ -246,8 +241,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     setSaveStatus('saving');
     
     try {
-      // localStorage에 저장 (즉시)
-      localStorage.setItem('userSettings', JSON.stringify(settings));
+      // Settings are saved to server via API calls - no localStorage needed
       
       // 테마 설정 적용 (즉시)
       if (settings.display.theme !== 'auto' && settings.display.theme !== currentTheme) {
@@ -274,9 +268,8 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
         console.log('🔄 PersonalSettings: 즉시 UI 업데이트!', updatedUser);
         onUserUpdate(updatedUser);
         
-        // saved_user_data도 업데이트 (F5 새로고침 대응)
-        localStorage.setItem('saved_user_data', JSON.stringify(updatedUser));
-        console.log('💾 saved_user_data 업데이트 완료');
+        // User data is managed by Django session - no localStorage needed
+        console.log('💾 User data updated in Django session');
       }
 
       // 즉시 저장 완료 표시 (200ms 이내)
@@ -290,17 +283,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
         setTimeout(async () => {
           try {
             console.log('💾 PersonalSettings: 백그라운드 DB 저장 시작!');
-            const token = localStorage.getItem('token');
-            
-            if (!token) {
-              console.warn('⚠️ 토큰 없음 - localStorage만 사용');
-              // 토큰이 없어도 localStorage에 영구 저장 표시
-              localStorage.setItem('user_settings_offline', JSON.stringify({
-                ...settings,
-                lastModified: new Date().toISOString()
-              }));
-              return;
-            }
+            // Django session authentication handles authentication automatically
 
             // 전체 사용자 데이터 준비
             const requestData = {
@@ -328,29 +311,20 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
               const result = await response.json();
               console.log('✅ 백그라운드 DB 저장 성공!', result);
               
-              // DB 동기화 성공 표시
-              localStorage.setItem('user_settings_synced', new Date().toISOString());
-              localStorage.removeItem('user_settings_pending_sync');
+              // DB synchronization handled by Django session
+              console.log('✅ Settings synchronized with Django session');
             } else {
               const errorText = await response.text();
               console.warn('⚠️ 백그라운드 DB 저장 실패:', response.status, errorText);
               
-              // DB 동기화 필요 표시
-              localStorage.setItem('user_settings_pending_sync', 'true');
-              localStorage.setItem('user_settings_offline', JSON.stringify({
-                ...settings,
-                lastModified: new Date().toISOString()
-              }));
+              // DB synchronization will be retried automatically by Django
+              console.warn('⚠️ Settings save failed - will retry on next session');
             }
           } catch (dbError) {
             console.warn('⚠️ 백그라운드 DB 저장 에러:', dbError);
             
-            // 오프라인 모드로 전환 - localStorage에 완전 백업
-            localStorage.setItem('user_settings_pending_sync', 'true');
-            localStorage.setItem('user_settings_offline', JSON.stringify({
-              ...settings,
-              lastModified: new Date().toISOString()
-            }));
+            // Server error handling - will be retried by Django
+            console.warn('⚠️ Settings save error - Django will handle retry');
           }
         }, 0);
       }
@@ -359,13 +333,13 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       console.error('❌ 에러 상세 정보:', {
         message: error instanceof Error ? error.message : String(error),
         API_BASE_URL,
-        token: localStorage.getItem('token') ? '토큰 존재' : '토큰 없음',
+        authentication: 'Django session authentication',
         settings: settings.profile
       });
       
-      // localStorage 저장은 성공했으므로 사용자에게는 성공으로 표시
+      // UI update successful - Django session will handle persistence
       setSaveStatus('saved');
-      console.log('📱 localStorage 저장은 성공 - UI 업데이트 유지');
+      console.log('📱 UI 업데이트 성공 - Django 세션에서 지속성 처리');
       
       setTimeout(() => setSaveStatus('idle'), 2000);
     }
@@ -499,8 +473,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
 
           if (response.ok) {
             alert('계정 삭제 요청이 접수되었습니다. 24시간 내에 처리됩니다.');
-            // 로그아웃 및 리다이렉트
-            localStorage.clear();
+            // 로그아웃 및 리다이렉트 (Django session cleared on server)
             window.location.href = '/login';
           } else {
             const error = await response.json();

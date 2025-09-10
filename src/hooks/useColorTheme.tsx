@@ -136,14 +136,8 @@ applyInitialTheme();
 
 export const useColorTheme = () => {
   const [currentTheme, setCurrentTheme] = useState<ColorTheme>(() => {
-    const saved = localStorage.getItem('colorTheme') as ColorTheme;
-    
-    // Validate that the saved theme exists in our color palettes
-    if (saved && colorPalettes[saved]) {
-      return saved;
-    }
-    
-    // Fall back to gold theme if saved theme is invalid or doesn't exist
+    // Theme is managed by server session - default to gold
+    // Server will provide user's theme preference through API
     return 'gold';
   });
 
@@ -226,10 +220,20 @@ export const useColorTheme = () => {
     applyColorTheme(currentTheme);
   }, [currentTheme]);
 
-  // Change theme and persist
-  const changeColorTheme = (theme: ColorTheme) => {
+  // Change theme and persist to server
+  const changeColorTheme = async (theme: ColorTheme) => {
     setCurrentTheme(theme);
-    localStorage.setItem('colorTheme', theme);
+    // Save theme preference to server instead of localStorage
+    try {
+      await fetch('/api/user/theme/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme })
+      });
+    } catch (error) {
+      console.error('Failed to save theme to server:', error);
+    }
   };
 
   // Get all available themes

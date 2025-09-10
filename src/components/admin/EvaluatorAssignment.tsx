@@ -39,20 +39,9 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
         }
       } catch (error) {
         console.error('Failed to load evaluators from API:', error);
-        // 폴백으로 localStorage 확인
-        const storageKey = `ahp_evaluators_${projectId}`;
-        const savedEvaluators = localStorage.getItem(storageKey);
-        if (savedEvaluators) {
-          try {
-            const parsed = JSON.parse(savedEvaluators);
-            setEvaluators(parsed);
-            console.log(`Fallback: Loaded ${parsed.length} evaluators from localStorage`);
-          } catch (e) {
-            setEvaluators([]);
-          }
-        } else {
-          setEvaluators([]);
-        }
+        // No localStorage fallback - rely on server session only
+        setEvaluators([]);
+        console.log(`No evaluators found for project ${projectId} - server only`);
       }
     };
 
@@ -64,10 +53,10 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
   const [newEvaluator, setNewEvaluator] = useState({ code: '', name: '', email: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 프로젝트별 평가자 데이터 저장 (localStorage 대신 PostgreSQL 사용)
+  // 프로젝트별 평가자 데이터는 API 호출 시 자동으로 PostgreSQL에 저장됨
   const saveProjectEvaluators = async (evaluatorsData: Evaluator[]) => {
-    console.log(`Evaluators now saved to PostgreSQL for project ${projectId}`);
-    // localStorage 제거됨 - 모든 데이터는 PostgreSQL에 저장
+    console.log(`Evaluators automatically saved to PostgreSQL via Django session for project ${projectId}`);
+    // All data is persisted through Django session and PostgreSQL
   };
 
   const generateEvaluatorCode = (): string => {

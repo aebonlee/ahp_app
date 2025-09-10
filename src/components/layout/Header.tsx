@@ -37,19 +37,14 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
       if (user) {
         setIsLoggedIn(true);
         
-        const loginTime = localStorage.getItem('login_time');
-        if (loginTime) {
-          const elapsed = Math.floor((Date.now() - parseInt(loginTime)) / 60000);
-          const remaining = Math.max(0, 30 - elapsed);
-          setRemainingTime(remaining);
-        } else {
-          localStorage.setItem('login_time', Date.now().toString());
-          setRemainingTime(30);
-          // 첫 로그인 시 세션 타이머 시작
+        // Get session time from server
+        const remaining = await sessionService.getRemainingTime();
+        setRemainingTime(remaining);
+        
+        // Start session service if not already started
+        if (remaining > 0) {
           sessionService.startSession();
         }
-        
-        localStorage.setItem('last_activity', Date.now().toString());
       } else {
         setIsLoggedIn(false);
         setRemainingTime(0);
@@ -68,17 +63,41 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
 
   useEffect(() => {
     if (user) {
-      const savedFavorites = localStorage.getItem(`favorites_${user.first_name}_${user.last_name}`);
-      if (savedFavorites) {
-        setFavorites(JSON.parse(savedFavorites));
-      }
+      // Load favorites from server instead of localStorage
+      loadFavoritesFromServer();
     }
   }, [user]);
 
-  const saveFavorites = (newFavorites: FavoriteMenuItem[]) => {
+  const loadFavoritesFromServer = async () => {
+    try {
+      const response = await fetch('/api/user/favorites/', {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFavorites(data.favorites || []);
+      }
+    } catch (error) {
+      console.error('Failed to load favorites from server:', error);
+      setFavorites([]);
+    }
+  };
+
+  const saveFavorites = async (newFavorites: FavoriteMenuItem[]) => {
     if (user) {
-      localStorage.setItem(`favorites_${user.first_name}_${user.last_name}`, JSON.stringify(newFavorites));
       setFavorites(newFavorites);
+      // Save to server instead of localStorage
+      try {
+        await fetch('/api/user/favorites/', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ favorites: newFavorites })
+        });
+      } catch (error) {
+        console.error('Failed to save favorites to server:', error);
+      }
     }
   };
 

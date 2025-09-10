@@ -356,9 +356,7 @@ function App() {
           setUser(userWithAdminType);
           
           // 세션 타이머 시작 (페이지 새로고침 후에도 세션 관리 유지)
-          if (!localStorage.getItem('login_time')) {
-            localStorage.setItem('login_time', Date.now().toString());
-          }
+          // 서버 세션 기반 인증 - localStorage 사용 안함
           sessionService.startSession();
         } else {
           console.log('❌ 세션 만료 또는 로그인 필요');
@@ -483,9 +481,7 @@ function App() {
         console.log('✅ 세션 복구 성공:', data.user.email);
         
         // 세션 타이머 시작 (세션 검증 후에도 세션 관리 유지)
-        if (!localStorage.getItem('login_time')) {
-          localStorage.setItem('login_time', Date.now().toString());
-        }
+        // 서버 세션 기반 인증 - localStorage 사용 안함
         sessionService.startSession();
       }
     } catch (error) {
@@ -669,7 +665,8 @@ function App() {
       }
       
       // URL에 탭이 없으면 마지막 활성 탭 복원
-      const lastTab = localStorage.getItem('lastActiveTab');
+      // 세션 기반 상태 관리 - localStorage 사용 안함
+      const lastTab = null;
       if (lastTab && protectedTabs.includes(lastTab)) {
         setActiveTab(lastTab);
         return;
@@ -685,7 +682,7 @@ function App() {
       }
       
       // 저장된 프로젝트 ID 복원
-      const savedProjectId = localStorage.getItem('selectedProjectId');
+      const savedProjectId = null;
       if (savedProjectId && !selectedProjectId) {
         setSelectedProjectId(savedProjectId);
       }
@@ -695,14 +692,14 @@ function App() {
   // 탭 변경 시 저장
   useEffect(() => {
     if (user && activeTab && protectedTabs.includes(activeTab)) {
-      localStorage.setItem('lastActiveTab', activeTab);
+      // 세션 기반 상태 관리 - localStorage 사용 안함
     }
   }, [activeTab, user, protectedTabs]);
   
   // 프로젝트 선택 시 저장
   useEffect(() => {
     if (selectedProjectId) {
-      localStorage.setItem('selectedProjectId', selectedProjectId);
+      // 세션 기반 상태 관리 - localStorage 사용 안함
     }
   }, [selectedProjectId]);
 
@@ -1296,10 +1293,23 @@ function App() {
             <StyledLoginForm
               onLogin={(userData) => {
                 // Django 로그인 성공 시 사용자 상태 설정
-                const userWithAdminType = {
+                let userWithAdminType = {
                   ...userData,
                   admin_type: userData.role === 'admin' ? 'personal' : userData.admin_type
                 };
+                
+                // AEBON 특별 처리 - 항상 super_admin
+                if (userData.username === 'aebon') {
+                  userWithAdminType = {
+                    ...userWithAdminType,
+                    role: 'super_admin',
+                    admin_type: 'super',
+                    canSwitchModes: true,
+                    is_superuser: true,
+                    is_staff: true
+                  };
+                }
+                
                 setUser(userWithAdminType);
                 setActiveTab('personal-service');
               }}
