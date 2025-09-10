@@ -162,14 +162,22 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   // 서비스 상태 확인 중 화면
   if (serviceStatus === 'checking') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: 'var(--gradient-subtle)'
+      }}>
+        <div className="card p-8 max-w-md w-full mx-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{
+              borderColor: 'var(--accent-primary)'
+            }}></div>
+            <h2 className="text-xl font-semibold mb-2" style={{
+              color: 'var(--text-primary)'
+            }}>
               서비스 연결 확인 중...
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="text-sm" style={{
+              color: 'var(--text-secondary)'
+            }}>
               Django 백엔드 서비스에 연결하고 있습니다.
             </p>
           </div>
@@ -181,19 +189,31 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   // 서비스 사용 불가 화면
   if (serviceStatus === 'unavailable') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: 'var(--gradient-subtle)'
+      }}>
+        <div className="card p-8 max-w-md w-full mx-4">
           <div className="text-center">
-            <div className="text-red-500 text-4xl mb-4">⚠️</div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="text-4xl mb-4" style={{
+              color: 'var(--semantic-danger)'
+            }}>⚠️</div>
+            <h2 className="text-xl font-semibold mb-2" style={{
+              color: 'var(--text-primary)'
+            }}>
               서비스에 연결할 수 없습니다
             </h2>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-sm mb-4" style={{
+              color: 'var(--text-secondary)'
+            }}>
               Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
             </p>
             <button
               onClick={checkServiceStatus}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              className="btn btn-primary"
+              style={{
+                backgroundColor: 'var(--semantic-danger)',
+                borderColor: 'var(--semantic-danger)'
+              }}
             >
               다시 연결 시도
             </button>
@@ -204,13 +224,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{
+      background: 'var(--gradient-accent-subtle)'
+    }}>
       <div className="max-w-md w-full space-y-8">
         {/* 헤더 */}
         <div className="text-center">
           <button
             onClick={onBackToLogin}
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors"
+            className="btn btn-ghost inline-flex items-center mb-4"
           >
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -218,38 +240,53 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             로그인으로 돌아가기
           </button>
           
-          <h2 className="text-3xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold" style={{
+            color: 'var(--text-primary)'
+          }}>
             {mode === 'service' ? (
               <>
-                <span className="text-blue-600">AHP Platform - 서비스</span> 회원가입
+                <span style={{ color: 'var(--accent-primary)' }}>AHP Platform - 서비스</span> 회원가입
               </>
             ) : (
               <>
-                <span className="text-purple-600">AHP Platform - 관리자</span> 회원가입
+                <span style={{ color: 'var(--accent-secondary)' }}>AHP Platform - 관리자</span> 회원가입
               </>
             )}
           </h2>
           
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm" style={{
+            color: 'var(--text-secondary)'
+          }}>
             {mode === 'service' 
               ? 'Django 백엔드 연동 - AHP 의사결정 분석 서비스에 가입하세요'
               : 'Django 백엔드 연동 - 시스템 관리자 계정을 생성하세요'
             }
           </p>
           <div className="mt-2">
-            <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              <div className="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
+            <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" style={{
+              backgroundColor: 'var(--status-success-bg)',
+              color: 'var(--status-success-text)'
+            }}>
+              <div className="w-2 h-2 rounded-full mr-1" style={{
+                backgroundColor: 'var(--semantic-success)'
+              }}></div>
               Django 서비스 연결됨
             </div>
           </div>
         </div>
         
         {/* 회원가입 폼 */}
-        <Card className="shadow-lg">
+        <div className="card">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {displayError && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                <p className="text-sm text-red-600">{displayError}</p>
+              <div className="p-4 rounded" style={{
+                backgroundColor: 'var(--status-danger-bg)',
+                borderColor: 'var(--status-danger-border)',
+                border: '1px solid'
+              }}>
+                <p className="text-sm" style={{
+                  color: 'var(--status-danger-text)'
+                }}>{displayError}</p>
               </div>
             )}
 
@@ -310,25 +347,27 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               required
             />
 
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              size="lg"
-              loading={displayLoading}
               disabled={displayLoading}
-              className={`w-full ${
-                mode === 'service' 
-                  ? 'bg-blue-600 hover:bg-blue-700' 
-                  : 'bg-purple-600 hover:bg-purple-700'
-              }`}
+              className="btn btn-primary w-full"
+              style={{
+                backgroundColor: mode === 'service' 
+                  ? 'var(--accent-primary)'
+                  : 'var(--accent-secondary)'
+              }}
             >
               {displayLoading ? 'Django 계정 생성 중...' : '회원가입'}
-            </Button>
+            </button>
           </form>
 
           {/* 서비스 안내 */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">
+          <div className="mt-6 p-4 rounded-lg" style={{
+            backgroundColor: 'var(--bg-subtle)'
+          }}>
+            <h4 className="text-sm font-medium mb-2" style={{
+              color: 'var(--text-primary)'
+            }}>
               {mode === 'service' ? '서비스 혜택' : '관리자 권한'}
             </h4>
             <div className="text-xs text-gray-600 space-y-1">
@@ -357,7 +396,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               )}
             </div>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

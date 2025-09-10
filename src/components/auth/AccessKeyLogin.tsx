@@ -160,14 +160,22 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
   // 서비스 상태 확인 중 화면
   if (serviceStatus === 'checking') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: 'var(--gradient-subtle)'
+      }}>
+        <div className="card p-8 max-w-md w-full mx-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{
+              borderColor: 'var(--accent-primary)'
+            }}></div>
+            <h2 className="text-xl font-semibold mb-2" style={{
+              color: 'var(--text-primary)'
+            }}>
               서비스 연결 확인 중...
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="text-sm" style={{
+              color: 'var(--text-secondary)'
+            }}>
               Django 백엔드 서비스에 연결하고 있습니다.
             </p>
           </div>
@@ -179,19 +187,37 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
   // 서비스 사용 불가 화면
   if (serviceStatus === 'unavailable') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: 'var(--gradient-subtle)'
+      }}>
+        <div className="card p-8 max-w-md w-full mx-4">
           <div className="text-center">
-            <div className="text-red-500 text-4xl mb-4">⚠️</div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="text-4xl mb-4" style={{
+              color: 'var(--semantic-danger)'
+            }}>⚠️</div>
+            <h2 className="text-xl font-semibold mb-2" style={{
+              color: 'var(--text-primary)'
+            }}>
               서비스에 연결할 수 없습니다
             </h2>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-sm mb-4" style={{
+              color: 'var(--text-secondary)'
+            }}>
               Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
             </p>
             <button
               onClick={checkServiceStatus}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              className="btn btn-primary px-4 py-2"
+              style={{
+                backgroundColor: 'var(--semantic-danger)',
+                borderColor: 'var(--semantic-danger)'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--status-danger-bg)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--semantic-danger)';
+              }}
             >
               다시 연결 시도
             </button>
@@ -251,21 +277,10 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
                 onChange={(e) => handleAccessKeyChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="예: P001-PROJ1234"
-                className="w-full px-3 py-3 border rounded-lg text-center text-lg font-mono tracking-wider focus:outline-none focus:ring-2"
+                className="form-input text-center text-lg font-mono tracking-wider"
                 maxLength={20}
                 style={{ 
-                  textTransform: 'uppercase',
-                  backgroundColor: 'var(--bg-secondary)',
-                  borderColor: 'var(--border-medium)',
-                  color: 'var(--text-primary)'
-                }}
-                onFocus={(e) => {
-                  (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--accent-primary)';
-                  (e.currentTarget as HTMLInputElement).style.boxShadow = '0 0 0 2px rgba(var(--accent-rgb), 0.2)';
-                }}
-                onBlur={(e) => {
-                  (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--border-medium)';
-                  (e.currentTarget as HTMLInputElement).style.boxShadow = 'none';
+                  textTransform: 'uppercase'
                 }}
               />
               <p className="text-xs" style={{
@@ -310,21 +325,7 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
             <button
               onClick={handleLogin}
               disabled={loading || !keyInfo?.isValid}
-              className="w-full py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors duration-200"
-              style={{
-                backgroundColor: 'var(--accent-primary)',
-                color: 'var(--text-inverse)'
-              }}
-              onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-hover)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-primary)';
-                }
-              }}
+              className="btn btn-primary w-full py-3"
             >
               {loading ? (
                 <span className="flex items-center justify-center space-x-2">
@@ -340,13 +341,7 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
             {onBack && (
               <button
                 onClick={onBack}
-                className="w-full py-2 px-4 rounded-lg transition-colors duration-200"
-                style={{
-                  backgroundColor: 'var(--text-muted)',
-                  color: 'var(--text-inverse)'
-                }}
-                onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--text-tertiary)'}
-                onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--text-muted)'}
+                className="btn btn-secondary w-full py-2"
               >
                 일반 로그인으로 돌아가기
               </button>

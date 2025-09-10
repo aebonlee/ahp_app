@@ -35,14 +35,22 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
   // 서비스 상태 확인 중 화면
   if (serviceStatus === 'checking') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: 'var(--gradient-subtle)'
+      }}>
+        <div className="card p-8 max-w-md w-full mx-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{
+              borderColor: 'var(--accent-primary)'
+            }}></div>
+            <h2 className="text-xl font-semibold mb-2" style={{
+              color: 'var(--text-primary)'
+            }}>
               서비스 연결 확인 중...
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="text-sm" style={{
+              color: 'var(--text-secondary)'
+            }}>
               Django 백엔드 서비스에 연결하고 있습니다.
             </p>
           </div>
@@ -54,19 +62,31 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
   // 서비스 사용 불가 화면
   if (serviceStatus === 'unavailable') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: 'var(--gradient-subtle)'
+      }}>
+        <div className="card p-8 max-w-md w-full mx-4">
           <div className="text-center">
-            <div className="text-red-500 text-4xl mb-4">⚠️</div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="text-4xl mb-4" style={{
+              color: 'var(--semantic-danger)'
+            }}>⚠️</div>
+            <h2 className="text-xl font-semibold mb-2" style={{
+              color: 'var(--text-primary)'
+            }}>
               서비스에 연결할 수 없습니다
             </h2>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-sm mb-4" style={{
+              color: 'var(--text-secondary)'
+            }}>
               Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
             </p>
             <button
               onClick={checkServiceStatus}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              className="btn btn-primary"
+              style={{
+                backgroundColor: 'var(--semantic-danger)',
+                borderColor: 'var(--semantic-danger)'
+              }}
             >
               다시 연결 시도
             </button>
@@ -86,11 +106,11 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
       overflow: 'hidden',
       backgroundColor: 'var(--bg-primary)'
     }}>
-      {/* 고급스러운 그라디언트 배경 */}
+      {/* Modern gradient background */}
       <div style={{
         position: 'absolute',
         inset: '0',
-        background: 'linear-gradient(to bottom right, var(--bg-elevated), var(--accent-primary), var(--accent-secondary))'
+        background: 'var(--gradient-accent-subtle)'
       }}></div>
       <div style={{
         position: 'absolute',
@@ -98,7 +118,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
         background: 'linear-gradient(to top right, transparent, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.2))'
       }}></div>
       
-      {/* 세련된 기하학적 패턴 */}
+      {/* Elegant geometric patterns */}
       <div style={{ position: 'absolute', inset: '0' }}>
         <div style={{
           position: 'absolute',
@@ -106,7 +126,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
           left: '5rem',
           width: '24rem',
           height: '24rem',
-          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+          backgroundColor: 'var(--accent-focus)',
           borderRadius: '50%',
           filter: 'blur(48px)',
           animation: 'pulse 2s infinite'
@@ -117,7 +137,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
           right: '5rem',
           width: '20rem',
           height: '20rem',
-          backgroundColor: 'rgba(99, 102, 241, 0.2)',
+          backgroundColor: 'rgba(var(--accent-rgb), 0.2)',
           borderRadius: '50%',
           filter: 'blur(48px)',
           animation: 'pulse 2s infinite',
@@ -130,7 +150,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
           transform: 'translate(-50%, -50%)',
           width: '24rem',
           height: '24rem',
-          backgroundColor: 'rgba(6, 182, 212, 0.1)',
+          backgroundColor: 'rgba(var(--accent-rgb), 0.1)',
           borderRadius: '50%',
           filter: 'blur(48px)'
         }}></div>
@@ -180,7 +200,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
               fontSize: 'clamp(1.875rem, 4vw, 3rem)',
               fontWeight: '900',
               marginBottom: '0.5rem',
-              background: 'linear-gradient(to right, #111827, #1f2937, #374151)',
+              background: 'linear-gradient(to right, var(--text-primary), var(--text-secondary), var(--text-tertiary))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
@@ -194,7 +214,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
               transform: 'translateX(-50%)',
               width: '6rem',
               height: '0.25rem',
-              background: 'linear-gradient(to right, #3b82f6, #9333ea)',
+              background: 'linear-gradient(to right, var(--accent-primary), var(--accent-secondary))',
               borderRadius: '9999px'
             }}></div>
           </div>
@@ -204,7 +224,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
             fontWeight: '600',
             marginTop: '1rem',
             marginBottom: '0.5rem',
-            color: '#374151'
+            color: 'var(--text-secondary)'
           }}>
             Django 백엔드 연동 - 전문가급 의사결정 지원 시스템
           </p>
@@ -212,7 +232,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
             fontSize: '0.875rem',
             fontWeight: '500',
             letterSpacing: '0.025em',
-            color: '#6b7280'
+            color: 'var(--text-muted)'
           }}>
             Django + PostgreSQL + React - Analytic Hierarchy Process Decision Support System
           </p>
@@ -229,36 +249,12 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
           marginTop: '1.5rem'
         }}>
           {/* 회원가입 카드 (첫 번째) */}
-          <Card 
-            variant="glass" 
-            hoverable={true}
-            style={{
-              backgroundColor: 'rgba(249, 250, 251, 0.95)',
-              backdropFilter: 'blur(12px)',
-              border: '2px solid rgba(196, 181, 253, 0.6)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease-in-out',
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(196, 181, 253, 0.8)';
-              e.currentTarget.style.transform = 'scale(1.02)';
-              e.currentTarget.style.backgroundColor = 'rgba(243, 244, 246, 0.95)';
-              e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(196, 181, 253, 0.6)';
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.backgroundColor = 'rgba(249, 250, 251, 0.95)';
-              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-            }}
-          >
+          <div className="card card-hover-lift cursor-pointer" onClick={onRegisterSelect}>
             <div 
               style={{
                 textAlign: 'center',
                 padding: 'clamp(1.5rem, 4vw, 2.5rem)'
               }}
-              onClick={onRegisterSelect}
             >
               <div style={{
                 width: 'clamp(5rem, 8vw, 7rem)',
@@ -420,12 +416,10 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
                 </button>
               </div>
             </div>
-          </Card>
+          </div>
 
           {/* 서비스 이용 카드 (두 번째) */}
-          <Card 
-            variant="glass" 
-            hoverable={true}
+          <div className="card card-hover-lift cursor-pointer" 
             style={{
               backgroundColor: 'rgba(249, 250, 251, 0.95)',
               backdropFilter: 'blur(12px)',
@@ -614,7 +608,7 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
                 </button>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* 개선된 하단 정보 */}
@@ -625,12 +619,12 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
         }}>
           <p style={{
             fontWeight: '400',
-            color: '#6b7280'
+            color: 'var(--text-secondary)'
           }}>Powered by Django + React + PostgreSQL - Advanced Analytics & Decision Intelligence</p>
           <p style={{
             fontSize: '0.75rem',
             fontWeight: '400',
-            color: '#9ca3af',
+            color: 'var(--text-muted)',
             marginTop: '0.25rem'
           }}>🔒 세션 기반 인증으로 PostgreSQL 데이터베이스에서 안전하게 관리됩니다</p>
         </div>
