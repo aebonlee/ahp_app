@@ -2,7 +2,8 @@
 Simple Service Models - 완전한 AHP 기능
 """
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 import json
@@ -20,7 +21,7 @@ class SimpleProject(models.Model):
     title = models.CharField(max_length=200, db_index=True)
     description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', db_index=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_index=True)
     created_at = models.DateTimeField(default=timezone.now, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_public = models.BooleanField(default=False, db_index=True)
@@ -92,7 +93,7 @@ class SimpleComparison(models.Model):
     criteria_a = models.ForeignKey(SimpleCriteria, on_delete=models.CASCADE, related_name='comparisons_as_a', db_index=True)
     criteria_b = models.ForeignKey(SimpleCriteria, on_delete=models.CASCADE, related_name='comparisons_as_b', db_index=True)
     value = models.FloatField(default=1.0, validators=[MinValueValidator(1/9), MaxValueValidator(9)], db_index=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_index=True)
     created_at = models.DateTimeField(default=timezone.now, db_index=True)
     
     class Meta:
@@ -114,7 +115,7 @@ class SimpleResult(models.Model):
     criteria = models.ForeignKey(SimpleCriteria, on_delete=models.CASCADE, db_index=True)
     weight = models.FloatField(db_index=True)
     rank = models.IntegerField(db_index=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_index=True)
     created_at = models.DateTimeField(default=timezone.now, db_index=True)
     
     class Meta:

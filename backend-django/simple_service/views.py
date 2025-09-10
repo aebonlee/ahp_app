@@ -364,7 +364,8 @@ def health_check(request):
 @api_view(['GET'])
 def service_status(request):
     """서비스 상태 확인 (기존 호환성)"""
-    from django.contrib.auth.models import User
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
     
     try:
         stats = {

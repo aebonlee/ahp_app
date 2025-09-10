@@ -45,7 +45,8 @@ def login_api(request):
             # 이메일로도 로그인 가능
             original_username = username
             if '@' in username:
-                from django.contrib.auth.models import User
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
                 try:
                     user_obj = User.objects.get(email=username)
                     username = user_obj.username
