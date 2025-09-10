@@ -93,7 +93,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
         {/* 슈퍼 관리자 대시보드 */}
         <EnhancedSuperAdminDashboard
           user={{
-            id: user.id,
+            id: String(user.id),
             email: user.email,
             first_name: user.first_name,
             last_name: user.last_name,

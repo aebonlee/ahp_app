@@ -10,15 +10,16 @@
 export type UserType = 'admin' | 'personal_service_user' | 'evaluator';
 
 export interface BaseUser {
-  id: string;
+  id: string | number;
   username: string;
   email: string;
   first_name: string;
   last_name: string;
   user_type: UserType;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
+  date_joined?: string; // Django 표준 필드
   last_login?: string;
 }
 
