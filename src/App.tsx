@@ -22,8 +22,11 @@ import EvaluatorDashboard from './components/dashboards/EvaluatorDashboard';
 import HomePage from './components/home/HomePage';
 import Card from './components/common/Card';
 import TestAccountManager from './components/dev/TestAccountManager';
+import SupportPage from './components/support/SupportPage';
+import NewsPage from './components/support/NewsPage';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
+
 
 function App() {
   // Initialize theme systems
@@ -172,6 +175,16 @@ function App() {
           
           {/* Developer Tools */}
           <Route path="/dev/test-accounts" element={<TestAccountManager />} />
+          
+          {/* Support Pages */}
+          <Route 
+            path="/support" 
+            element={<SupportPage onBackClick={() => window.history.back()} />} 
+          />
+          <Route 
+            path="/news" 
+            element={<NewsPage onBackClick={() => window.history.back()} />} 
+          />
           
           {/* Authentication Routes */}
           <Route 
