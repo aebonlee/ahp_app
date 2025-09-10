@@ -152,15 +152,23 @@ function App() {
         
         setCurrentUser(userInfo);
         
-        // 관리자 권한이 있는 경우 Django 관리자 페이지로 리다이렉트 옵션 제공
-        if (data.redirect && data.redirect.includes('/super-admin/')) {
-          const confirmRedirect = window.confirm('관리자 권한이 확인되었습니다. Django 관리자 페이지로 이동하시겠습니까?');
-          if (confirmRedirect) {
+        // 최고관리자(슈퍼 관리자)인 경우 자동으로 Django 관리자 페이지로 리다이렉트
+        if (data.user.is_superuser && data.redirect && data.redirect.includes('/super-admin/')) {
+          console.log('🔄 최고관리자 로그인 - Django 관리자 페이지로 자동 이동');
+          
+          // 사용자에게 안내 메시지 표시
+          setAuthError('🛡️ 최고관리자로 로그인되었습니다. 잠시 후 관리자 페이진로 이동합니다...');
+          
+          // 2초 후 자동 리다이렉트
+          setTimeout(() => {
             window.location.href = `${API_BASE_URL}/super-admin/`;
-            return { success: true };
-          }
+          }, 2000);
+          
+          return { success: true };
         }
         
+        // 일반 사용자는 React 앱 대시보드로 이동
+        console.log('✅ 일반 사용자 로그인 성공 - React 앱 대시보드 이용');
         return { success: true };
       } else {
         const errorMessage = data.message || '로그인에 실패했습니다.';

@@ -370,10 +370,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, error }) => {
             fontSize: '0.75rem',
             color: 'var(--text-secondary)'
           }}>
-            <div>• <strong>슈퍼 관리자:</strong> aebon / AebonAdmin2024!</div>
-            <div>• <strong>시스템 관리자:</strong> system_admin / SystemAdmin2024!</div>
-            <div>• <strong>개인서비스:</strong> business_user / BusinessUser2024!</div>
-            <div>• <strong>평가자:</strong> evaluator01 / Evaluator2024!</div>
+            <div>• <strong>최고관리자:</strong> admin / ahp2025admin</div>
+            <div style={{ fontStyle: 'italic', color: '#059669', fontSize: '0.7rem', marginLeft: '1rem' }}>
+              → 로그인 시 자동으로 Django 관리자 페이지로 이동
+            </div>
+            <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', color: '#6b7280' }}>
+              일반 사용자는 회원가입 후 이용 가능합니다.
+            </div>
           </div>
         </div>
       </div>
