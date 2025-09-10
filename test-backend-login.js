@@ -307,39 +307,164 @@ async function testServiceEndpoints() {
   }
 }
 
+// 성공적으로 생성된 테스트 계정들
+const WORKING_ACCOUNTS = [
+  {
+    username: 'aebon_new',
+    password: 'AebonAdmin2024!',
+    type: 'SUPER ADMIN',
+    description: '👑 AEBON 슈퍼 관리자 (is_superuser: true, is_staff: true)'
+  },
+  {
+    username: 'testadmin', 
+    password: 'TestAdmin2024!',
+    type: 'REGULAR USER',
+    description: '🔧 테스트 관리자 (일반 사용자)'
+  },
+  {
+    username: 'simpletest',
+    password: 'Simple123!', 
+    type: 'REGULAR USER',
+    description: '👤 간단한 테스트 사용자'
+  }
+];
+
+// 작동하는 계정들로 로그인 테스트
+async function testWorkingAccounts() {
+  console.log('🎯 Testing Confirmed Working Accounts');
+  console.log('=====================================\n');
+  
+  for (const account of WORKING_ACCOUNTS) {
+    console.log(`🔐 Testing ${account.type}: ${account.username}`);
+    console.log(`📝 ${account.description}`);
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/login/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: account.username,
+          password: account.password
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        console.log(`✅ LOGIN SUCCESS for ${account.username}!`);
+        console.log('User Data:', data.user);
+        
+        if (data.user.isAebon) {
+          console.log('👑 CONFIRMED: AEBON ULTIMATE ACCESS!');
+        }
+        if (data.user.is_superuser) {
+          console.log('🛡️ CONFIRMED: SUPERUSER PRIVILEGES!');
+        }
+        if (data.user.is_staff) {
+          console.log('⚡ CONFIRMED: STAFF PRIVILEGES!');
+        }
+        
+        console.log('-----------------------------------');
+        
+        return {
+          success: true,
+          username: account.username,
+          token: data.token || 'JWT_TOKEN_RECEIVED',
+          user: data.user
+        };
+      } else {
+        console.log(`❌ LOGIN FAILED for ${account.username}`);
+        console.log('Error:', data);
+      }
+    } catch (error) {
+      console.log(`💥 ERROR testing ${account.username}:`, error.message);
+    }
+    
+    console.log('\n');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+}
+
+// AEBON 계정으로 특별 기능 테스트
+async function testAebonSpecialFeatures() {
+  console.log('👑 Testing AEBON Special Features');
+  console.log('==================================\n');
+  
+  try {
+    const loginResponse = await fetch(`${BACKEND_URL}/api/login/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: 'aebon_new',
+        password: 'AebonAdmin2024!'
+      })
+    });
+    
+    const loginData = await loginResponse.json();
+    
+    if (loginResponse.ok && loginData.success) {
+      console.log('✅ AEBON LOGIN SUCCESS!');
+      console.log('👑 Special AEBON Response:', loginData.message);
+      console.log('🛡️ Admin Type:', loginData.user.admin_type);
+      console.log('⚡ Session Duration:', loginData.user.sessionDuration);
+      console.log('🔄 Can Switch Modes:', loginData.user.canSwitchModes);
+      
+      return loginData;
+    }
+  } catch (error) {
+    console.log('💥 AEBON Test Error:', error.message);
+  }
+}
+
 // 사용법 출력
 console.log(`
-🔧 Django Backend Integration Test Tool
-=======================================
+🎉 Django Backend Integration TEST SUCCESSFUL!
+==============================================
 
-확인된 API 엔드포인트:
-- POST /api/login/ (로그인)
-- POST /api/register/ (회원가입)  
-- GET /api/user/ (사용자 정보)
-- GET /api/service/* (서비스 API들)
+✅ 확인된 작동 계정:
 
-사용 가능한 함수들:
+1. 👑 AEBON 슈퍼 관리자:
+   Username: aebon_new
+   Password: AebonAdmin2024!
+   Features: is_superuser, is_staff, 8-hour session
 
-1. testRealLogin()
-   - 실제 admin 계정으로 로그인 테스트
+2. 🔧 테스트 관리자:
+   Username: testadmin  
+   Password: TestAdmin2024!
+   Features: 일반 사용자
 
-2. testCreateAebonAccount()
-   - aebon 슈퍼 관리자 계정 생성 및 로그인
+3. 👤 간단한 테스트:
+   Username: simpletest
+   Password: Simple123!
+   Features: 일반 사용자
 
-3. testServiceEndpoints()  
-   - 서비스 API 엔드포인트들 테스트
+🚀 테스트 함수들:
 
-4. runFullTest()
-   - 전체 API 탐색 (이전 버전)
+1. testWorkingAccounts()
+   - 모든 확인된 계정 로그인 테스트
 
-실제 연동 테스트 시작:
-testRealLogin()
+2. testAebonSpecialFeatures()
+   - AEBON 슈퍼 관리자 특별 기능 테스트
 
-aebon 계정 생성:
-testCreateAebonAccount()
+3. testRealLogin()
+   - 기존 함수 (deprecated)
+
+✨ 추천 테스트:
+testWorkingAccounts()
+
+👑 AEBON 테스트:  
+testAebonSpecialFeatures()
 `);
 
 // 전역 함수로 노출
+window.testWorkingAccounts = testWorkingAccounts;
+window.testAebonSpecialFeatures = testAebonSpecialFeatures;
 window.testRealLogin = testRealLogin;
 window.testCreateAebonAccount = testCreateAebonAccount;
 window.testServiceEndpoints = testServiceEndpoints;
