@@ -3,7 +3,7 @@ services:
     name: ahp-django-backend-new
     runtime: python
     rootDir: backend-django
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --no-input"
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && python manage.py migrate && python manage.py create_superuser && python manage.py collectstatic --no-input"
     startCommand: "gunicorn ahp_backend.wsgi:application --bind 0.0.0.0:$PORT"
     plan: starter
     envVars:
