@@ -83,7 +83,7 @@ const useAuthStore = create<AuthState>((set) => ({
   checkSession: async () => {
     set({ isLoading: true });
     try {
-      const response = await apiClient.get<Session>(API_ENDPOINTS.AUTH.VERIFY);
+      const response = await apiClient.get<Session>(API_ENDPOINTS.AUTH.PROFILE);
       
       if (response.user) {
         set({

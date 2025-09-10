@@ -20,41 +20,42 @@ export const RETRY_config = {
 
 // API 엔드포인트
 export const API_ENDPOINTS = {
-  // Auth
+  // Auth - Django 통합 인증 시스템
   AUTH: {
-    LOGIN: '/api/auth/login',
-    REGISTER: '/api/auth/register',
-    LOGOUT: '/api/auth/logout',
-    VERIFY: '/api/auth/verify'
+    LOGIN: '/api/login/',
+    REGISTER: '/api/register/',
+    LOGOUT: '/api/logout/',
+    PROFILE: '/api/user/',
+    HEALTH: '/api/health/'
   },
-  // Projects
+  // Projects - Django Service API
   PROJECTS: {
-    LIST: '/api/projects',
-    CREATE: '/api/projects',
-    GET: (id: string) => `/api/projects/${id}`,
-    UPDATE: (id: string) => `/api/projects/${id}`,
-    DELETE: (id: string) => `/api/projects/${id}`
+    LIST: '/api/service/projects/',
+    CREATE: '/api/service/projects/',
+    GET: (id: string) => `/api/service/projects/${id}/`,
+    UPDATE: (id: string) => `/api/service/projects/${id}/`,
+    DELETE: (id: string) => `/api/service/projects/${id}/`
   },
-  // Criteria
+  // Criteria - Django Service API
   CRITERIA: {
-    LIST: (projectId: string) => `/api/projects/${projectId}/criteria`,
-    CREATE: '/api/criteria',
-    UPDATE: (id: string) => `/api/criteria/${id}`,
-    DELETE: (id: string) => `/api/criteria/${id}`
+    LIST: (projectId: string) => `/api/service/criteria/?project_id=${projectId}`,
+    CREATE: '/api/service/criteria/',
+    UPDATE: (id: string) => `/api/service/criteria/${id}/`,
+    DELETE: (id: string) => `/api/service/criteria/${id}/`
   },
-  // Alternatives
+  // Alternatives - Django Service API
   ALTERNATIVES: {
-    LIST: (projectId: string) => `/api/projects/${projectId}/alternatives`,
-    CREATE: '/api/alternatives',
-    UPDATE: (id: string) => `/api/alternatives/${id}`,
-    DELETE: (id: string) => `/api/alternatives/${id}`
+    LIST: (projectId: string) => `/api/service/data/?project_id=${projectId}&type=alternatives`,
+    CREATE: '/api/service/data/',
+    UPDATE: (id: string) => `/api/service/data/${id}/`,
+    DELETE: (id: string) => `/api/service/data/${id}/`
   },
-  // Evaluations
+  // Evaluations - Django Service API
   EVALUATIONS: {
-    SUBMIT: '/api/evaluate',
-    GET_MATRIX: (projectId: string) => `/api/matrix/${projectId}`,
-    COMPUTE: '/api/compute',
-    RESULTS: (projectId: string) => `/api/results/${projectId}`
+    SUBMIT: '/api/service/comparisons/',
+    GET_MATRIX: (projectId: string) => `/api/service/comparisons/?project_id=${projectId}`,
+    COMPUTE: '/api/service/results/',
+    RESULTS: (projectId: string) => `/api/service/results/?project_id=${projectId}`
   },
   // Evaluators
   EVALUATORS: {

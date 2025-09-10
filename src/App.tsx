@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { userManagementService } from './services/userManagementService';
+// import { userManagementService } from './services/userManagementService'; // Django 백엔드로 대체
+import { API_BASE_URL } from './config/api';
 import { BaseUser, isAdminUser, isPersonalServiceUser, isEvaluatorUser } from './types/userTypes';
 
 // Layout components
@@ -38,24 +39,67 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string>('');
 
+  // Helper function to get default dashboard path
+  const getDefaultDashboardPath = (user: BaseUser | null): string => {
+    if (!user) return '/login';
+    
+    switch (user.user_type) {
+      case 'admin':
+        return '/dashboard/admin';
+      case 'personal_service_user':
+        return '/dashboard/personal-service';
+      case 'evaluator':
+        return '/dashboard/evaluator';
+      default:
+        return '/dashboard/personal-service';
+    }
+  };
+
   // App initialization
   useEffect(() => {
     const initializeApp = async () => {
       try {
         setLoading(true);
         
-        // 임시: Django 백엔드 연결이 완전히 설정될 때까지 자동 로그인 비활성화
-        // TODO: Django 백엔드가 완전히 구축되면 아래 코드를 활성화
-        /*
-        const isAuth = await userManagementService.isAuthenticated();
-        if (isAuth) {
-          const user = userManagementService.getCurrentUser();
-          setCurrentUser(user);
+        // Django 백엔드 세션 검증
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/user/`, {
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.authenticated && data.user) {
+              console.log('🔄 페이지 새로고침 - Django 세션 복구 성공');
+              // Django 사용자 정보를 React 형식으로 변환
+              const userInfo: BaseUser = {
+                id: data.user.id,
+                username: data.user.username,
+                email: data.user.email,
+                first_name: data.user.first_name || '',
+                last_name: data.user.last_name || '',
+                user_type: data.user.is_superuser ? 'admin' : 
+                          data.user.user_type === 'evaluator' ? 'evaluator' : 'personal_service_user',
+                is_active: data.user.is_active || true,
+                date_joined: data.user.date_joined,
+                last_login: data.user.last_login
+              };
+              setCurrentUser(userInfo);
+            } else {
+              console.log('❌ Django 세션 인증되지 않음');
+              setCurrentUser(null);
+            }
+          } else {
+            console.log('ℹ️ 로그인되지 않은 상태');
+            setCurrentUser(null);
+          }
+        } catch (sessionError) {
+          console.log('ℹ️ Django 세션 검증 실패 (로그인되지 않은 상태):', sessionError);
+          setCurrentUser(null);
         }
-        */
-        
-        // 현재는 항상 로그인 폼을 보여줌
-        setCurrentUser(null);
       } catch (error) {
         console.error('App initialization error:', error);
         setAuthError('앱 초기화 중 오류가 발생했습니다.');
@@ -71,16 +115,60 @@ function App() {
   const handleLogin = async (username: string, password: string) => {
     try {
       setAuthError('');
-      const result = await userManagementService.login(username, password);
       
-      if (result.success && result.user) {
-        setCurrentUser(result.user);
+      console.log('🔍 Django 백엔드 로그인 시도:', { username });
+      
+      // Django 통합 로그인 API 사용
+      const response = await fetch(`${API_BASE_URL}/api/login/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          username: username,  // Django는 username 필드 사용
+          password: password 
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        console.log('✅ Django 로그인 응답:', data);
+        
+        // Django 응답에서 사용자 정보 매핑
+        const userInfo: BaseUser = {
+          id: data.user.id,
+          username: data.user.username,
+          email: data.user.email,
+          first_name: data.user.first_name || '',
+          last_name: data.user.last_name || '',
+          user_type: data.user.is_superuser ? 'admin' : 
+                    data.user.user_type === 'evaluator' ? 'evaluator' : 'personal_service_user',
+          is_active: data.user.is_active || true,
+          date_joined: data.user.date_joined,
+          last_login: data.user.last_login
+        };
+        
+        setCurrentUser(userInfo);
+        
+        // 관리자 권한이 있는 경우 Django 관리자 페이지로 리다이렉트 옵션 제공
+        if (data.redirect && data.redirect.includes('/super-admin/')) {
+          const confirmRedirect = window.confirm('관리자 권한이 확인되었습니다. Django 관리자 페이지로 이동하시겠습니까?');
+          if (confirmRedirect) {
+            window.location.href = `${API_BASE_URL}/super-admin/`;
+            return { success: true };
+          }
+        }
+        
         return { success: true };
       } else {
-        setAuthError(result.error || '로그인에 실패했습니다.');
-        return { success: false, error: result.error };
+        const errorMessage = data.message || '로그인에 실패했습니다.';
+        setAuthError(errorMessage);
+        return { success: false, error: errorMessage };
       }
     } catch (error) {
+      console.error('❌ Django 로그인 실패:', error);
       const errorMessage = error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.';
       setAuthError(errorMessage);
       return { success: false, error: errorMessage };
@@ -89,57 +177,136 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await userManagementService.logout();
+      // Django 로그아웃 API 호출
+      await fetch(`${API_BASE_URL}/api/logout/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
       setCurrentUser(null);
       setAuthError('');
+      console.log('✅ 로그아웃 완료');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('❌ Django 로그아웃 실패:', error);
+      // 에러가 발생해도 로컬 상태는 초기화
+      setCurrentUser(null);
+      setAuthError('');
     }
   };
 
   const handleAdminRegister = async (data: any): Promise<void> => {
     try {
       setAuthError('');
-      const result = await userManagementService.registerAdmin(data);
+      console.log('🔍 Django 관리자 가입 시도:', data);
       
-      if (!result.success) {
-        setAuthError(result.error || '관리자 가입 중 오류가 발생했습니다.');
+      const response = await fetch(`${API_BASE_URL}/api/register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: data.email,
+          email: data.email,
+          password: data.password,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          user_type: 'admin'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '관리자 가입에 실패했습니다.');
       }
+      
+      console.log('✅ Django 관리자 가입 성공');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '관리자 가입 중 오류가 발생했습니다.';
       setAuthError(errorMessage);
+      console.error('❌ Django 관리자 가입 실패:', error);
     }
   };
 
   const handlePersonalServiceRegister = async (data: any): Promise<void> => {
     try {
       setAuthError('');
-      const result = await userManagementService.registerPersonalServiceUser(data);
+      console.log('🔍 Django 개인서비스 가입 시도:', data);
       
-      if (result.success && result.user) {
-        setCurrentUser(result.user);
-      } else {
-        setAuthError(result.error || '개인서비스 가입 중 오류가 발생했습니다.');
+      const response = await fetch(`${API_BASE_URL}/api/register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: data.email,
+          email: data.email,
+          password: data.password,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          user_type: 'personal_service_user'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '개인서비스 가입에 실패했습니다.');
       }
+      
+      const result = await response.json();
+      
+      // 가입 성공 후 자동 로그인
+      if (result.success) {
+        await handleLogin(data.email, data.password);
+      }
+      
+      console.log('✅ Django 개인서비스 가입 성공');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '개인서비스 가입 중 오류가 발생했습니다.';
       setAuthError(errorMessage);
+      console.error('❌ Django 개인서비스 가입 실패:', error);
     }
   };
 
   const handleEvaluatorRegister = async (data: any): Promise<void> => {
     try {
       setAuthError('');
-      const result = await userManagementService.registerEvaluator(data);
+      console.log('🔍 Django 평가자 가입 시도:', data);
       
-      if (result.success && result.user) {
-        setCurrentUser(result.user);
-      } else {
-        setAuthError(result.error || '평가자 가입 중 오류가 발생했습니다.');
+      const response = await fetch(`${API_BASE_URL}/api/register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: data.email,
+          email: data.email,
+          password: data.password,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          user_type: 'evaluator'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '평가자 가입에 실패했습니다.');
       }
+      
+      const result = await response.json();
+      
+      // 가입 성공 후 자동 로그인
+      if (result.success) {
+        await handleLogin(data.email, data.password);
+      }
+      
+      console.log('✅ Django 평가자 가입 성공');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '평가자 가입 중 오류가 발생했습니다.';
       setAuthError(errorMessage);
+      console.error('❌ Django 평가자 가입 실패:', error);
     }
   };
 
@@ -197,7 +364,7 @@ function App() {
             path="/login" 
             element={
               currentUser ? (
-                <Navigate to={userManagementService.getDefaultDashboardPath()} replace />
+                <Navigate to={getDefaultDashboardPath(currentUser)} replace />
               ) : (
                 <LoginPage 
                   onLogin={handleLogin}
@@ -348,7 +515,7 @@ function App() {
             path="*" 
             element={
               currentUser ? (
-                <Navigate to={userManagementService.getDefaultDashboardPath()} replace />
+                <Navigate to={getDefaultDashboardPath(currentUser)} replace />
               ) : (
                 <Navigate to="/" replace />
               )
