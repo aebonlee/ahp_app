@@ -44,6 +44,31 @@ class UserManagementService {
     this.currentUser = null;
   }
 
+  /**
+   * 사용자 유형 결정 로직
+   */
+  private determineUserType(userData: any, username: string): UserType {
+    // Django 관리자 권한 확인
+    if (userData.is_superuser || userData.is_staff) {
+      return 'admin';
+    }
+    
+    // 테스트 계정별 유형 지정
+    const adminUsernames = ['aebon_new', 'aebon', 'testadmin', 'system_admin'];
+    const evaluatorUsernames = ['evaluator01', 'evaluator02', 'evaluator03'];
+    
+    if (adminUsernames.includes(username.toLowerCase())) {
+      return 'admin';
+    }
+    
+    if (evaluatorUsernames.includes(username.toLowerCase())) {
+      return 'evaluator';
+    }
+    
+    // 기본값은 개인서비스 사용자
+    return 'personal_service_user';
+  }
+
   // ============================================================================
   // 인증 관련 메서드
   // ============================================================================
@@ -94,7 +119,7 @@ class UserManagementService {
             email: userData.email || '',
             first_name: userData.first_name || '',
             last_name: userData.last_name || '',
-            user_type: userData.is_superuser || userData.is_staff ? 'admin' : 'personal_service_user',
+            user_type: this.determineUserType(userData, username),
             is_active: userData.is_active !== false,
             date_joined: userData.date_joined || new Date().toISOString(),
             last_login: userData.last_login || new Date().toISOString()
@@ -174,7 +199,7 @@ class UserManagementService {
           email: userData.email || '',
           first_name: userData.first_name || '',
           last_name: userData.last_name || '',
-          user_type: userData.is_superuser || userData.is_staff ? 'admin' : 'personal_service_user',
+          user_type: this.determineUserType(userData, userData.username || ''),
           is_active: userData.is_active !== false,
           date_joined: userData.date_joined || new Date().toISOString(),
           last_login: userData.last_login || new Date().toISOString()
