@@ -226,6 +226,12 @@ RATELIMIT_ENABLE = True
 # Super Admin 커스텀 사용자 모델 활성화
 AUTH_USER_MODEL = 'super_admin.CustomUser'
 
+# 커스텀 인증 백엔드 - 이메일과 사용자명 모두 지원
+AUTHENTICATION_BACKENDS = [
+    'super_admin.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # DRF 완전한 설정
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

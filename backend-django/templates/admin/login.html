@@ -101,7 +101,11 @@
             letter-spacing: 0.01em;
         }
         
-        .form-input {
+        .form-input, 
+        input[type="text"], 
+        input[type="password"],
+        input[name="username"],
+        input[name="password"] {
             width: 100%;
             padding: 16px 20px;
             border: 2px solid #e5e7eb;
@@ -111,16 +115,23 @@
             background: #ffffff;
             transition: all 0.3s ease;
             color: #1f2937;
+            box-sizing: border-box;
         }
         
-        .form-input:focus {
+        .form-input:focus,
+        input[type="text"]:focus, 
+        input[type="password"]:focus,
+        input[name="username"]:focus,
+        input[name="password"]:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
             transform: translateY(-1px);
         }
         
-        .form-input::placeholder {
+        .form-input::placeholder,
+        input[type="text"]::placeholder, 
+        input[type="password"]::placeholder {
             color: #9ca3af;
             font-weight: 400;
         }
@@ -137,14 +148,25 @@
             color: #9ca3af;
             font-size: 16px;
             transition: color 0.3s ease;
+            z-index: 2;
         }
         
-        .input-icon .form-input {
+        .input-icon input {
             padding-left: 54px;
         }
         
         .input-icon:focus-within i {
             color: #667eea;
+        }
+        
+        .field-error {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(220, 38, 38, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #dc2626;
         }
         
         .login-button {
@@ -345,8 +367,12 @@
             </div>
         {% endif %}
         
-        <form method="post" action="{{ app_path }}">
+        <form method="post" action="{{ app_path }}" id="login-form">
             {% csrf_token %}
+            
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+            {% endif %}
             
             <div class="form-group">
                 <label for="{{ form.username.id_for_label }}" class="form-label">
@@ -354,15 +380,11 @@
                 </label>
                 <div class="input-icon">
                     <i class="fas fa-user"></i>
-                    <input type="text" 
-                           name="{{ form.username.name }}" 
-                           id="{{ form.username.id_for_label }}"
-                           class="form-input"
-                           placeholder="사용자명 또는 이메일"
-                           required
-                           autocomplete="username"
-                           autofocus>
+                    {{ form.username }}
                 </div>
+                {% if form.username.errors %}
+                    <div class="field-error">{{ form.username.errors.0 }}</div>
+                {% endif %}
             </div>
             
             <div class="form-group">
@@ -371,17 +393,12 @@
                 </label>
                 <div class="input-icon">
                     <i class="fas fa-lock"></i>
-                    <input type="password" 
-                           name="{{ form.password.name }}" 
-                           id="{{ form.password.id_for_label }}"
-                           class="form-input"
-                           placeholder="비밀번호를 입력하세요"
-                           required
-                           autocomplete="current-password">
+                    {{ form.password }}
                 </div>
+                {% if form.password.errors %}
+                    <div class="field-error">{{ form.password.errors.0 }}</div>
+                {% endif %}
             </div>
-            
-            <input type="hidden" name="next" value="{{ next }}">
             
             <button type="submit" class="login-button">
                 <i class="fas fa-sign-in-alt"></i> 관리자 로그인
@@ -421,15 +438,29 @@
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 로그인 중...';
         });
         
-        // Auto-focus on first empty field
+        // Auto-focus and set attributes on Django form fields
         document.addEventListener('DOMContentLoaded', function() {
             const usernameField = document.querySelector('input[name="username"]');
             const passwordField = document.querySelector('input[name="password"]');
             
-            if (usernameField && !usernameField.value) {
-                usernameField.focus();
-            } else if (passwordField && !passwordField.value) {
-                passwordField.focus();
+            // Set attributes for username field
+            if (usernameField) {
+                usernameField.placeholder = '사용자명 또는 이메일';
+                usernameField.autocomplete = 'username';
+                usernameField.required = true;
+                if (!usernameField.value) {
+                    usernameField.focus();
+                }
+            }
+            
+            // Set attributes for password field
+            if (passwordField) {
+                passwordField.placeholder = '비밀번호를 입력하세요';
+                passwordField.autocomplete = 'current-password';
+                passwordField.required = true;
+                if (usernameField && usernameField.value && !passwordField.value) {
+                    passwordField.focus();
+                }
             }
         });
         
