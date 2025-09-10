@@ -18,7 +18,7 @@ import {
 } from '../types/userTypes';
 
 // API 기본 설정
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-django-backend-new.onrender.com';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-django-backend.onrender.com';
 
 interface AuthResponse {
   success: boolean;

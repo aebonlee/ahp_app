@@ -3,7 +3,7 @@
  * 브라우저 콘솔에서 실행하세요.
  */
 
-const API_BASE_URL = 'https://ahp-django-backend-new.onrender.com';
+const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
 
 // 테스트 계정 데이터
 const testAccounts = [
