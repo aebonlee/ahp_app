@@ -89,6 +89,36 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   activeTab: externalActiveTab,
   onTabChange: externalOnTabChange
 }) => {
+  // Add CSS animations and responsive utilities
+  const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      document.head.removeChild(style);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Responsive helpers
+  const isLg = windowWidth >= 1024;
+  const isMd = windowWidth >= 768;
+  const isSm = windowWidth >= 640;
   // AEBON EXCLUSIVE ACCESS CONTROL
   const { 
     isAebon, 
@@ -291,55 +321,117 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   }, []);
 
   const renderOverview = () => (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* 주요 통계 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+        gap: '1.5rem' 
+      }}>
         <Card title="총 사용자">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">{stats.totalUsers.toLocaleString()}</div>
-            <div className="text-sm text-gray-600 mt-1">
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+              fontSize: '1.875rem', 
+              fontWeight: 'bold', 
+              color: '#3b82f6',
+              marginBottom: '0.25rem'
+            }}>
+              {stats.totalUsers.toLocaleString()}
+            </div>
+            <div style={{ 
+              fontSize: '0.875rem', 
+              color: '#6b7280',
+              marginTop: '0.25rem'
+            }}>
               개인관리자: {stats.totalPersonalAdmins}명
             </div>
-            <div className="text-xs text-green-600 mt-1">
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#10b981',
+              marginTop: '0.25rem'
+            }}>
               +{stats.monthlyGrowth}% 이번 달
             </div>
           </div>
         </Card>
 
         <Card title="프로젝트">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">{stats.totalProjects.toLocaleString()}</div>
-            <div className="text-sm text-gray-600 mt-1">
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.875rem',
+              fontWeight: 'bold',
+              color: '#10b981'
+            }}>{stats.totalProjects.toLocaleString()}</div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280',
+              marginTop: '0.25rem'
+            }}>
               활성: {stats.activeProjects.toLocaleString()}개
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+            <div style={{
+              width: '100%',
+              backgroundColor: '#e5e7eb',
+              borderRadius: '9999px',
+              height: '0.5rem',
+              marginTop: '0.5rem'
+            }}>
               <div 
-                className="bg-green-600 h-2 rounded-full" 
-                style={{ width: `${(stats.activeProjects / stats.totalProjects) * 100}%` }}
+                style={{
+                  backgroundColor: '#10b981',
+                  height: '0.5rem',
+                  borderRadius: '9999px',
+                  width: `${(stats.activeProjects / stats.totalProjects) * 100}%`
+                }}
               ></div>
             </div>
           </div>
         </Card>
 
         <Card title="수익">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600">
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.875rem',
+              fontWeight: 'bold',
+              color: '#9333ea'
+            }}>
               ₩{stats.totalRevenue.toLocaleString()}
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280',
+              marginTop: '0.25rem'
+            }}>
               활성 구독: {stats.activeSubscriptions}개
             </div>
-            <div className="text-xs text-green-600 mt-1">
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#10b981',
+              marginTop: '0.25rem'
+            }}>
               월 성장률: {stats.monthlyGrowth}%
             </div>
           </div>
         </Card>
 
         <Card title="시스템 상태">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-orange-600">{stats.systemUptime}</div>
-            <div className="text-sm text-gray-600 mt-1">가동률</div>
-            <div className="flex justify-between text-xs mt-2">
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.875rem',
+              fontWeight: 'bold',
+              color: '#ea580c'
+            }}>{stats.systemUptime}</div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280',
+              marginTop: '0.25rem'
+            }}>가동률</div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '0.75rem',
+              marginTop: '0.5rem'
+            }}>
               <span>CPU: {systemMetrics.cpu.toFixed(1)}%</span>
               <span>메모리: {systemMetrics.memory.toFixed(1)}%</span>
             </div>
@@ -348,77 +440,166 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
       </div>
 
       {/* 실시간 시스템 메트릭 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isLg ? 'repeat(2, 1fr)' : '1fr',
+        gap: '1.5rem'
+      }}>
         <Card title="시스템 성능">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm">CPU 사용률</span>
-              <span className="text-sm font-medium">{systemMetrics.cpu.toFixed(1)}%</span>
+          <div style={{ gap: '1rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span style={{ fontSize: '0.875rem' }}>CPU 사용률</span>
+              <span style={{
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}>{systemMetrics.cpu.toFixed(1)}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div style={{
+              width: '100%',
+              backgroundColor: '#e5e7eb',
+              borderRadius: '9999px',
+              height: '0.75rem'
+            }}>
               <div 
-                className={`h-3 rounded-full transition-all duration-500 ${
-                  systemMetrics.cpu > 80 ? 'bg-red-500' : 
-                  systemMetrics.cpu > 60 ? 'bg-yellow-500' : 'bg-green-500'
-                }`}
-                style={{ width: `${systemMetrics.cpu}%` }}
+                style={{
+                  height: '0.75rem',
+                  borderRadius: '9999px',
+                  transition: 'all 0.5s ease',
+                  backgroundColor: systemMetrics.cpu > 80 ? '#ef4444' : 
+                    systemMetrics.cpu > 60 ? '#eab308' : '#22c55e',
+                  width: `${systemMetrics.cpu}%`
+                }}
               ></div>
             </div>
 
-            <div className="flex justify-between items-center">
-              <span className="text-sm">메모리 사용률</span>
-              <span className="text-sm font-medium">{systemMetrics.memory.toFixed(1)}%</span>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span style={{ fontSize: '0.875rem' }}>메모리 사용률</span>
+              <span style={{
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}>{systemMetrics.memory.toFixed(1)}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div style={{
+              width: '100%',
+              backgroundColor: '#e5e7eb',
+              borderRadius: '9999px',
+              height: '0.75rem'
+            }}>
               <div 
-                className={`h-3 rounded-full transition-all duration-500 ${
-                  systemMetrics.memory > 80 ? 'bg-red-500' : 
-                  systemMetrics.memory > 60 ? 'bg-yellow-500' : 'bg-green-500'
-                }`}
-                style={{ width: `${systemMetrics.memory}%` }}
+                style={{
+                  height: '0.75rem',
+                  borderRadius: '9999px',
+                  transition: 'all 0.5s ease',
+                  backgroundColor: systemMetrics.memory > 80 ? '#ef4444' : 
+                    systemMetrics.memory > 60 ? '#eab308' : '#22c55e',
+                  width: `${systemMetrics.memory}%`
+                }}
               ></div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-              <div className="text-center">
-                <div className="text-lg font-bold text-blue-600">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '1rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid #e5e7eb'
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: '1.125rem',
+                  fontWeight: 'bold',
+                  color: '#3b82f6'
+                }}>
                   {systemMetrics.responseTime.toFixed(0)}ms
                 </div>
-                <div className="text-xs text-gray-600">평균 응답시간</div>
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: '#6b7280'
+                }}>평균 응답시간</div>
               </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-green-600">
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: '1.125rem',
+                  fontWeight: 'bold',
+                  color: '#10b981'
+                }}>
                   {systemMetrics.activeConnections}
                 </div>
-                <div className="text-xs text-gray-600">활성 연결</div>
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: '#6b7280'
+                }}>활성 연결</div>
               </div>
             </div>
           </div>
         </Card>
 
         <Card title="최근 활동">
-          <div className="space-y-3 max-h-64 overflow-y-auto">
+          <div style={{
+            gap: '0.75rem',
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '16rem',
+            overflowY: 'auto'
+          }}>
             {recentActivity.map((activity, index) => (
-              <div key={activity.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded">
-                <div className={`w-2 h-2 rounded-full mt-2 ${
-                  activity.status === 'success' ? 'bg-green-500' :
-                  activity.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-                }`}></div>
-                <div className="flex-1">
-                  <div className="text-sm font-medium">{activity.action}</div>
-                  <div className="text-xs text-gray-600">
+              <div key={activity.id} style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem',
+                padding: '0.75rem',
+                backgroundColor: '#f9fafb',
+                borderRadius: '0.375rem'
+              }}>
+                <div style={{
+                  width: '0.5rem',
+                  height: '0.5rem',
+                  borderRadius: '9999px',
+                  marginTop: '0.5rem',
+                  backgroundColor: activity.status === 'success' ? '#22c55e' :
+                    activity.status === 'warning' ? '#eab308' : '#ef4444'
+                }}></div>
+                <div style={{ flex: '1 1 0%' }}>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    fontWeight: '500'
+                  }}>{activity.action}</div>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#6b7280'
+                  }}>
                     {activity.userName} • {activity.details}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#9ca3af',
+                    marginTop: '0.25rem'
+                  }}>
                     {new Date(activity.timestamp).toLocaleString('ko-KR')}
                   </div>
                 </div>
-                <div className={`px-2 py-1 rounded text-xs ${
-                  activity.category === 'project' ? 'bg-blue-100 text-blue-800' :
-                  activity.category === 'evaluation' ? 'bg-green-100 text-green-800' :
-                  activity.category === 'subscription' ? 'bg-purple-100 text-purple-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
+                <div style={{
+                  paddingLeft: '0.5rem',
+                  paddingRight: '0.5rem',
+                  paddingTop: '0.25rem',
+                  paddingBottom: '0.25rem',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.75rem',
+                  backgroundColor: activity.category === 'project' ? '#dbeafe' :
+                    activity.category === 'evaluation' ? '#dcfce7' :
+                    activity.category === 'subscription' ? '#f3e8ff' : '#f3f4f6',
+                  color: activity.category === 'project' ? '#1e40af' :
+                    activity.category === 'evaluation' ? '#166534' :
+                    activity.category === 'subscription' ? '#7c3aed' : '#374151'
+                }}>
                   {activity.category}
                 </div>
               </div>
@@ -429,17 +610,42 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
 
       {/* 성능 차트 */}
       <Card title="시스템 성능 추이">
-        <div className="mb-4 flex justify-between items-center">
-          <div className="flex space-x-2">
+        <div style={{
+          marginBottom: '1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem'
+          }}>
             {(['1h', '24h', '7d', '30d'] as const).map(range => (
               <button
                 key={range}
                 onClick={() => setSelectedTimeRange(range)}
-                className={`px-3 py-1 text-sm rounded ${
-                  selectedTimeRange === range
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                style={{
+                  paddingLeft: '0.75rem',
+                  paddingRight: '0.75rem',
+                  paddingTop: '0.25rem',
+                  paddingBottom: '0.25rem',
+                  fontSize: '0.875rem',
+                  borderRadius: '0.375rem',
+                  backgroundColor: selectedTimeRange === range ? '#3b82f6' : '#e5e7eb',
+                  color: selectedTimeRange === range ? '#ffffff' : '#374151',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedTimeRange !== range) {
+                    e.currentTarget.style.backgroundColor = '#d1d5db';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedTimeRange !== range) {
+                    e.currentTarget.style.backgroundColor = '#e5e7eb';
+                  }
+                }}
               >
                 {range}
               </button>
@@ -448,7 +654,15 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
           <select
             value={refreshInterval}
             onChange={(e) => setRefreshInterval(Number(e.target.value))}
-            className="text-sm border rounded px-2 py-1"
+            style={{
+              fontSize: '0.875rem',
+              border: '1px solid #d1d5db',
+              borderRadius: '0.375rem',
+              paddingLeft: '0.5rem',
+              paddingRight: '0.5rem',
+              paddingTop: '0.25rem',
+              paddingBottom: '0.25rem'
+            }}
           >
             <option value={5000}>5초</option>
             <option value={10000}>10초</option>
@@ -479,56 +693,124 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   );
 
   const renderUserManagement = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">사용자 관리</h2>
-        <div className="flex space-x-2">
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <h2 style={{
+          fontSize: '1.5rem',
+          fontWeight: 'bold'
+        }}>사용자 관리</h2>
+        <div style={{
+          display: 'flex',
+          gap: '0.5rem'
+        }}>
           <Button variant="secondary">사용자 내보내기</Button>
           <Button variant="primary">새 사용자 초대</Button>
         </div>
       </div>
 
       {/* 사용자 통계 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMd ? 'repeat(3, 1fr)' : '1fr',
+        gap: '1.5rem'
+      }}>
         <Card title="고급 관리자">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">12</div>
-            <div className="text-sm text-gray-600">활성 계정</div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: '#3b82f6'
+            }}>12</div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280'
+            }}>활성 계정</div>
           </div>
         </Card>
         <Card title="개인 관리자">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.totalPersonalAdmins}</div>
-            <div className="text-sm text-gray-600">구독자</div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: '#10b981'
+            }}>{stats.totalPersonalAdmins}</div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280'
+            }}>구독자</div>
           </div>
         </Card>
         <Card title="평가자">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: '#9333ea'
+            }}>
               {stats.totalUsers - stats.totalPersonalAdmins - 12}
             </div>
-            <div className="text-sm text-gray-600">초대된 사용자</div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280'
+            }}>초대된 사용자</div>
           </div>
         </Card>
       </div>
 
       {/* 사용자 테이블 */}
       <Card title="사용자 목록">
-        <div className="space-y-4">
-          <div className="flex space-x-4">
+        <div style={{
+          gap: '1rem',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: '1rem'
+          }}>
             <input
               type="text"
               placeholder="사용자 검색..."
-              className="border rounded px-3 py-2 flex-1"
+              style={{
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                paddingLeft: '0.75rem',
+                paddingRight: '0.75rem',
+                paddingTop: '0.5rem',
+                paddingBottom: '0.5rem',
+                flex: '1 1 0%'
+              }}
             />
-            <select className="border rounded px-3 py-2">
+            <select style={{
+              border: '1px solid #d1d5db',
+              borderRadius: '0.375rem',
+              paddingLeft: '0.75rem',
+              paddingRight: '0.75rem',
+              paddingTop: '0.5rem',
+              paddingBottom: '0.5rem'
+            }}>
               <option value="">모든 역할</option>
               <option value="super_admin">고급 관리자</option>
               <option value="admin">관리자</option>
               <option value="service_tester">서비스 테스터</option>
               <option value="evaluator">평가자</option>
             </select>
-            <select className="border rounded px-3 py-2">
+            <select style={{
+              border: '1px solid #d1d5db',
+              borderRadius: '0.375rem',
+              paddingLeft: '0.75rem',
+              paddingRight: '0.75rem',
+              paddingTop: '0.5rem',
+              paddingBottom: '0.5rem'
+            }}>
               <option value="">모든 상태</option>
               <option value="active">활성</option>
               <option value="inactive">비활성</option>
@@ -536,16 +818,55 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
             </select>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{
+              width: '100%',
+              fontSize: '0.875rem'
+            }}>
+              <thead style={{ backgroundColor: '#f9fafb' }}>
                 <tr>
-                  <th className="px-4 py-2 text-left">사용자</th>
-                  <th className="px-4 py-2 text-left">역할</th>
-                  <th className="px-4 py-2 text-left">상태</th>
-                  <th className="px-4 py-2 text-left">가입일</th>
-                  <th className="px-4 py-2 text-left">마지막 로그인</th>
-                  <th className="px-4 py-2 text-left">관리</th>
+                  <th style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem',
+                    textAlign: 'left'
+                  }}>사용자</th>
+                  <th style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem',
+                    textAlign: 'left'
+                  }}>역할</th>
+                  <th style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem',
+                    textAlign: 'left'
+                  }}>상태</th>
+                  <th style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem',
+                    textAlign: 'left'
+                  }}>가입일</th>
+                  <th style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem',
+                    textAlign: 'left'
+                  }}>마지막 로그인</th>
+                  <th style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem',
+                    textAlign: 'left'
+                  }}>관리</th>
                 </tr>
               </thead>
               <tbody>
@@ -555,37 +876,107 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
                   { id: '2', name: '이개인', email: 'lee@startup.com', role: '개인 관리자', status: '활성', joinDate: '2024-02-01', lastLogin: '2024-03-10 14:20' },
                   { id: '3', name: '박평가', email: 'park@eval.com', role: '평가자', status: '활성', joinDate: '2024-02-15', lastLogin: '2024-03-09 16:45' }
                 ].map(user => (
-                  <tr key={user.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-2">
+                  <tr key={user.id} style={{
+                    borderTop: '1px solid #e5e7eb'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <td style={{
+                      paddingLeft: '1rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.5rem',
+                      paddingBottom: '0.5rem'
+                    }}>
                       <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-gray-500">{user.email}</div>
+                        <div style={{ fontWeight: '500' }}>{user.name}</div>
+                        <div style={{ color: '#6b7280' }}>{user.email}</div>
                       </div>
                     </td>
-                    <td className="px-4 py-2">
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        user.role === '고급 관리자' ? 'bg-red-100 text-red-800' :
-                        user.role === '개인 관리자' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
+                    <td style={{
+                      paddingLeft: '1rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.5rem',
+                      paddingBottom: '0.5rem'
+                    }}>
+                      <span style={{
+                        paddingLeft: '0.5rem',
+                        paddingRight: '0.5rem',
+                        paddingTop: '0.25rem',
+                        paddingBottom: '0.25rem',
+                        borderRadius: '0.375rem',
+                        fontSize: '0.75rem',
+                        backgroundColor: user.role === '고급 관리자' ? '#fee2e2' :
+                          user.role === '개인 관리자' ? '#dbeafe' : '#dcfce7',
+                        color: user.role === '고급 관리자' ? '#991b1b' :
+                          user.role === '개인 관리자' ? '#1e40af' : '#166534'
+                      }}>
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-4 py-2">
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        user.status === '활성' ? 'bg-green-100 text-green-800' :
-                        user.status === '비활성' ? 'bg-gray-100 text-gray-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
+                    <td style={{
+                      paddingLeft: '1rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.5rem',
+                      paddingBottom: '0.5rem'
+                    }}>
+                      <span style={{
+                        paddingLeft: '0.5rem',
+                        paddingRight: '0.5rem',
+                        paddingTop: '0.25rem',
+                        paddingBottom: '0.25rem',
+                        borderRadius: '0.375rem',
+                        fontSize: '0.75rem',
+                        backgroundColor: user.status === '활성' ? '#dcfce7' :
+                          user.status === '비활성' ? '#f3f4f6' : '#fef3c7',
+                        color: user.status === '활성' ? '#166534' :
+                          user.status === '비활성' ? '#374151' : '#92400e'
+                      }}>
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-4 py-2">{user.joinDate}</td>
-                    <td className="px-4 py-2">{user.lastLogin}</td>
-                    <td className="px-4 py-2">
-                      <div className="flex space-x-1">
-                        <button className="text-blue-600 hover:text-blue-800 text-xs">편집</button>
-                        <button className="text-red-600 hover:text-red-800 text-xs">삭제</button>
+                    <td style={{
+                      paddingLeft: '1rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.5rem',
+                      paddingBottom: '0.5rem'
+                    }}>{user.joinDate}</td>
+                    <td style={{
+                      paddingLeft: '1rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.5rem',
+                      paddingBottom: '0.5rem'
+                    }}>{user.lastLogin}</td>
+                    <td style={{
+                      paddingLeft: '1rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.5rem',
+                      paddingBottom: '0.5rem'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        gap: '0.25rem'
+                      }}>
+                        <button style={{
+                          color: '#3b82f6',
+                          fontSize: '0.75rem',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = '#1e40af'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = '#3b82f6'}
+                        >편집</button>
+                        <button style={{
+                          color: '#dc2626',
+                          fontSize: '0.75rem',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = '#991b1b'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = '#dc2626'}
+                        >삭제</button>
                       </div>
                     </td>
                   </tr>
@@ -599,82 +990,202 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   );
 
   const renderSecurityMonitoring = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">보안 모니터링</h2>
-        <div className="flex space-x-2">
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <h2 style={{
+          fontSize: '1.5rem',
+          fontWeight: 'bold'
+        }}>보안 모니터링</h2>
+        <div style={{
+          display: 'flex',
+          gap: '0.5rem'
+        }}>
           <Button variant="secondary">보안 보고서</Button>
           <Button variant="primary">알림 설정</Button>
         </div>
       </div>
 
       {/* 보안 지표 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMd ? 'repeat(4, 1fr)' : '1fr',
+        gap: '1.5rem'
+      }}>
         <Card title="보안 점수">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">94</div>
-            <div className="text-sm text-gray-600">/ 100</div>
-            <div className="text-xs text-green-600 mt-1">우수</div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.875rem',
+              fontWeight: 'bold',
+              color: '#10b981'
+            }}>94</div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280'
+            }}>/ 100</div>
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#10b981',
+              marginTop: '0.25rem'
+            }}>우수</div>
           </div>
         </Card>
         <Card title="금일 로그인 실패">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-yellow-600">{systemMetrics.errors24h}</div>
-            <div className="text-sm text-gray-600">회</div>
-            <div className="text-xs text-yellow-600 mt-1">주의 필요</div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.875rem',
+              fontWeight: 'bold',
+              color: '#eab308'
+            }}>{systemMetrics.errors24h}</div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280'
+            }}>회</div>
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#eab308',
+              marginTop: '0.25rem'
+            }}>주의 필요</div>
           </div>
         </Card>
         <Card title="의심스러운 활동">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-red-600">2</div>
-            <div className="text-sm text-gray-600">건</div>
-            <div className="text-xs text-red-600 mt-1">확인 필요</div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.875rem',
+              fontWeight: 'bold',
+              color: '#dc2626'
+            }}>2</div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280'
+            }}>건</div>
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#dc2626',
+              marginTop: '0.25rem'
+            }}>확인 필요</div>
           </div>
         </Card>
         <Card title="성공률">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '1.875rem',
+              fontWeight: 'bold',
+              color: '#3b82f6'
+            }}>
               {systemMetrics.successRate.toFixed(1)}%
             </div>
-            <div className="text-sm text-gray-600">24시간</div>
-            <div className="text-xs text-blue-600 mt-1">정상</div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280'
+            }}>24시간</div>
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#3b82f6',
+              marginTop: '0.25rem'
+            }}>정상</div>
           </div>
         </Card>
       </div>
 
       {/* 보안 이벤트 */}
       <Card title="최근 보안 이벤트">
-        <div className="space-y-3">
+        <div style={{
+          gap: '0.75rem',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
           {securityEvents.map(event => (
-            <div key={event.id} className="flex items-start space-x-3 p-4 border rounded">
-              <div className={`w-3 h-3 rounded-full mt-1 ${
-                event.severity === 'critical' ? 'bg-red-500' :
-                event.severity === 'high' ? 'bg-orange-500' :
-                event.severity === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
-              }`}></div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start">
+            <div key={event.id} style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.75rem',
+              padding: '1rem',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.375rem'
+            }}>
+              <div style={{
+                width: '0.75rem',
+                height: '0.75rem',
+                borderRadius: '9999px',
+                marginTop: '0.25rem',
+                backgroundColor: event.severity === 'critical' ? '#ef4444' :
+                  event.severity === 'high' ? '#f97316' :
+                  event.severity === 'medium' ? '#eab308' : '#3b82f6'
+              }}></div>
+              <div style={{ flex: '1 1 0%' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start'
+                }}>
                   <div>
-                    <div className="font-medium">{event.description}</div>
-                    <div className="text-sm text-gray-600 mt-1">
+                    <div style={{ fontWeight: '500' }}>{event.description}</div>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      color: '#6b7280',
+                      marginTop: '0.25rem'
+                    }}>
                       IP: {event.ipAddress} • {new Date(event.timestamp).toLocaleString('ko-KR')}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      event.severity === 'critical' ? 'bg-red-100 text-red-800' :
-                      event.severity === 'high' ? 'bg-orange-100 text-orange-800' :
-                      event.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' : 
-                      'bg-blue-100 text-blue-800'
-                    }`}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <span style={{
+                      paddingLeft: '0.5rem',
+                      paddingRight: '0.5rem',
+                      paddingTop: '0.25rem',
+                      paddingBottom: '0.25rem',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.75rem',
+                      backgroundColor: event.severity === 'critical' ? '#fee2e2' :
+                        event.severity === 'high' ? '#fed7aa' :
+                        event.severity === 'medium' ? '#fef3c7' : '#dbeafe',
+                      color: event.severity === 'critical' ? '#991b1b' :
+                        event.severity === 'high' ? '#9a3412' :
+                        event.severity === 'medium' ? '#92400e' : '#1e40af'
+                    }}>
                       {event.severity}
                     </span>
                     {event.resolved ? (
-                      <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800">
+                      <span style={{
+                        paddingLeft: '0.5rem',
+                        paddingRight: '0.5rem',
+                        paddingTop: '0.25rem',
+                        paddingBottom: '0.25rem',
+                        borderRadius: '0.375rem',
+                        fontSize: '0.75rem',
+                        backgroundColor: '#dcfce7',
+                        color: '#166534'
+                      }}>
                         해결됨
                       </span>
                     ) : (
-                      <button className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                      <button style={{
+                        paddingLeft: '0.5rem',
+                        paddingRight: '0.5rem',
+                        paddingTop: '0.25rem',
+                        paddingBottom: '0.25rem',
+                        fontSize: '0.75rem',
+                        backgroundColor: '#dc2626',
+                        color: '#ffffff',
+                        borderRadius: '0.375rem',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                      >
                         처리
                       </button>
                     )}
@@ -689,31 +1200,78 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   );
 
   const renderSubscriptionManagement = () => (
-    <div className="space-y-6">
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       <SubscriptionDashboard user={user} />
       
       {/* 추가 구독 관리 기능 */}
       <Card title="구독 플랜 관리">
-        <div className="space-y-4">
+        <div style={{
+          gap: '1rem',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
           {plans.map(plan => (
-            <div key={plan.id} className="border rounded p-4">
-              <div className="flex justify-between items-start">
+            <div key={plan.id} style={{
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.375rem',
+              padding: '1rem'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start'
+              }}>
                 <div>
-                  <h4 className="font-medium">{plan.name}</h4>
-                  <p className="text-gray-600 text-sm">{plan.description}</p>
-                  <div className="mt-2">
-                    <span className="text-lg font-bold">
+                  <h4 style={{ fontWeight: '500' }}>{plan.name}</h4>
+                  <p style={{
+                    color: '#6b7280',
+                    fontSize: '0.875rem'
+                  }}>{plan.description}</p>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <span style={{
+                      fontSize: '1.125rem',
+                      fontWeight: 'bold'
+                    }}>
                       ₩{plan.price.toLocaleString()}/월
                     </span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-600">
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280'
+                  }}>
                     구독자: {subscriptions.filter(s => s.planId === plan.id).length}명
                   </div>
-                  <div className="mt-2 space-x-2">
-                    <button className="text-blue-600 hover:text-blue-800 text-sm">편집</button>
-                    <button className="text-red-600 hover:text-red-800 text-sm">비활성화</button>
+                  <div style={{
+                    marginTop: '0.5rem',
+                    gap: '0.5rem',
+                    display: 'flex'
+                  }}>
+                    <button style={{
+                      color: '#3b82f6',
+                      fontSize: '0.875rem',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#1e40af'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#3b82f6'}
+                    >편집</button>
+                    <button style={{
+                      color: '#dc2626',
+                      fontSize: '0.875rem',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#991b1b'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#dc2626'}
+                    >비활성화</button>
                   </div>
                 </div>
               </div>
@@ -725,11 +1283,33 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   );
 
   const renderSystemLogs = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">시스템 로그</h2>
-        <div className="flex space-x-2">
-          <select className="border rounded px-3 py-2 text-sm">
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <h2 style={{
+          fontSize: '1.5rem',
+          fontWeight: 'bold'
+        }}>시스템 로그</h2>
+        <div style={{
+          display: 'flex',
+          gap: '0.5rem'
+        }}>
+          <select style={{
+            border: '1px solid #d1d5db',
+            borderRadius: '0.375rem',
+            paddingLeft: '0.75rem',
+            paddingRight: '0.75rem',
+            paddingTop: '0.5rem',
+            paddingBottom: '0.5rem',
+            fontSize: '0.875rem'
+          }}>
             <option value="">모든 카테고리</option>
             <option value="login">로그인</option>
             <option value="project">프로젝트</option>
@@ -742,48 +1322,150 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
       </div>
 
       <Card title="활동 로그">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{
+            width: '100%',
+            fontSize: '0.875rem'
+          }}>
+            <thead style={{ backgroundColor: '#f9fafb' }}>
               <tr>
-                <th className="px-4 py-2 text-left">시간</th>
-                <th className="px-4 py-2 text-left">사용자</th>
-                <th className="px-4 py-2 text-left">동작</th>
-                <th className="px-4 py-2 text-left">카테고리</th>
-                <th className="px-4 py-2 text-left">상태</th>
-                <th className="px-4 py-2 text-left">IP 주소</th>
-                <th className="px-4 py-2 text-left">상세</th>
+                <th style={{
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                  textAlign: 'left'
+                }}>시간</th>
+                <th style={{
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                  textAlign: 'left'
+                }}>사용자</th>
+                <th style={{
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                  textAlign: 'left'
+                }}>동작</th>
+                <th style={{
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                  textAlign: 'left'
+                }}>카테고리</th>
+                <th style={{
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                  textAlign: 'left'
+                }}>상태</th>
+                <th style={{
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                  textAlign: 'left'
+                }}>IP 주소</th>
+                <th style={{
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                  textAlign: 'left'
+                }}>상세</th>
               </tr>
             </thead>
             <tbody>
               {recentActivity.map((activity, index) => (
-                <tr key={activity.id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-2">
+                <tr key={activity.id} style={{
+                  borderTop: '1px solid #e5e7eb'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <td style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem'
+                  }}>
                     {new Date(activity.timestamp).toLocaleString('ko-KR')}
                   </td>
-                  <td className="px-4 py-2">{activity.userName}</td>
-                  <td className="px-4 py-2">{activity.action}</td>
-                  <td className="px-4 py-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      activity.category === 'project' ? 'bg-blue-100 text-blue-800' :
-                      activity.category === 'evaluation' ? 'bg-green-100 text-green-800' :
-                      activity.category === 'subscription' ? 'bg-purple-100 text-purple-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                  <td style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem'
+                  }}>{activity.userName}</td>
+                  <td style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem'
+                  }}>{activity.action}</td>
+                  <td style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem'
+                  }}>
+                    <span style={{
+                      paddingLeft: '0.5rem',
+                      paddingRight: '0.5rem',
+                      paddingTop: '0.25rem',
+                      paddingBottom: '0.25rem',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.75rem',
+                      backgroundColor: activity.category === 'project' ? '#dbeafe' :
+                        activity.category === 'evaluation' ? '#dcfce7' :
+                        activity.category === 'subscription' ? '#f3e8ff' : '#f3f4f6',
+                      color: activity.category === 'project' ? '#1e40af' :
+                        activity.category === 'evaluation' ? '#166534' :
+                        activity.category === 'subscription' ? '#7c3aed' : '#374151'
+                    }}>
                       {activity.category}
                     </span>
                   </td>
-                  <td className="px-4 py-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      activity.status === 'success' ? 'bg-green-100 text-green-800' :
-                      activity.status === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                  <td style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem'
+                  }}>
+                    <span style={{
+                      paddingLeft: '0.5rem',
+                      paddingRight: '0.5rem',
+                      paddingTop: '0.25rem',
+                      paddingBottom: '0.25rem',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.75rem',
+                      backgroundColor: activity.status === 'success' ? '#dcfce7' :
+                        activity.status === 'warning' ? '#fef3c7' : '#fee2e2',
+                      color: activity.status === 'success' ? '#166534' :
+                        activity.status === 'warning' ? '#92400e' : '#991b1b'
+                    }}>
                       {activity.status}
                     </span>
                   </td>
-                  <td className="px-4 py-2 font-mono text-xs">{activity.ipAddress}</td>
-                  <td className="px-4 py-2">{activity.details}</td>
+                  <td style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem',
+                    fontFamily: 'monospace',
+                    fontSize: '0.75rem'
+                  }}>{activity.ipAddress}</td>
+                  <td style={{
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem'
+                  }}>{activity.details}</td>
                 </tr>
               ))}
             </tbody>
@@ -794,30 +1476,76 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   );
 
   const renderSystemManagement = () => (
-    <SystemManagement className="space-y-6" />
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <SystemManagement />
+    </div>
   );
 
   // AEBON EXCLUSIVE RENDER FUNCTIONS - Only accessible by aebon
   const renderAebonControlCenter = () => (
-    <div className="space-y-6">
-      <Card title="👑 AEBON 최고 권한 제어센터" className="border-purple-200">
-        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-lg">
-          <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center">
-            <span className="mr-2">🎯</span>
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <Card title="👑 AEBON 최고 권한 제어센터" style={{
+        borderColor: '#e9d5ff'
+      }}>
+        <div style={{
+          background: 'linear-gradient(to bottom right, #faf5ff, #eef2ff)',
+          padding: '1.5rem',
+          borderRadius: '0.5rem'
+        }}>
+          <h3 style={{
+            fontSize: '1.25rem',
+            fontWeight: 'bold',
+            color: '#581c87',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <span style={{ marginRight: '0.5rem' }}>🎯</span>
             ULTIMATE ADMIN PRIVILEGES
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isLg ? 'repeat(3, 1fr)' : isMd ? 'repeat(2, 1fr)' : '1fr',
+            gap: '1rem'
+          }}>
             {AEBON_EXCLUSIVE_PERMISSIONS.map((permission, index) => (
-              <div key={index} className="bg-white p-4 rounded-lg border border-purple-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-purple-900">{permission}</span>
-                  <span className="text-green-500">✓</span>
+              <div key={index} style={{
+                backgroundColor: '#ffffff',
+                padding: '1rem',
+                borderRadius: '0.5rem',
+                border: '1px solid #e9d5ff'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <span style={{
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    color: '#581c87'
+                  }}>{permission}</span>
+                  <span style={{ color: '#22c55e' }}>✓</span>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-6 flex space-x-4">
-            <Button variant="primary" className="bg-purple-600 hover:bg-purple-700">
+          <div style={{
+            marginTop: '1.5rem',
+            display: 'flex',
+            gap: '1rem'
+          }}>
+            <Button variant="primary" style={{
+              backgroundColor: '#9333ea'
+            }}>
               시스템 완전 제어
             </Button>
             <Button variant="error">
@@ -830,11 +1558,28 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   );
 
   const renderDatabaseManagement = () => (
-    <div className="space-y-6">
-      <Card title="🗄️ 데이터베이스 직접 관리" className="border-blue-200">
-        <div className="bg-blue-50 p-6 rounded-lg">
-          <p className="text-blue-800 mb-4">⚠️ 이 섹션은 aebon만 접근 가능합니다.</p>
-          <div className="space-y-4">
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <Card title="🗄️ 데이터베이스 직접 관리" style={{
+        borderColor: '#bfdbfe'
+      }}>
+        <div style={{
+          backgroundColor: '#eff6ff',
+          padding: '1.5rem',
+          borderRadius: '0.5rem'
+        }}>
+          <p style={{
+            color: '#1e40af',
+            marginBottom: '1rem'
+          }}>⚠️ 이 섹션은 aebon만 접근 가능합니다.</p>
+          <div style={{
+            gap: '1rem',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
             <Button variant="primary">PostgreSQL 관리</Button>
             <Button variant="secondary">데이터 백업 실행</Button>
             <Button variant="error">데이터베이스 복원</Button>
@@ -845,22 +1590,75 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   );
 
   const renderBillingManagement = () => (
-    <div className="space-y-6">
-      <Card title="💰 빌링 및 수익 관리" className="border-green-200">
-        <div className="bg-green-50 p-6 rounded-lg">
-          <p className="text-green-800 mb-4">💎 전체 수익 및 결제 관리</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-4 rounded border">
-              <div className="text-2xl font-bold text-green-600">$123,456</div>
-              <div className="text-sm text-gray-600">총 수익</div>
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <Card title="💰 빌링 및 수익 관리" style={{
+        borderColor: '#bbf7d0'
+      }}>
+        <div style={{
+          backgroundColor: '#f0fdf4',
+          padding: '1.5rem',
+          borderRadius: '0.5rem'
+        }}>
+          <p style={{
+            color: '#166534',
+            marginBottom: '1rem'
+          }}>💎 전체 수익 및 결제 관리</p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMd ? 'repeat(3, 1fr)' : '1fr',
+            gap: '1rem'
+          }}>
+            <div style={{
+              backgroundColor: '#ffffff',
+              padding: '1rem',
+              borderRadius: '0.375rem',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#10b981'
+              }}>$123,456</div>
+              <div style={{
+                fontSize: '0.875rem',
+                color: '#6b7280'
+              }}>총 수익</div>
             </div>
-            <div className="bg-white p-4 rounded border">
-              <div className="text-2xl font-bold text-blue-600">$12,345</div>
-              <div className="text-sm text-gray-600">이번 달 수익</div>
+            <div style={{
+              backgroundColor: '#ffffff',
+              padding: '1rem',
+              borderRadius: '0.375rem',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#3b82f6'
+              }}>$12,345</div>
+              <div style={{
+                fontSize: '0.875rem',
+                color: '#6b7280'
+              }}>이번 달 수익</div>
             </div>
-            <div className="bg-white p-4 rounded border">
-              <div className="text-2xl font-bold text-purple-600">1,234</div>
-              <div className="text-sm text-gray-600">활성 구독</div>
+            <div style={{
+              backgroundColor: '#ffffff',
+              padding: '1rem',
+              borderRadius: '0.375rem',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#9333ea'
+              }}>1,234</div>
+              <div style={{
+                fontSize: '0.875rem',
+                color: '#6b7280'
+              }}>활성 구독</div>
             </div>
           </div>
         </div>
@@ -869,11 +1667,28 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   );
 
   const renderAdvancedAnalytics = () => (
-    <div className="space-y-6">
-      <Card title="📈 고급 분석 및 인사이트" className="border-orange-200">
-        <div className="bg-orange-50 p-6 rounded-lg">
-          <p className="text-orange-800 mb-4">🔍 전체 시스템 상세 분석</p>
-          <div className="space-y-4">
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <Card title="📈 고급 분석 및 인사이트" style={{
+        borderColor: '#fed7aa'
+      }}>
+        <div style={{
+          backgroundColor: '#fff7ed',
+          padding: '1.5rem',
+          borderRadius: '0.5rem'
+        }}>
+          <p style={{
+            color: '#9a3412',
+            marginBottom: '1rem'
+          }}>🔍 전체 시스템 상세 분석</p>
+          <div style={{
+            gap: '1rem',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
             <div>사용자 행동 패턴 분석</div>
             <div>수익 최적화 제안</div>
             <div>보안 위험 요소 식별</div>
@@ -885,12 +1700,31 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   );
 
   const renderUnauthorized = () => (
-    <div className="space-y-6">
-      <Card title="🚫 접근 거부" className="border-red-200">
-        <div className="bg-red-50 p-6 rounded-lg text-center">
-          <div className="text-6xl mb-4">🚫</div>
-          <h3 className="text-xl font-bold text-red-900 mb-2">권한이 없습니다</h3>
-          <p className="text-red-700">이 섹션은 aebon 최고관리자만 접근할 수 있습니다.</p>
+    <div style={{
+      gap: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <Card title="🚫 접근 거부" style={{
+        borderColor: '#fecaca'
+      }}>
+        <div style={{
+          backgroundColor: '#fef2f2',
+          padding: '1.5rem',
+          borderRadius: '0.5rem',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '3.75rem',
+            marginBottom: '1rem'
+          }}>🚫</div>
+          <h3 style={{
+            fontSize: '1.25rem',
+            fontWeight: 'bold',
+            color: '#7f1d1d',
+            marginBottom: '0.5rem'
+          }}>권한이 없습니다</h3>
+          <p style={{ color: '#b91c1c' }}>이 섹션은 aebon 최고관리자만 접근할 수 있습니다.</p>
         </div>
       </Card>
     </div>
@@ -899,8 +1733,19 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '16rem'
+        }}>
+          <div style={{
+            animation: 'spin 1s linear infinite',
+            borderRadius: '50%',
+            height: '3rem',
+            width: '3rem',
+            borderBottom: '2px solid #3b82f6'
+          }}></div>
         </div>
       );
     }
@@ -932,36 +1777,93 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#f9fafb'
+    }}>
       {/* 상단 네비게이션 */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderBottom: '1px solid #e5e7eb',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10
+      }}>
+        <div style={{
+          maxWidth: '80rem',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: isLg ? '2rem' : isSm ? '1.5rem' : '1rem',
+          paddingRight: isLg ? '2rem' : isSm ? '1.5rem' : '1rem'
+        }}>
+          <div style={{ paddingTop: '1.5rem', paddingBottom: '1.5rem' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <span className="text-4xl mr-3">{isAebon ? '👑' : '🛡️'}</span>
+                <h1 style={{
+                  fontSize: '1.875rem',
+                  fontWeight: 'bold',
+                  color: '#111827',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <span style={{
+                    fontSize: '2.25rem',
+                    marginRight: '0.75rem'
+                  }}>{isAebon ? '👑' : '🛡️'}</span>
                   {isAebon ? 'AEBON 최고 관리자 대시보드' : '고급 관리자 대시보드'}
                   {isAebon && (
-                    <span className="ml-3 px-3 py-1 text-sm font-semibold text-white bg-purple-600 rounded-full animate-pulse">
+                    <span style={{
+                      marginLeft: '0.75rem',
+                      paddingLeft: '0.75rem',
+                      paddingRight: '0.75rem',
+                      paddingTop: '0.25rem',
+                      paddingBottom: '0.25rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      color: '#ffffff',
+                      backgroundColor: '#9333ea',
+                      borderRadius: '9999px',
+                      animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    }}>
                       ULTIMATE ACCESS
                     </span>
                   )}
                 </h1>
-                <p className="text-gray-600 mt-2">
+                <p style={{
+                  color: '#6b7280',
+                  marginTop: '0.5rem'
+                }}>
                   {isAebon 
                     ? '🎯 시스템의 모든 권한과 기능을 완전히 제어할 수 있습니다' 
                     : '시스템 전반의 운영 상황을 모니터링하고 관리합니다'
                   }
                 </p>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-3 h-3 rounded-full ${
-                    systemMetrics.successRate > 99 ? 'bg-green-500' :
-                    systemMetrics.successRate > 95 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                  <span className="text-sm text-gray-600">
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <div style={{
+                    width: '0.75rem',
+                    height: '0.75rem',
+                    borderRadius: '50%',
+                    backgroundColor: systemMetrics.successRate > 99 ? '#22c55e' :
+                      systemMetrics.successRate > 95 ? '#eab308' : '#ef4444'
+                  }}></div>
+                  <span style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280'
+                  }}>
                     시스템 정상 ({systemMetrics.successRate.toFixed(1)}%)
                   </span>
                 </div>
@@ -975,9 +1877,21 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
       </div>
 
       {/* 메뉴 탭 */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderBottom: '1px solid #e5e7eb'
+      }}>
+        <div style={{
+          maxWidth: '80rem',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: isLg ? '2rem' : isSm ? '1.5rem' : '1rem',
+          paddingRight: isLg ? '2rem' : isSm ? '1.5rem' : '1rem'
+        }}>
+          <nav style={{
+            display: 'flex',
+            gap: '2rem'
+          }}>
             {[
               { id: 'overview', name: '개요', icon: '📊' },
               { id: 'users', name: '사용자 관리', icon: '👥' },
@@ -996,11 +1910,30 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                  activeMenu === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                style={{
+                  paddingTop: '1rem',
+                  paddingBottom: '1rem',
+                  paddingLeft: '0.25rem',
+                  paddingRight: '0.25rem',
+                  borderBottom: `2px solid ${activeMenu === tab.id ? '#3b82f6' : 'transparent'}`,
+                  fontWeight: '500',
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: activeMenu === tab.id ? '#3b82f6' : '#6b7280',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = activeMenu === tab.id ? '#3b82f6' : '#374151';
+                  e.currentTarget.style.borderBottomColor = activeMenu === tab.id ? '#3b82f6' : '#d1d5db';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = activeMenu === tab.id ? '#3b82f6' : '#6b7280';
+                  e.currentTarget.style.borderBottomColor = activeMenu === tab.id ? '#3b82f6' : 'transparent';
+                }}
               >
                 <span>{tab.icon}</span>
                 <span>{tab.name}</span>
@@ -1011,7 +1944,15 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
       </div>
 
       {/* 메인 콘텐츠 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div style={{
+        maxWidth: '80rem',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        paddingLeft: isLg ? '2rem' : isSm ? '1.5rem' : '1rem',
+        paddingRight: isLg ? '2rem' : isSm ? '1.5rem' : '1rem',
+        paddingTop: '2rem',
+        paddingBottom: '2rem'
+      }}>
         {renderContent()}
       </div>
     </div>

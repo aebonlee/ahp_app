@@ -35,20 +35,42 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
   // 서비스 상태 확인 중 화면
   if (serviceStatus === 'checking') {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         background: 'var(--gradient-subtle)'
       }}>
-        <div className="card p-8 max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{
-              borderColor: 'var(--accent-primary)'
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '0.75rem',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          padding: '2rem',
+          maxWidth: '28rem',
+          width: '100%',
+          margin: '0 1rem'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              animation: 'spin 1s linear infinite',
+              borderRadius: '50%',
+              height: '2rem',
+              width: '2rem',
+              border: '2px solid transparent',
+              borderBottomColor: 'var(--accent-primary)',
+              margin: '0 auto 1rem auto'
             }}></div>
-            <h2 className="text-xl font-semibold mb-2" style={{
+            <h2 style={{
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              marginBottom: '0.5rem',
               color: 'var(--text-primary)'
             }}>
               서비스 연결 확인 중...
             </h2>
-            <p className="text-sm" style={{
+            <p style={{
+              fontSize: '0.875rem',
               color: 'var(--text-secondary)'
             }}>
               Django 백엔드 서비스에 연결하고 있습니다.
@@ -62,30 +84,56 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
   // 서비스 사용 불가 화면
   if (serviceStatus === 'unavailable') {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         background: 'var(--gradient-subtle)'
       }}>
-        <div className="card p-8 max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="text-4xl mb-4" style={{
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '0.75rem',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          padding: '2rem',
+          maxWidth: '28rem',
+          width: '100%',
+          margin: '0 1rem'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '2.5rem',
+              marginBottom: '1rem',
               color: 'var(--semantic-danger)'
             }}>⚠️</div>
-            <h2 className="text-xl font-semibold mb-2" style={{
+            <h2 style={{
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              marginBottom: '0.5rem',
               color: 'var(--text-primary)'
             }}>
               서비스에 연결할 수 없습니다
             </h2>
-            <p className="text-sm mb-4" style={{
+            <p style={{
+              fontSize: '0.875rem',
+              marginBottom: '1rem',
               color: 'var(--text-secondary)'
             }}>
               Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
             </p>
             <button
               onClick={checkServiceStatus}
-              className="btn btn-primary"
               style={{
                 backgroundColor: 'var(--semantic-danger)',
-                borderColor: 'var(--semantic-danger)'
+                borderColor: 'var(--semantic-danger)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'backgroundColor 0.2s'
               }}
             >
               다시 연결 시도
@@ -249,7 +297,25 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
           marginTop: '1.5rem'
         }}>
           {/* 회원가입 카드 (첫 번째) */}
-          <div className="card card-hover-lift cursor-pointer" onClick={onRegisterSelect}>
+          <div 
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '0.75rem',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease-in-out',
+              border: '1px solid #e5e7eb'
+            }}
+            onClick={onRegisterSelect}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            }}
+          >
             <div 
               style={{
                 textAlign: 'center',
@@ -419,14 +485,15 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
           </div>
 
           {/* 서비스 이용 카드 (두 번째) */}
-          <div className="card card-hover-lift cursor-pointer" 
+          <div 
             style={{
               backgroundColor: 'rgba(249, 250, 251, 0.95)',
               backdropFilter: 'blur(12px)',
               border: '2px solid rgba(191, 219, 254, 0.6)',
               cursor: 'pointer',
               transition: 'all 0.3s ease-in-out',
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              borderRadius: '0.75rem'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.8)';

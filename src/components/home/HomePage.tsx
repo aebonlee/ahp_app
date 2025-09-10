@@ -5,7 +5,7 @@ import ParticleBackground from '../common/ParticleBackground';
 import PricingSection from './PricingSection';
 
 interface HomePageProps {
-  onLoginClick: () => void;
+  onLoginClick?: () => void;
   onRegisterClick?: () => void;
   onNavigate?: (tab: string) => void;
 }
@@ -951,7 +951,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
       </section>
 
       {/* 요금제 섹션 */}
-      <PricingSection onLoginClick={onLoginClick} />
+      <PricingSection onLoginClick={onLoginClick || (() => {})} />
 
       {/* CTA 섹션 */}
       <section style={{

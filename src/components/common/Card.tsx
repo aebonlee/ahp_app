@@ -162,12 +162,12 @@ const Card: React.FC<CardProps> = ({
       }}>
       {title && (
         <div style={{ 
-          padding: '1.5rem', 
-          borderBottom: '1px solid var(--card-border)' 
+          padding: '1.5rem 1.5rem 1rem 1.5rem', 
+          borderBottom: '1px solid var(--border-subtle)' 
         }}>
           <h3 style={{
             fontSize: '1.125rem',
-            fontWeight: 'bold',
+            fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
             color: 'var(--text-primary)',

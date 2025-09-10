@@ -134,14 +134,44 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
 
   if (serviceStatus === 'checking') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(to bottom right, #eff6ff, #e0e7ff)'
+      }}>
+        <div style={{
+          backgroundColor: '#ffffff',
+          padding: '2rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          maxWidth: '28rem',
+          width: '100%',
+          margin: '0 1rem'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              animation: 'spin 1s linear infinite',
+              borderRadius: '50%',
+              height: '2rem',
+              width: '2rem',
+              border: '2px solid transparent',
+              borderBottomColor: '#2563eb',
+              margin: '0 auto 1rem auto'
+            }}></div>
+            <h2 style={{
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              color: '#111827',
+              marginBottom: '0.5rem'
+            }}>
               서비스 연결 확인 중...
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p style={{
+              color: '#4b5563',
+              fontSize: '0.875rem'
+            }}>
               Django 백엔드 서비스에 연결하고 있습니다.
             </p>
           </div>
@@ -152,19 +182,56 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
 
   if (serviceStatus === 'unavailable') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="text-red-500 text-4xl mb-4">⚠️</div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(to bottom right, #fef2f2, #fce7f3)'
+      }}>
+        <div style={{
+          backgroundColor: '#ffffff',
+          padding: '2rem',
+          borderRadius: '0.75rem',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          maxWidth: '28rem',
+          width: '100%',
+          margin: '0 1rem'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              color: '#ef4444',
+              fontSize: '2.5rem',
+              marginBottom: '1rem'
+            }}>⚠️</div>
+            <h2 style={{
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              color: '#111827',
+              marginBottom: '0.5rem'
+            }}>
               서비스에 연결할 수 없습니다
             </h2>
-            <p className="text-gray-600 text-sm mb-4">
+            <p style={{
+              color: '#4b5563',
+              fontSize: '0.875rem',
+              marginBottom: '1rem'
+            }}>
               Django 백엔드 서비스가 일시적으로 사용할 수 없습니다.
             </p>
             <button
               onClick={checkServiceStatus}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              style={{
+                backgroundColor: '#dc2626',
+                color: '#ffffff',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'backgroundColor 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
             >
               다시 연결 시도
             </button>
@@ -175,18 +242,62 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(to bottom right, #eff6ff, #e0e7ff)'
+    }}>
+      <div style={{
+        backgroundColor: '#ffffff',
+        padding: '2rem',
+        borderRadius: '0.75rem',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        maxWidth: '28rem',
+        width: '100%',
+        margin: '0 1rem'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '1.5rem'
+        }}>
+          <h1 style={{
+            fontSize: '1.5rem',
+            fontWeight: '700',
+            color: '#111827',
+            marginBottom: '0.5rem'
+          }}>
             AHP Platform
           </h1>
-          <p className="text-gray-600">
+          <p style={{
+            color: '#4b5563'
+          }}>
             Django 백엔드 연동 로그인
           </p>
-          <div className="mt-2 space-y-2">
-            <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              <div className="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
+          <div style={{
+            marginTop: '0.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem'
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '9999px',
+              fontSize: '0.75rem',
+              fontWeight: '500',
+              backgroundColor: '#dcfce7',
+              color: '#166534'
+            }}>
+              <div style={{
+                width: '0.5rem',
+                height: '0.5rem',
+                backgroundColor: '#4ade80',
+                borderRadius: '50%',
+                marginRight: '0.25rem'
+              }}></div>
               서비스 연결됨
             </div>
             <div>
@@ -197,7 +308,17 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
                   const results = await testBackendIntegration();
                   alert(`테스트 완료! 브라우저 콘솔을 확인하세요.\n성공률: ${(results.filter(r => r.status === 'success').length / results.length * 100).toFixed(1)}%`);
                 }}
-                className="text-xs text-blue-600 hover:text-blue-800 underline"
+                style={{
+                  fontSize: '0.75rem',
+                  color: '#2563eb',
+                  textDecoration: 'underline',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: displayLoading ? 'not-allowed' : 'pointer',
+                  transition: 'color 0.2s'
+                }}
+                onMouseEnter={(e) => !displayLoading && (e.currentTarget.style.color = '#1e40af')}
+                onMouseLeave={(e) => !displayLoading && (e.currentTarget.style.color = '#2563eb')}
                 disabled={displayLoading}
               >
                 연동 상태 테스트
@@ -206,9 +327,19 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="username" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              color: '#374151',
+              marginBottom: '0.25rem'
+            }}>
               사용자명 또는 이메일
             </label>
             <input
@@ -217,7 +348,23 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
               name="username"
               value={formData.username}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.5rem',
+                fontSize: '1rem',
+                transition: 'border-color 0.15s, box-shadow 0.15s',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#3b82f6';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#d1d5db';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
               placeholder="admin 또는 test@example.com"
               required
               disabled={displayLoading}
@@ -225,7 +372,13 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              color: '#374151',
+              marginBottom: '0.25rem'
+            }}>
               비밀번호
             </label>
             <input
@@ -234,7 +387,23 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.5rem',
+                fontSize: '1rem',
+                transition: 'border-color 0.15s, box-shadow 0.15s',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#3b82f6';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#d1d5db';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
               placeholder="비밀번호 입력"
               required
               disabled={displayLoading}
@@ -242,8 +411,16 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
           </div>
 
           {displayError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <div className="text-red-700 text-sm">
+            <div style={{
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '0.5rem',
+              padding: '0.75rem'
+            }}>
+              <div style={{
+                color: '#b91c1c',
+                fontSize: '0.875rem'
+              }}>
                 {displayError}
               </div>
             </div>
@@ -252,11 +429,43 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
           <button
             type="submit"
             disabled={displayLoading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{
+              width: '100%',
+              backgroundColor: displayLoading ? '#9ca3af' : '#2563eb',
+              color: '#ffffff',
+              padding: '0.75rem 1rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: displayLoading ? 'not-allowed' : 'pointer',
+              opacity: displayLoading ? 0.5 : 1,
+              transition: 'backgroundColor 0.2s, opacity 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              if (!displayLoading) {
+                e.currentTarget.style.backgroundColor = '#1d4ed8';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!displayLoading) {
+                e.currentTarget.style.backgroundColor = '#2563eb';
+              }
+            }}
           >
             {displayLoading ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <div style={{
+                  animation: 'spin 1s linear infinite',
+                  borderRadius: '50%',
+                  height: '1rem',
+                  width: '1rem',
+                  border: '2px solid transparent',
+                  borderBottomColor: '#ffffff',
+                  marginRight: '0.5rem'
+                }}></div>
                 로그인 중...
               </div>
             ) : (
@@ -265,12 +474,30 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <div className="text-sm text-gray-600 mb-3">
+        <div style={{
+          marginTop: '1.5rem',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '0.875rem',
+            color: '#4b5563',
+            marginBottom: '0.75rem'
+          }}>
             테스트 계정으로 로그인하기
           </div>
-          <div className="bg-gray-50 rounded-lg p-3 text-left">
-            <div className="text-xs text-gray-700 space-y-1">
+          <div style={{
+            backgroundColor: '#f9fafb',
+            borderRadius: '0.5rem',
+            padding: '0.75rem',
+            textAlign: 'left'
+          }}>
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#374151',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.25rem'
+            }}>
               <div><strong>관리자:</strong> admin / ahp2025admin</div>
               <div><strong>이메일:</strong> admin@ahp-platform.com / ahp2025admin</div>
             </div>
@@ -278,10 +505,23 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
         </div>
 
         {onRegister && (
-          <div className="mt-4 text-center">
+          <div style={{
+            marginTop: '1rem',
+            textAlign: 'center'
+          }}>
             <button
               onClick={onRegister}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              style={{
+                color: '#2563eb',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={(e) => !displayLoading && (e.currentTarget.style.color = '#1e40af')}
+              onMouseLeave={(e) => !displayLoading && (e.currentTarget.style.color = '#2563eb')}
               disabled={displayLoading}
             >
               계정이 없으신가요? 회원가입
@@ -289,8 +529,14 @@ const DjangoLoginForm: React.FC<DjangoLoginFormProps> = ({
           </div>
         )}
 
-        <div className="mt-6 text-center">
-          <div className="text-xs text-gray-500">
+        <div style={{
+          marginTop: '1.5rem',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '0.75rem',
+            color: '#6b7280'
+          }}>
             Powered by Django + React + JWT
           </div>
         </div>
