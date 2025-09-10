@@ -2,7 +2,9 @@
 # exit on error
 set -o errexit
 
-echo "Starting Render.com build process..."
+echo "🚀 Starting Render.com build process..."
+echo "📅 Build Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+echo "🔄 Triggering deployment after CSS Design System integration..."
 
 # Upgrade pip
 pip install --upgrade pip
@@ -69,4 +71,6 @@ except Exception as e:
 echo "Trying management command as backup..."
 python manage.py create_admin || echo "Management command also failed"
 
-echo "Build completed successfully!"
+echo "✅ Build completed successfully!"
+echo "🎯 Version 2.1.0 - CSS Design System Integration"
+echo "📅 Deployment completed at: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
