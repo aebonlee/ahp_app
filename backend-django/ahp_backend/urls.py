@@ -341,8 +341,9 @@ def create_admin_api(request):
     })
 
 urlpatterns = [
-    # Admin
+    # Admin - Super Admin System
     path('admin/', admin.site.urls),
+    path('super-admin/', include('super_admin.urls')),
     
     # API 엔드포인트
     path('api/login/', login_api, name='login'),

@@ -43,8 +43,9 @@ THIRD_PARTY_APPS = [
     'corsheaders',  # 프론트엔드 연동
 ]
 
-# 간단하고 안전한 서비스 앱 - User 모델 충돌 해결을 위해 일시 단순화
+# Django 총 관리자 시스템 (회원관리, 결제시스템, PostgreSQL 연동)
 LOCAL_APPS = [
+    'super_admin',         # ✅ 총 관리자 시스템 (회원, 결제, 프로젝트 관리)
     'simple_service',      # ✅ 간단한 AHP 서비스만 활성화
     # 'apps.accounts',       # ❌ 일시 비활성화 - User 모델 충돌 해결
     # 'apps.projects',       # ❌ 일시 비활성화 - get_user_model() 의존성
@@ -222,8 +223,8 @@ LOGGING = {
 # Rate Limiting (기본 설정)
 RATELIMIT_ENABLE = True
 
-# Custom User Model 일시적 비활성화 - Migration 문제 해결
-# AUTH_USER_MODEL = 'accounts.User'
+# Super Admin 커스텀 사용자 모델 활성화
+AUTH_USER_MODEL = 'super_admin.CustomUser'
 
 # DRF 완전한 설정
 REST_FRAMEWORK = {
