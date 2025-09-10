@@ -2,12 +2,14 @@
 Django Backend URLs with Simple Service API
 """
 from django.contrib import admin
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
 from django.urls import path, include
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.routers import DefaultRouter
 import json
+
+User = get_user_model()
 
 # Simple Service API Router
 router = DefaultRouter()
@@ -514,6 +516,22 @@ urlpatterns = [
     # Simple Service API
     path('api/service/', include(router.urls)),
     path('api/service/status/', service_status, name='service_status'),
+    
+    # Users info endpoint - 회원 DB 간단 조회
+    path('users-info/', lambda request: JsonResponse({
+        'message': '회원 DB 현황',
+        'total_users': User.objects.count(),
+        'active_users': User.objects.filter(is_active=True).count(),
+        'staff_users': User.objects.filter(is_staff=True).count(),
+        'superusers': User.objects.filter(is_superuser=True).count(),
+        'recent_users': [
+            {
+                'username': u.username,
+                'email': u.email,
+                'joined': u.date_joined.isoformat() if u.date_joined else None
+            } for u in User.objects.order_by('-date_joined')[:5]
+        ]
+    }) if request.method == 'GET' else JsonResponse({'error': 'Method not allowed'}, status=405)),
     
     # Root endpoint
     path('', lambda request: JsonResponse({
