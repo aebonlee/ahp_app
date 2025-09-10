@@ -382,7 +382,9 @@ def service_status(request):
     return Response({
         'message': 'AHP Service is Running - Frontend Ready',
         'status': 'SUCCESS',
-        'version': '2.0.1',  # 버전 업데이트
+        'version': '2.1.0',  # CSS 디자인 시스템 통합 업데이트
+        'last_updated': '2025-01-10T16:30:00Z',
+        'deployment_notes': 'CSS Design System Integration + Auth Components Enhancement',
         'features': {
             'projects': True,
             'criteria': True,
