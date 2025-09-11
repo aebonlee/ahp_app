@@ -543,6 +543,58 @@ def create_admin_simple(request):
             'message': f'오류: {str(e)}'
         })
 
+@csrf_exempt
+def test_login_api(request):
+    """로그인 테스트 API"""
+    try:
+        from django.contrib.auth import get_user_model, authenticate
+        User = get_user_model()
+        
+        # admin 계정 상태 확인
+        if not User.objects.filter(username='admin').exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'admin 계정이 존재하지 않습니다.'
+            })
+        
+        admin = User.objects.get(username='admin')
+        
+        # 다양한 방식으로 인증 테스트
+        test_results = {}
+        
+        # 1. 사용자명으로 인증
+        user1 = authenticate(username='admin', password='ahp2025admin')
+        test_results['username_auth'] = user1 is not None
+        
+        # 2. 이메일로 인증  
+        user2 = authenticate(username='admin@ahp-platform.com', password='ahp2025admin')
+        test_results['email_auth'] = user2 is not None
+        
+        # 3. 비밀번호 직접 확인
+        password_check = admin.check_password('ahp2025admin')
+        test_results['password_check'] = password_check
+        
+        return JsonResponse({
+            'success': True,
+            'message': '로그인 테스트 완료',
+            'admin_info': {
+                'username': admin.username,
+                'email': admin.email,
+                'is_active': admin.is_active,
+                'is_staff': admin.is_staff,
+                'is_superuser': admin.is_superuser
+            },
+            'auth_tests': test_results,
+            'working_auth': user1 is not None or user2 is not None
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'message': f'테스트 중 오류: {str(e)}'
+        })
+
 def create_admin_api(request):
     """임시 관리자 생성 API (배포 후 즉시 제거 필요)"""
     if request.method in ['POST', 'GET']:
@@ -668,6 +720,7 @@ urlpatterns = [
     path('api/user/', user_info_api, name='user_info'),
     path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API - 로그인 테스트용 활성화
     path('api/simple-admin/', create_admin_simple, name='create_admin_simple'),  # 간단한 관리자 생성
+    path('api/test-login/', test_login_api, name='test_login'),  # 로그인 테스트
     path('api/users/list/', list_users_api, name='list_users'),  # 회원 DB 조회 API
     
     
