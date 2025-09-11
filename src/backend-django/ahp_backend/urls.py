@@ -24,9 +24,11 @@ router.register(r'results', SimpleResultViewSet)
 router.register(r'data', SimpleDataViewSet)
 
 from django_ratelimit.decorators import ratelimit
+from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
+DEBUG = settings.DEBUG
 
 def determine_user_type(user):
     """사용자 타입 결정 함수"""
@@ -639,8 +641,13 @@ def simple_login_api(request):
                     # 실제 Django 로그인 (세션 생성)
                     login(request, user)
                     
-                    # 성공 응답
-                    return JsonResponse({
+                    # 세션 정보 로깅
+                    logger.info(f"Session created: {request.session.session_key}")
+                    logger.info(f"Session data: {dict(request.session)}")
+                    logger.info(f"User authenticated: {request.user.is_authenticated}")
+                    
+                    # 응답 객체 생성
+                    response = JsonResponse({
                         'success': True,
                         'message': '로그인 성공!',
                         'user': {
@@ -652,8 +659,25 @@ def simple_login_api(request):
                             'user_type': 'admin',
                             'first_name': user.first_name,
                             'last_name': user.last_name
+                        },
+                        'session_info': {
+                            'session_key': request.session.session_key,
+                            'session_empty': request.session.is_empty()
                         }
                     })
+                    
+                    # 세션 쿠키를 명시적으로 설정 (CORS 대응)
+                    if request.session.session_key:
+                        response.set_cookie(
+                            'ahp_sessionid',
+                            request.session.session_key,
+                            max_age=3600 * 8,  # 8시간
+                            secure=not DEBUG,  # HTTPS에서만 전송 (production)
+                            httponly=False,  # JavaScript 접근 허용 (개발용)
+                            samesite='None' if not DEBUG else 'Lax'  # CORS 허용
+                        )
+                    
+                    return response
                 except Exception as e:
                     return JsonResponse({
                         'success': False,
