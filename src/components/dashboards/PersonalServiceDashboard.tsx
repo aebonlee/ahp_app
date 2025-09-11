@@ -7,12 +7,15 @@ import { PersonalServiceUser, BaseUser } from '../../types/userTypes';
 import ProjectManagement from '../personal/ProjectManagement';
 import AnalyticsPage from '../personal/AnalyticsPage';
 import SettingsPage from '../personal/SettingsPage';
+import EnhancedSuperAdminDashboard from '../admin/EnhancedSuperAdminDashboard';
+import PersonalService from '../admin/PersonalServiceDashboard';
 
 interface PersonalServiceDashboardProps {
   user: PersonalServiceUser | BaseUser;
+  onLogout: () => void;
 }
 
-const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ user }) => {
+const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -49,6 +52,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
   };
 
   const [activeTab, setActiveTab] = useState(getCurrentTab());
+  const [currentMode, setCurrentMode] = useState<'personal' | 'super-admin'>('personal');
   const [projectStats, setProjectStats] = useState({
     totalProjects: 0,
     activeProjects: 0,
@@ -78,8 +82,15 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
   };
 
   const handleLogout = async () => {
-    await userManagementService.logout();
-    navigate('/login');
+    try {
+      console.log('🚪 개인대시보드에서 로그아웃 시작');
+      await onLogout();
+      console.log('✅ 로그아웃 완료');
+    } catch (error) {
+      console.error('❌ 로그아웃 실패:', error);
+      // 에러가 발생해도 로그인 페이지로 이동
+      navigate('/login');
+    }
   };
 
   const getSubscriptionStatusColor = (status: string) => {
@@ -162,18 +173,18 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             <div style={{ position: 'relative' }}>
               <select
                 onChange={(e) => {
-                  const mode = e.target.value;
+                  const mode = e.target.value as 'personal' | 'super-admin';
                   console.log('🔄 모드 전환 요청:', mode);
                   
                   if (mode === 'personal') {
-                    console.log('✅ 이미 개인서비스 모드입니다');
-                    return; // 현재 페이지 유지
+                    console.log('✅ 개인서비스 모드로 전환');
+                    setCurrentMode('personal');
+                    return;
                   }
                   
                   if (mode === 'super-admin') {
                     console.log('🎯 슈퍼관리자 모드로 전환');
-                    // 슈퍼관리자 전용 기능 활성화 (추후 구현 가능)
-                    alert('🎯 슈퍼관리자 모드 활성화됨\n(모든 고급 기능에 접근 가능)');
+                    setCurrentMode('super-admin');
                     return;
                   }
                 }}
@@ -188,7 +199,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                   cursor: 'pointer',
                   boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)'
                 }}
-                defaultValue="personal"
+                value={currentMode}
               >
                 <option value="personal">💼 개인서비스 모드</option>
                 <option value="super-admin">🎯 슈퍼관리자 모드</option>
@@ -244,12 +255,13 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
         </div>
       )}
 
-      {/* 탭 네비게이션 */}
-      <div style={{
-        display: 'flex',
-        borderBottom: '1px solid var(--border-subtle)',
-        marginBottom: '2rem'
-      }}>
+      {/* 탭 네비게이션 - 일반 사용자의 기본 개인서비스 모드에서만 표시 */}
+      {currentMode === 'personal' && safeUser.user_type !== 'admin' && (
+        <div style={{
+          display: 'flex',
+          borderBottom: '1px solid var(--border-subtle)',
+          marginBottom: '2rem'
+        }}>
         {[
           { id: 'overview', label: '개요', icon: '📊', path: '/personal' },
           { id: 'projects', label: '프로젝트', icon: '📋', path: '/personal/projects' },
@@ -276,10 +288,40 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             {tab.icon} {tab.label}
           </button>
         ))}
-      </div>
+        </div>
+      )}
 
-      {/* 라우트 기반 콘텐츠 */}
-      <Routes>
+      {/* 모드별 콘텐츠 렌더링 */}
+      {currentMode === 'super-admin' ? (
+        // 슈퍼 관리자 모드 - EnhancedSuperAdminDashboard 사용
+        <EnhancedSuperAdminDashboard 
+          user={{
+            id: String(safeUser.id),
+            email: safeUser.email,
+            first_name: safeUser.first_name,
+            last_name: safeUser.last_name,
+            role: 'super_admin',
+            isActive: safeUser.is_active || true,
+            createdAt: safeUser.date_joined || new Date().toISOString(),
+            updatedAt: safeUser.last_login || new Date().toISOString(),
+            lastLogin: safeUser.last_login
+          }}
+        />
+      ) : currentMode === 'personal' && safeUser.user_type === 'admin' ? (
+        // 개인 서비스 모드 (관리자) - PersonalService 컴포넌트 사용
+        <PersonalService 
+          user={{
+            id: String(safeUser.id),
+            first_name: safeUser.first_name,
+            last_name: safeUser.last_name,
+            email: safeUser.email,
+            role: 'admin',
+            admin_type: 'personal'
+          }}
+        />
+      ) : (
+        // 일반 사용자 또는 기본 개인 서비스 모드
+        <Routes>
         <Route path="/" element={(
           <>
             {/* 통계 카드들 */}
@@ -506,7 +548,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
           // 대시보드 내의 잘못된 경로는 개요로 리다이렉트
           <Navigate to="/personal" replace />
         } />
-      </Routes>
+        </Routes>
+      )}
     </div>
   );
 };

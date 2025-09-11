@@ -597,7 +597,7 @@ function App() {
                   currentUser.id &&
                   (isPersonalServiceUser(currentUser) || isAdminUser(currentUser)) ? (
                     <ErrorBoundary>
-                      <PersonalServiceDashboard user={currentUser} />
+                      <PersonalServiceDashboard user={currentUser} onLogout={handleLogout} />
                     </ErrorBoundary>
                   ) : (
                     <Navigate to="/login" replace />
