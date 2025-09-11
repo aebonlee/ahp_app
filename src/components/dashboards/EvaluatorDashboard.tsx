@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { userManagementService } from '../../services/userManagementService';
-import { EvaluatorUser } from '../../types/userTypes';
+import { EvaluatorUser, BaseUser } from '../../types/userTypes';
 
 interface EvaluatorDashboardProps {
-  user: EvaluatorUser;
+  user: EvaluatorUser | BaseUser;
 }
 
 interface ProjectAssignment {
@@ -35,6 +35,26 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
     averageRating: 0,
     totalRewards: 0
   });
+
+  // 안전한 사용자 정보 접근을 위한 헬퍼
+  const safeUser = React.useMemo(() => {
+    const evaluatorUser = user as EvaluatorUser;
+    return {
+      id: user?.id || 'unknown',
+      username: user?.username || 'evaluator',
+      email: user?.email || 'evaluator@ahp-platform.com',
+      first_name: user?.first_name || 'Evaluator',
+      last_name: user?.last_name || 'User',
+      user_type: user?.user_type || 'evaluator' as const,
+      is_active: user?.is_active !== undefined ? user.is_active : true,
+      profile: evaluatorUser?.profile || {
+        display_name: '',
+        organization: '',
+        expertise_areas: [],
+        bio: ''
+      }
+    };
+  }, [user]);
 
   useEffect(() => {
     loadAssignments();
@@ -103,8 +123,22 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
   };
 
   const handleLogout = async () => {
-    await userManagementService.logout();
-    navigate('/login');
+    try {
+      // Django 로그아웃 API 호출
+      await fetch(`${process.env.REACT_APP_API_URL || 'https://ahp-django-backend.onrender.com'}/api/logout/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('로그아웃 중 오류:', error);
+    }
+    try {
+      window.location.href = '/ahp_app/login';
+    } catch (error) {
+      console.error('Navigation error:', error);
+      window.location.reload();
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -162,7 +196,20 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
             color: 'var(--text-secondary)',
             margin: 0
           }}>
-            {user.profile.display_name || `${user.first_name} ${user.last_name}`} • {user.profile.organization || '평가자'}
+            {safeUser.profile.display_name || `${safeUser.first_name} ${safeUser.last_name}`} • {safeUser.profile.organization || '평가자'}
+            {safeUser.user_type === 'admin' && (
+              <span style={{
+                marginLeft: '0.5rem',
+                padding: '0.25rem 0.5rem',
+                backgroundColor: '#dc2626',
+                color: 'white',
+                borderRadius: '0.25rem',
+                fontSize: '0.75rem',
+                fontWeight: 'bold'
+              }}>
+                AEBON 개발자 모드
+              </span>
+            )}
           </p>
         </div>
         
@@ -177,6 +224,38 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
           }}>
             활성 평가자
           </div>
+          
+          {safeUser.user_type === 'admin' && (
+            <div style={{ position: 'relative' }}>
+              <select
+                onChange={(e) => {
+                  const mode = e.target.value;
+                  if (mode === 'evaluator') return; // 현재 페이지
+                  try {
+                    window.location.href = `/ahp_app/${mode}`;
+                  } catch (error) {
+                    console.error('Navigation error:', error);
+                    window.location.reload();
+                  }
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+                defaultValue="evaluator"
+              >
+                <option value="admin">📊 종합관리</option>
+                <option value="personal">💼 개인서비스</option>
+                <option value="evaluator">📝 평가자</option>
+              </select>
+            </div>
+          )}
           
           <Button
             variant="secondary"
@@ -637,17 +716,17 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
                     <div>
                       <span style={{ color: 'var(--text-muted)' }}>표시 이름: </span>
                       <span style={{ color: 'var(--text-primary)' }}>
-                        {user.profile.display_name || `${user.first_name} ${user.last_name}`}
+                        {safeUser.profile.display_name || `${safeUser.first_name} ${safeUser.last_name}`}
                       </span>
                     </div>
                     <div>
                       <span style={{ color: 'var(--text-muted)' }}>이메일: </span>
-                      <span style={{ color: 'var(--text-primary)' }}>{user.email}</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{safeUser.email}</span>
                     </div>
                     <div>
                       <span style={{ color: 'var(--text-muted)' }}>소속: </span>
                       <span style={{ color: 'var(--text-primary)' }}>
-                        {user.profile.organization || '미설정'}
+                        {safeUser.profile.organization || '미설정'}
                       </span>
                     </div>
                   </div>
@@ -667,8 +746,8 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
                     flexWrap: 'wrap',
                     gap: '0.5rem'
                   }}>
-                    {user.profile.expertise_areas && user.profile.expertise_areas.length > 0 ? (
-                      user.profile.expertise_areas.map((area, index) => (
+                    {safeUser.profile.expertise_areas && safeUser.profile.expertise_areas.length > 0 ? (
+                      safeUser.profile.expertise_areas.map((area, index) => (
                         <span
                           key={index}
                           style={{
@@ -695,7 +774,7 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
                 </div>
               </div>
               
-              {user.profile.bio && (
+              {safeUser.profile.bio && (
                 <div style={{ marginTop: '2rem' }}>
                   <h4 style={{
                     fontSize: '1rem',
@@ -713,7 +792,7 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ user }) => {
                     backgroundColor: 'var(--bg-subtle)',
                     borderRadius: '0.5rem'
                   }}>
-                    {user.profile.bio}
+                    {safeUser.profile.bio}
                   </p>
                 </div>
               )}

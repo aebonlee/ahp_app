@@ -107,27 +107,39 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               fontSize: '0.875rem',
               fontWeight: '600'
             }}>
-              {isAebonUser ? 'AEBON 계정' : '슈퍼 관리자'}
+              {isAebonUser ? 'AEBON 개발자' : '슈퍼 관리자'}
             </div>
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                try {
-                  window.location.href = '/ahp_app/personal';
-                } catch (error) {
-                  console.error('Navigation error:', error);
-                  window.location.reload();
-                }
-              }}
-              style={{
-                borderColor: '#3b82f6',
-                color: '#3b82f6'
-              }}
-            >
-              개인서비스 대시보드
-            </Button>
+            {/* 모드 변경 드롭다운 */}
+            <div style={{ position: 'relative' }}>
+              <select
+                onChange={(e) => {
+                  const mode = e.target.value;
+                  if (mode === 'admin') return; // 현재 페이지
+                  try {
+                    window.location.href = `/ahp_app/${mode}`;
+                  } catch (error) {
+                    console.error('Navigation error:', error);
+                    window.location.reload();
+                  }
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+                defaultValue="admin"
+              >
+                <option value="admin">📊 종합관리</option>
+                <option value="personal">💼 개인서비스</option>
+                <option value="evaluator">📝 평가자</option>
+              </select>
+            </div>
             
             <Button
               variant="ghost"

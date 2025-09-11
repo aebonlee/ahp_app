@@ -3,10 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { userManagementService } from '../../services/userManagementService';
-import { PersonalServiceUser } from '../../types/userTypes';
+import { PersonalServiceUser, BaseUser } from '../../types/userTypes';
 
 interface PersonalServiceDashboardProps {
-  user: PersonalServiceUser;
+  user: PersonalServiceUser | BaseUser;
 }
 
 const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ user }) => {
@@ -18,9 +18,10 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
   const isAdminViewing = user.user_type === 'admin' && targetUserId;
   
   // Provide default subscription if undefined
+  const personalUser = user as PersonalServiceUser;
   const safeUser = {
     ...user,
-    subscription: user.subscription || {
+    subscription: personalUser.subscription || {
       tier: 'basic',
       status: 'trial',
       trial_ends_at: new Date().toISOString(),
@@ -111,7 +112,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             margin: 0
           }}>
             {safeUser.first_name} {safeUser.last_name} • {safeUser.subscription.tier} 플랜
-            {isAdminViewing && (
+            {safeUser.user_type === 'admin' && (
               <span style={{
                 marginLeft: '0.5rem',
                 padding: '0.25rem 0.5rem',
@@ -121,7 +122,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                 fontSize: '0.75rem',
                 fontWeight: 'bold'
               }}>
-                관리자 뷰
+                AEBON 개발자 모드
               </span>
             )}
           </p>
@@ -139,25 +140,36 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             {getSubscriptionStatusText(safeUser.subscription.status)}
           </div>
           
-          {isAdminViewing && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                try {
-                  window.location.href = '/ahp_app/admin';
-                } catch (error) {
-                  console.error('Navigation error:', error);
-                  window.location.reload();
-                }
-              }}
-              style={{
-                borderColor: '#dc2626',
-                color: '#dc2626'
-              }}
-            >
-              관리자 대시보드
-            </Button>
+          {safeUser.user_type === 'admin' && (
+            <div style={{ position: 'relative' }}>
+              <select
+                onChange={(e) => {
+                  const mode = e.target.value;
+                  if (mode === 'personal') return; // 현재 페이지
+                  try {
+                    window.location.href = `/ahp_app/${mode}`;
+                  } catch (error) {
+                    console.error('Navigation error:', error);
+                    window.location.reload();
+                  }
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+                defaultValue="personal"
+              >
+                <option value="admin">📊 종합관리</option>
+                <option value="personal">💼 개인서비스</option>
+                <option value="evaluator">📝 평가자</option>
+              </select>
+            </div>
           )}
           
           <Button
