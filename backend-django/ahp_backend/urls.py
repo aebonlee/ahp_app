@@ -473,8 +473,42 @@ def create_admin_simple(request):
         # 기존 사용자 확인
         existing_count = User.objects.count()
         
-        # admin 사용자 생성 시도
-        if not User.objects.filter(username='admin').exists():
+        # admin 사용자 생성 또는 재설정
+        if User.objects.filter(username='admin').exists():
+            # 기존 admin 계정 비밀번호 재설정
+            admin = User.objects.get(username='admin')
+            admin.set_password('ahp2025admin')  # 비밀번호 확실히 재설정
+            admin.is_staff = True
+            admin.is_superuser = True
+            admin.is_active = True
+            admin.email = 'admin@ahp-platform.com'
+            if hasattr(admin, 'user_type'):
+                admin.user_type = 'super_admin'
+            admin.save()
+            
+            # 비밀번호 확인 테스트
+            password_valid = admin.check_password('ahp2025admin')
+            
+            return JsonResponse({
+                'success': True,
+                'message': '관리자 계정 비밀번호 재설정 완료!',
+                'admin_created': False,
+                'password_reset': True,
+                'password_check': password_valid,
+                'credentials': {
+                    'username': 'admin',
+                    'email': 'admin@ahp-platform.com', 
+                    'password': 'ahp2025admin'
+                },
+                'admin_info': {
+                    'is_staff': admin.is_staff,
+                    'is_superuser': admin.is_superuser,
+                    'is_active': admin.is_active,
+                    'email': admin.email
+                }
+            })
+        else:
+            # 새 admin 계정 생성
             admin = User.objects.create_user(
                 username='admin',
                 email='admin@ahp-platform.com',
@@ -500,23 +534,6 @@ def create_admin_simple(request):
                 },
                 'user_count_before': existing_count,
                 'user_count_after': User.objects.count()
-            })
-        else:
-            admin = User.objects.get(username='admin')
-            return JsonResponse({
-                'success': True,
-                'message': '관리자 계정이 이미 존재합니다.',
-                'admin_created': False,
-                'credentials': {
-                    'username': 'admin',
-                    'email': 'admin@ahp-platform.com',
-                    'password': 'ahp2025admin'
-                },
-                'admin_info': {
-                    'is_staff': admin.is_staff,
-                    'is_superuser': admin.is_superuser,
-                    'is_active': admin.is_active
-                }
             })
             
     except Exception as e:
