@@ -476,11 +476,65 @@ def create_admin_api(request):
                 'message': f'관리자 생성 실패: {str(e)}'
             }, status=500)
     
-    return JsonResponse({
-        'message': '관리자 계정 생성 API',
-        'method': 'POST',
-        'note': '임시 API - 생성 후 즉시 제거 예정'
-    })
+    # GET 요청일 때도 관리자 생성
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        # 기존 admin 사용자 확인
+        if User.objects.filter(username='admin').exists():
+            admin = User.objects.get(username='admin')
+            return JsonResponse({
+                'success': True,
+                'message': '관리자 계정이 이미 존재합니다!',
+                'admin': {
+                    'username': admin.username,
+                    'email': admin.email,
+                    'is_superuser': admin.is_superuser,
+                    'is_staff': admin.is_staff
+                },
+                'credentials': {
+                    'username': 'admin',
+                    'email': 'admin@ahp-platform.com',
+                    'password': 'ahp2025admin'
+                }
+            })
+        
+        # 새 superuser 관리자 생성
+        admin = User.objects.create_superuser(
+            username='admin',
+            email='admin@ahp-platform.com',
+            password='ahp2025admin',
+            first_name='Admin',
+            last_name='User'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'GET 요청으로 관리자 계정이 생성되었습니다!',
+            'admin': {
+                'username': admin.username,
+                'email': admin.email,
+                'is_superuser': admin.is_superuser,
+                'is_staff': admin.is_staff
+            },
+            'credentials': {
+                'username': 'admin',
+                'email': 'admin@ahp-platform.com',
+                'password': 'ahp2025admin'
+            },
+            'database_stats': {
+                'total_users': User.objects.count(),
+                'admin_users': User.objects.filter(is_superuser=True).count()
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'GET 요청 관리자 생성 실패: {str(e)}',
+            'error': str(e)
+        }, status=500)
 
 urlpatterns = [
     # Admin - Super Admin System
