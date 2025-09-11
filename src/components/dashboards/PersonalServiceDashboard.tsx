@@ -52,7 +52,10 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
   };
 
   const [activeTab, setActiveTab] = useState(getCurrentTab());
-  const [currentMode, setCurrentMode] = useState<'personal' | 'super-admin'>('personal');
+  // 관리자는 기본적으로 개인서비스 모드로 시작, 일반 사용자는 기본 대시보드
+  const [currentMode, setCurrentMode] = useState<'dashboard' | 'personal' | 'super-admin'>(
+    safeUser.user_type === 'admin' ? 'personal' : 'dashboard'
+  );
   const [projectStats, setProjectStats] = useState({
     totalProjects: 0,
     activeProjects: 0,
@@ -199,7 +202,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                   cursor: 'pointer',
                   boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)'
                 }}
-                value={currentMode}
+                value={currentMode === 'dashboard' ? 'personal' : currentMode}
               >
                 <option value="personal">💼 개인서비스 모드</option>
                 <option value="super-admin">🎯 슈퍼관리자 모드</option>
@@ -255,8 +258,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
         </div>
       )}
 
-      {/* 탭 네비게이션 - 일반 사용자의 기본 개인서비스 모드에서만 표시 */}
-      {currentMode === 'personal' && safeUser.user_type !== 'admin' && (
+      {/* 탭 네비게이션 - 기본 대시보드 모드에서만 표시 */}
+      {currentMode === 'dashboard' && (
         <div style={{
           display: 'flex',
           borderBottom: '1px solid var(--border-subtle)',
@@ -320,7 +323,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <button
-                onClick={() => setCurrentMode('personal')}
+                onClick={() => setCurrentMode('dashboard')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -384,7 +387,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             }}
           />
         </div>
-      ) : currentMode === 'personal' && safeUser.user_type === 'admin' ? (
+      ) : currentMode === 'personal' ? (
         // 개인 서비스 모드 (관리자) - PersonalService 컴포넌트를 전체 화면으로 사용
         <div style={{ 
           position: 'fixed',
@@ -412,7 +415,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <button
-                onClick={() => setCurrentMode('personal')}
+                onClick={() => setCurrentMode('dashboard')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -473,8 +476,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             }}
           />
         </div>
-      ) : (
-        // 일반 사용자 또는 기본 개인 서비스 모드
+      ) : currentMode === 'dashboard' ? (
+        // 기본 대시보드 모드
         <Routes>
         <Route path="/" element={(
           <>
@@ -703,6 +706,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
           <Navigate to="/personal" replace />
         } />
         </Routes>
+      ) : (
+        // 기타 상태 - 기본 대시보드로 리다이렉트
+        <div>알 수 없는 모드입니다.</div>
       )}
     </div>
   );
