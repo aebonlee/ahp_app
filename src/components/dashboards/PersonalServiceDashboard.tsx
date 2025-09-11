@@ -140,7 +140,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                 fontSize: '0.75rem',
                 fontWeight: 'bold'
               }}>
-                AEBON 개발자 모드
+                🎯 슈퍼관리자 모드
               </span>
             )}
           </p>
