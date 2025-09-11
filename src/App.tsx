@@ -118,8 +118,8 @@ function App() {
       
       console.log('🔍 Django 백엔드 로그인 시도:', { username });
       
-      // Django 로그인 API 사용
-      const response = await fetch(`${API_BASE_URL}/api/login/`, {
+      // Django 간단한 로그인 API 사용 (안정적)
+      const response = await fetch(`${API_BASE_URL}/api/simple-login/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
