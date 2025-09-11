@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { userManagementService } from '../../services/userManagementService';
@@ -11,6 +11,11 @@ interface PersonalServiceDashboardProps {
 
 const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ user }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // URL에서 관리자가 특정 사용자를 조회하는지 확인
+  const targetUserId = searchParams.get('user');
+  const isAdminViewing = user.user_type === 'admin' && targetUserId;
   
   // Provide default subscription if undefined
   const safeUser = {
@@ -106,6 +111,19 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             margin: 0
           }}>
             {safeUser.first_name} {safeUser.last_name} • {safeUser.subscription.tier} 플랜
+            {isAdminViewing && (
+              <span style={{
+                marginLeft: '0.5rem',
+                padding: '0.25rem 0.5rem',
+                backgroundColor: '#dc2626',
+                color: 'white',
+                borderRadius: '0.25rem',
+                fontSize: '0.75rem',
+                fontWeight: 'bold'
+              }}>
+                관리자 뷰
+              </span>
+            )}
           </p>
         </div>
         
@@ -120,6 +138,20 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
           }}>
             {getSubscriptionStatusText(safeUser.subscription.status)}
           </div>
+          
+          {isAdminViewing && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/admin')}
+              style={{
+                borderColor: '#dc2626',
+                color: '#dc2626'
+              }}
+            >
+              관리자 대시보드
+            </Button>
+          )}
           
           <Button
             variant="secondary"

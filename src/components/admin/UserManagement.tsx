@@ -340,6 +340,21 @@ const UserManagement: React.FC<UserManagementProps> = ({
                     </td>
                     <td className="px-6 py-4 text-sm space-x-2">
                       <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => {
+                          // 해당 사용자의 개인서비스 페이지로 이동
+                          window.open(`/personal?user=${user.id}`, '_blank');
+                        }}
+                        style={{
+                          backgroundColor: '#059669',
+                          fontSize: '0.75rem',
+                          padding: '0.25rem 0.5rem'
+                        }}
+                      >
+                        개인서비스
+                      </Button>
+                      <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => handleEdit(user)}

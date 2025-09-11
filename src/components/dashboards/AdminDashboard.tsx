@@ -106,6 +106,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             </div>
             
             <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/personal')}
+              style={{
+                borderColor: '#3b82f6',
+                color: '#3b82f6'
+              }}
+            >
+              개인서비스 대시보드
+            </Button>
+            
+            <Button
               variant="ghost"
               size="sm"
               onClick={handleLogout}
