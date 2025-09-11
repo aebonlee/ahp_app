@@ -40,14 +40,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string>('');
 
-  // React 마운트 시 즉시 fallback 제거 (깜빡임 방지)
+  // React 마운트 확인 로그
   useEffect(() => {
-    const fallbackElement = document.getElementById('loading-fallback');
-    if (fallbackElement) {
-      // 즉시 제거하여 깜빡임 방지
-      fallbackElement.remove();
-      console.log('📱 HTML fallback 화면 즉시 제거됨');
-    }
+    console.log('⚡ React 컴포넌트 마운트됨');
   }, []);
 
   // Helper function to get default dashboard path - 안전한 네비게이션

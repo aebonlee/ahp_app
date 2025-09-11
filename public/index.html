@@ -100,11 +100,6 @@
         flex-direction: column;
       }
 
-      /* Completely hide fallback, let React handle everything */
-      #loading-fallback {
-        display: none !important;
-      }
-      
       /* Ensure root takes full space immediately */
       #root {
         min-height: 100vh;
@@ -137,14 +132,6 @@
         <p>Please enable JavaScript in your browser settings and refresh the page.</p>
       </div>
     </noscript>
-    <div id="root">
-      <!-- Minimal loading fallback -->
-      <div id="loading-fallback">
-        <div style="text-align: center;">
-          <div style="font-size: 2rem; margin-bottom: 1rem; color: #2563eb;">⚡ AHP System</div>
-          <div style="font-size: 0.875rem; color: #6b7280;">로딩 중...</div>
-        </div>
-      </div>
-    </div>
+    <div id="root"></div>
   </body>
 </html>
