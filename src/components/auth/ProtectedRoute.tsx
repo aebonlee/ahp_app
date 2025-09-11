@@ -41,9 +41,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const currentUserType = currentUser?.user_type;
   const isSuperAdmin = currentUser?.user_type === 'admin';
 
-  // 인증 필요한 경우 로그인 상태 확인
+  // 인증 확인 (로그인 후에는 세션 유지)
+  console.log('🛡️ ProtectedRoute 접근 시도:', { requireAuth, isAuthenticated, currentUserType });
+  
   if (requireAuth && !isAuthenticated) {
-    return <Navigate to={fallbackPath} replace />;
+    console.log('🚫 인증되지 않은 접근 - 로그인 페이지로 리다이렉트');
+    return <Navigate to="/login" replace />;
   }
 
   // 최고관리자는 모든 대시보드에 접근 가능

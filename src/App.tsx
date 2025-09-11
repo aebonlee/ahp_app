@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 // import { userManagementService } from './services/userManagementService'; // Django 백엔드로 대체
 import { API_BASE_URL } from './config/api';
 import { BaseUser, isAdminUser, isPersonalServiceUser, isEvaluatorUser } from './types/userTypes';
-
-// Layout components
-import Layout from './components/layout/Layout';
 
 // Auth components
 import LoginPage from './components/auth/LoginPage';
@@ -35,14 +32,63 @@ function App() {
   useColorTheme();
   useTheme();
 
-  // User state management
+  // User state management - 강제로 null로 시작 (자동 로그인 완전 차단)
   const [currentUser, setCurrentUser] = useState<BaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string>('');
+  const [isInitializing, setIsInitializing] = useState<boolean>(true); // 초기 로딩 상태
+
+  // 초기 세션 설정 (로그인 상태 복구)
+  React.useEffect(() => {
+    console.log('🔄 앱 초기화 - 세션 상태 확인');
+    
+    // sessionStorage에서 세션 복구 시도
+    const savedSession = sessionStorage.getItem('ahp_session');
+    if (savedSession) {
+      try {
+        const sessionData = JSON.parse(savedSession);
+        console.log('📦 기존 세션 복구:', sessionData.username, sessionData.user_type);
+        setCurrentUser(sessionData);
+      } catch (e) {
+        console.error('세션 복구 실패:', e);
+        sessionStorage.removeItem('ahp_session');
+        setCurrentUser(null);
+      }
+    } else {
+      console.log('📦 저장된 세션 없음');
+      setCurrentUser(null);
+    }
+    
+    // 초기화 완료
+    setIsInitializing(false);
+    console.log('✅ 초기 세션 로드 완료');
+  }, []); // 빈 의존성 배열로 한 번만 실행
 
   // React 마운트 확인 로그
   useEffect(() => {
     console.log('⚡ React 컴포넌트 마운트됨');
+    
+    // 페이지 새로고침/이동 감지
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const currentSession = sessionStorage.getItem('ahp_session');
+      console.log('🔄 페이지 새로고침/이동 감지 - 세션 상태:', currentSession ? '존재' : '없음');
+      if (currentSession) {
+        console.log('🔄 세션 데이터가 새로고침 전에 존재함');
+      }
+    };
+    
+    const handleLoad = () => {
+      console.log('🔄 페이지 로드 완료');
+      const currentSession = sessionStorage.getItem('ahp_session');
+      console.log('🔄 로드 후 세션 상태:', currentSession ? '존재' : '없음');
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('load', handleLoad);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('load', handleLoad);
+    };
   }, []);
 
   // Helper function to get default dashboard path - 안전한 네비게이션
@@ -66,45 +112,40 @@ function App() {
     }
   };
 
-  // 안전한 네비게이션 함수 - GitHub Pages 경로 고려
-  const safeNavigate = (path: string) => {
-    try {
-      // GitHub Pages의 경우 /ahp_app 접두사 추가
-      const fullPath = path.startsWith('/') ? `/ahp_app${path}` : `/ahp_app/${path}`;
-      window.location.href = fullPath;
-    } catch (error) {
-      console.error('Navigation error:', error);
-      window.location.reload();
-    }
-  };
 
-  // App initialization
+  // 세션 확인 로직 (로그인 후 세션 유지용) - 세션이 없을 때만 체크
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        setLoading(true);
+    // 이미 sessionStorage에서 세션을 복구했거나 currentUser가 설정되어 있으면 Django 체크하지 않음
+    if (currentUser) {
+      console.log('🔍 기존 세션 존재 - Django 세션 체크 생략:', currentUser.username);
+      return;
+    }
+    
+    const currentPath = window.location.hash.replace('#', '');
+    const isDashboardPage = currentPath.startsWith('/admin') || currentPath.startsWith('/personal') || currentPath.startsWith('/evaluator');
+    
+    // 대시보드 페이지이면서 currentUser가 없을 때만 Django 세션 확인
+    if (isDashboardPage) {
+      console.log('🔍 대시보드 페이지 - 세션 없음 - Django 세션 확인 시작');
+      
+      // 1초 지연으로 초기 세션 복구가 완료된 후 실행
+      const timer = setTimeout(async () => {
+        // 다시 한번 currentUser 체크 (초기 세션 복구가 완료되었을 수 있음)
+        if (currentUser) {
+          console.log('🔍 초기 세션 복구 완료됨 - Django 체크 중단');
+          return;
+        }
         
-        // 타임아웃을 설정하여 백엔드 응답을 기다리지 않고도 앱이 로드되도록 함
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Connection timeout')), 5000); // 5초 타임아웃
-        });
-        
-        // Django 백엔드 세션 검증
         try {
-          const fetchPromise = fetch(`${API_BASE_URL}/api/user/`, {
+          const response = await fetch(`${API_BASE_URL}/api/user/`, {
+            method: 'GET',
             credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
           });
-          
-          const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
           
           if (response.ok) {
             const data = await response.json();
             if (data.authenticated && data.user) {
-              console.log('🔄 페이지 새로고침 - Django 세션 복구 성공');
-              // Django 사용자 정보를 React 형식으로 변환 (안전한 접근)
               const userInfo: BaseUser = {
                 id: data.user.id || data.user.username || 'unknown',
                 username: data.user.username || '',
@@ -117,39 +158,26 @@ function App() {
                 date_joined: data.user.date_joined || new Date().toISOString(),
                 last_login: data.user.last_login || new Date().toISOString()
               };
+              
               setCurrentUser(userInfo);
-              console.log('✅ 사용자 세션 복구 완료:', userInfo.username);
+              sessionStorage.setItem('ahp_session', JSON.stringify(userInfo));
+              console.log('✅ Django 백엔드에서 세션 복구 성공:', userInfo.username);
             } else {
-              console.log('❌ Django 세션 인증되지 않음');
-              setCurrentUser(null);
+              console.log('❌ Django 세션 없음 - 로그인 필요');
             }
           } else {
-            console.log('ℹ️ 로그인되지 않은 상태');
-            setCurrentUser(null);
+            console.log('❌ Django 세션 확인 실패 - 응답 상태:', response.status);
           }
-        } catch (sessionError) {
-          const errorMessage = sessionError instanceof Error ? sessionError.message : String(sessionError);
-          console.log('ℹ️ Django 세션 검증 실패 또는 타임아웃 (앱은 계속 로드됩니다):', errorMessage);
-          setCurrentUser(null);
-          // 백엔드 연결 실패해도 앱은 계속 동작
+        } catch (error) {
+          console.log('Django 세션 확인 오류:', error);
         }
-      } catch (error) {
-        console.error('App initialization error:', error);
-        setAuthError('앱 초기화 중 오류가 발생했습니다.');
-        setCurrentUser(null);
-      } finally {
-        // 빠른 초기화를 위해 타임아웃 단축
-        setTimeout(() => {
-          setLoading(false);
-          console.log('🚀 React 애플리케이션 초기화 완료');
-          console.log('📍 현재 경로:', window.location.pathname);
-          console.log('👤 사용자 상태:', currentUser ? '로그인됨' : '로그인 필요');
-        }, 500); // 1초에서 0.5초로 단축
-      }
-    };
-
-    initializeApp();
-  }, []);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    } else {
+      console.log('🏠 홈페이지 - Django 세션 확인 생략');
+    }
+  }, [currentUser]); // currentUser 의존성 추가하여 세션 상태 변경 감지
 
   // Authentication handlers
   const handleLogin = async (username: string, password: string) => {
@@ -192,14 +220,42 @@ function App() {
         
         setCurrentUser(userInfo);
         
+        // sessionStorage에 세션 백업 저장 (브라우저 탭이 열려있는 동안 유지)
+        const sessionToSave = JSON.stringify(userInfo);
+        console.log('📦 세션 저장 시도:', userInfo.username, userInfo.user_type);
+        console.log('📦 저장할 데이터 크기:', sessionToSave.length, '바이트');
+        
+        try {
+          sessionStorage.setItem('ahp_session', sessionToSave);
+          console.log('📦 sessionStorage.setItem() 실행 완료');
+          
+          // 즉시 저장 확인
+          const savedCheck = sessionStorage.getItem('ahp_session');
+          console.log('📦 즉시 저장 검증:', savedCheck ? '성공' : '실패');
+          
+          if (savedCheck) {
+            const parsedCheck = JSON.parse(savedCheck);
+            console.log('📦 저장된 데이터 확인:', parsedCheck.username, parsedCheck.user_type);
+          }
+          
+          // 3초 후 재확인 (비동기 처리 확인)
+          setTimeout(() => {
+            const delayedCheck = sessionStorage.getItem('ahp_session');
+            console.log('📦 3초 후 세션 재확인:', delayedCheck ? '유지됨' : '사라짐');
+          }, 3000);
+          
+        } catch (storageError) {
+          console.error('📦 sessionStorage 저장 실패:', storageError);
+        }
+        
         // 로그인 성공 후 적절한 대시보드로 리다이렉트
         const dashboardPath = getDefaultDashboardPath(userInfo);
         console.log(`✅ 로그인 성공 - ${dashboardPath}로 이동`);
         
-        // 짧은 지연 후 리다이렉트 (상태 업데이트 완료 대기)
+        // React Router를 통한 네비게이션 (HashRouter 안전한 방식)
         setTimeout(() => {
-          safeNavigate(dashboardPath);
-        }, 500);
+          window.location.href = window.location.origin + window.location.pathname + `#${dashboardPath}`;
+        }, 100);
         
         return { success: true };
       } else {
@@ -228,12 +284,14 @@ function App() {
       
       setCurrentUser(null);
       setAuthError('');
+      sessionStorage.removeItem('ahp_session'); // sessionStorage 클리어
       console.log('✅ 로그아웃 완료');
     } catch (error) {
       console.error('❌ Django 로그아웃 실패:', error);
       // 에러가 발생해도 로컬 상태는 초기화
       setCurrentUser(null);
       setAuthError('');
+      sessionStorage.removeItem('ahp_session'); // sessionStorage 클리어
     }
   };
 
@@ -350,31 +408,32 @@ function App() {
     }
   };
 
-  // Loading screen - 깜빡임 없는 단일 로딩 화면
-  if (loading) {
+  // 로딩 화면 제거 - 깜빡임 방지를 위해 직접 콘텐츠 렌더링
+
+  // 초기화 중이면 로딩 화면 표시
+  if (isInitializing) {
     return (
       <div style={{
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#ffffff',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        backgroundColor: 'var(--bg-primary)'
       }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{
+          textAlign: 'center',
+          color: 'var(--text-secondary)'
+        }}>
           <div style={{
-            fontSize: '2rem',
-            marginBottom: '1rem',
-            color: '#2563eb'
-          }}>
-            ⚡ AHP System
-          </div>
-          <div style={{
-            fontSize: '0.875rem',
-            color: '#6b7280'
-          }}>
-            로딩 중...
-          </div>
+            width: '2rem',
+            height: '2rem',
+            border: '2px solid var(--border-subtle)',
+            borderTop: '2px solid var(--accent-primary)',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 1rem auto'
+          }}></div>
+          앱 초기화 중...
         </div>
       </div>
     );
@@ -387,7 +446,7 @@ function App() {
           <ErrorBoundary>
             <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<HomePage currentUser={currentUser} />} />
               
               {/* Developer Tools */}
               <Route path="/dev/test-accounts" element={<TestAccountManager />} />
@@ -407,13 +466,7 @@ function App() {
                 path="/login" 
                 element={
                   currentUser ? (
-                    <div>
-                      {(() => {
-                        const dashboardPath = getDefaultDashboardPath(currentUser);
-                        setTimeout(() => safeNavigate(dashboardPath), 100);
-                        return <div style={{ textAlign: 'center', padding: '2rem' }}>리다이렉트 중...</div>;
-                      })()}
-                    </div>
+                    <Navigate to={getDefaultDashboardPath(currentUser)} replace />
                   ) : (
                     <LoginPage 
                       onLogin={handleLogin}
@@ -565,25 +618,28 @@ function App() {
                 } 
               />
 
-              {/* Default redirect based on authentication status */}
+              {/* Default redirect - 더 정확한 처리 */}
               <Route 
                 path="*" 
                 element={
-                  currentUser ? (
-                    <div>
-                      {(() => {
-                        const dashboardPath = getDefaultDashboardPath(currentUser);
-                        setTimeout(() => safeNavigate(dashboardPath), 100);
-                        return <div style={{ textAlign: 'center', padding: '2rem' }}>대시보드로 이동 중...</div>;
-                      })()}
+                  // 현재 경로를 확인해서 대시보드 경로가 아닌 경우에만 리다이렉트
+                  window.location.hash.includes('/admin') || 
+                  window.location.hash.includes('/personal') || 
+                  window.location.hash.includes('/evaluator') ? (
+                    // 이미 대시보드 경로인 경우 그대로 유지
+                    <div style={{ 
+                      minHeight: '100vh', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      color: 'var(--text-secondary)'
+                    }}>
+                      <div>페이지를 로드하는 중...</div>
                     </div>
+                  ) : currentUser ? (
+                    <Navigate to={getDefaultDashboardPath(currentUser)} replace />
                   ) : (
-                    <div>
-                      {(() => {
-                        setTimeout(() => safeNavigate('/'), 100);
-                        return <div style={{ textAlign: 'center', padding: '2rem' }}>홈으로 이동 중...</div>;
-                      })()}
-                    </div>
+                    <Navigate to="/" replace />
                   )
                 } 
               />

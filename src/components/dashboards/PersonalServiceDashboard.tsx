@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Routes, Route, useNavigate, useSearchParams, Navigate, useLocation } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { userManagementService } from '../../services/userManagementService';
 import { PersonalServiceUser, BaseUser } from '../../types/userTypes';
+import ProjectManagement from '../personal/ProjectManagement';
+import AnalyticsPage from '../personal/AnalyticsPage';
+import SettingsPage from '../personal/SettingsPage';
 
 interface PersonalServiceDashboardProps {
   user: PersonalServiceUser | BaseUser;
@@ -11,6 +14,7 @@ interface PersonalServiceDashboardProps {
 
 const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ user }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   
   // URL에서 관리자가 특정 사용자를 조회하는지 확인
@@ -35,7 +39,16 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
     }
   };
 
-  const [activeTab, setActiveTab] = useState('overview');
+  // 현재 경로에 따라 activeTab 결정
+  const getCurrentTab = () => {
+    const pathname = location.pathname;
+    if (pathname.includes('/projects')) return 'projects';
+    if (pathname.includes('/analytics')) return 'analytics';
+    if (pathname.includes('/settings')) return 'settings';
+    return 'overview';
+  };
+
+  const [activeTab, setActiveTab] = useState(getCurrentTab());
   const [projectStats, setProjectStats] = useState({
     totalProjects: 0,
     activeProjects: 0,
@@ -43,6 +56,11 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
     totalEvaluators: 0,
     storageUsed: 0
   });
+
+  // 경로 변경 시 activeTab 업데이트
+  useEffect(() => {
+    setActiveTab(getCurrentTab());
+  }, [location.pathname]);
 
   useEffect(() => {
     loadProjectStats();
@@ -227,14 +245,17 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
         marginBottom: '2rem'
       }}>
         {[
-          { id: 'overview', label: '개요', icon: '📊' },
-          { id: 'projects', label: '프로젝트', icon: '📋' },
-          { id: 'analytics', label: '분석', icon: '📈' },
-          { id: 'settings', label: '설정', icon: '⚙️' }
+          { id: 'overview', label: '개요', icon: '📊', path: '/personal' },
+          { id: 'projects', label: '프로젝트', icon: '📋', path: '/personal/projects' },
+          { id: 'analytics', label: '분석', icon: '📈', path: '/personal/analytics' },
+          { id: 'settings', label: '설정', icon: '⚙️', path: '/personal/settings' }
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              setActiveTab(tab.id);
+              navigate(tab.path);
+            }}
             style={{
               padding: '1rem 1.5rem',
               backgroundColor: 'transparent',
@@ -251,9 +272,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
         ))}
       </div>
 
-      {/* 탭 콘텐츠 */}
-      <div style={{ display: 'grid', gap: '2rem' }}>
-        {activeTab === 'overview' && (
+      {/* 라우트 기반 콘텐츠 */}
+      <Routes>
+        <Route path="/" element={(
           <>
             {/* 통계 카드들 */}
             <div style={{ 
@@ -468,77 +489,18 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
               </div>
             </Card>
           </>
-        )}
-
-        {activeTab === 'projects' && (
-          <Card title="프로젝트 관리" variant="elevated">
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <p style={{
-                fontSize: '1rem',
-                color: 'var(--text-secondary)',
-                marginBottom: '1rem'
-              }}>
-                프로젝트 관리 기능을 개발 중입니다.
-              </p>
-              <div style={{
-                fontSize: '0.875rem',
-                color: 'var(--text-muted)',
-                backgroundColor: 'var(--bg-subtle)',
-                padding: '1rem',
-                borderRadius: '0.5rem'
-              }}>
-                AHP 프로젝트를 생성하고 관리할 수 있는 기능이 곧 추가됩니다.
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {activeTab === 'analytics' && (
-          <Card title="분석 대시보드" variant="elevated">
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <p style={{
-                fontSize: '1rem',
-                color: 'var(--text-secondary)',
-                marginBottom: '1rem'
-              }}>
-                분석 기능을 개발 중입니다.
-              </p>
-              <div style={{
-                fontSize: '0.875rem',
-                color: 'var(--text-muted)',
-                backgroundColor: 'var(--bg-subtle)',
-                padding: '1rem',
-                borderRadius: '0.5rem'
-              }}>
-                프로젝트별 상세 분석과 인사이트를 제공할 예정입니다.
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {activeTab === 'settings' && (
-          <Card title="계정 설정" variant="elevated">
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <p style={{
-                fontSize: '1rem',
-                color: 'var(--text-secondary)',
-                marginBottom: '1rem'
-              }}>
-                설정 기능을 개발 중입니다.
-              </p>
-              <div style={{
-                fontSize: '0.875rem',
-                color: 'var(--text-muted)',
-                backgroundColor: 'var(--bg-subtle)',
-                padding: '1rem',
-                borderRadius: '0.5rem'
-              }}>
-                프로필 수정, 결제 정보, 알림 설정 등을 관리할 수 있습니다.
-              </div>
-            </div>
-          </Card>
-        )}
-      </div>
+        )} />
+        
+        <Route path="projects" element={<ProjectManagement />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        
+        {/* 기본 리다이렉트 - 대시보드 내 경로만 처리 */}
+        <Route path="*" element={
+          // 대시보드 내의 잘못된 경로는 개요로 리다이렉트
+          <Navigate to="/personal" replace />
+        } />
+      </Routes>
     </div>
   );
 };

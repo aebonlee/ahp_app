@@ -2,22 +2,43 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeModeToggle from '../common/ThemeModeToggle';
 import ColorThemeButton from '../common/ColorThemeButton';
-import ParticleBackground from '../common/ParticleBackground';
 import PricingSection from './PricingSection';
+import { BaseUser } from '../../types/userTypes';
 
 interface HomePageProps {
+  currentUser?: BaseUser | null;
   onLoginClick?: () => void;
   onRegisterClick?: () => void;
   onNavigate?: (tab: string) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNavigate }) => {
+const HomePage: React.FC<HomePageProps> = ({ currentUser, onLoginClick, onRegisterClick, onNavigate }) => {
   const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light');
   const [isMobile, setIsMobile] = useState(false);
+
+
+  // 로그인 버튼 클릭 - 항상 로그인 페이지로
+  const handleLoginClick = () => {
+    navigate('/login');
+  };
+
+  // 시작하기 버튼 클릭 - 로그인 상태에 따라 다른 동작
+  const handleStartClick = () => {
+    console.log('🚀 시작하기 버튼 클릭 - 현재 사용자:', currentUser?.username || '없음');
+    
+    if (currentUser) {
+      // 로그인한 사용자는 바로 개인서비스 대시보드로 이동
+      console.log('✅ 로그인 상태 - 개인서비스 대시보드로 이동');
+      navigate('/personal');
+    } else {
+      // 로그인하지 않은 사용자는 로그인 페이지로 이동
+      console.log('❌ 비로그인 상태 - 로그인 페이지로 이동');
+      navigate('/login');
+    }
+  };
 
   // 스크롤 이벤트 및 화면 크기 처리
   useEffect(() => {
@@ -42,42 +63,6 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
     };
   }, []);
 
-  // 테마 변경 감지
-  useEffect(() => {
-    const detectTheme = () => {
-      const theme = document.documentElement.getAttribute('data-theme');
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setCurrentTheme(theme === 'dark' || (!theme && systemPrefersDark) ? 'dark' : 'light');
-    };
-
-    // 초기 테마 설정
-    detectTheme();
-
-    // 테마 변경 감지
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'data-theme') {
-          detectTheme();
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme']
-    });
-
-    // 시스템 테마 변경 감지
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleMediaChange = () => detectTheme();
-    mediaQuery.addListener(handleMediaChange);
-
-    return () => {
-      observer.disconnect();
-      mediaQuery.removeListener(handleMediaChange);
-    };
-  }, []);
-
   // 상단으로 스크롤
   const scrollToTop = () => {
     window.scrollTo({
@@ -93,7 +78,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
       color: 'var(--text-primary, #1f2937)',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
-      {/* 헤더 - 잔디 스타일 */}
+      {/* 헤더 - 완전한 네비게이션 */}
       <header style={{
         position: 'fixed',
         top: 0,
@@ -211,7 +196,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
               }}></div>
               
               <button
-                onClick={() => navigate('/login')}
+                onClick={handleLoginClick}
                 style={{
                   padding: '0.5rem 1.25rem',
                   color: 'var(--text-secondary)',
@@ -227,7 +212,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
                 로그인
               </button>
               <button
-                onClick={() => navigate('/login')}
+                onClick={handleStartClick}
                 style={{
                   padding: '0.625rem 1.5rem',
                   color: 'white',
@@ -303,18 +288,18 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
                 color: 'var(--text-secondary)',
                 textDecoration: 'none'
               }} onClick={() => setIsMenuOpen(false)}>요금제</a>
-              <a href="#support" style={{
+              <Link to="/support" style={{
                 display: 'block',
                 padding: '0.5rem 0',
                 color: 'var(--text-secondary)',
                 textDecoration: 'none'
-              }} onClick={() => setIsMenuOpen(false)}>고객 지원</a>
-              <a href="#news" style={{
+              }} onClick={() => setIsMenuOpen(false)}>고객 지원</Link>
+              <Link to="/news" style={{
                 display: 'block',
                 padding: '0.5rem 0',
                 color: 'var(--text-secondary)',
                 textDecoration: 'none'
-              }} onClick={() => setIsMenuOpen(false)}>소식 및 사례</a>
+              }} onClick={() => setIsMenuOpen(false)}>소식 및 사례</Link>
               
               {/* 모바일 테마 컨트롤 */}
               <div style={{
@@ -334,7 +319,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
               </div>
               
               <button 
-                onClick={() => navigate('/login')} 
+                onClick={handleStartClick} 
                 style={{
                   width: '100%',
                   padding: '0.75rem',
@@ -355,22 +340,14 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
         )}
       </header>
 
-      {/* 히어로 섹션 - Particles.js 배경 */}
+      {/* 히어로 섹션 */}
       <section style={{
         position: 'relative',
         paddingTop: '6rem',
         paddingBottom: '5rem',
         overflow: 'hidden'
       }}>
-        {/* Particles.js 배경 */}
-        <ParticleBackground 
-          className="absolute inset-0"
-          theme={currentTheme}
-          intensity="medium"
-          interactive={true}
-        />
-        
-        {/* 배경 그라디언트 - 더 투명하게 조정 */}
+        {/* 배경 그라디언트 */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -378,47 +355,6 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
           right: 0,
           bottom: 0,
           background: `linear-gradient(135deg, var(--bg-subtle), var(--bg-primary), var(--bg-elevated))`
-        }}></div>
-        
-        {/* 애니메이션 도형들 - 투명도 낮춤 */}
-        <div style={{
-          position: 'absolute',
-          top: '5rem',
-          left: '2.5rem',
-          width: '18rem',
-          height: '18rem',
-          borderRadius: '50%',
-          backgroundColor: 'var(--accent-primary)',
-          mixBlendMode: 'multiply',
-          filter: 'blur(40px)',
-          opacity: 0.1,
-          animation: 'pulse 4s ease-in-out infinite'
-        }}></div>
-        <div style={{
-          position: 'absolute',
-          top: '10rem',
-          right: '2.5rem',
-          width: '18rem',
-          height: '18rem',
-          borderRadius: '50%',
-          backgroundColor: 'var(--accent-secondary)',
-          mixBlendMode: 'multiply',
-          filter: 'blur(40px)',
-          opacity: 0.08,
-          animation: 'pulse 4s ease-in-out infinite 2s'
-        }}></div>
-        <div style={{
-          position: 'absolute',
-          bottom: '-2rem',
-          left: '5rem',
-          width: '18rem',
-          height: '18rem',
-          borderRadius: '50%',
-          backgroundColor: 'var(--accent-light)',
-          mixBlendMode: 'multiply',
-          filter: 'blur(40px)',
-          opacity: 0.05,
-          animation: 'pulse 4s ease-in-out infinite 4s'
         }}></div>
         
         <div style={{
@@ -492,7 +428,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
               alignItems: 'center'
             }}>
               <button
-                onClick={() => navigate('/login')}
+                onClick={handleStartClick}
                 style={{
                   padding: '1rem 2rem',
                   color: 'white',
@@ -843,18 +779,6 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
                   연구 목표와 평가 기준, 대안을 체계적으로 구성합니다
                 </p>
               </div>
-              {/* 연결선 */}
-              {!isMobile && (
-                <div style={{
-                  position: 'absolute',
-                  top: '2rem',
-                  left: '50%',
-                  width: '100%',
-                  height: '2px',
-                  backgroundColor: 'var(--border-medium)',
-                  zIndex: -1
-                }}></div>
-              )}
             </div>
 
             {/* 단계 2 */}
@@ -890,18 +814,6 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
                   각 요소들을 1:1로 비교하여 상대적 중요도를 평가합니다
                 </p>
               </div>
-              {/* 연결선 */}
-              {!isMobile && (
-                <div style={{
-                  position: 'absolute',
-                  top: '2rem',
-                  left: '50%',
-                  width: '100%',
-                  height: '2px',
-                  backgroundColor: 'var(--border-medium)',
-                  zIndex: -1
-                }}></div>
-              )}
             </div>
 
             {/* 단계 3 */}
@@ -943,7 +855,9 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
       </section>
 
       {/* 요금제 섹션 */}
-      <PricingSection onLoginClick={() => navigate('/login')} />
+      <section id="pricing">
+        <PricingSection onLoginClick={() => navigate('/login')} />
+      </section>
 
       {/* CTA 섹션 */}
       <section style={{
@@ -1059,7 +973,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick, onRegisterClick, onNa
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <button
-                  onClick={() => navigate('/login')}
+                  onClick={handleLoginClick}
                   style={{
                     color: 'var(--text-secondary)',
                     textDecoration: 'none',
