@@ -110,6 +110,8 @@ def login_api(request):
             if username in ['admin', 'admin@ahp-platform.com'] and password == 'ahp2025admin':
                 # 데이터베이스에서 admin 사용자 가져오기
                 try:
+                    from django.contrib.auth import get_user_model
+                    User = get_user_model()
                     admin_user = User.objects.get(username='admin')
                     login(request, admin_user)
                     
@@ -126,7 +128,9 @@ def login_api(request):
                         },
                         'redirect': '/admin/'
                     })
-                except User.DoesNotExist:
+                except Exception as e:
+                    # 에러 로깅
+                    logger.error(f"Hardcoded login error: {str(e)}")
                     pass
             
             # 이메일로도 로그인 가능
