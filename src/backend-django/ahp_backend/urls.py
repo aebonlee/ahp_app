@@ -591,21 +591,52 @@ def simple_login_api(request):
             username = data.get('username', '')
             password = data.get('password', '')
             
-            # 하드코드 검증
+            # 하드코드 검증 및 실제 Django 사용자 로그인
             if (username == 'admin' or username == 'admin@ahp-platform.com') and password == 'ahp2025admin':
-                # 성공 응답
-                return JsonResponse({
-                    'success': True,
-                    'message': '로그인 성공!',
-                    'user': {
-                        'id': '1',
-                        'username': 'admin',
-                        'email': 'admin@ahp-platform.com',
-                        'is_staff': True,
-                        'is_superuser': True,
-                        'user_type': 'admin'
-                    }
-                })
+                try:
+                    # 실제 Django 사용자 인증 및 로그인
+                    from django.contrib.auth import authenticate, login
+                    from django.contrib.auth.models import User
+                    
+                    # admin 사용자 찾기 또는 생성
+                    user, created = User.objects.get_or_create(
+                        username='admin',
+                        defaults={
+                            'email': 'admin@ahp-platform.com',
+                            'is_staff': True,
+                            'is_superuser': True,
+                            'first_name': 'Admin',
+                            'last_name': 'User'
+                        }
+                    )
+                    
+                    if created or not user.check_password('ahp2025admin'):
+                        user.set_password('ahp2025admin')
+                        user.save()
+                    
+                    # 실제 Django 로그인 (세션 생성)
+                    login(request, user)
+                    
+                    # 성공 응답
+                    return JsonResponse({
+                        'success': True,
+                        'message': '로그인 성공!',
+                        'user': {
+                            'id': str(user.id),
+                            'username': user.username,
+                            'email': user.email,
+                            'is_staff': user.is_staff,
+                            'is_superuser': user.is_superuser,
+                            'user_type': 'admin',
+                            'first_name': user.first_name,
+                            'last_name': user.last_name
+                        }
+                    })
+                except Exception as e:
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'로그인 처리 중 오류: {str(e)}'
+                    })
             else:
                 # 실패 응답
                 return JsonResponse({
