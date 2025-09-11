@@ -208,9 +208,20 @@ def login_api(request):
                     }, status=401)
             else:
                 logger.warning(f"Failed login attempt: {original_username} from {request.META.get('REMOTE_ADDR')}")
+                
+                # 디버깅을 위한 상세 정보
+                debug_info = {
+                    'username_attempted': username,
+                    'original_username': original_username,
+                    'user_exists': User.objects.filter(username=username).exists(),
+                    'email_exists': User.objects.filter(email=original_username).exists(),
+                    'total_users': User.objects.count()
+                }
+                
                 return JsonResponse({
                     'success': False,
-                    'message': '아이디 또는 비밀번호가 올바르지 않습니다.'
+                    'message': '아이디 또는 비밀번호가 올바르지 않습니다.',
+                    'debug': debug_info  # 디버깅 정보 포함
                 }, status=401)
         except json.JSONDecodeError:
             return JsonResponse({
