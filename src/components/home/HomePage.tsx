@@ -856,7 +856,7 @@ const HomePage: React.FC<HomePageProps> = ({ currentUser, onLoginClick, onRegist
 
       {/* 요금제 섹션 */}
       <section id="pricing">
-        <PricingSection onLoginClick={() => navigate('/login')} />
+        <PricingSection onLoginClick={handleStartClick} />
       </section>
 
       {/* CTA 섹션 */}
@@ -886,7 +886,7 @@ const HomePage: React.FC<HomePageProps> = ({ currentUser, onLoginClick, onRegist
             전문적인 AHP 분석으로 연구의 품질을 높이세요
           </p>
           <button
-            onClick={() => navigate('/login')}
+            onClick={handleStartClick}
             style={{
               padding: '1rem 2.5rem',
               color: 'var(--accent-primary)',
