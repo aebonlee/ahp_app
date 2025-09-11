@@ -82,41 +82,18 @@ def get_redirect_url_by_user_type(user_type, user):
 def login_api(request):
     """보안이 강화된 로그인 API"""
     
-    # GET 요청으로 테스트 로그인 제공
+    # GET 요청으로 간단한 테스트
     if request.method == 'GET':
-        try:
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-            
-            # admin 계정으로 자동 로그인 시도
-            user = authenticate(request, username='admin', password='ahp2025admin')
-            if user:
-                login(request, user)
-                return JsonResponse({
-                    'success': True,
-                    'message': 'GET 테스트 로그인 성공!',
-                    'method': 'GET',
-                    'user': {
-                        'username': user.username,
-                        'email': user.email,
-                        'is_staff': user.is_staff,
-                        'is_superuser': user.is_superuser
-                    }
-                })
-            else:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'GET 테스트 로그인 실패 - 계정 확인 필요',
-                    'debug': {
-                        'user_count': User.objects.count(),
-                        'admin_exists': User.objects.filter(username='admin').exists()
-                    }
-                })
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'GET 테스트 오류: {str(e)}'
-            })
+        return JsonResponse({
+            'success': True,
+            'message': 'Login API GET test',
+            'method': 'GET',
+            'expected_format': {
+                'username': 'admin',
+                'password': 'ahp2025admin'
+            },
+            'note': 'Use POST with JSON body for actual login'
+        })
     
     if request.method == 'POST':
         try:
