@@ -96,6 +96,17 @@
         display: flex;
         flex-direction: column;
       }
+
+      /* Prevent flashing by hiding loading fallback initially */
+      #loading-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background-color: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        transition: opacity 0.3s ease-out;
+      }
     </style>
 
     <!-- GitHub Pages SPA 라우팅 스크립트 -->
@@ -124,123 +135,13 @@
       </div>
     </noscript>
     <div id="root">
-      <!-- Enhanced fallback content with full AHP landing page -->
-      <div id="loading-fallback" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <!-- Header -->
-        <header style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 1rem 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.1);">
-          <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <div style="width: 40px; height: 40px; background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">A</div>
-              <h1 style="margin: 0; font-size: 1.5rem; color: #2d3748; font-weight: 700;">AHP System</h1>
-            </div>
-            <button id="loading-refresh" onclick="location.reload()" style="background: #667eea; color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;">새로고침</button>
-          </div>
-        </header>
-
-        <!-- Main Content -->
-        <main style="padding: 4rem 2rem; text-align: center;">
-          <div style="max-width: 800px; margin: 0 auto;">
-            <!-- Loading Animation -->
-            <div style="margin: 2rem auto; position: relative;">
-              <div style="width: 80px; height: 80px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-              <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px;">⚡</div>
-            </div>
-
-            <!-- Main Message -->
-            <div style="background: rgba(255,255,255,0.95); padding: 3rem; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); margin: 2rem 0;">
-              <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: #2d3748; font-weight: 800;">AHP 의사결정 지원 시스템</h1>
-              <p style="font-size: 1.2rem; color: #4a5568; margin-bottom: 2rem;">Analytic Hierarchy Process Decision Support System</p>
-              
-              <div style="background: #fef5e7; border: 1px solid #f6ad55; border-radius: 8px; padding: 1.5rem; margin: 2rem 0;">
-                <h3 style="color: #c05621; margin-top: 0;">🚀 시스템 로딩 중</h3>
-                <p style="color: #9c4221; margin: 0;">React 애플리케이션이 로딩되고 있습니다. 잠시만 기다려주세요.</p>
-              </div>
-
-              <!-- Feature Cards -->
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 3rem 0;">
-                <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 2rem; border-radius: 12px; text-align: left;">
-                  <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
-                  <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">다기준 의사결정</h3>
-                  <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">복잡한 의사결정을 체계적으로 분석</p>
-                </div>
-                <div style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 2rem; border-radius: 12px; text-align: left;">
-                  <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚖️</div>
-                  <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">계층적 분석</h3>
-                  <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">기준과 대안의 상대적 중요도 평가</p>
-                </div>
-                <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 2rem; border-radius: 12px; text-align: left;">
-                  <div style="font-size: 2rem; margin-bottom: 0.5rem;">📈</div>
-                  <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">결과 분석</h3>
-                  <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">시각적 보고서 및 민감도 분석</p>
-                </div>
-              </div>
-
-              <!-- Status Messages -->
-              <div style="text-align: left; background: #f7fafc; border-radius: 8px; padding: 1.5rem; margin: 2rem 0;">
-                <h4 style="color: #2d3748; margin-top: 0;">시스템 상태:</h4>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <div style="width: 8px; height: 8px; background: #48bb78; border-radius: 50%;"></div>
-                  <span style="color: #2d3748;">React 애플리케이션 빌드 완료</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <div style="width: 8px; height: 8px; background: #ed8936; border-radius: 50%; animation: pulse 2s infinite;"></div>
-                  <span style="color: #2d3748;">JavaScript 로딩 중...</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <div style="width: 8px; height: 8px; background: #cbd5e0; border-radius: 50%;"></div>
-                  <span style="color: #718096;">백엔드 연결 대기 중</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Troubleshooting -->
-            <div style="background: rgba(255,255,255,0.95); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); text-align: left; margin: 2rem 0;">
-              <h3 style="color: #2d3748; margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
-                🔧 문제 해결
-              </h3>
-              <div style="color: #4a5568;">
-                <p><strong>JavaScript가 활성화되지 않은 경우:</strong></p>
-                <ol style="margin: 0; padding-left: 1.5rem;">
-                  <li>브라우저 설정에서 JavaScript를 활성화해주세요</li>
-                  <li>페이지를 새로고침해주세요</li>
-                  <li>캐시를 삭제하고 다시 시도해주세요</li>
-                </ol>
-              </div>
-            </div>
-          </div>
-        </main>
-
-        <!-- Footer -->
-        <footer style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); text-align: center; padding: 2rem; color: white;">
-          <p style="margin: 0;">© 2025 AHP Decision Support System. Made with ❤️ by Claude Code</p>
-          <p style="margin: 0.5rem 0 0 0; opacity: 0.8; font-size: 0.9rem;">Version 2.0.1 | React 19.1.1 | TypeScript</p>
-        </footer>
-
-        <style>
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-          }
-          #loading-refresh:hover {
-            background: #5a67d8 !important;
-            transform: translateY(-1px);
-          }
-        </style>
+      <!-- Minimal loading fallback -->
+      <div id="loading-fallback">
+        <div style="text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 1rem; color: #2563eb;">⚡ AHP System</div>
+          <div style="font-size: 0.875rem; color: #6b7280;">로딩 중...</div>
+        </div>
       </div>
     </div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>

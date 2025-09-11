@@ -40,12 +40,16 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string>('');
 
-  // React 마운트 시 즉시 로딩 fallback 제거
+  // React 마운트 시 부드러운 전환으로 fallback 제거
   useEffect(() => {
     const fallbackElement = document.getElementById('loading-fallback');
     if (fallbackElement) {
-      fallbackElement.style.display = 'none';
-      console.log('📱 HTML fallback 화면 제거됨');
+      // 부드러운 fade out 효과
+      fallbackElement.style.opacity = '0';
+      setTimeout(() => {
+        fallbackElement.style.display = 'none';
+        console.log('📱 HTML fallback 화면 제거됨');
+      }, 300);
     }
   }, []);
 
