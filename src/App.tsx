@@ -79,14 +79,21 @@ function App() {
       try {
         setLoading(true);
         
+        // 타임아웃을 설정하여 백엔드 응답을 기다리지 않고도 앱이 로드되도록 함
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Connection timeout')), 5000); // 5초 타임아웃
+        });
+        
         // Django 백엔드 세션 검증
         try {
-          const response = await fetch(`${API_BASE_URL}/api/user/`, {
+          const fetchPromise = fetch(`${API_BASE_URL}/api/user/`, {
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
             },
           });
+          
+          const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
           
           if (response.ok) {
             const data = await response.json();
@@ -106,6 +113,7 @@ function App() {
                 last_login: data.user.last_login || new Date().toISOString()
               };
               setCurrentUser(userInfo);
+              console.log('✅ 사용자 세션 복구 완료:', userInfo.username);
             } else {
               console.log('❌ Django 세션 인증되지 않음');
               setCurrentUser(null);
@@ -115,14 +123,21 @@ function App() {
             setCurrentUser(null);
           }
         } catch (sessionError) {
-          console.log('ℹ️ Django 세션 검증 실패 (로그인되지 않은 상태):', sessionError);
+          const errorMessage = sessionError instanceof Error ? sessionError.message : String(sessionError);
+          console.log('ℹ️ Django 세션 검증 실패 또는 타임아웃 (앱은 계속 로드됩니다):', errorMessage);
           setCurrentUser(null);
+          // 백엔드 연결 실패해도 앱은 계속 동작
         }
       } catch (error) {
         console.error('App initialization error:', error);
         setAuthError('앱 초기화 중 오류가 발생했습니다.');
+        setCurrentUser(null);
       } finally {
-        setLoading(false);
+        // 최소 1초는 로딩 화면을 보여준 후 앱 로드
+        setTimeout(() => {
+          setLoading(false);
+          console.log('🚀 React 애플리케이션 초기화 완료');
+        }, 1000);
       }
     };
 
