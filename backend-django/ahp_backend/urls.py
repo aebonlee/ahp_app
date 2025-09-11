@@ -463,78 +463,56 @@ def list_users_api(request):
         'method': 'GET'
     })
 
-@csrf_exempt
+@csrf_exempt 
 def create_admin_simple(request):
     """간단한 관리자 생성"""
     try:
         from django.contrib.auth import get_user_model
+        from django.db import transaction
         User = get_user_model()
         
         # 기존 사용자 확인
         existing_count = User.objects.count()
         
-        # admin 사용자 생성 또는 재설정
-        if User.objects.filter(username='admin').exists():
-            # 기존 admin 계정 비밀번호 재설정
+        # admin 사용자 강제 생성
+        try:
             admin = User.objects.get(username='admin')
-            admin.set_password('ahp2025admin')  # 비밀번호 확실히 재설정
-            admin.is_staff = True
-            admin.is_superuser = True
-            admin.is_active = True
-            admin.email = 'admin@ahp-platform.com'
-            if hasattr(admin, 'user_type'):
-                admin.user_type = 'super_admin'
-            admin.save()
-            
-            # 비밀번호 확인 테스트
-            password_valid = admin.check_password('ahp2025admin')
-            
-            return JsonResponse({
-                'success': True,
-                'message': '관리자 계정 비밀번호 재설정 완료!',
-                'admin_created': False,
-                'password_reset': True,
-                'password_check': password_valid,
-                'credentials': {
-                    'username': 'admin',
-                    'email': 'admin@ahp-platform.com', 
-                    'password': 'ahp2025admin'
-                },
-                'admin_info': {
-                    'is_staff': admin.is_staff,
-                    'is_superuser': admin.is_superuser,
-                    'is_active': admin.is_active,
-                    'email': admin.email
-                }
-            })
-        else:
-            # 새 admin 계정 생성
-            admin = User.objects.create_user(
-                username='admin',
-                email='admin@ahp-platform.com',
-                password='ahp2025admin',
-                first_name='Admin',
-                last_name='User'
-            )
-            admin.is_staff = True
-            admin.is_superuser = True
-            admin.is_active = True
-            if hasattr(admin, 'user_type'):
-                admin.user_type = 'super_admin'
-            admin.save()
-            
-            return JsonResponse({
-                'success': True,
-                'message': '관리자 계정 생성 완료!',
-                'admin_created': True,
-                'credentials': {
-                    'username': 'admin',
-                    'email': 'admin@ahp-platform.com', 
-                    'password': 'ahp2025admin'
-                },
-                'user_count_before': existing_count,
-                'user_count_after': User.objects.count()
-            })
+            admin.delete()  # 기존 계정 삭제
+        except User.DoesNotExist:
+            pass
+        
+        # 새 admin 계정 생성
+        admin = User(
+            username='admin',
+            email='admin@ahp-platform.com',
+            first_name='Admin',
+            last_name='User'
+        )
+        admin.set_password('ahp2025admin')
+        admin.is_staff = True
+        admin.is_superuser = True
+        admin.is_active = True
+        if hasattr(admin, 'user_type'):
+            admin.user_type = 'super_admin'
+        admin.save()
+        
+        # 생성 확인
+        created = User.objects.filter(username='admin').exists()
+        password_valid = admin.check_password('ahp2025admin')
+        
+        return JsonResponse({
+            'success': True,
+            'message': '관리자 계정 강제 생성 완료!',
+            'admin_created': True,
+            'exists': created,
+            'password_check': password_valid,
+            'credentials': {
+                'username': 'admin',
+                'email': 'admin@ahp-platform.com', 
+                'password': 'ahp2025admin'
+            },
+            'user_count': User.objects.count()
+        })
             
     except Exception as e:
         return JsonResponse({
