@@ -366,27 +366,49 @@ def register_api(request):
     })
 
 def user_info_api(request):
-    """현재 로그인한 사용자 정보"""
-    if request.user.is_authenticated:
-        return JsonResponse({
-            'authenticated': True,
-            'user': {
-                'id': request.user.id,
-                'username': request.user.username,
-                'email': request.user.email,
-                'first_name': request.user.first_name,
-                'last_name': request.user.last_name,
-                'is_staff': request.user.is_staff,
-                'is_superuser': request.user.is_superuser,
-                'last_login': request.user.last_login,
-                'date_joined': request.user.date_joined
-            }
-        })
-    else:
+    """현재 로그인한 사용자 정보 - 세션 기반 인증"""
+    try:
+        if request.user.is_authenticated:
+            # 사용자 타입 결정
+            user_type = determine_user_type(request.user)
+            
+            return JsonResponse({
+                'authenticated': True,
+                'user': {
+                    'id': str(request.user.id),
+                    'username': request.user.username,
+                    'email': request.user.email,
+                    'first_name': request.user.first_name,
+                    'last_name': request.user.last_name,
+                    'is_staff': request.user.is_staff,
+                    'is_superuser': request.user.is_superuser,
+                    'is_active': request.user.is_active,
+                    'user_type': user_type,
+                    'last_login': request.user.last_login.isoformat() if request.user.last_login else None,
+                    'date_joined': request.user.date_joined.isoformat() if request.user.date_joined else None
+                },
+                'session_info': {
+                    'session_key': request.session.session_key,
+                    'session_empty': request.session.is_empty(),
+                    'csrf_token': request.META.get('CSRF_COOKIE')
+                }
+            })
+        else:
+            return JsonResponse({
+                'authenticated': False,
+                'message': '로그인이 필요합니다.',
+                'session_info': {
+                    'session_key': request.session.session_key,
+                    'session_empty': request.session.is_empty() if hasattr(request, 'session') else True
+                }
+            }, status=401)
+    except Exception as e:
+        logger.error(f"User info API error: {str(e)}")
         return JsonResponse({
             'authenticated': False,
-            'message': '로그인이 필요합니다.'
-        })
+            'message': f'사용자 정보 조회 오류: {str(e)}',
+            'error': True
+        }, status=500)
 
 @csrf_exempt
 def logout_api(request):

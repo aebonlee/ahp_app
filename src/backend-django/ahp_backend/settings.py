@@ -282,3 +282,21 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+# Session Configuration for Frontend Integration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # 데이터베이스 기반 세션
+SESSION_COOKIE_NAME = 'ahp_sessionid'  # 세션 쿠키 이름
+SESSION_COOKIE_AGE = 3600 * 8  # 8시간 (admin: 8시간, 일반: 2시간은 미들웨어에서 처리)
+SESSION_SAVE_EVERY_REQUEST = True  # 요청할 때마다 세션 저장
+
+# Development session settings (less strict)
+if DEBUG:
+    SESSION_COOKIE_SECURE = False  # HTTP에서도 작동
+    SESSION_COOKIE_HTTPONLY = False  # JavaScript에서 접근 가능 (개발용)
+    SESSION_COOKIE_SAMESITE = 'Lax'  # CORS 허용
+else:
+    # Production session settings (already configured above)
+    pass
+
+# CSRF Configuration for API
+CSRF_USE_SESSIONS = True  # CSRF 토큰을 세션에 저장
