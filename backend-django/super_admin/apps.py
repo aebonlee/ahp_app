@@ -8,9 +8,14 @@ class SuperAdminConfig(AppConfig):
     
     def ready(self):
         # 앱이 준비되면 자동으로 슈퍼유저 생성
-        try:
-            from django.core.management import call_command
-            call_command('create_superuser')
-        except Exception as e:
-            # 마이그레이션 중에는 테이블이 없을 수 있으므로 무시
-            pass
+        import os
+        import django
+        if os.environ.get('RUN_MAIN') != 'true':  # runserver가 reload할 때는 실행하지 않음
+            try:
+                django.setup()
+                from django.core.management import call_command
+                call_command('create_superuser')
+            except Exception as e:
+                # 개발 단계에서는 에러 출력
+                import logging
+                logging.error(f"Failed to create superuser: {e}")

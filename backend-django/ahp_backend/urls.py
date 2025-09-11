@@ -431,7 +431,7 @@ def list_users_api(request):
 @csrf_exempt
 def create_admin_api(request):
     """임시 관리자 생성 API (배포 후 즉시 제거 필요)"""
-    if request.method == 'POST':
+    if request.method in ['POST', 'GET']:
         try:
             from django.contrib.auth import get_user_model
             User = get_user_model()
