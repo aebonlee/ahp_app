@@ -468,50 +468,72 @@ def create_admin_simple(request):
     """간단한 관리자 생성"""
     try:
         from django.contrib.auth import get_user_model
-        from django.db import transaction
+        from django.db import connection
         User = get_user_model()
+        
+        # 데이터베이스 연결 테스트
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            db_test = cursor.fetchone()
         
         # 기존 사용자 확인
         existing_count = User.objects.count()
+        existing_admin = User.objects.filter(username='admin').exists()
         
-        # admin 사용자 강제 생성
+        if existing_admin:
+            # 기존 계정 삭제
+            User.objects.filter(username='admin').delete()
+        
+        # 새 admin 계정을 create_superuser로 생성
         try:
-            admin = User.objects.get(username='admin')
-            admin.delete()  # 기존 계정 삭제
-        except User.DoesNotExist:
-            pass
+            admin = User.objects.create_superuser(
+                username='admin',
+                email='admin@ahp-platform.com',
+                password='ahp2025admin'
+            )
+        except Exception as create_error:
+            # create_superuser 실패시 수동 생성
+            admin = User(
+                username='admin',
+                email='admin@ahp-platform.com'
+            )
+            admin.set_password('ahp2025admin')
+            admin.is_staff = True
+            admin.is_superuser = True
+            admin.is_active = True
+            admin.save()
         
-        # 새 admin 계정 생성
-        admin = User(
-            username='admin',
-            email='admin@ahp-platform.com',
-            first_name='Admin',
-            last_name='User'
-        )
-        admin.set_password('ahp2025admin')
-        admin.is_staff = True
-        admin.is_superuser = True
-        admin.is_active = True
-        if hasattr(admin, 'user_type'):
-            admin.user_type = 'super_admin'
-        admin.save()
+        # 생성 후 확인
+        final_count = User.objects.count()
+        admin_exists = User.objects.filter(username='admin').exists()
         
-        # 생성 확인
-        created = User.objects.filter(username='admin').exists()
-        password_valid = admin.check_password('ahp2025admin')
+        # 생성된 admin 정보
+        if admin_exists:
+            saved_admin = User.objects.get(username='admin')
+            admin_info = {
+                'id': str(saved_admin.id),
+                'username': saved_admin.username,
+                'email': saved_admin.email,
+                'is_active': saved_admin.is_active,
+                'is_staff': saved_admin.is_staff,
+                'is_superuser': saved_admin.is_superuser
+            }
+        else:
+            admin_info = None
         
         return JsonResponse({
-            'success': True,
-            'message': '관리자 계정 강제 생성 완료!',
-            'admin_created': True,
-            'exists': created,
-            'password_check': password_valid,
+            'success': admin_exists,
+            'message': '관리자 계정 생성 시도 완료',
+            'db_connected': db_test is not None,
+            'before_count': existing_count,
+            'after_count': final_count,
+            'admin_exists': admin_exists,
+            'admin_info': admin_info,
             'credentials': {
                 'username': 'admin',
                 'email': 'admin@ahp-platform.com', 
                 'password': 'ahp2025admin'
-            },
-            'user_count': User.objects.count()
+            }
         })
             
     except Exception as e:
