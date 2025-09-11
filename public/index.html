@@ -110,14 +110,12 @@
     <!-- GitHub Pages SPA 라우팅 스크립트 -->
     <script type="text/javascript">
       // Single Page Apps for GitHub Pages
-      // https://github.com/rafrex/spa-github-pages
+      // Convert redirected URLs back to proper HashRouter format
       (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
-            return s.replace(/~and~/g, '&')
-          }).join('?');
+        if (l.search && l.search[1] === '/' ) {
+          var path = l.search.slice(1).split('&')[0];
           window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
+              l.pathname + '#' + path + l.hash
           );
         }
       }(window.location))
