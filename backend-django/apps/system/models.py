@@ -32,10 +32,10 @@ class SystemSettings(models.Model):
     
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='apps_updated_settings')
     
     class Meta:
-        db_table = 'system_settings'
+        db_table = 'apps_system_settings'
         verbose_name = 'System Setting'
         verbose_name_plural = 'System Settings'
         
@@ -84,7 +84,7 @@ class SystemLog(models.Model):
     message = models.TextField()
     details = models.JSONField(default=dict, blank=True)
     
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='apps_system_logs')
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
     
@@ -94,7 +94,7 @@ class SystemLog(models.Model):
     response_status = models.PositiveIntegerField(null=True, blank=True)
     
     class Meta:
-        db_table = 'system_logs'
+        db_table = 'apps_system_logs'
         ordering = ['-timestamp']
         indexes = [
             models.Index(fields=['timestamp']),
@@ -126,14 +126,14 @@ class MaintenanceMode(models.Model):
     scheduled_end = models.DateTimeField(null=True, blank=True)
     
     # 메타 정보
-    enabled_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    enabled_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='apps_maintenance_modes')
     enabled_at = models.DateTimeField(null=True, blank=True)
     
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        db_table = 'maintenance_mode'
+        db_table = 'apps_maintenance_mode'
         verbose_name = 'Maintenance Mode'
         verbose_name_plural = 'Maintenance Mode'
         
@@ -178,7 +178,7 @@ class SystemStatistics(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        db_table = 'system_statistics'
+        db_table = 'apps_system_statistics'
         ordering = ['-date']
         
     def __str__(self):
@@ -219,10 +219,10 @@ class BackupRecord(models.Model):
     error_message = models.TextField(blank=True)
     
     # User info
-    initiated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    initiated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='apps_backup_records')
     
     class Meta:
-        db_table = 'backup_records'
+        db_table = 'apps_backup_records'
         ordering = ['-started_at']
         
     def __str__(self):
@@ -241,7 +241,7 @@ class APIUsageLog(models.Model):
     
     endpoint = models.CharField(max_length=255)
     method = models.CharField(max_length=10)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='apps_api_usage_logs')
     
     # Request details
     ip_address = models.GenericIPAddressField()
@@ -258,7 +258,7 @@ class APIUsageLog(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
     
     class Meta:
-        db_table = 'api_usage_logs'
+        db_table = 'apps_api_usage_logs'
         ordering = ['-timestamp']
         indexes = [
             models.Index(fields=['endpoint']),
@@ -295,7 +295,7 @@ class SystemNotification(models.Model):
     priority = models.CharField(max_length=20, choices=PRIORITY_LEVELS, default='medium')
     
     # Targeting
-    target_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='system_notifications')
+    target_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='apps_system_notifications')
     target_all_admins = models.BooleanField(default=False)
     
     # Status
@@ -304,7 +304,7 @@ class SystemNotification(models.Model):
     auto_dismiss_after = models.DurationField(null=True, blank=True, help_text="자동 해제 시간")
     
     # Metadata
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_notifications')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='apps_created_notifications')
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -313,7 +313,7 @@ class SystemNotification(models.Model):
     show_in_header = models.BooleanField(default=True)
     
     class Meta:
-        db_table = 'system_notifications'
+        db_table = 'apps_system_notifications'
         ordering = ['-created_at']
         
     def __str__(self):
