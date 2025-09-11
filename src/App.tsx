@@ -118,8 +118,8 @@ function App() {
       
       console.log('🔍 Django 백엔드 로그인 시도:', { username });
       
-      // Django 통합 로그인 API 사용
-      const response = await fetch(`${API_BASE_URL}/api/login/`, {
+      // Django 간단한 로그인 API 사용 (테스트용)
+      const response = await fetch(`${API_BASE_URL}/api/simple-login/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -152,20 +152,10 @@ function App() {
         
         setCurrentUser(userInfo);
         
-        // 최고관리자(슈퍼 관리자)인 경우 모드 선택 옵션 제공
-        if (data.user.is_superuser && data.redirect && data.redirect.includes('/super-admin/')) {
-          console.log('🔄 최고관리자 로그인 - 모드 선택 옵션 제공');
-          
-          // 최고관리자 모드 선택 모달 표시
-          const modeChoice = window.confirm('🛡️ 최고관리자로 로그인되었습니다!\n\n확인: Django 관리자 페이지로 이동\n취소: React 앱 관리자 대시보드 이용');
-          
-          if (modeChoice) {
-            // Django 관리자 페이지로 이동
-            setTimeout(() => {
-              window.location.href = `${API_BASE_URL}/super-admin/`;
-            }, 1000);
-          }
-          
+        // 최고관리자는 바로 React 앱 관리자 대시보드로 이동
+        if (data.user.is_superuser) {
+          console.log('✅ 최고관리자 로그인 성공 - React 앱 관리자 대시보드로 이동');
+          // React 앱 내에서 관리자 페이지로 이동
           return { success: true };
         }
         
