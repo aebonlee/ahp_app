@@ -1,0 +1,413 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+/* Enhanced Django Admin Styling for AHP Platform */
+
+/* Header Enhancements */
+#header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border-bottom: 3px solid #3498db;
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited {
+    color: #ecf0f1;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+#user-tools {
+    background: rgba(52, 152, 219, 0.2);
+    border-radius: 20px;
+    padding: 5px 15px;
+    margin: 5px;
+}
+
+#user-tools a {
+    color: #ecf0f1 !important;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* Navigation Enhancements */
+.module h2, .module caption, .inline-group h2 {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    font-weight: 600;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    border-radius: 4px 4px 0 0;
+}
+
+/* Card-like Module Styling */
+.module {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* Enhanced Table Styling */
+.results table {
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.results th {
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    color: white;
+    font-weight: 600;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+}
+
+/* Status Badge Enhancements */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success { background: #27ae60; color: white; }
+.badge-warning { background: #f39c12; color: white; }
+.badge-danger { background: #e74c3c; color: white; }
+.badge-info { background: #3498db; color: white; }
+.badge-secondary { background: #95a5a6; color: white; }
+
+/* Form Enhancements */
+.form-row {
+    border-bottom: 1px solid #ecf0f1;
+    padding: 15px 0;
+}
+
+.form-row:last-child {
+    border-bottom: none;
+}
+
+fieldset.module {
+    background: #fafbfc;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    margin: 15px 0;
+}
+
+/* Button Enhancements */
+.default, input[type=submit], .button {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 600;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.default:hover, input[type=submit]:hover, .button:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Sidebar Enhancements */
+#changelist-sidebar {
+    background: #fafbfc;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+#changelist-sidebar h3 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+/* Action Bar */
+.actions {
+    background: linear-gradient(135deg, #ecf0f1 0%, #d5dbdb 100%);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 15px 0;
+}
+
+/* Dashboard Widgets */
+.dashboard-widget {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dashboard-widget h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Statistics Cards */
+.stats-card {
+    display: inline-block;
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 10px;
+    min-width: 200px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.stats-number {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #3498db;
+    margin-bottom: 5px;
+}
+
+.stats-label {
+    color: #7f8c8d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9em;
+}
+
+/* Alert Styles */
+.alert {
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+    border-left: 4px solid;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    border-left-color: #3498db;
+    color: #0c5460;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    border-left-color: #f39c12;
+    color: #856404;
+}
+
+.alert-success {
+    background: #d4edda;
+    border-left-color: #27ae60;
+    color: #155724;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    border-left-color: #e74c3c;
+    color: #721c24;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .stats-card {
+        display: block;
+        margin: 10px 0;
+        min-width: auto;
+    }
+    
+    #changelist-sidebar {
+        margin-top: 20px;
+    }
+}
+
+/* Loading Animation */
+.loading {
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #e1e1e1;
+    }
+    
+    .module {
+        background-color: #2d2d2d;
+        border-color: #444;
+    }
+    
+    .dashboard-widget, .stats-card {
+        background-color: #2d2d2d;
+        border-color: #444;
+        color: #e1e1e1;
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+</style>
+
+<!-- JavaScript Enhancements -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth scrolling to anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+    
+    // Auto-refresh for certain pages
+    if (window.location.pathname.includes('/systemlog/') || 
+        window.location.pathname.includes('/apiusagelog/')) {
+        setTimeout(() => {
+            if (document.visibilityState === 'visible') {
+                window.location.reload();
+            }
+        }, 30000); // Refresh every 30 seconds
+    }
+    
+    // Add loading state to forms
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const submitBtn = form.querySelector('input[type="submit"]');
+            if (submitBtn) {
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+            }
+        });
+    });
+    
+    // Enhanced tooltips for help text
+    document.querySelectorAll('.help').forEach(help => {
+        help.style.cursor = 'help';
+        help.title = help.textContent;
+    });
+});
+
+// Real-time clock in header
+function updateClock() {
+    const now = new Date();
+    const timeString = now.toLocaleString('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    
+    let clockElement = document.getElementById('admin-clock');
+    if (!clockElement) {
+        clockElement = document.createElement('div');
+        clockElement.id = 'admin-clock';
+        clockElement.style.cssText = `
+            position: absolute;
+            top: 10px;
+            right: 200px;
+            color: #ecf0f1;
+            font-size: 12px;
+            font-weight: 500;
+        `;
+        document.getElementById('header').appendChild(clockElement);
+    }
+    
+    clockElement.textContent = timeString;
+}
+
+// Update clock every second
+setInterval(updateClock, 1000);
+updateClock(); // Initial call
+</script>
+{% endblock %}
+
+{% block nav-global %}
+{{ block.super }}
+<!-- Enhanced Navigation Breadcrumbs -->
+<div style="background: rgba(255,255,255,0.1); padding: 8px 15px; margin: 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+    <nav aria-label="breadcrumb">
+        <ol style="margin: 0; padding: 0; list-style: none; display: flex; align-items: center;">
+            <li style="color: #bdc3c7; font-size: 12px;">
+                <a href="{% url 'admin:index' %}" style="color: #ecf0f1; text-decoration: none;">🏠 Super Admin</a>
+            </li>
+            {% if title %}
+            <li style="color: #bdc3c7; margin: 0 8px;">›</li>
+            <li style="color: #ecf0f1; font-size: 12px;">{{ title }}</li>
+            {% endif %}
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+{{ block.super }}
+
+<!-- System Status Panel -->
+<div class="dashboard-widget" style="position: sticky; top: 20px; z-index: 100; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0;">🚀 AHP Platform System Status</h3>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <div class="badge badge-success">시스템 정상</div>
+            <div style="font-size: 12px; color: #7f8c8d;">마지막 업데이트: <span id="last-update">로딩중...</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update last update time
+document.getElementById('last-update').textContent = new Date().toLocaleTimeString('ko-KR');
+</script>
+{% endblock %}

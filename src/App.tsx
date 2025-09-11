@@ -45,13 +45,13 @@ function App() {
     
     switch (user.user_type) {
       case 'admin':
-        return '/dashboard/admin';
+        return '/admin';
       case 'personal_service_user':
-        return '/dashboard/personal-service';
+        return '/personal';
       case 'evaluator':
-        return '/dashboard/evaluator';
+        return '/evaluator';
       default:
-        return '/dashboard/personal-service';
+        return '/personal';
     }
   };
 
@@ -152,17 +152,19 @@ function App() {
         
         setCurrentUser(userInfo);
         
-        // 최고관리자(슈퍼 관리자)인 경우 자동으로 Django 관리자 페이지로 리다이렉트
+        // 최고관리자(슈퍼 관리자)인 경우 모드 선택 옵션 제공
         if (data.user.is_superuser && data.redirect && data.redirect.includes('/super-admin/')) {
-          console.log('🔄 최고관리자 로그인 - Django 관리자 페이지로 자동 이동');
+          console.log('🔄 최고관리자 로그인 - 모드 선택 옵션 제공');
           
-          // 사용자에게 안내 메시지 표시
-          setAuthError('🛡️ 최고관리자로 로그인되었습니다. 잠시 후 관리자 페이진로 이동합니다...');
+          // 최고관리자 모드 선택 모달 표시
+          const modeChoice = window.confirm('🛡️ 최고관리자로 로그인되었습니다!\n\n확인: Django 관리자 페이지로 이동\n취소: React 앱 관리자 대시보드 이용');
           
-          // 2초 후 자동 리다이렉트
-          setTimeout(() => {
-            window.location.href = `${API_BASE_URL}/super-admin/`;
-          }, 2000);
+          if (modeChoice) {
+            // Django 관리자 페이지로 이동
+            setTimeout(() => {
+              window.location.href = `${API_BASE_URL}/super-admin/`;
+            }, 1000);
+          }
           
           return { success: true };
         }
@@ -419,7 +421,7 @@ function App() {
           <Route 
             path="/admin/*" 
             element={
-              <ProtectedRoute requiredUserType="admin">
+              <ProtectedRoute requiredUserType="admin" currentUser={currentUser}>
                 {currentUser && isAdminUser(currentUser) && (
                   <AdminDashboard user={currentUser} />
                 )}
@@ -430,7 +432,7 @@ function App() {
           <Route 
             path="/personal/*" 
             element={
-              <ProtectedRoute requiredUserType="personal_service_user">
+              <ProtectedRoute requiredUserType="personal_service_user" currentUser={currentUser}>
                 {currentUser && isPersonalServiceUser(currentUser) && (
                   <PersonalServiceDashboard user={currentUser} />
                 )}
@@ -441,7 +443,7 @@ function App() {
           <Route 
             path="/evaluator/*" 
             element={
-              <ProtectedRoute requiredUserType="evaluator">
+              <ProtectedRoute requiredUserType="evaluator" currentUser={currentUser}>
                 {currentUser && isEvaluatorUser(currentUser) && (
                   <EvaluatorDashboard user={currentUser} />
                 )}

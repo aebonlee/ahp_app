@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { userManagementService } from '../../services/userManagementService';
-import { UserType } from '../../types/userTypes';
+import { UserType, BaseUser } from '../../types/userTypes';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,6 +9,7 @@ interface ProtectedRouteProps {
   allowedUserTypes?: UserType[];
   requireAuth?: boolean;
   fallbackPath?: string;
+  currentUser?: BaseUser | null;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
@@ -18,64 +18,50 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredPermission,
   allowedUserTypes,
   requireAuth = true,
-  fallbackPath = '/login'
+  fallbackPath = '/login',
+  currentUser
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    const checkAuth = async () => {
-      const authStatus = await userManagementService.isAuthenticated();
-      setIsAuthenticated(authStatus);
-      setIsLoading(false);
-    };
+  // Helper function to get default dashboard path
+  const getDefaultDashboardPath = (user: BaseUser | null): string => {
+    if (!user) return '/login';
     
-    checkAuth();
-  }, []);
-  
-  if (isLoading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'var(--bg-primary)'
-      }}>
-        <div style={{
-          fontSize: '0.875rem',
-          color: 'var(--text-secondary)'
-        }}>
-          인증 상태를 확인하고 있습니다...
-        </div>
-      </div>
-    );
-  }
+    switch (user.user_type) {
+      case 'admin':
+        return '/admin';
+      case 'personal_service_user':
+        return '/personal';
+      case 'evaluator':
+        return '/evaluator';
+      default:
+        return '/personal';
+    }
+  };
 
-  const currentUser = userManagementService.getCurrentUser();
-  const currentUserType = userManagementService.getUserType();
+  const isAuthenticated = !!currentUser;
+  const currentUserType = currentUser?.user_type;
+  const isSuperAdmin = currentUser?.user_type === 'admin';
 
   // 인증 필요한 경우 로그인 상태 확인
   if (requireAuth && !isAuthenticated) {
     return <Navigate to={fallbackPath} replace />;
   }
 
+  // 최고관리자는 모든 대시보드에 접근 가능
+  if (isSuperAdmin) {
+    return <>{children}</>;
+  }
+
   // 특정 사용자 유형 필요한 경우
   if (requiredUserType && currentUserType !== requiredUserType) {
     // 적절한 대시보드로 리다이렉트
-    const defaultPath = userManagementService.getDefaultDashboardPath();
+    const defaultPath = getDefaultDashboardPath(currentUser || null);
     return <Navigate to={defaultPath} replace />;
   }
 
   // 여러 사용자 유형 중 하나 필요한 경우
   if (allowedUserTypes && currentUserType && !allowedUserTypes.includes(currentUserType)) {
-    const defaultPath = userManagementService.getDefaultDashboardPath();
+    const defaultPath = getDefaultDashboardPath(currentUser || null);
     return <Navigate to={defaultPath} replace />;
-  }
-
-  // 특정 권한 필요한 경우
-  if (requiredPermission && !userManagementService.hasPermission(requiredPermission)) {
-    return <Navigate to="/unauthorized" replace />;
   }
 
   // 모든 조건 통과시 렌더링

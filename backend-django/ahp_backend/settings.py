@@ -48,12 +48,13 @@ LOCAL_APPS = [
     'super_admin',         # ✅ 총 관리자 시스템 (회원, 결제, 프로젝트 관리)
     'simple_service',      # ✅ 간단한 AHP 서비스만 활성화
     'dashboards',          # ✅ 권한별 대시보드 시스템
-    # 'apps.accounts',       # ❌ 일시 비활성화 - User 모델 충돌 해결
-    # 'apps.projects',       # ❌ 일시 비활성화 - get_user_model() 의존성
-    # 'apps.evaluations',    # ❌ 일시 비활성화 - get_user_model() 의존성
-    # 'apps.analysis',       # ❌ 일시 비활성화 - get_user_model() 의존성
-    # 'apps.exports',        # ❌ 일시 비활성화 - get_user_model() 의존성
-    # 'apps.common',         # ❌ 일시 비활성화 - get_user_model() 의존성
+    'apps.accounts',       # ✅ 사용자 계정 관리
+    'apps.projects',       # ✅ 프로젝트 관리
+    'apps.evaluations',    # ✅ 평가 관리
+    'apps.analysis',       # ✅ 분석 결과 관리
+    'apps.exports',        # ✅ 내보내기 관리
+    'apps.common',         # ✅ 공통 기능
+    'apps.system',         # ✅ 시스템 관리
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -154,6 +155,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom User Model
+AUTH_USER_MODEL = 'accounts.User'
 
 # Production Security Settings
 if not DEBUG:
