@@ -10,9 +10,10 @@ interface HomePageProps {
   onLoginClick?: () => void;
   onRegisterClick?: () => void;
   onNavigate?: (tab: string) => void;
+  onLogout?: () => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ currentUser, onLoginClick, onRegisterClick, onNavigate }) => {
+const HomePage: React.FC<HomePageProps> = ({ currentUser, onLoginClick, onRegisterClick, onNavigate, onLogout }) => {
   const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -195,22 +196,50 @@ const HomePage: React.FC<HomePageProps> = ({ currentUser, onLoginClick, onRegist
                 backgroundColor: 'var(--border-light)'
               }}></div>
               
-              <button
-                onClick={handleLoginClick}
-                style={{
-                  padding: '0.5rem 1.25rem',
-                  color: 'var(--text-secondary)',
-                  fontWeight: '500',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'color 0.3s ease'
-                }}
-                onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
-                onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'}
-              >
-                로그인
-              </button>
+              {currentUser ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span style={{
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    fontWeight: '500'
+                  }}>
+                    {currentUser.username}님
+                  </span>
+                  <button
+                    onClick={onLogout}
+                    style={{
+                      padding: '0.5rem 1.25rem',
+                      color: 'var(--text-secondary)',
+                      fontWeight: '500',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'color 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
+                    onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'}
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleLoginClick}
+                  style={{
+                    padding: '0.5rem 1.25rem',
+                    color: 'var(--text-secondary)',
+                    fontWeight: '500',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'color 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'}
+                >
+                  로그인
+                </button>
+              )}
               <button
                 onClick={handleStartClick}
                 style={{
@@ -318,12 +347,64 @@ const HomePage: React.FC<HomePageProps> = ({ currentUser, onLoginClick, onRegist
                 <ColorThemeButton />
               </div>
               
+              {/* 모바일 로그인/로그아웃 버튼 */}
+              {currentUser ? (
+                <div style={{
+                  marginTop: '1rem',
+                  padding: '0.75rem',
+                  backgroundColor: 'var(--bg-elevated)',
+                  borderRadius: '0.5rem',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    marginBottom: '0.5rem'
+                  }}>
+                    {currentUser.username}님
+                  </div>
+                  <button
+                    onClick={onLogout}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      color: 'var(--text-secondary)',
+                      backgroundColor: 'transparent',
+                      border: '1px solid var(--border-medium)',
+                      borderRadius: '0.375rem',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleLoginClick}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    marginTop: '1rem',
+                    color: 'var(--text-secondary)',
+                    backgroundColor: 'transparent',
+                    border: '1px solid var(--border-medium)',
+                    borderRadius: '0.5rem',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  로그인
+                </button>
+              )}
+              
               <button 
                 onClick={handleStartClick} 
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  marginTop: '1rem',
+                  marginTop: '0.5rem',
                   color: 'white',
                   backgroundColor: 'var(--accent-primary)',
                   borderRadius: '0.5rem',

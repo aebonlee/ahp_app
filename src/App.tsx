@@ -9,7 +9,7 @@ import LoginPage from './components/auth/LoginPage';
 import AdminRegistrationPage from './components/auth/AdminRegistrationPage';
 import PersonalServiceRegistrationPage from './components/auth/PersonalServiceRegistrationPage';
 import EvaluatorRegistrationPage from './components/auth/EvaluatorRegistrationPage';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+// ProtectedRoute removed - using direct authentication checks in routes
 
 // Dashboard components
 // AdminDashboard removed - admin users now use PersonalServiceDashboard
@@ -324,6 +324,8 @@ function App() {
 
   const handleLogout = async () => {
     try {
+      console.log('🚪 로그아웃 시작 - 현재 사용자:', currentUser?.username);
+      
       // Django 로그아웃 API 호출
       await fetch(`${API_BASE_URL}/api/logout/`, {
         method: 'POST',
@@ -333,16 +335,32 @@ function App() {
         },
       });
       
+      console.log('🧹 로컬 상태 완전 클리어 시작');
+      
+      // 완전한 상태 초기화
       setCurrentUser(null);
       setAuthError('');
-      sessionStorage.removeItem('ahp_session'); // sessionStorage 클리어
-      console.log('✅ 로그아웃 완료');
+      
+      // 세션 스토리지 완전 클리어
+      sessionStorage.removeItem('ahp_session');
+      sessionStorage.clear(); // 모든 세션 데이터 제거
+      
+      console.log('✅ 로그아웃 완료 - 홈페이지로 이동');
+      
+      // 홈페이지로 강제 리다이렉트
+      window.location.href = window.location.origin + window.location.pathname + '#/';
+      
     } catch (error) {
       console.error('❌ Django 로그아웃 실패:', error);
-      // 에러가 발생해도 로컬 상태는 초기화
+      
+      // 에러가 발생해도 로컬 상태는 완전 초기화
       setCurrentUser(null);
       setAuthError('');
-      sessionStorage.removeItem('ahp_session'); // sessionStorage 클리어
+      sessionStorage.removeItem('ahp_session');
+      sessionStorage.clear();
+      
+      // 홈페이지로 강제 리다이렉트
+      window.location.href = window.location.origin + window.location.pathname + '#/';
     }
   };
 
@@ -497,7 +515,7 @@ function App() {
           <ErrorBoundary>
             <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<HomePage currentUser={currentUser} />} />
+              <Route path="/" element={<HomePage currentUser={currentUser} onLogout={handleLogout} />} />
               
               {/* Developer Tools */}
               <Route path="/dev/test-accounts" element={<TestAccountManager />} />
@@ -566,29 +584,26 @@ function App() {
               <Route 
                 path="/personal/*" 
                 element={
-                  <ErrorBoundary>
-                    <ProtectedRoute 
-                      allowedUserTypes={["admin", "personal_service_user"]} 
-                      currentUser={currentUser}
-                    >
-                      {currentUser && (isPersonalServiceUser(currentUser) || isAdminUser(currentUser)) && (
-                        <PersonalServiceDashboard user={currentUser} />
-                      )}
-                    </ProtectedRoute>
-                  </ErrorBoundary>
+                  currentUser && (isPersonalServiceUser(currentUser) || isAdminUser(currentUser)) ? (
+                    <ErrorBoundary>
+                      <PersonalServiceDashboard user={currentUser} />
+                    </ErrorBoundary>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
                 } 
               />
               
               <Route 
                 path="/evaluator/*" 
                 element={
-                  <ErrorBoundary>
-                    <ProtectedRoute requiredUserType="evaluator" currentUser={currentUser}>
-                      {currentUser && isEvaluatorUser(currentUser) && (
-                        <EvaluatorDashboard user={currentUser} />
-                      )}
-                    </ProtectedRoute>
-                  </ErrorBoundary>
+                  currentUser && isEvaluatorUser(currentUser) ? (
+                    <ErrorBoundary>
+                      <EvaluatorDashboard user={currentUser} />
+                    </ErrorBoundary>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
                 } 
               />
 
