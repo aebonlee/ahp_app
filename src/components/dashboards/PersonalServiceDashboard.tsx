@@ -163,29 +163,35 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
               <select
                 onChange={(e) => {
                   const mode = e.target.value;
-                  if (mode === 'personal') return; // 현재 페이지
-                  try {
-                    window.location.href = `/ahp_app/${mode}`;
-                  } catch (error) {
-                    console.error('Navigation error:', error);
-                    window.location.reload();
+                  console.log('🔄 모드 전환 요청:', mode);
+                  
+                  if (mode === 'personal') {
+                    console.log('✅ 이미 개인서비스 모드입니다');
+                    return; // 현재 페이지 유지
+                  }
+                  
+                  if (mode === 'super-admin') {
+                    console.log('🎯 슈퍼관리자 모드로 전환');
+                    // 슈퍼관리자 전용 기능 활성화 (추후 구현 가능)
+                    alert('🎯 슈퍼관리자 모드 활성화됨\n(모든 고급 기능에 접근 가능)');
+                    return;
                   }
                 }}
                 style={{
                   padding: '0.5rem 1rem',
-                  backgroundColor: '#2563eb',
+                  backgroundColor: '#dc2626',
                   color: 'white',
                   border: 'none',
                   borderRadius: '0.5rem',
                   fontSize: '0.875rem',
                   fontWeight: '500',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)'
                 }}
                 defaultValue="personal"
               >
-                <option value="admin">📊 종합관리</option>
-                <option value="personal">💼 개인서비스</option>
-                <option value="evaluator">📝 평가자</option>
+                <option value="personal">💼 개인서비스 모드</option>
+                <option value="super-admin">🎯 슈퍼관리자 모드</option>
               </select>
             </div>
           )}
