@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 // import { userManagementService } from './services/userManagementService'; // Django 백엔드로 대체
 import { API_BASE_URL } from './config/api';
-import { BaseUser, isAdminUser, isPersonalServiceUser, isEvaluatorUser } from './types/userTypes';
+import { BaseUser, UserType, isAdminUser, isPersonalServiceUser, isEvaluatorUser } from './types/userTypes';
 
 // Auth components
 import LoginPage from './components/auth/LoginPage';
@@ -146,14 +146,25 @@ function App() {
           if (response.ok) {
             const data = await response.json();
             if (data.authenticated && data.user) {
+              // Django 백엔드에서 세션 복구 시에도 정확한 권한 결정
+              let userType: UserType;
+              if (data.user.is_superuser === true) {
+                userType = 'admin';
+              } else if (data.user.user_type === 'admin') {
+                userType = 'admin';
+              } else if (data.user.user_type === 'evaluator') {
+                userType = 'evaluator';
+              } else {
+                userType = 'personal_service_user';
+              }
+              
               const userInfo: BaseUser = {
                 id: data.user.id || data.user.username || 'unknown',
                 username: data.user.username || '',
                 email: data.user.email || '',
                 first_name: data.user.first_name || '',
                 last_name: data.user.last_name || '',
-                user_type: data.user.is_superuser ? 'admin' : 
-                          data.user.user_type === 'evaluator' ? 'evaluator' : 'personal_service_user',
+                user_type: userType,
                 is_active: data.user.is_active !== undefined ? data.user.is_active : true,
                 date_joined: data.user.date_joined || new Date().toISOString(),
                 last_login: data.user.last_login || new Date().toISOString()
@@ -184,6 +195,11 @@ function App() {
     try {
       setAuthError('');
       
+      // 새 로그인 시작 시 이전 세션 완전 클리어
+      console.log('🧹 이전 세션 완전 클리어 시작');
+      setCurrentUser(null);
+      sessionStorage.removeItem('ahp_session');
+      
       console.log('🔍 Django 백엔드 로그인 시도:', { username });
       
       // Django 간단한 로그인 API 사용 (안정적)
@@ -204,25 +220,45 @@ function App() {
       if (response.ok && data.success) {
         console.log('✅ Django 로그인 응답:', data);
         
-        // Django 응답에서 사용자 정보 매핑 (simple-login과 login 모두 호환)
+        // Django 응답에서 사용자 정보 매핑 (정확한 권한 결정)
+        console.log('🔍 Django 사용자 데이터:', data.user);
+        
+        // 사용자 타입 정확히 결정
+        let userType: UserType;
+        if (data.user.is_superuser === true) {
+          userType = 'admin';
+          console.log('✅ 슈퍼 관리자로 인식');
+        } else if (data.user.user_type === 'admin') {
+          userType = 'admin';
+          console.log('✅ 일반 관리자로 인식');
+        } else if (data.user.user_type === 'evaluator') {
+          userType = 'evaluator';
+          console.log('✅ 평가자로 인식');
+        } else {
+          userType = 'personal_service_user';
+          console.log('✅ 개인서비스 사용자로 인식');
+        }
+        
         const userInfo: BaseUser = {
           id: data.user.id || data.user.username || 'unknown',
           username: data.user.username || '',
           email: data.user.email || '',
           first_name: data.user.first_name || '',
           last_name: data.user.last_name || '',
-          user_type: (data.user.is_superuser || data.user.user_type === 'admin') ? 'admin' : 
-                    data.user.user_type === 'evaluator' ? 'evaluator' : 'personal_service_user',
+          user_type: userType,
           is_active: data.user.is_active !== undefined ? data.user.is_active : true,
           date_joined: data.user.date_joined || new Date().toISOString(),
           last_login: data.user.last_login || new Date().toISOString()
         };
         
+        // React 상태 업데이트
         setCurrentUser(userInfo);
+        console.log('🎯 React 상태 업데이트 완료:', userInfo.username, userInfo.user_type);
         
-        // sessionStorage에 세션 백업 저장 (브라우저 탭이 열려있는 동안 유지)
+        // sessionStorage에 새로운 세션 저장 (이전 세션 완전 대체)
         const sessionToSave = JSON.stringify(userInfo);
-        console.log('📦 세션 저장 시도:', userInfo.username, userInfo.user_type);
+        console.log('📦 새로운 세션 저장 시도:', userInfo.username, userInfo.user_type);
+        console.log('📦 저장할 사용자 권한:', userInfo.user_type);
         console.log('📦 저장할 데이터 크기:', sessionToSave.length, '바이트');
         
         try {

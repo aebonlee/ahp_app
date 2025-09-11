@@ -42,7 +42,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const isSuperAdmin = currentUser?.user_type === 'admin';
 
   // 인증 확인 (로그인 후에는 세션 유지)
-  console.log('🛡️ ProtectedRoute 접근 시도:', { requireAuth, isAuthenticated, currentUserType });
+  console.log('🛡️ ProtectedRoute 접근 시도:', { 
+    requireAuth, 
+    isAuthenticated, 
+    currentUserType,
+    requiredUserType,
+    userId: currentUser?.id,
+    username: currentUser?.username
+  });
   
   if (requireAuth && !isAuthenticated) {
     console.log('🚫 인증되지 않은 접근 - 로그인 페이지로 리다이렉트');
@@ -51,13 +58,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // 최고관리자는 모든 대시보드에 접근 가능
   if (isSuperAdmin) {
+    console.log('✅ 관리자 권한으로 모든 페이지 접근 허용');
     return <>{children}</>;
   }
 
   // 특정 사용자 유형 필요한 경우
   if (requiredUserType && currentUserType !== requiredUserType) {
+    console.log(`🚫 권한 불일치 - 필요: ${requiredUserType}, 현재: ${currentUserType}`);
     // 적절한 대시보드로 리다이렉트
     const defaultPath = getDefaultDashboardPath(currentUser || null);
+    console.log(`🔄 권한에 맞는 대시보드로 리다이렉트: ${defaultPath}`);
     return <Navigate to={defaultPath} replace />;
   }
 
@@ -68,6 +78,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // 모든 조건 통과시 렌더링
+  console.log('✅ 모든 권한 검사 통과 - 페이지 렌더링 허용');
   return <>{children}</>;
 };
 
