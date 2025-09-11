@@ -37,44 +37,35 @@ function App() {
   const [authError, setAuthError] = useState<string>('');
   const [isInitializing, setIsInitializing] = useState<boolean>(true); // 초기 로딩 상태
 
-  // 초기 세션 설정 (로그인 상태 복구)
+  // DEBUG: 강제 로그아웃 및 상태 초기화
   React.useEffect(() => {
-    console.log('🔄 앱 초기화 - 세션 상태 확인');
+    console.log('🔧 DEBUG: 앱 시작 - 모든 인증 상태 강제 초기화');
     
-    // sessionStorage에서 세션 복구 시도 - 엄격한 검증
-    const savedSession = sessionStorage.getItem('ahp_session');
-    if (savedSession) {
-      try {
-        const sessionData = JSON.parse(savedSession);
-        
-        // 세션 데이터 무결성 검증
-        if (sessionData && 
-            typeof sessionData === 'object' &&
-            sessionData.username && 
-            sessionData.user_type && 
-            sessionData.id &&
-            ['admin', 'personal_service_user', 'evaluator'].includes(sessionData.user_type)) {
-          
-          console.log('📦 기존 세션 검증 성공:', sessionData.username, sessionData.user_type);
-          setCurrentUser(sessionData);
-        } else {
-          console.warn('📦 세션 데이터 무결성 검증 실패 - 세션 삭제');
-          sessionStorage.removeItem('ahp_session');
-          setCurrentUser(null);
-        }
-      } catch (e) {
-        console.error('세션 복구 실패:', e);
-        sessionStorage.removeItem('ahp_session');
-        setCurrentUser(null);
-      }
-    } else {
-      console.log('📦 저장된 세션 없음');
-      setCurrentUser(null);
-    }
+    // 모든 세션 데이터 완전 삭제
+    sessionStorage.clear();
+    localStorage.clear();
+    
+    // React 상태 강제 초기화
+    setCurrentUser(null);
+    setAuthError('');
+    
+    console.log('🔧 DEBUG: 인증 상태 초기화 완료');
+  }, []); // 앱 시작시 한 번만 실행
+
+  // 초기 세션 설정 (로그인 상태 복구) - 완전 비활성화
+  React.useEffect(() => {
+    console.log('🔄 앱 초기화 - 세션 복구 비활성화됨 (보안 강화)');
+    
+    // DEBUG: 세션 복구를 완전히 비활성화
+    // 사용자는 반드시 매번 로그인해야 함
+    setCurrentUser(null);
+    
+    // 혹시 남아있는 세션 데이터 완전 제거
+    sessionStorage.removeItem('ahp_session');
     
     // 초기화 완료
     setIsInitializing(false);
-    console.log('✅ 초기 세션 로드 완료');
+    console.log('✅ 세션 복구 비활성화 완료 - 사용자는 반드시 로그인 필요');
   }, []); // 빈 의존성 배열로 한 번만 실행
 
   // React 마운트 확인 로그
@@ -347,8 +338,9 @@ function App() {
       
       console.log('✅ 로그아웃 완료 - 홈페이지로 이동');
       
-      // 홈페이지로 강제 리다이렉트
-      window.location.href = window.location.origin + window.location.pathname + '#/';
+      // 홈페이지로 강제 리다이렉트 및 완전 새로고침
+      console.log('🔄 강제 페이지 새로고침으로 완전 초기화');
+      window.location.href = window.location.origin + window.location.pathname;
       
     } catch (error) {
       console.error('❌ Django 로그아웃 실패:', error);
@@ -359,8 +351,9 @@ function App() {
       sessionStorage.removeItem('ahp_session');
       sessionStorage.clear();
       
-      // 홈페이지로 강제 리다이렉트
-      window.location.href = window.location.origin + window.location.pathname + '#/';
+      // 홈페이지로 강제 리다이렉트 및 완전 새로고침
+      console.log('🔄 강제 페이지 새로고침으로 완전 초기화');
+      window.location.href = window.location.origin + window.location.pathname;
     }
   };
 
@@ -584,12 +577,20 @@ function App() {
               <Route 
                 path="/personal/*" 
                 element={
-                  currentUser && (isPersonalServiceUser(currentUser) || isAdminUser(currentUser)) ? (
+                  // 매우 엄격한 인증 검증
+                  currentUser && 
+                  currentUser.username && 
+                  currentUser.user_type && 
+                  currentUser.id &&
+                  (isPersonalServiceUser(currentUser) || isAdminUser(currentUser)) ? (
                     <ErrorBoundary>
                       <PersonalServiceDashboard user={currentUser} />
                     </ErrorBoundary>
                   ) : (
-                    <Navigate to="/login" replace />
+                    <>
+                      {console.log('🚫 /personal 접근 차단 - currentUser:', currentUser)}
+                      <Navigate to="/login" replace />
+                    </>
                   )
                 } 
               />
@@ -597,12 +598,20 @@ function App() {
               <Route 
                 path="/evaluator/*" 
                 element={
-                  currentUser && isEvaluatorUser(currentUser) ? (
+                  // 매우 엄격한 인증 검증
+                  currentUser && 
+                  currentUser.username && 
+                  currentUser.user_type && 
+                  currentUser.id &&
+                  isEvaluatorUser(currentUser) ? (
                     <ErrorBoundary>
                       <EvaluatorDashboard user={currentUser} />
                     </ErrorBoundary>
                   ) : (
-                    <Navigate to="/login" replace />
+                    <>
+                      {console.log('🚫 /evaluator 접근 차단 - currentUser:', currentUser)}
+                      <Navigate to="/login" replace />
+                    </>
                   )
                 } 
               />
