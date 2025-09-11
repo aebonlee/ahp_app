@@ -38,7 +38,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   };
 
-  const isAuthenticated = !!currentUser;
+  // 더 엄격한 인증 검증
+  const isAuthenticated = !!(currentUser && 
+    currentUser.username && 
+    currentUser.user_type && 
+    currentUser.id);
   const currentUserType = currentUser?.user_type;
   const isSuperAdmin = currentUser?.user_type === 'admin';
 

@@ -41,13 +41,27 @@ function App() {
   React.useEffect(() => {
     console.log('🔄 앱 초기화 - 세션 상태 확인');
     
-    // sessionStorage에서 세션 복구 시도
+    // sessionStorage에서 세션 복구 시도 - 엄격한 검증
     const savedSession = sessionStorage.getItem('ahp_session');
     if (savedSession) {
       try {
         const sessionData = JSON.parse(savedSession);
-        console.log('📦 기존 세션 복구:', sessionData.username, sessionData.user_type);
-        setCurrentUser(sessionData);
+        
+        // 세션 데이터 무결성 검증
+        if (sessionData && 
+            typeof sessionData === 'object' &&
+            sessionData.username && 
+            sessionData.user_type && 
+            sessionData.id &&
+            ['admin', 'personal_service_user', 'evaluator'].includes(sessionData.user_type)) {
+          
+          console.log('📦 기존 세션 검증 성공:', sessionData.username, sessionData.user_type);
+          setCurrentUser(sessionData);
+        } else {
+          console.warn('📦 세션 데이터 무결성 검증 실패 - 세션 삭제');
+          sessionStorage.removeItem('ahp_session');
+          setCurrentUser(null);
+        }
       } catch (e) {
         console.error('세션 복구 실패:', e);
         sessionStorage.removeItem('ahp_session');
