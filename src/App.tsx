@@ -12,7 +12,7 @@ import EvaluatorRegistrationPage from './components/auth/EvaluatorRegistrationPa
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Dashboard components
-import AdminDashboard from './components/dashboards/AdminDashboard';
+// AdminDashboard removed - admin users now use PersonalServiceDashboard
 import PersonalServiceDashboard from './components/dashboards/PersonalServiceDashboard';
 import EvaluatorDashboard from './components/dashboards/EvaluatorDashboard';
 
@@ -98,7 +98,8 @@ function App() {
     try {
       switch (user.user_type) {
         case 'admin':
-          return '/admin';
+          // 관리자도 개인서비스 대시보드를 사용 (모든 기능 접근 가능)
+          return '/personal';
         case 'personal_service_user':
           return '/personal';
         case 'evaluator':
@@ -122,7 +123,7 @@ function App() {
     }
     
     const currentPath = window.location.hash.replace('#', '');
-    const isDashboardPage = currentPath.startsWith('/admin') || currentPath.startsWith('/personal') || currentPath.startsWith('/evaluator');
+    const isDashboardPage = currentPath.startsWith('/personal') || currentPath.startsWith('/evaluator');
     
     // 대시보드 페이지이면서 currentUser가 없을 때만 Django 세션 확인
     if (isDashboardPage) {
@@ -546,25 +547,17 @@ function App() {
               />
 
               {/* Protected Dashboard Routes - with individual error boundaries */}
-              <Route 
-                path="/admin/*" 
-                element={
-                  <ErrorBoundary>
-                    <ProtectedRoute requiredUserType="admin" currentUser={currentUser}>
-                      {currentUser && isAdminUser(currentUser) && (
-                        <AdminDashboard user={currentUser} />
-                      )}
-                    </ProtectedRoute>
-                  </ErrorBoundary>
-                } 
-              />
+              {/* Admin users now use the personal service dashboard with full admin privileges */}
               
               <Route 
                 path="/personal/*" 
                 element={
                   <ErrorBoundary>
-                    <ProtectedRoute requiredUserType="personal_service_user" currentUser={currentUser}>
-                      {currentUser && isPersonalServiceUser(currentUser) && (
+                    <ProtectedRoute 
+                      allowedUserTypes={["admin", "personal_service_user"]} 
+                      currentUser={currentUser}
+                    >
+                      {currentUser && (isPersonalServiceUser(currentUser) || isAdminUser(currentUser)) && (
                         <PersonalServiceDashboard user={currentUser} />
                       )}
                     </ProtectedRoute>
@@ -659,7 +652,6 @@ function App() {
                 path="*" 
                 element={
                   // 현재 경로를 확인해서 대시보드 경로가 아닌 경우에만 리다이렉트
-                  window.location.hash.includes('/admin') || 
                   window.location.hash.includes('/personal') || 
                   window.location.hash.includes('/evaluator') ? (
                     // 이미 대시보드 경로인 경우 그대로 유지

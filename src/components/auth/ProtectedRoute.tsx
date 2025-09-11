@@ -27,7 +27,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     
     switch (user.user_type) {
       case 'admin':
-        return '/admin';
+        // 관리자도 개인서비스 대시보드를 사용 (모든 기능 접근 가능)
+        return '/personal';
       case 'personal_service_user':
         return '/personal';
       case 'evaluator':

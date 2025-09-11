@@ -537,7 +537,7 @@ class UserManagementService {
     
     switch (this.currentUser.user_type) {
       case 'admin':
-        return this.isAebonUser() ? '/admin/super' : '/admin';
+        return '/personal'; // 관리자도 개인서비스 대시보드 사용
       case 'personal_service_user':
         return '/personal';
       case 'evaluator':
@@ -559,14 +559,11 @@ class UserManagementService {
     const commonRoutes = ['/profile', '/settings', '/help'];
     if (commonRoutes.some(r => route.startsWith(r))) return true;
     
-    // 관리자 라우트
-    if (route.startsWith('/admin/')) {
-      return userType === 'admin';
-    }
+    // 관리자는 이제 개인서비스 대시보드를 사용하므로 /admin 라우트는 제거됨
     
-    // 개인서비스 라우트
+    // 개인서비스 라우트 (관리자도 접근 가능)
     if (route.startsWith('/personal/')) {
-      return userType === 'personal_service_user';
+      return userType === 'personal_service_user' || userType === 'admin';
     }
     
     // 평가자 라우트
