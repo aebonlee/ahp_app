@@ -488,10 +488,10 @@ urlpatterns = [
     path('super-admin/', include('super_admin.urls')),
     
     # Dashboard Routes - Role-based Access
-    path('personal-dashboard/', include('dashboards.urls')),
-    path('evaluator-dashboard/', include('dashboards.urls')),
-    path('enterprise-dashboard/', include('dashboards.urls')),
-    path('dashboard/', include('dashboards.urls')),  # Generic dashboard redirect
+    path('personal-dashboard/', include(('dashboards.urls', 'dashboards'), namespace='personal')),
+    path('evaluator-dashboard/', include(('dashboards.urls', 'dashboards'), namespace='evaluator')),
+    path('enterprise-dashboard/', include(('dashboards.urls', 'dashboards'), namespace='enterprise')),
+    path('dashboard/', include(('dashboards.urls', 'dashboards'), namespace='dashboard')),  # Generic dashboard redirect
     
     # API 엔드포인트
     path('api/login/', login_api, name='login'),

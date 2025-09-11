@@ -34,12 +34,12 @@ class Project(models.Model):
     objective = models.TextField(help_text="프로젝트의 목적과 목표")
     
     # Owner and collaborators
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_projects')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='apps_owned_projects')
     collaborators = models.ManyToManyField(
         settings.AUTH_USER_MODEL, 
         through='ProjectMember', 
         through_fields=('project', 'user'),
-        related_name='collaborated_projects'
+        related_name='apps_collaborated_projects'
     )
     
     # Status and settings
@@ -96,7 +96,7 @@ class ProjectMember(models.Model):
     
     # Dates
     joined_at = models.DateTimeField(default=timezone.now)
-    invited_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='invited_members')
+    invited_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='apps_invited_members')
     
     class Meta:
         db_table = 'project_members'
@@ -160,7 +160,7 @@ class ProjectTemplate(models.Model):
     default_settings = models.JSONField(default=dict)
     
     # Meta
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='apps_created_templates')
     is_public = models.BooleanField(default=False)
     usage_count = models.PositiveIntegerField(default=0)
     

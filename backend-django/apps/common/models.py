@@ -40,7 +40,7 @@ class ActivityLog(models.Model):
     ]
     
     # Activity details
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='apps_activity_logs')
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='info')
     
@@ -110,7 +110,7 @@ class SystemSettings(models.Model):
     
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='apps_updated_settings')
     
     class Meta:
         db_table = 'system_settings'
@@ -156,7 +156,7 @@ class FileUpload(models.Model):
     mime_type = models.CharField(max_length=100)
     
     # Upload context
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='apps_uploaded_files')
     upload_type = models.CharField(max_length=50, choices=TYPE_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='uploading')
     
@@ -251,7 +251,7 @@ class APIKey(models.Model):
     key = models.CharField(max_length=64, unique=True)
     
     # Ownership
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_keys')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='apps_api_keys')
     
     # Permissions
     permissions = models.JSONField(default=list)

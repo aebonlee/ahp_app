@@ -103,7 +103,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('deadline', models.DateTimeField(blank=True, null=True)),
-                ('owner', models.ForeignKey(on_delete=models.CASCADE, related_name='owned_projects', to='super_admin.customuser')),
+                ('owner', models.ForeignKey(on_delete=models.CASCADE, related_name='super_admin_owned_projects', to='super_admin.customuser')),
             ],
             options={
                 'verbose_name': 'AHP 프로젝트',
@@ -182,7 +182,7 @@ class Migration(migrations.Migration):
                 ('user_agent', models.TextField(blank=True)),
                 ('extra_data', models.JSONField(default=dict)),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=models.CASCADE, to='super_admin.customuser')),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=models.CASCADE, related_name='super_admin_activity_logs', to='super_admin.customuser')),
             ],
             options={
                 'verbose_name': '활동 로그',

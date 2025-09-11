@@ -190,7 +190,7 @@ class AHPProject(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='owned_projects')
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='super_admin_owned_projects')
     
     # 프로젝트 설정
     criteria = models.JSONField(default=list)  # 평가 기준들
@@ -285,7 +285,7 @@ class ActivityLog(models.Model):
         ('critical', '치명적'),
     )
     
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='super_admin_activity_logs')
     action = models.CharField(max_length=100)
     description = models.TextField()
     level = models.CharField(max_length=20, choices=LOG_LEVELS, default='info')
