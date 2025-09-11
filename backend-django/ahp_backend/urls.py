@@ -429,6 +429,68 @@ def list_users_api(request):
     })
 
 @csrf_exempt
+def create_admin_simple(request):
+    """간단한 관리자 생성"""
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        # 기존 사용자 확인
+        existing_count = User.objects.count()
+        
+        # admin 사용자 생성 시도
+        if not User.objects.filter(username='admin').exists():
+            admin = User.objects.create_user(
+                username='admin',
+                email='admin@ahp-platform.com',
+                password='ahp2025admin',
+                first_name='Admin',
+                last_name='User'
+            )
+            admin.is_staff = True
+            admin.is_superuser = True
+            admin.is_active = True
+            if hasattr(admin, 'user_type'):
+                admin.user_type = 'super_admin'
+            admin.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': '관리자 계정 생성 완료!',
+                'admin_created': True,
+                'credentials': {
+                    'username': 'admin',
+                    'email': 'admin@ahp-platform.com', 
+                    'password': 'ahp2025admin'
+                },
+                'user_count_before': existing_count,
+                'user_count_after': User.objects.count()
+            })
+        else:
+            admin = User.objects.get(username='admin')
+            return JsonResponse({
+                'success': True,
+                'message': '관리자 계정이 이미 존재합니다.',
+                'admin_created': False,
+                'credentials': {
+                    'username': 'admin',
+                    'email': 'admin@ahp-platform.com',
+                    'password': 'ahp2025admin'
+                },
+                'admin_info': {
+                    'is_staff': admin.is_staff,
+                    'is_superuser': admin.is_superuser,
+                    'is_active': admin.is_active
+                }
+            })
+            
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'message': f'오류: {str(e)}'
+        })
+
 def create_admin_api(request):
     """임시 관리자 생성 API (배포 후 즉시 제거 필요)"""
     if request.method in ['POST', 'GET']:
@@ -553,6 +615,7 @@ urlpatterns = [
     path('api/logout/', logout_api, name='logout'),
     path('api/user/', user_info_api, name='user_info'),
     path('api/create-admin/', create_admin_api, name='create_admin'),  # 임시 API - 로그인 테스트용 활성화
+    path('api/simple-admin/', create_admin_simple, name='create_admin_simple'),  # 간단한 관리자 생성
     path('api/users/list/', list_users_api, name='list_users'),  # 회원 DB 조회 API
     
     
