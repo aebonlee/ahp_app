@@ -6,7 +6,7 @@ import InteractiveCharts from '../visualization/InteractiveCharts';
 import SystemManagement from './SystemManagement';
 import { subscriptionService } from '../../services/subscriptionService';
 import { ExtendedUser, SubscriptionPlan, UserSubscription } from '../../types/subscription';
-import { useAuth } from '../../hooks/useAuth';
+// import { useAuth } from '../../hooks/useAuth'; // Removed - using props instead
 
 // AEBON EXCLUSIVE PRIVILEGES - Duplicate from useAuth.tsx for display purposes
 const AEBON_EXCLUSIVE_PERMISSIONS = [
@@ -119,14 +119,15 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
   const isLg = windowWidth >= 1024;
   const isMd = windowWidth >= 768;
   const isSm = windowWidth >= 640;
-  // AEBON EXCLUSIVE ACCESS CONTROL
-  const { 
-    isAebon, 
-    isSuperAdmin, 
-    canManageUsers, 
-    canAccessSystemSettings, 
-    hasAebonPrivilege 
-  } = useAuth();
+  // 관리자 권한 확인 - admin 계정도 최고권한으로 처리
+  const isAebon = user.first_name?.toLowerCase() === 'aebon' || 
+                  user.email?.toLowerCase().includes('aebon') ||
+                  user.email?.toLowerCase().includes('admin') ||
+                  user.role === 'super_admin';
+  const isSuperAdmin = user.role === 'super_admin';
+  const canManageUsers = isSuperAdmin || isAebon;
+  const canAccessSystemSettings = isSuperAdmin || isAebon;
+  const hasAebonPrivilege = (privilege: string) => isAebon;
   
   const [activeMenu, setActiveMenu] = useState<string>(
     externalActiveTab || 'overview'

@@ -74,18 +74,18 @@ function App() {
             const data = await response.json();
             if (data.authenticated && data.user) {
               console.log('🔄 페이지 새로고침 - Django 세션 복구 성공');
-              // Django 사용자 정보를 React 형식으로 변환
+              // Django 사용자 정보를 React 형식으로 변환 (안전한 접근)
               const userInfo: BaseUser = {
-                id: data.user.id,
-                username: data.user.username,
-                email: data.user.email,
+                id: data.user.id || data.user.username || 'unknown',
+                username: data.user.username || '',
+                email: data.user.email || '',
                 first_name: data.user.first_name || '',
                 last_name: data.user.last_name || '',
                 user_type: data.user.is_superuser ? 'admin' : 
                           data.user.user_type === 'evaluator' ? 'evaluator' : 'personal_service_user',
-                is_active: data.user.is_active || true,
-                date_joined: data.user.date_joined,
-                last_login: data.user.last_login
+                is_active: data.user.is_active !== undefined ? data.user.is_active : true,
+                date_joined: data.user.date_joined || new Date().toISOString(),
+                last_login: data.user.last_login || new Date().toISOString()
               };
               setCurrentUser(userInfo);
             } else {
@@ -136,18 +136,18 @@ function App() {
       if (response.ok && data.success) {
         console.log('✅ Django 로그인 응답:', data);
         
-        // Django 응답에서 사용자 정보 매핑
+        // Django 응답에서 사용자 정보 매핑 (simple-login과 login 모두 호환)
         const userInfo: BaseUser = {
-          id: data.user.id,
-          username: data.user.username,
-          email: data.user.email,
+          id: data.user.id || data.user.username || 'unknown',
+          username: data.user.username || '',
+          email: data.user.email || '',
           first_name: data.user.first_name || '',
           last_name: data.user.last_name || '',
-          user_type: data.user.is_superuser ? 'admin' : 
+          user_type: (data.user.is_superuser || data.user.user_type === 'admin') ? 'admin' : 
                     data.user.user_type === 'evaluator' ? 'evaluator' : 'personal_service_user',
-          is_active: data.user.is_active || true,
-          date_joined: data.user.date_joined,
-          last_login: data.user.last_login
+          is_active: data.user.is_active !== undefined ? data.user.is_active : true,
+          date_joined: data.user.date_joined || new Date().toISOString(),
+          last_login: data.user.last_login || new Date().toISOString()
         };
         
         setCurrentUser(userInfo);

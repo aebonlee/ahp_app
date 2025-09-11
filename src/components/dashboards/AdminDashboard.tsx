@@ -35,12 +35,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   };
 
   const handleLogout = async () => {
-    await userManagementService.logout();
+    try {
+      // Django 로그아웃 API 호출
+      await fetch(`${process.env.REACT_APP_API_URL || 'https://ahp-django-backend.onrender.com'}/api/logout/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('로그아웃 중 오류:', error);
+    }
     navigate('/login');
   };
 
-  // AEBON이거나 슈퍼 관리자인 경우 향상된 대시보드 사용
-  if (userManagementService.isAebonUser() || userManagementService.isSuperAdmin()) {
+  // 관리자 권한 확인 (admin 계정도 aebon처럼 처리)
+  const isAebonUser = user.username?.toLowerCase() === 'aebon' || user.username?.toLowerCase() === 'admin';
+  const isSuperAdmin = user.user_type === 'admin';
+  
+  if (isAebonUser || isSuperAdmin) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
         {/* 헤더 */}
@@ -73,13 +85,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <div style={{
               padding: '0.5rem 1rem',
-              backgroundColor: userManagementService.isAebonUser() ? '#dc2626' : '#059669',
+              backgroundColor: isAebonUser ? '#dc2626' : '#059669',
               color: 'white',
               borderRadius: '0.5rem',
               fontSize: '0.875rem',
               fontWeight: '600'
             }}>
-              {userManagementService.isAebonUser() ? 'AEBON 계정' : '슈퍼 관리자'}
+              {isAebonUser ? 'AEBON 계정' : '슈퍼 관리자'}
             </div>
             
             <Button
