@@ -61,7 +61,7 @@ class ActivityLog(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
     
     class Meta:
-        db_table = 'activity_logs'
+        db_table = 'common_activity_logs'
         ordering = ['-timestamp']
         indexes = [
             models.Index(fields=['user', 'timestamp']),
@@ -110,10 +110,10 @@ class SystemSettings(models.Model):
     
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='apps_updated_settings')
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='common_updated_settings')
     
     class Meta:
-        db_table = 'system_settings'
+        db_table = 'common_system_settings'
         
     def __str__(self):
         return f"{self.key}: {self.value}"
@@ -171,7 +171,7 @@ class FileUpload(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
-        db_table = 'file_uploads'
+        db_table = 'common_file_uploads'
         ordering = ['-created_at']
         
     def __str__(self):
@@ -224,7 +224,7 @@ class Notification(models.Model):
     read_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
-        db_table = 'notifications'
+        db_table = 'common_notifications'
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['recipient', 'is_read']),
@@ -267,7 +267,7 @@ class APIKey(models.Model):
     expires_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
-        db_table = 'api_keys'
+        db_table = 'common_api_keys'
         
     def __str__(self):
         return f"{self.name} - {self.user.username}"
