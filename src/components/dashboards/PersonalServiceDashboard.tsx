@@ -143,7 +143,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/admin')}
+              onClick={() => {
+                try {
+                  window.location.href = '/ahp_app/admin';
+                } catch (error) {
+                  console.error('Navigation error:', error);
+                  window.location.reload();
+                }
+              }}
               style={{
                 borderColor: '#dc2626',
                 color: '#dc2626'

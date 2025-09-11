@@ -56,7 +56,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     } catch (error) {
       console.error('로그아웃 중 오류:', error);
     }
-    navigate('/login');
+    try {
+      window.location.href = '/ahp_app/login';
+    } catch (error) {
+      console.error('Navigation error:', error);
+      window.location.reload();
+    }
   };
 
   // 관리자 권한 확인 (admin 계정도 aebon처럼 처리)
@@ -108,7 +113,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/personal')}
+              onClick={() => {
+                try {
+                  window.location.href = '/ahp_app/personal';
+                } catch (error) {
+                  console.error('Navigation error:', error);
+                  window.location.reload();
+                }
+              }}
               style={{
                 borderColor: '#3b82f6',
                 color: '#3b82f6'

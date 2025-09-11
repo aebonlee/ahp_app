@@ -40,19 +40,36 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string>('');
 
-  // Helper function to get default dashboard path
+  // Helper function to get default dashboard path - 안전한 네비게이션
   const getDefaultDashboardPath = (user: BaseUser | null): string => {
     if (!user) return '/login';
     
-    switch (user.user_type) {
-      case 'admin':
-        return '/admin';
-      case 'personal_service_user':
-        return '/personal';
-      case 'evaluator':
-        return '/evaluator';
-      default:
-        return '/personal';
+    try {
+      switch (user.user_type) {
+        case 'admin':
+          return '/admin';
+        case 'personal_service_user':
+          return '/personal';
+        case 'evaluator':
+          return '/evaluator';
+        default:
+          return '/personal';
+      }
+    } catch (error) {
+      console.error('Error in getDefaultDashboardPath:', error);
+      return '/login';
+    }
+  };
+
+  // 안전한 네비게이션 함수 - GitHub Pages 경로 고려
+  const safeNavigate = (path: string) => {
+    try {
+      // GitHub Pages의 경우 /ahp_app 접두사 추가
+      const fullPath = path.startsWith('/') ? `/ahp_app${path}` : `/ahp_app/${path}`;
+      window.location.href = fullPath;
+    } catch (error) {
+      console.error('Navigation error:', error);
+      window.location.reload();
     }
   };
 
@@ -153,15 +170,15 @@ function App() {
         
         setCurrentUser(userInfo);
         
-        // 최고관리자는 바로 React 앱 관리자 대시보드로 이동
-        if (data.user.is_superuser) {
-          console.log('✅ 최고관리자 로그인 성공 - React 앱 관리자 대시보드로 이동');
-          // React 앱 내에서 관리자 페이지로 이동
-          return { success: true };
-        }
+        // 로그인 성공 후 적절한 대시보드로 리다이렉트
+        const dashboardPath = getDefaultDashboardPath(userInfo);
+        console.log(`✅ 로그인 성공 - ${dashboardPath}로 이동`);
         
-        // 일반 사용자는 React 앱 대시보드로 이동
-        console.log('✅ 일반 사용자 로그인 성공 - React 앱 대시보드 이용');
+        // 짧은 지연 후 리다이렉트 (상태 업데이트 완료 대기)
+        setTimeout(() => {
+          safeNavigate(dashboardPath);
+        }, 500);
+        
         return { success: true };
       } else {
         const errorMessage = data.message || '로그인에 실패했습니다.';
@@ -367,7 +384,13 @@ function App() {
                 path="/login" 
                 element={
                   currentUser ? (
-                    <Navigate to={getDefaultDashboardPath(currentUser)} replace />
+                    <div>
+                      {(() => {
+                        const dashboardPath = getDefaultDashboardPath(currentUser);
+                        setTimeout(() => safeNavigate(dashboardPath), 100);
+                        return <div style={{ textAlign: 'center', padding: '2rem' }}>리다이렉트 중...</div>;
+                      })()}
+                    </div>
                   ) : (
                     <LoginPage 
                       onLogin={handleLogin}
@@ -524,9 +547,20 @@ function App() {
                 path="*" 
                 element={
                   currentUser ? (
-                    <Navigate to={getDefaultDashboardPath(currentUser)} replace />
+                    <div>
+                      {(() => {
+                        const dashboardPath = getDefaultDashboardPath(currentUser);
+                        setTimeout(() => safeNavigate(dashboardPath), 100);
+                        return <div style={{ textAlign: 'center', padding: '2rem' }}>대시보드로 이동 중...</div>;
+                      })()}
+                    </div>
                   ) : (
-                    <Navigate to="/" replace />
+                    <div>
+                      {(() => {
+                        setTimeout(() => safeNavigate('/'), 100);
+                        return <div style={{ textAlign: 'center', padding: '2rem' }}>홈으로 이동 중...</div>;
+                      })()}
+                    </div>
                   )
                 } 
               />

@@ -343,8 +343,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
                         variant="primary"
                         size="sm"
                         onClick={() => {
-                          // 해당 사용자의 개인서비스 페이지로 이동
-                          window.open(`/personal?user=${user.id}`, '_blank');
+                          // 해당 사용자의 개인서비스 페이지로 이동 - GitHub Pages 경로
+                          window.open(`/ahp_app/personal?user=${user.id}`, '_blank');
                         }}
                         style={{
                           backgroundColor: '#059669',
