@@ -83,9 +83,16 @@ def login_api(request):
     """보안이 강화된 로그인 API"""
     if request.method == 'POST':
         try:
+            # 디버깅: 요청 내용 로깅
+            logger.info(f"Login attempt - Method: {request.method}")
+            logger.info(f"Content-Type: {request.content_type}")
+            logger.info(f"Request body: {request.body.decode('utf-8', errors='ignore')[:200]}")
+            
             data = json.loads(request.body)
             username = data.get('username', '').strip()
             password = data.get('password', '')
+            
+            logger.info(f"Parsed login data - Username: {username}, Password length: {len(password)}")
             
             if not username or not password:
                 return JsonResponse({
@@ -105,6 +112,20 @@ def login_api(request):
                     logger.warning(f"Login attempt with non-existent email: {username}")
             
             user = authenticate(request, username=username, password=password)
+            
+            # 디버깅: 인증 결과 확인
+            logger.info(f"Authentication result for '{username}': {user is not None}")
+            if user is None:
+                # 사용자 존재 여부 확인
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                user_exists = User.objects.filter(username=username).exists()
+                email_exists = User.objects.filter(email=original_username).exists()
+                logger.info(f"User '{username}' exists: {user_exists}")
+                logger.info(f"Email '{original_username}' exists: {email_exists}")
+                if user_exists:
+                    db_user = User.objects.get(username=username)
+                    logger.info(f"DB user active: {db_user.is_active}, staff: {db_user.is_staff}")
             
             if user is not None:
                 if user.is_active:
