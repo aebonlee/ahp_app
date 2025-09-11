@@ -40,16 +40,13 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string>('');
 
-  // React 마운트 시 부드러운 전환으로 fallback 제거
+  // React 마운트 시 즉시 fallback 제거 (깜빡임 방지)
   useEffect(() => {
     const fallbackElement = document.getElementById('loading-fallback');
     if (fallbackElement) {
-      // 부드러운 fade out 효과
-      fallbackElement.style.opacity = '0';
-      setTimeout(() => {
-        fallbackElement.style.display = 'none';
-        console.log('📱 HTML fallback 화면 제거됨');
-      }, 300);
+      // 즉시 제거하여 깜빡임 방지
+      fallbackElement.remove();
+      console.log('📱 HTML fallback 화면 즉시 제거됨');
     }
   }, []);
 
@@ -358,7 +355,7 @@ function App() {
     }
   };
 
-  // Loading screen
+  // Loading screen - 깜빡임 없는 단일 로딩 화면
   if (loading) {
     return (
       <div style={{
@@ -366,21 +363,22 @@ function App() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'var(--bg-primary)'
+        backgroundColor: '#ffffff',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
             fontSize: '2rem',
             marginBottom: '1rem',
-            color: 'var(--text-primary)'
+            color: '#2563eb'
           }}>
             ⚡ AHP System
           </div>
           <div style={{
             fontSize: '0.875rem',
-            color: 'var(--text-secondary)'
+            color: '#6b7280'
           }}>
-            시스템을 준비하고 있습니다...
+            로딩 중...
           </div>
         </div>
       </div>

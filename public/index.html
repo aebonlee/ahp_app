@@ -100,15 +100,15 @@
         flex-direction: column;
       }
 
-      /* Prevent flashing by hiding loading fallback initially */
+      /* Completely hide fallback, let React handle everything */
       #loading-fallback {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: none !important;
+      }
+      
+      /* Ensure root takes full space immediately */
+      #root {
         min-height: 100vh;
         background-color: #ffffff;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        transition: opacity 0.3s ease-out;
       }
     </style>
 
