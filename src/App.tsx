@@ -25,6 +25,7 @@ import Card from './components/common/Card';
 import TestAccountManager from './components/dev/TestAccountManager';
 import SupportPage from './components/support/SupportPage';
 import NewsPage from './components/support/NewsPage';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
 
@@ -340,190 +341,200 @@ function App() {
   }
 
   return (
-    <Router basename="/ahp_app">
-      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<HomePage />} />
-          
-          {/* Developer Tools */}
-          <Route path="/dev/test-accounts" element={<TestAccountManager />} />
-          
-          {/* Support Pages */}
-          <Route 
-            path="/support" 
-            element={<SupportPage onBackClick={() => window.history.back()} />} 
-          />
-          <Route 
-            path="/news" 
-            element={<NewsPage onBackClick={() => window.history.back()} />} 
-          />
-          
-          {/* Authentication Routes */}
-          <Route 
-            path="/login" 
-            element={
-              currentUser ? (
-                <Navigate to={getDefaultDashboardPath(currentUser)} replace />
-              ) : (
-                <LoginPage 
-                  onLogin={handleLogin}
-                  error={authError}
-                />
-              )
-            } 
-          />
-          
-          <Route 
-            path="/register/admin" 
-            element={
-              <AdminRegistrationPage 
-                onRegister={handleAdminRegister}
-                onBackToSelection={() => window.history.back()}
-                error={authError}
+    <ErrorBoundary>
+      <Router>
+        <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
+          <ErrorBoundary>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<HomePage />} />
+              
+              {/* Developer Tools */}
+              <Route path="/dev/test-accounts" element={<TestAccountManager />} />
+              
+              {/* Support Pages */}
+              <Route 
+                path="/support" 
+                element={<SupportPage onBackClick={() => window.history.back()} />} 
               />
-            } 
-          />
-          
-          <Route 
-            path="/register/personal" 
-            element={
-              <PersonalServiceRegistrationPage 
-                onRegister={handlePersonalServiceRegister}
-                onBackToSelection={() => window.history.back()}
-                error={authError}
+              <Route 
+                path="/news" 
+                element={<NewsPage onBackClick={() => window.history.back()} />} 
               />
-            } 
-          />
-          
-          <Route 
-            path="/register/evaluator" 
-            element={
-              <EvaluatorRegistrationPage 
-                onRegister={handleEvaluatorRegister}
-                onBackToSelection={() => window.history.back()}
-                error={authError}
+              
+              {/* Authentication Routes */}
+              <Route 
+                path="/login" 
+                element={
+                  currentUser ? (
+                    <Navigate to={getDefaultDashboardPath(currentUser)} replace />
+                  ) : (
+                    <LoginPage 
+                      onLogin={handleLogin}
+                      error={authError}
+                    />
+                  )
+                } 
               />
-            } 
-          />
+              
+              <Route 
+                path="/register/admin" 
+                element={
+                  <AdminRegistrationPage 
+                    onRegister={handleAdminRegister}
+                    onBackToSelection={() => window.history.back()}
+                    error={authError}
+                  />
+                } 
+              />
+              
+              <Route 
+                path="/register/personal" 
+                element={
+                  <PersonalServiceRegistrationPage 
+                    onRegister={handlePersonalServiceRegister}
+                    onBackToSelection={() => window.history.back()}
+                    error={authError}
+                  />
+                } 
+              />
+              
+              <Route 
+                path="/register/evaluator" 
+                element={
+                  <EvaluatorRegistrationPage 
+                    onRegister={handleEvaluatorRegister}
+                    onBackToSelection={() => window.history.back()}
+                    error={authError}
+                  />
+                } 
+              />
 
-          {/* Protected Dashboard Routes */}
-          <Route 
-            path="/admin/*" 
-            element={
-              <ProtectedRoute requiredUserType="admin" currentUser={currentUser}>
-                {currentUser && isAdminUser(currentUser) && (
-                  <AdminDashboard user={currentUser} />
-                )}
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/personal/*" 
-            element={
-              <ProtectedRoute requiredUserType="personal_service_user" currentUser={currentUser}>
-                {currentUser && isPersonalServiceUser(currentUser) && (
-                  <PersonalServiceDashboard user={currentUser} />
-                )}
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/evaluator/*" 
-            element={
-              <ProtectedRoute requiredUserType="evaluator" currentUser={currentUser}>
-                {currentUser && isEvaluatorUser(currentUser) && (
-                  <EvaluatorDashboard user={currentUser} />
-                )}
-              </ProtectedRoute>
-            } 
-          />
+              {/* Protected Dashboard Routes - with individual error boundaries */}
+              <Route 
+                path="/admin/*" 
+                element={
+                  <ErrorBoundary>
+                    <ProtectedRoute requiredUserType="admin" currentUser={currentUser}>
+                      {currentUser && isAdminUser(currentUser) && (
+                        <AdminDashboard user={currentUser} />
+                      )}
+                    </ProtectedRoute>
+                  </ErrorBoundary>
+                } 
+              />
+              
+              <Route 
+                path="/personal/*" 
+                element={
+                  <ErrorBoundary>
+                    <ProtectedRoute requiredUserType="personal_service_user" currentUser={currentUser}>
+                      {currentUser && isPersonalServiceUser(currentUser) && (
+                        <PersonalServiceDashboard user={currentUser} />
+                      )}
+                    </ProtectedRoute>
+                  </ErrorBoundary>
+                } 
+              />
+              
+              <Route 
+                path="/evaluator/*" 
+                element={
+                  <ErrorBoundary>
+                    <ProtectedRoute requiredUserType="evaluator" currentUser={currentUser}>
+                      {currentUser && isEvaluatorUser(currentUser) && (
+                        <EvaluatorDashboard user={currentUser} />
+                      )}
+                    </ProtectedRoute>
+                  </ErrorBoundary>
+                } 
+              />
 
-          {/* Unauthorized Access */}
-          <Route 
-            path="/unauthorized" 
-            element={
-              <div style={{
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'var(--bg-primary)'
-              }}>
-                <Card title="접근 권한 없음" variant="elevated">
-                  <div style={{ textAlign: 'center', padding: '2rem' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚫</div>
-                    <h3 style={{ 
-                      fontSize: '1.25rem', 
-                      fontWeight: '600',
-                      color: 'var(--text-primary)',
-                      marginBottom: '1rem'
-                    }}>
-                      접근 권한이 없습니다
-                    </h3>
-                    <p style={{
-                      fontSize: '0.875rem',
-                      color: 'var(--text-secondary)',
-                      marginBottom: '2rem',
-                      lineHeight: '1.5'
-                    }}>
-                      이 페이지에 접근할 권한이 없습니다.<br />
-                      로그인 후 다시 시도해주세요.
-                    </p>
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                      <button
-                        onClick={() => window.location.href = '/ahp_app/login'}
-                        style={{
-                          padding: '0.75rem 1.5rem',
-                          backgroundColor: '#3b82f6',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '0.5rem',
+              {/* Unauthorized Access */}
+              <Route 
+                path="/unauthorized" 
+                element={
+                  <div style={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'var(--bg-primary)'
+                  }}>
+                    <Card title="접근 권한 없음" variant="elevated">
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚫</div>
+                        <h3 style={{ 
+                          fontSize: '1.25rem', 
+                          fontWeight: '600',
+                          color: 'var(--text-primary)',
+                          marginBottom: '1rem'
+                        }}>
+                          접근 권한이 없습니다
+                        </h3>
+                        <p style={{
                           fontSize: '0.875rem',
-                          fontWeight: '500',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        로그인
-                      </button>
-                      <button
-                        onClick={() => window.location.href = '/'}
-                        style={{
-                          padding: '0.75rem 1.5rem',
-                          backgroundColor: 'transparent',
                           color: 'var(--text-secondary)',
-                          border: '1px solid var(--border-default)',
-                          borderRadius: '0.5rem',
-                          fontSize: '0.875rem',
-                          fontWeight: '500',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        홈으로
-                      </button>
-                    </div>
+                          marginBottom: '2rem',
+                          lineHeight: '1.5'
+                        }}>
+                          이 페이지에 접근할 권한이 없습니다.<br />
+                          로그인 후 다시 시도해주세요.
+                        </p>
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                          <button
+                            onClick={() => window.location.href = '/login'}
+                            style={{
+                              padding: '0.75rem 1.5rem',
+                              backgroundColor: '#3b82f6',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '0.5rem',
+                              fontSize: '0.875rem',
+                              fontWeight: '500',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            로그인
+                          </button>
+                          <button
+                            onClick={() => window.location.href = '/'}
+                            style={{
+                              padding: '0.75rem 1.5rem',
+                              backgroundColor: 'transparent',
+                              color: 'var(--text-secondary)',
+                              border: '1px solid var(--border-default)',
+                              borderRadius: '0.5rem',
+                              fontSize: '0.875rem',
+                              fontWeight: '500',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            홈으로
+                          </button>
+                        </div>
+                      </div>
+                    </Card>
                   </div>
-                </Card>
-              </div>
-            } 
-          />
+                } 
+              />
 
-          {/* Default redirect based on authentication status */}
-          <Route 
-            path="*" 
-            element={
-              currentUser ? (
-                <Navigate to={getDefaultDashboardPath(currentUser)} replace />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            } 
-          />
-        </Routes>
-      </div>
-    </Router>
+              {/* Default redirect based on authentication status */}
+              <Route 
+                path="*" 
+                element={
+                  currentUser ? (
+                    <Navigate to={getDefaultDashboardPath(currentUser)} replace />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                } 
+              />
+            </Routes>
+          </ErrorBoundary>
+        </div>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

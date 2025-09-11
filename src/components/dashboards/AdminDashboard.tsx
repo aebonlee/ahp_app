@@ -20,6 +20,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     systemStatus: 'healthy' as 'healthy' | 'warning' | 'critical'
   });
 
+  // 안전한 사용자 정보 접근을 위한 헬퍼
+  const safeUser = React.useMemo(() => ({
+    id: user?.id || 'unknown',
+    username: user?.username || 'admin',
+    email: user?.email || 'admin@ahp-platform.com',
+    first_name: user?.first_name || 'Admin',
+    last_name: user?.last_name || 'User',
+    user_type: user?.user_type || 'admin' as const,
+    is_active: user?.is_active !== undefined ? user.is_active : true
+  }), [user]);
+
   useEffect(() => {
     loadSystemStats();
   }, []);
@@ -49,8 +60,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   };
 
   // 관리자 권한 확인 (admin 계정도 aebon처럼 처리)
-  const isAebonUser = user.username?.toLowerCase() === 'aebon' || user.username?.toLowerCase() === 'admin';
-  const isSuperAdmin = user.user_type === 'admin';
+  const isAebonUser = safeUser.username?.toLowerCase() === 'aebon' || safeUser.username?.toLowerCase() === 'admin';
+  const isSuperAdmin = safeUser.user_type === 'admin';
   
   if (isAebonUser || isSuperAdmin) {
     return (
@@ -78,7 +89,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               color: 'var(--text-secondary)',
               margin: 0
             }}>
-              {user.first_name} {user.last_name} ({user.username})
+              {safeUser.first_name} {safeUser.last_name} ({safeUser.username})
             </p>
           </div>
           
@@ -107,15 +118,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
         {/* 슈퍼 관리자 대시보드 */}
         <EnhancedSuperAdminDashboard
           user={{
-            id: String(user.id),
-            email: user.email,
-            first_name: user.first_name,
-            last_name: user.last_name,
+            id: String(safeUser.id),
+            email: safeUser.email,
+            first_name: safeUser.first_name,
+            last_name: safeUser.last_name,
             role: 'super_admin' as const,
             subscription: undefined,
             parentAdminId: undefined,
             createdBy: undefined,
-            isActive: true,
+            isActive: safeUser.is_active,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           }}
