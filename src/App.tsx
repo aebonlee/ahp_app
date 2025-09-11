@@ -40,6 +40,15 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string>('');
 
+  // React 마운트 시 즉시 로딩 fallback 제거
+  useEffect(() => {
+    const fallbackElement = document.getElementById('loading-fallback');
+    if (fallbackElement) {
+      fallbackElement.style.display = 'none';
+      console.log('📱 HTML fallback 화면 제거됨');
+    }
+  }, []);
+
   // Helper function to get default dashboard path - 안전한 네비게이션
   const getDefaultDashboardPath = (user: BaseUser | null): string => {
     if (!user) return '/login';
@@ -133,11 +142,13 @@ function App() {
         setAuthError('앱 초기화 중 오류가 발생했습니다.');
         setCurrentUser(null);
       } finally {
-        // 최소 1초는 로딩 화면을 보여준 후 앱 로드
+        // 빠른 초기화를 위해 타임아웃 단축
         setTimeout(() => {
           setLoading(false);
           console.log('🚀 React 애플리케이션 초기화 완료');
-        }, 1000);
+          console.log('📍 현재 경로:', window.location.pathname);
+          console.log('👤 사용자 상태:', currentUser ? '로그인됨' : '로그인 필요');
+        }, 500); // 1초에서 0.5초로 단축
       }
     };
 
