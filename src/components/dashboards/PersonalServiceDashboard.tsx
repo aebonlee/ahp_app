@@ -293,32 +293,186 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
 
       {/* 모드별 콘텐츠 렌더링 */}
       {currentMode === 'super-admin' ? (
-        // 슈퍼 관리자 모드 - EnhancedSuperAdminDashboard 사용
-        <EnhancedSuperAdminDashboard 
-          user={{
-            id: String(safeUser.id),
-            email: safeUser.email,
-            first_name: safeUser.first_name,
-            last_name: safeUser.last_name,
-            role: 'super_admin',
-            isActive: safeUser.is_active || true,
-            createdAt: safeUser.date_joined || new Date().toISOString(),
-            updatedAt: safeUser.last_login || new Date().toISOString(),
-            lastLogin: safeUser.last_login
-          }}
-        />
+        // 슈퍼 관리자 모드 - EnhancedSuperAdminDashboard를 전체 화면으로 사용
+        <div style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'var(--bg-primary)',
+          zIndex: 1000,
+          overflow: 'auto'
+        }}>
+          {/* 상단 네비게이션 바 */}
+          <div style={{
+            position: 'sticky',
+            top: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderBottom: '1px solid var(--border-subtle)',
+            padding: '1rem 2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 1001
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button
+                onClick={() => setCurrentMode('personal')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  backgroundColor: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: '0.5rem',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                }}
+              >
+                ← 뒤로가기
+              </button>
+              <h1 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#dc2626',
+                margin: 0
+              }}>
+                🎯 슈퍼관리자 모드
+              </h1>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ 
+                fontSize: '0.875rem', 
+                color: 'var(--text-secondary)' 
+              }}>
+                {safeUser.first_name} {safeUser.last_name}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleLogout}
+              >
+                로그아웃
+              </Button>
+            </div>
+          </div>
+          
+          {/* EnhancedSuperAdminDashboard 컴포넌트 */}
+          <EnhancedSuperAdminDashboard 
+            user={{
+              id: String(safeUser.id),
+              email: safeUser.email,
+              first_name: safeUser.first_name,
+              last_name: safeUser.last_name,
+              role: 'super_admin',
+              isActive: safeUser.is_active || true,
+              createdAt: safeUser.date_joined || new Date().toISOString(),
+              updatedAt: safeUser.last_login || new Date().toISOString(),
+              lastLogin: safeUser.last_login
+            }}
+          />
+        </div>
       ) : currentMode === 'personal' && safeUser.user_type === 'admin' ? (
-        // 개인 서비스 모드 (관리자) - PersonalService 컴포넌트 사용
-        <PersonalService 
-          user={{
-            id: String(safeUser.id),
-            first_name: safeUser.first_name,
-            last_name: safeUser.last_name,
-            email: safeUser.email,
-            role: 'admin',
-            admin_type: 'personal'
-          }}
-        />
+        // 개인 서비스 모드 (관리자) - PersonalService 컴포넌트를 전체 화면으로 사용
+        <div style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'var(--bg-primary)',
+          zIndex: 1000,
+          overflow: 'auto'
+        }}>
+          {/* 상단 네비게이션 바 */}
+          <div style={{
+            position: 'sticky',
+            top: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderBottom: '1px solid var(--border-subtle)',
+            padding: '1rem 2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 1001
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button
+                onClick={() => setCurrentMode('personal')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  backgroundColor: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: '0.5rem',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                }}
+              >
+                ← 뒤로가기
+              </button>
+              <h1 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#2563eb',
+                margin: 0
+              }}>
+                💼 개인서비스 모드
+              </h1>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ 
+                fontSize: '0.875rem', 
+                color: 'var(--text-secondary)' 
+              }}>
+                {safeUser.first_name} {safeUser.last_name}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleLogout}
+              >
+                로그아웃
+              </Button>
+            </div>
+          </div>
+          
+          {/* PersonalService 컴포넌트 */}
+          <PersonalService 
+            user={{
+              id: String(safeUser.id),
+              first_name: safeUser.first_name,
+              last_name: safeUser.last_name,
+              email: safeUser.email,
+              role: 'admin',
+              admin_type: 'personal'
+            }}
+          />
+        </div>
       ) : (
         // 일반 사용자 또는 기본 개인 서비스 모드
         <Routes>
