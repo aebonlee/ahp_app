@@ -45,10 +45,10 @@ THIRD_PARTY_APPS = [
 
 # Django 총 관리자 시스템 (회원관리, 결제시스템, PostgreSQL 연동)
 LOCAL_APPS = [
-    'super_admin',         # ✅ 총 관리자 시스템 (회원, 결제, 프로젝트 관리)
+    'super_admin',         # ✅ 총 관리자 시스템 (회원, 결제, 프로젝트 관리) - User 모델 등록됨
     'simple_service',      # ✅ 간단한 AHP 서비스만 활성화
     'dashboards',          # ✅ 권한별 대시보드 시스템
-    'apps.accounts',       # ✅ 사용자 계정 관리
+    # 'apps.accounts',       # ❌ 일시 비활성화 - User 모델 충돌 방지 (super_admin에서 이미 등록됨)
     'apps.projects',       # ✅ 프로젝트 관리
     'apps.evaluations',    # ✅ 평가 관리
     'apps.analysis',       # ✅ 분석 결과 관리
@@ -156,8 +156,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model
-AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model - using super_admin's CustomUser model
+AUTH_USER_MODEL = 'super_admin.CustomUser'
 
 # Production Security Settings
 if not DEBUG:

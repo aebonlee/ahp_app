@@ -10,8 +10,9 @@ from .models import UserProfile
 
 User = get_user_model()
 
-
-@admin.register(User)
+# Note: User model is already registered in super_admin app
+# Uncomment below if you want to replace super_admin's User admin
+# @admin.register(User)
 class CustomUserAdmin(BaseUserAdmin):
     """Enhanced User Admin with AHP platform specific features"""
     

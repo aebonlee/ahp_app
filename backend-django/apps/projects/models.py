@@ -2,12 +2,12 @@
 Project Models for AHP Platform
 """
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
-User = get_user_model()
+# Use settings.AUTH_USER_MODEL for foreign key references
 
 
 class Project(models.Model):
@@ -34,9 +34,9 @@ class Project(models.Model):
     objective = models.TextField(help_text="프로젝트의 목적과 목표")
     
     # Owner and collaborators
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_projects')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_projects')
     collaborators = models.ManyToManyField(
-        User, 
+        settings.AUTH_USER_MODEL, 
         through='ProjectMember', 
         through_fields=('project', 'user'),
         related_name='collaborated_projects'
@@ -86,7 +86,7 @@ class ProjectMember(models.Model):
     ]
     
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     
     # Permissions
@@ -96,7 +96,7 @@ class ProjectMember(models.Model):
     
     # Dates
     joined_at = models.DateTimeField(default=timezone.now)
-    invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='invited_members')
+    invited_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='invited_members')
     
     class Meta:
         db_table = 'project_members'
@@ -160,7 +160,7 @@ class ProjectTemplate(models.Model):
     default_settings = models.JSONField(default=dict)
     
     # Meta
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
     usage_count = models.PositiveIntegerField(default=0)
     

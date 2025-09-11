@@ -2,12 +2,12 @@
 System Management Models for AHP Platform
 """
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
-User = get_user_model()
+# Use settings.AUTH_USER_MODEL for foreign key references
 
 
 class SystemSettings(models.Model):
@@ -32,7 +32,7 @@ class SystemSettings(models.Model):
     
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     
     class Meta:
         db_table = 'system_settings'
@@ -84,7 +84,7 @@ class SystemLog(models.Model):
     message = models.TextField()
     details = models.JSONField(default=dict, blank=True)
     
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
     
@@ -126,7 +126,7 @@ class MaintenanceMode(models.Model):
     scheduled_end = models.DateTimeField(null=True, blank=True)
     
     # 메타 정보
-    enabled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    enabled_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     enabled_at = models.DateTimeField(null=True, blank=True)
     
     created_at = models.DateTimeField(default=timezone.now)
@@ -219,7 +219,7 @@ class BackupRecord(models.Model):
     error_message = models.TextField(blank=True)
     
     # User info
-    initiated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    initiated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     
     class Meta:
         db_table = 'backup_records'
@@ -241,7 +241,7 @@ class APIUsageLog(models.Model):
     
     endpoint = models.CharField(max_length=255)
     method = models.CharField(max_length=10)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     
     # Request details
     ip_address = models.GenericIPAddressField()
@@ -295,7 +295,7 @@ class SystemNotification(models.Model):
     priority = models.CharField(max_length=20, choices=PRIORITY_LEVELS, default='medium')
     
     # Targeting
-    target_users = models.ManyToManyField(User, blank=True, related_name='system_notifications')
+    target_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='system_notifications')
     target_all_admins = models.BooleanField(default=False)
     
     # Status
@@ -304,7 +304,7 @@ class SystemNotification(models.Model):
     auto_dismiss_after = models.DurationField(null=True, blank=True, help_text="자동 해제 시간")
     
     # Metadata
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_notifications')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_notifications')
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     

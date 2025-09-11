@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('super_admin', '0001_initial'),  # Depends on super_admin's CustomUser model
     ]
 
     operations = [
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('is_editable', models.BooleanField(default=True, help_text='관리자가 수정 가능한지 여부')),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('updated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                ('updated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='super_admin.CustomUser')),
             ],
             options={
                 'verbose_name': 'System Setting',
@@ -51,7 +51,7 @@ class Migration(migrations.Migration):
                 ('request_method', models.CharField(blank=True, max_length=10)),
                 ('request_path', models.TextField(blank=True)),
                 ('response_status', models.PositiveIntegerField(blank=True, null=True)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='super_admin.CustomUser')),
             ],
             options={
                 'db_table': 'system_logs',
@@ -70,7 +70,7 @@ class Migration(migrations.Migration):
                 ('enabled_at', models.DateTimeField(blank=True, null=True)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('enabled_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                ('enabled_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='super_admin.CustomUser')),
             ],
             options={
                 'verbose_name': 'Maintenance Mode',
@@ -115,7 +115,7 @@ class Migration(migrations.Migration):
                 ('completed_at', models.DateTimeField(blank=True, null=True)),
                 ('tables_backed_up', models.JSONField(blank=True, default=list)),
                 ('error_message', models.TextField(blank=True)),
-                ('initiated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                ('initiated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='super_admin.CustomUser')),
             ],
             options={
                 'db_table': 'backup_records',
@@ -135,7 +135,7 @@ class Migration(migrations.Migration):
                 ('request_size', models.PositiveIntegerField(default=0, help_text='요청 크기 (bytes)')),
                 ('response_size', models.PositiveIntegerField(default=0, help_text='응답 크기 (bytes)')),
                 ('timestamp', models.DateTimeField(default=django.utils.timezone.now)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='super_admin.CustomUser')),
             ],
             options={
                 'db_table': 'api_usage_logs',
@@ -158,8 +158,8 @@ class Migration(migrations.Migration):
                 ('show_in_header', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_notifications', to=settings.AUTH_USER_MODEL)),
-                ('target_users', models.ManyToManyField(blank=True, related_name='system_notifications', to=settings.AUTH_USER_MODEL)),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_notifications', to='super_admin.CustomUser')),
+                ('target_users', models.ManyToManyField(blank=True, related_name='system_notifications', to='super_admin.CustomUser')),
             ],
             options={
                 'db_table': 'system_notifications',
