@@ -94,8 +94,15 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Database configuration - supports both SQLite and PostgreSQL
-if os.environ.get('DATABASE_URL') or os.environ.get('DATABASE_HOST'):
-    # PostgreSQL configuration for production
+import dj_database_url
+
+if os.environ.get('DATABASE_URL'):
+    # Render.com PostgreSQL database (using DATABASE_URL)
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    }
+elif os.environ.get('DATABASE_HOST'):
+    # Manual PostgreSQL configuration
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',

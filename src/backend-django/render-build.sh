@@ -4,7 +4,9 @@ set -o errexit
 
 echo "🚀 Starting Render.com build process..."
 echo "📅 Build Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-echo "🔄 Triggering deployment after CSS Design System integration..."
+echo "🔄 Render deployment with Render backend directory fix..."
+echo "📁 Current directory: $(pwd)"
+echo "📂 Directory contents: $(ls -la)"
 
 # Upgrade pip
 pip install --upgrade pip
