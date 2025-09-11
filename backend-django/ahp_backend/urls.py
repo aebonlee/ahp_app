@@ -85,6 +85,7 @@ def login_api(request):
     # GET 요청으로 테스트 로그인 제공
     if request.method == 'GET':
         try:
+            from django.contrib.auth import get_user_model
             User = get_user_model()
             
             # admin 계정으로 자동 로그인 시도
