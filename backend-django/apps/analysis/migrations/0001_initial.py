@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('projects', '0001_initial'),
-        ('accounts', '0001_initial'),
+        ('super_admin', '0001_initial'),
     ]
 
     operations = [
