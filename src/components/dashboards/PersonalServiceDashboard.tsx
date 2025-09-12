@@ -7,7 +7,7 @@ import { PersonalServiceUser, BaseUser } from '../../types/userTypes';
 import ProjectManagement from '../personal/ProjectManagement';
 import AnalyticsPage from '../personal/AnalyticsPage';
 import SettingsPage from '../personal/SettingsPage';
-import PersonalService from '../admin/PersonalServiceDashboard';
+import AdminPersonalServiceDashboard from '../admin/PersonalServiceDashboard';
 import { AuthProvider } from '../../hooks/useAuth';
 
 interface PersonalServiceDashboardProps {
@@ -77,7 +77,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
   if (safeUser.user_type === 'admin') {
     return (
       <AuthProvider>
-        <PersonalService 
+        <AdminPersonalServiceDashboard 
           user={{
             id: String(safeUser.id),
             first_name: safeUser.first_name,
