@@ -9,6 +9,7 @@ import AnalyticsPage from '../personal/AnalyticsPage';
 import SettingsPage from '../personal/SettingsPage';
 import EnhancedSuperAdminDashboard from '../admin/EnhancedSuperAdminDashboard';
 import PersonalService from '../admin/PersonalServiceDashboard';
+import { AuthProvider } from '../../hooks/useAuth';
 
 interface PersonalServiceDashboardProps {
   user: PersonalServiceUser | BaseUser;
@@ -465,16 +466,63 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
           </div>
           
           {/* PersonalService 컴포넌트 */}
-          <PersonalService 
-            user={{
-              id: String(safeUser.id),
-              first_name: safeUser.first_name,
-              last_name: safeUser.last_name,
-              email: safeUser.email,
-              role: 'admin',
-              admin_type: 'personal'
-            }}
-          />
+          <AuthProvider>
+            <div style={{ padding: '2rem' }}>
+              <PersonalService 
+                user={{
+                  id: String(safeUser.id),
+                  first_name: safeUser.first_name,
+                  last_name: safeUser.last_name,
+                  email: safeUser.email,
+                  role: 'admin',
+                  admin_type: 'personal'
+                }}
+                projects={[]}
+                activeTab="personal-service"
+                onTabChange={(tab) => console.log('Tab changed:', tab)}
+                onUserUpdate={(user) => console.log('User updated:', user)}
+                onCreateProject={async (projectData) => {
+                  console.log('Creating project:', projectData);
+                  return { id: 'new-project', ...projectData };
+                }}
+                onDeleteProject={async (projectId) => {
+                  console.log('Deleting project:', projectId);
+                }}
+                onFetchCriteria={async (projectId) => {
+                  console.log('Fetching criteria for:', projectId);
+                  return [];
+                }}
+                onCreateCriteria={async (projectId, criteriaData) => {
+                  console.log('Creating criteria:', projectId, criteriaData);
+                  return criteriaData;
+                }}
+                onFetchAlternatives={async (projectId) => {
+                  console.log('Fetching alternatives for:', projectId);
+                  return [];
+                }}
+                onCreateAlternative={async (projectId, alternativeData) => {
+                  console.log('Creating alternative:', projectId, alternativeData);
+                  return alternativeData;
+                }}
+                onSaveEvaluation={async (projectId, evaluationData) => {
+                  console.log('Saving evaluation:', projectId, evaluationData);
+                  return evaluationData;
+                }}
+                onFetchTrashedProjects={async () => {
+                  console.log('Fetching trashed projects');
+                  return [];
+                }}
+                onRestoreProject={async (projectId) => {
+                  console.log('Restoring project:', projectId);
+                }}
+                onPermanentDeleteProject={async (projectId) => {
+                  console.log('Permanently deleting project:', projectId);
+                }}
+                selectedProjectId={null}
+                onSelectProject={(projectId) => console.log('Selected project:', projectId)}
+              />
+            </div>
+          </AuthProvider>
         </div>
       ) : currentMode === 'dashboard' ? (
         // 기본 대시보드 모드
