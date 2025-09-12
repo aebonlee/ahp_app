@@ -587,6 +587,9 @@
                 title: '슈퍼 관리자 대시보드'
             });
             
+            // Django API 연동 초기화
+            initializeDjangoAPI();
+            
             console.log('✅ 슈퍼 관리자 대시보드 로드 완료');
         });
 
@@ -700,11 +703,168 @@
             console.log(`다크모드 변경: ${newTheme}`);
         }
 
+        // API 기본 설정
+        const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
+        
+        // Django API 초기화
+        async function initializeDjangoAPI() {
+            const loginMethod = localStorage.getItem('login_method');
+            
+            if (loginMethod === 'django') {
+                try {
+                    // 백엔드 상태 확인
+                    const healthResponse = await fetch(`${API_BASE_URL}/api/health/`);
+                    if (healthResponse.ok) {
+                        const healthData = await healthResponse.json();
+                        console.log('✅ Django 백엔드 정상 연결');
+                        console.log('📊 PostgreSQL 연결 상태:', healthData.database?.status);
+                        
+                        // 관리자 통계 데이터 로드
+                        await loadAdminStatistics();
+                        
+                        // 시스템 활동 로그 로드
+                        await loadSystemActivities();
+                        
+                    }
+                } catch (error) {
+                    console.error('❌ Django API 초기화 실패:', error);
+                }
+            } else {
+                console.log('📝 데모 모드로 실행 중');
+            }
+        }
+        
+        // 관리자 통계 데이터 로드
+        async function loadAdminStatistics() {
+            try {
+                const token = localStorage.getItem('ahp_token');
+                const headers = {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
+                
+                // 전체 사용자 수 조회 (예시)
+                const usersResponse = await fetch(`${API_BASE_URL}/api/admin/users/count/`, {
+                    headers
+                });
+                
+                // 전체 프로젝트 수 조회
+                const projectsResponse = await fetch(`${API_BASE_URL}/api/service/projects/`, {
+                    headers
+                });
+                
+                if (usersResponse.ok && projectsResponse.ok) {
+                    const userData = await usersResponse.json();
+                    const projectData = await projectsResponse.json();
+                    
+                    // UI 업데이트
+                    updateAdminStatistics({
+                        totalUsers: userData.count || 0,
+                        activeProjects: projectData.length || 0
+                    });
+                    
+                    console.log('📊 Django 관리자 통계 데이터 로드 완료');
+                }
+            } catch (error) {
+                console.log('⚠️ 관리자 통계 로드 실패, 기본값 사용:', error);
+            }
+        }
+        
+        // 시스템 활동 로그 로드
+        async function loadSystemActivities() {
+            try {
+                const token = localStorage.getItem('ahp_token');
+                const response = await fetch(`${API_BASE_URL}/api/admin/activities/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const activities = await response.json();
+                    updateActivityLog(activities);
+                    console.log('📋 시스템 활동 로그 로드 완료');
+                }
+            } catch (error) {
+                console.log('⚠️ 활동 로그 로드 실패, 기본값 사용:', error);
+            }
+        }
+        
+        // 관리자 통계 UI 업데이트
+        function updateAdminStatistics(stats) {
+            const userCountElement = document.querySelector('.admin-card:first-child .admin-card-value');
+            const projectCountElement = document.querySelector('.admin-card:nth-child(2) .admin-card-value');
+            
+            if (userCountElement && stats.totalUsers > 0) {
+                userCountElement.textContent = stats.totalUsers.toLocaleString();
+            }
+            
+            if (projectCountElement && stats.activeProjects > 0) {
+                projectCountElement.textContent = stats.activeProjects.toString();
+            }
+        }
+        
+        // 활동 로그 UI 업데이트
+        function updateActivityLog(activities) {
+            const activityList = document.querySelector('.activity-list');
+            if (!activityList || !activities || activities.length === 0) return;
+            
+            // 실제 Django 데이터로 활동 로그 업데이트
+            activityList.innerHTML = '';
+            
+            activities.slice(0, 5).forEach(activity => {
+                const activityItem = document.createElement('li');
+                activityItem.className = 'activity-item';
+                activityItem.innerHTML = `
+                    <div class="activity-icon ${activity.type || 'system'}">
+                        ${getActivityIcon(activity.type)}
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">${activity.description || activity.message}</div>
+                        <div class="activity-time">${formatActivityTime(activity.timestamp || activity.created_at)}</div>
+                    </div>
+                `;
+                activityList.appendChild(activityItem);
+            });
+        }
+        
+        // 활동 타입별 아이콘
+        function getActivityIcon(type) {
+            const icons = {
+                'user': '👤',
+                'project': '📊', 
+                'system': '⚙️',
+                'alert': '🚨'
+            };
+            return icons[type] || '📋';
+        }
+        
+        // 시간 포맷팅
+        function formatActivityTime(timestamp) {
+            if (!timestamp) return '방금 전';
+            
+            const now = new Date();
+            const activityTime = new Date(timestamp);
+            const diffMs = now - activityTime;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            
+            if (diffMins < 60) {
+                return `${diffMins}분 전`;
+            } else if (diffHours < 24) {
+                return `${diffHours}시간 전`;
+            } else {
+                return activityTime.toLocaleDateString('ko-KR');
+            }
+        }
+
         // 로그아웃
         function handleLogout() {
             if (confirm('로그아웃 하시겠습니까?')) {
                 localStorage.removeItem('ahp_user');
                 localStorage.removeItem('ahp_token');
+                localStorage.removeItem('login_method');
                 window.location.href = '/ahp_app/';
             }
         }

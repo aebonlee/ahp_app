@@ -401,14 +401,20 @@
             loginButton.textContent = '로그인 중...';
 
             try {
-                // 실제 환경에서는 Django API를 사용하겠지만, 
-                // 현재는 데모용으로 로컬 스토리지를 사용
-                const response = await mockLogin(loginData);
+                // 먼저 실제 Django API 시도
+                let response = await authenticateWithDjango(loginData);
+                
+                // Django API 실패시 데모 모드로 폴백
+                if (!response.success) {
+                    console.log('Django API 로그인 실패, 데모 모드로 전환');
+                    response = await mockLogin(loginData);
+                }
                 
                 if (response.success) {
                     // 로그인 성공
                     localStorage.setItem('ahp_user', JSON.stringify(response.user));
                     localStorage.setItem('ahp_token', response.token);
+                    localStorage.setItem('login_method', response.method || 'demo');
                     
                     // 사용자 역할에 따라 리다이렉트 결정
                     const redirectUrl = response.user.role === 'admin' 
@@ -416,7 +422,8 @@
                         : '/ahp_app/personal-service-enhanced.html';
                     
                     const dashboardName = response.user.role === 'admin' ? '관리자 대시보드' : '개인서비스';
-                    showMessage(`로그인에 성공했습니다! ${dashboardName}로 이동합니다.`, 'success');
+                    const methodMsg = response.method === 'django' ? '(Django API)' : '(데모 모드)';
+                    showMessage(`로그인에 성공했습니다! ${dashboardName}로 이동합니다. ${methodMsg}`, 'success');
                     
                     setTimeout(() => {
                         window.location.href = redirectUrl;
@@ -433,7 +440,58 @@
             }
         });
 
-        // 데모용 로그인 함수 (실제로는 Django API 호출)
+        // Django API 인증 함수
+        async function authenticateWithDjango(loginData) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: loginData.email,
+                        email: loginData.email,
+                        password: loginData.password
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Django 응답을 프론트엔드 형식으로 변환
+                    if (data.access_token || data.token) {
+                        return {
+                            success: true,
+                            method: 'django',
+                            user: {
+                                id: data.user?.id || data.user_id || Math.floor(Math.random() * 1000),
+                                email: data.user?.email || loginData.email,
+                                name: data.user?.first_name || data.user?.username || '사용자',
+                                role: data.user?.is_staff ? 'admin' : 'user'
+                            },
+                            token: data.access_token || data.token
+                        };
+                    }
+                }
+                
+                // 응답이 실패한 경우
+                const errorData = await response.json().catch(() => ({}));
+                return {
+                    success: false,
+                    message: errorData.message || errorData.detail || 'Django API 로그인 실패'
+                };
+
+            } catch (error) {
+                console.error('Django API 연결 오류:', error);
+                return {
+                    success: false,
+                    message: 'Django API 연결 실패'
+                };
+            }
+        }
+
+        // 데모용 로그인 함수 (폴백)
         async function mockLogin(loginData) {
             // 시뮬레이션을 위한 지연
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -457,6 +515,12 @@
                     password: 'demo123',
                     name: '데모 사용자',
                     role: 'user'
+                },
+                {
+                    email: 'admin@ahp-platform.com',
+                    password: 'ahp2025admin',
+                    name: 'Django 관리자',
+                    role: 'admin'
                 }
             ];
 
@@ -467,6 +531,7 @@
             if (user) {
                 return {
                     success: true,
+                    method: 'demo',
                     user: {
                         id: Math.floor(Math.random() * 1000),
                         email: user.email,

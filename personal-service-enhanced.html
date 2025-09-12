@@ -780,8 +780,10 @@
             
             console.log('✅ Enhanced Personal Service Dashboard 로드 완료');
             
-            // 백엔드 상태 확인 (옵션)
+            // Django API 연동 초기화
             checkBackendStatus();
+            syncUserData();
+            loadUserProjects();
         });
 
         // 컬러 테마 변경
@@ -844,21 +846,130 @@
             console.log(`다크모드 변경: ${newTheme}`);
         }
 
+        // API 기본 설정
+        const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
+        
+        // 인증 헤더 생성
+        function getAuthHeaders() {
+            const token = localStorage.getItem('ahp_token');
+            const loginMethod = localStorage.getItem('login_method');
+            
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            };
+            
+            if (token && loginMethod === 'django') {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            return headers;
+        }
+
+        // 사용자 프로젝트 데이터 로드
+        async function loadUserProjects() {
+            const loginMethod = localStorage.getItem('login_method');
+            
+            if (loginMethod === 'django') {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/service/projects/`, {
+                        method: 'GET',
+                        headers: getAuthHeaders()
+                    });
+                    
+                    if (response.ok) {
+                        const projects = await response.json();
+                        updateProjectsUI(projects);
+                        console.log('✅ Django에서 프로젝트 데이터 로드 완료');
+                    } else {
+                        console.warn('⚠️ Django 프로젝트 데이터 로드 실패, 데모 데이터 사용');
+                        loadDemoData();
+                    }
+                } catch (error) {
+                    console.error('❌ Django API 연결 실패:', error);
+                    loadDemoData();
+                }
+            } else {
+                loadDemoData();
+            }
+        }
+        
+        // 프로젝트 UI 업데이트
+        function updateProjectsUI(projects) {
+            if (projects && projects.length > 0) {
+                // 실제 Django 데이터로 대시보드 통계 업데이트
+                const activeProjects = projects.filter(p => p.status === 'active').length;
+                const completedProjects = projects.filter(p => p.status === 'completed').length;
+                
+                // 통계 카드 업데이트
+                const projectCountElement = document.querySelector('.dashboard-card .stats-value');
+                if (projectCountElement) {
+                    projectCountElement.textContent = activeProjects.toString();
+                }
+                
+                console.log(`📊 Django 프로젝트 데이터: ${activeProjects}개 활성, ${completedProjects}개 완료`);
+            }
+        }
+        
+        // 데모 데이터 로드
+        function loadDemoData() {
+            console.log('📝 데모 데이터 모드 사용');
+        }
+
         // 백엔드 상태 확인
         async function checkBackendStatus() {
             try {
-                const response = await fetch('https://ahp-django-backend.onrender.com/api/health/', {
+                const response = await fetch(`${API_BASE_URL}/api/health/`, {
                     method: 'GET',
                     timeout: 5000
                 });
                 
                 if (response.ok) {
+                    const healthData = await response.json();
                     console.log('✅ Django 백엔드 정상 연결');
+                    console.log('📊 백엔드 상태:', healthData);
+                    
+                    // PostgreSQL 연결 상태 표시
+                    if (healthData.database?.status === 'connected') {
+                        console.log('🗄️ PostgreSQL 데이터베이스 정상 연결');
+                    }
                 } else {
                     console.warn('⚠️ Django 백엔드 응답 오류');
                 }
             } catch (error) {
                 console.error('❌ Django 백엔드 연결 실패:', error);
+            }
+        }
+        
+        // 사용자 데이터 동기화
+        async function syncUserData() {
+            const loginMethod = localStorage.getItem('login_method');
+            
+            if (loginMethod === 'django') {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/user/`, {
+                        method: 'GET',
+                        headers: getAuthHeaders()
+                    });
+                    
+                    if (response.ok) {
+                        const userData = await response.json();
+                        
+                        // 로컬 스토리지의 사용자 정보 업데이트
+                        const currentUser = JSON.parse(localStorage.getItem('ahp_user') || '{}');
+                        const updatedUser = {
+                            ...currentUser,
+                            name: userData.first_name || userData.username || currentUser.name,
+                            email: userData.email || currentUser.email,
+                            id: userData.id || currentUser.id
+                        };
+                        
+                        localStorage.setItem('ahp_user', JSON.stringify(updatedUser));
+                        console.log('✅ Django에서 사용자 데이터 동기화 완료');
+                    }
+                } catch (error) {
+                    console.error('❌ 사용자 데이터 동기화 실패:', error);
+                }
             }
         }
     </script>
