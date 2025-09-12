@@ -658,8 +658,41 @@
         // 로그아웃
         function handleLogout() {
             if (confirm('로그아웃 하시겠습니까?')) {
+                // 로그인 정보 삭제
+                localStorage.removeItem('ahp_user');
+                localStorage.removeItem('ahp_token');
                 window.location.href = '/ahp_app/';
             }
+        }
+
+        // 로그인 상태 확인
+        function checkLoginStatus() {
+            const token = localStorage.getItem('ahp_token');
+            const user = localStorage.getItem('ahp_user');
+            
+            if (!token || !user) {
+                // 로그인하지 않은 경우 로그인 페이지로 이동
+                window.location.href = '/ahp_app/login.html';
+                return false;
+            }
+            
+            try {
+                const userData = JSON.parse(user);
+                // 사용자 이름 표시
+                const userNameElement = document.querySelector('.header-user .user-name');
+                if (userNameElement && userData.name) {
+                    userNameElement.textContent = userData.name;
+                }
+            } catch (error) {
+                console.error('사용자 정보 파싱 오류:', error);
+                // 잘못된 데이터인 경우 로그인 페이지로 이동
+                localStorage.removeItem('ahp_user');
+                localStorage.removeItem('ahp_token');
+                window.location.href = '/ahp_app/login.html';
+                return false;
+            }
+            
+            return true;
         }
 
         // 사이드바 메뉴 활성화
@@ -688,6 +721,11 @@
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
+            // 로그인 상태 확인
+            if (!checkLoginStatus()) {
+                return; // 로그인되지 않은 경우 리다이렉트
+            }
+            
             console.log('✅ Enhanced Personal Service Dashboard 로드 완료');
             
             // 백엔드 상태 확인 (옵션)
