@@ -971,8 +971,60 @@
             });
         });
 
+        // 로그인 상태 확인 및 헤더 업데이트
+        function checkLoginStatusAndUpdateHeader() {
+            const token = localStorage.getItem('ahp_token');
+            const user = localStorage.getItem('ahp_user');
+            
+            if (token && user) {
+                try {
+                    const userData = JSON.parse(user);
+                    updateHeaderForLoggedInUser(userData);
+                } catch (error) {
+                    console.error('사용자 정보 파싱 오류:', error);
+                }
+            }
+        }
+        
+        // 로그인된 사용자를 위한 헤더 업데이트
+        function updateHeaderForLoggedInUser(userData) {
+            const navActions = document.querySelector('.nav-actions');
+            if (!navActions) return;
+            
+            // 기존 버튼들을 대시보드 및 사용자 정보로 교체
+            const dashboardUrl = userData.role === 'admin' 
+                ? '/ahp_app/super-admin-dashboard.html'
+                : '/ahp_app/personal-service-enhanced.html';
+            
+            navActions.innerHTML = `
+                <div class="theme-controls">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="다크모드 전환">🌓</button>
+                    <button class="theme-toggle" onclick="toggleColorTheme()" title="컬러테마 변경">🎨</button>
+                </div>
+                <div class="divider"></div>
+                <span class="nav-link" style="color: var(--text-primary); font-weight: 500;">안녕하세요, ${userData.name}님</span>
+                <a href="${dashboardUrl}" class="btn btn-primary">대시보드</a>
+                <button onclick="handleLogout()" class="btn btn-login">로그아웃</button>
+            `;
+            
+            console.log(`👋 로그인된 사용자: ${userData.name} (${userData.role})`);
+        }
+        
+        // 로그아웃 처리
+        function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                localStorage.removeItem('ahp_user');
+                localStorage.removeItem('ahp_token');
+                localStorage.removeItem('login_method');
+                location.reload(); // 페이지 새로고침으로 헤더 복원
+            }
+        }
+
         // 페이지 로드 시 저장된 테마 적용
         loadSavedTheme();
+        
+        // 로그인 상태 확인 및 헤더 업데이트
+        checkLoginStatusAndUpdateHeader();
         
         console.log('✅ AHP for Paper 홈페이지 로드 완료');
     </script>

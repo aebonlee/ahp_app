@@ -558,8 +558,29 @@
         });
 
         // 이미 로그인된 상태인지 확인
-        if (localStorage.getItem('ahp_token')) {
-            window.location.href = '/ahp_app/personal-service-enhanced.html';
+        const token = localStorage.getItem('ahp_token');
+        const user = localStorage.getItem('ahp_user');
+        if (token && user) {
+            try {
+                const userData = JSON.parse(user);
+                const dashboardUrl = userData.role === 'admin' 
+                    ? '/ahp_app/super-admin-dashboard.html'
+                    : '/ahp_app/personal-service-enhanced.html';
+                
+                showMessage(`이미 로그인되어 있습니다. ${userData.name}님, 대시보드로 이동하시겠습니까?`, 'success');
+                
+                // 3초 후 자동 이동하거나 사용자가 선택할 수 있도록 버튼 추가
+                setTimeout(() => {
+                    if (confirm(`${userData.name}님, 대시보드로 이동하시겠습니까?`)) {
+                        window.location.href = dashboardUrl;
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('사용자 정보 파싱 오류:', error);
+                localStorage.removeItem('ahp_user');
+                localStorage.removeItem('ahp_token');
+            }
         }
 
         // URL에서 메시지 파라미터 확인
