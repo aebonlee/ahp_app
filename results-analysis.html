@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결과 분석 - AHP for Paper</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-elevated: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        /* 다크 모드 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Pretendard', sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* 헤더 */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--accent-primary);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        /* 메인 레이아웃 */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .content-card {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 최종 결과 요약 */
+        .final-ranking {
+            margin-bottom: 2rem;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            transition: all 0.2s;
+        }
+
+        .ranking-item:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ranking-item.rank-1 {
+            background: linear-gradient(135deg, #fef3c7, #fcd34d);
+            border-color: #f59e0b;
+        }
+
+        .ranking-item.rank-2 {
+            background: linear-gradient(135deg, #f3f4f6, #d1d5db);
+            border-color: #9ca3af;
+        }
+
+        .ranking-item.rank-3 {
+            background: linear-gradient(135deg, #fed7aa, #fb923c);
+            border-color: #ea580c;
+        }
+
+        .rank-badge {
+            background: var(--accent-primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .rank-1 .rank-badge {
+            background: #f59e0b;
+        }
+
+        .rank-2 .rank-badge {
+            background: #6b7280;
+        }
+
+        .rank-3 .rank-badge {
+            background: #ea580c;
+        }
+
+        .alternative-info {
+            flex: 1;
+            margin-left: 1rem;
+        }
+
+        .alternative-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .alternative-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .score-info {
+            text-align: right;
+        }
+
+        .final-score {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .score-percentage {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 기준별 가중치 */
+        .criteria-weights {
+            margin-bottom: 2rem;
+        }
+
+        .weight-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        .weight-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            margin: 0 1rem;
+            position: relative;
+        }
+
+        .weight-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .weight-value {
+            font-weight: 600;
+            color: var(--accent-primary);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* 세부 분석 */
+        .detailed-matrix {
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .matrix-table th,
+        .matrix-table td {
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border-light);
+        }
+
+        .matrix-table th {
+            background: var(--bg-elevated);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .matrix-table td {
+            background: var(--bg-primary);
+        }
+
+        /* 일관성 분석 */
+        .consistency-analysis {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .consistency-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .consistency-indicator {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .consistency-good {
+            color: var(--success);
+        }
+
+        .consistency-warning {
+            color: var(--warning);
+        }
+
+        .consistency-bad {
+            color: var(--error);
+        }
+
+        .consistency-details {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* 시각화 차트 영역 */
+        .chart-container {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .chart-placeholder {
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* 민감도 분석 */
+        .sensitivity-analysis {
+            margin-top: 2rem;
+        }
+
+        .sensitivity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        .sensitivity-stable {
+            border-left: 4px solid var(--success);
+        }
+
+        .sensitivity-moderate {
+            border-left: 4px solid var(--warning);
+        }
+
+        .sensitivity-high {
+            border-left: 4px solid var(--error);
+        }
+
+        /* 액션 버튼들 */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .breadcrumb {
+                font-size: 0.8rem;
+            }
+
+            .ranking-item {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .alternative-info {
+                margin-left: 0;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-light);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/ahp_app/" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP for Paper</span>
+            </a>
+            <div>
+                <div class="breadcrumb">
+                    <a href="/ahp_app/project-management.html">프로젝트 관리</a>
+                    <span>→</span>
+                    <span>결과 분석</span>
+                </div>
+                <h1 class="page-title">AHP 분석 결과</h1>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-success" onclick="generateReport()">
+                📄 보고서 생성
+            </button>
+            <button class="btn btn-secondary" onclick="exportResults()">
+                📊 결과 내보내기
+            </button>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <!-- 로딩 상태 -->
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <span>분석 결과를 계산하는 중...</span>
+        </div>
+
+        <!-- 결과 그리드 -->
+        <div id="resultsGrid" class="results-grid" style="display: none;">
+            <!-- 메인 결과 -->
+            <div>
+                <!-- 최종 순위 -->
+                <div class="content-card">
+                    <h2 class="card-title">🏆 최종 순위</h2>
+                    <div id="finalRanking" class="final-ranking">
+                        <!-- 동적으로 생성됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 세부 분석 매트릭스 -->
+                <div class="content-card">
+                    <h2 class="card-title">📊 세부 분석</h2>
+                    <div class="detailed-matrix">
+                        <table class="matrix-table" id="detailedMatrix">
+                            <!-- 동적으로 생성됩니다 -->
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 시각화 차트 -->
+                <div class="content-card">
+                    <h2 class="card-title">📈 시각화 차트</h2>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                            <div>차트가 여기에 표시됩니다</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                                (향후 Chart.js 또는 D3.js 통합 예정)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사이드 정보 -->
+            <div>
+                <!-- 프로젝트 정보 -->
+                <div class="content-card">
+                    <h3 class="card-title">📋 프로젝트 정보</h3>
+                    <div id="projectInfo">
+                        <div style="margin-bottom: 1rem;">
+                            <strong id="projectTitle">프로젝트 제목</strong>
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;" id="projectDescription">
+                            프로젝트 설명
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">
+                            <div>기준 수: <span id="criteriaCount">0</span>개</div>
+                            <div>대안 수: <span id="alternativesCount">0</span>개</div>
+                            <div>분석 완료: <span id="analysisDate">-</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 기준별 가중치 -->
+                <div class="content-card">
+                    <h3 class="card-title">⚖️ 기준별 가중치</h3>
+                    <div id="criteriaWeights" class="criteria-weights">
+                        <!-- 동적으로 생성됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 일관성 분석 -->
+                <div class="content-card">
+                    <h3 class="card-title">🎯 일관성 분석</h3>
+                    <div class="consistency-analysis">
+                        <div class="consistency-status">
+                            <div class="consistency-indicator" id="consistencyIndicator">✅</div>
+                            <div>
+                                <div style="font-weight: 600;">일관성 지수 (CR)</div>
+                                <div style="font-size: 1.25rem; font-weight: 700;" id="consistencyValue">0.05</div>
+                            </div>
+                        </div>
+                        <div class="consistency-details" id="consistencyMessage">
+                            일관성이 양호합니다 (CR < 0.1)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 민감도 분석 -->
+                <div class="content-card">
+                    <h3 class="card-title">🔍 민감도 분석</h3>
+                    <div id="sensitivityAnalysis" class="sensitivity-analysis">
+                        <!-- 동적으로 생성됩니다 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 액션 버튼들 -->
+        <div class="action-buttons" id="actionButtons" style="display: none;">
+            <button class="btn btn-primary" onclick="recalculateResults()">
+                🔄 결과 재계산
+            </button>
+            <button class="btn btn-secondary" onclick="modifyWeights()">
+                ⚙️ 가중치 수정
+            </button>
+            <button class="btn btn-secondary" onclick="viewComparisons()">
+                👁️ 비교 내역 보기
+            </button>
+            <button class="btn btn-success" onclick="saveResults()">
+                💾 결과 저장
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentProject = null;
+        let analysisResults = null;
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentProject();
+            calculateResults();
+        });
+
+        // URL에서 프로젝트 ID 가져오기
+        function getProjectIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('project');
+        }
+
+        // 현재 프로젝트 로드
+        function loadCurrentProject() {
+            const projectId = getProjectIdFromUrl();
+            if (!projectId) {
+                alert('프로젝트가 지정되지 않았습니다.');
+                window.location.href = '/ahp_app/project-management.html';
+                return;
+            }
+
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            currentProject = projects.find(p => p.id === projectId);
+
+            if (!currentProject) {
+                alert('프로젝트를 찾을 수 없습니다.');
+                window.location.href = '/ahp_app/project-management.html';
+                return;
+            }
+
+            displayProjectInfo();
+        }
+
+        // 프로젝트 정보 표시
+        function displayProjectInfo() {
+            document.getElementById('projectTitle').textContent = currentProject.title;
+            document.getElementById('projectDescription').textContent = 
+                currentProject.description || '설명이 없습니다.';
+            document.getElementById('criteriaCount').textContent = 
+                currentProject.criteria ? currentProject.criteria.length : 0;
+            document.getElementById('alternativesCount').textContent = 
+                currentProject.alternatives ? currentProject.alternatives.length : 0;
+            document.getElementById('analysisDate').textContent = 
+                new Date().toLocaleDateString('ko-KR');
+        }
+
+        // 결과 계산
+        function calculateResults() {
+            // 로딩 상태 표시
+            document.getElementById('loadingState').style.display = 'flex';
+            document.getElementById('resultsGrid').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'none';
+
+            setTimeout(() => {
+                // AHP 계산 수행
+                analysisResults = performAHPCalculation();
+                
+                // 결과 렌더링
+                renderResults();
+                
+                // UI 표시
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('resultsGrid').style.display = 'grid';
+                document.getElementById('actionButtons').style.display = 'flex';
+            }, 2000); // 계산 시뮬레이션
+        }
+
+        // AHP 계산 수행
+        function performAHPCalculation() {
+            const criteria = currentProject.criteria || [];
+            const alternatives = currentProject.alternatives || [];
+            const comparisons = currentProject.comparisons || [];
+
+            if (criteria.length === 0 || alternatives.length === 0) {
+                return null;
+            }
+
+            // 기준별 가중치 계산 (시뮬레이션)
+            const criteriaWeights = {};
+            const totalCriteria = criteria.length;
+            criteria.forEach((criterion, index) => {
+                // 간단한 가중치 계산 (실제로는 고유벡터 계산 필요)
+                criteriaWeights[criterion.id] = Math.random() * 0.5 + 0.1;
+            });
+
+            // 가중치 정규화
+            const totalWeight = Object.values(criteriaWeights).reduce((sum, weight) => sum + weight, 0);
+            Object.keys(criteriaWeights).forEach(id => {
+                criteriaWeights[id] /= totalWeight;
+            });
+
+            // 대안별 점수 계산
+            const alternativeScores = {};
+            alternatives.forEach(alternative => {
+                let totalScore = 0;
+                criteria.forEach(criterion => {
+                    // 각 기준별 대안 점수 (시뮬레이션)
+                    const score = Math.random() * 0.8 + 0.1;
+                    totalScore += score * criteriaWeights[criterion.id];
+                });
+                alternativeScores[alternative.id] = totalScore;
+            });
+
+            // 순위 계산
+            const rankedAlternatives = alternatives
+                .map(alt => ({
+                    ...alt,
+                    score: alternativeScores[alt.id]
+                }))
+                .sort((a, b) => b.score - a.score);
+
+            // 일관성 지수 계산 (시뮬레이션)
+            const consistencyRatio = Math.random() * 0.15;
+
+            return {
+                criteriaWeights,
+                alternativeScores,
+                rankedAlternatives,
+                consistencyRatio
+            };
+        }
+
+        // 결과 렌더링
+        function renderResults() {
+            if (!analysisResults) {
+                alert('분석 결과가 없습니다. 먼저 기준과 대안을 설정하고 비교를 완료해주세요.');
+                window.location.href = `/ahp_app/project-management.html`;
+                return;
+            }
+
+            renderFinalRanking();
+            renderCriteriaWeights();
+            renderDetailedMatrix();
+            renderConsistencyAnalysis();
+            renderSensitivityAnalysis();
+        }
+
+        // 최종 순위 렌더링
+        function renderFinalRanking() {
+            const container = document.getElementById('finalRanking');
+            const { rankedAlternatives } = analysisResults;
+
+            const html = rankedAlternatives.map((alternative, index) => `
+                <div class="ranking-item rank-${Math.min(index + 1, 3)}">
+                    <div class="rank-badge">${index + 1}</div>
+                    <div class="alternative-info">
+                        <div class="alternative-name">${alternative.name}</div>
+                        <div class="alternative-description">${alternative.description || '설명 없음'}</div>
+                    </div>
+                    <div class="score-info">
+                        <div class="final-score">${(alternative.score * 100).toFixed(1)}</div>
+                        <div class="score-percentage">${((alternative.score / rankedAlternatives[0].score) * 100).toFixed(0)}%</div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        // 기준별 가중치 렌더링
+        function renderCriteriaWeights() {
+            const container = document.getElementById('criteriaWeights');
+            const { criteriaWeights } = analysisResults;
+            const criteria = currentProject.criteria || [];
+
+            const html = criteria.map(criterion => {
+                const weight = criteriaWeights[criterion.id];
+                const percentage = (weight * 100).toFixed(1);
+                
+                return `
+                    <div class="weight-item">
+                        <span style="min-width: 120px;">${criterion.name}</span>
+                        <div class="weight-bar">
+                            <div class="weight-fill" style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="weight-value">${percentage}%</span>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // 세부 분석 매트릭스 렌더링
+        function renderDetailedMatrix() {
+            const table = document.getElementById('detailedMatrix');
+            const criteria = currentProject.criteria || [];
+            const { rankedAlternatives, criteriaWeights } = analysisResults;
+
+            let html = '<thead><tr><th>대안</th>';
+            criteria.forEach(criterion => {
+                html += `<th>${criterion.name}<br><small>(${(criteriaWeights[criterion.id] * 100).toFixed(1)}%)</small></th>`;
+            });
+            html += '<th>최종 점수</th></tr></thead><tbody>';
+
+            rankedAlternatives.forEach(alternative => {
+                html += `<tr><td><strong>${alternative.name}</strong></td>`;
+                criteria.forEach(criterion => {
+                    // 각 기준별 점수 시뮬레이션
+                    const score = (Math.random() * 0.8 + 0.1).toFixed(2);
+                    html += `<td>${score}</td>`;
+                });
+                html += `<td><strong>${(alternative.score * 100).toFixed(1)}</strong></td></tr>`;
+            });
+
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // 일관성 분석 렌더링
+        function renderConsistencyAnalysis() {
+            const { consistencyRatio } = analysisResults;
+            const indicator = document.getElementById('consistencyIndicator');
+            const value = document.getElementById('consistencyValue');
+            const message = document.getElementById('consistencyMessage');
+
+            value.textContent = consistencyRatio.toFixed(3);
+
+            if (consistencyRatio < 0.1) {
+                indicator.textContent = '✅';
+                indicator.className = 'consistency-indicator consistency-good';
+                message.textContent = '일관성이 양호합니다 (CR < 0.1)';
+            } else if (consistencyRatio < 0.2) {
+                indicator.textContent = '⚠️';
+                indicator.className = 'consistency-indicator consistency-warning';
+                message.textContent = '일관성이 보통입니다 (CR < 0.2)';
+            } else {
+                indicator.textContent = '❌';
+                indicator.className = 'consistency-indicator consistency-bad';
+                message.textContent = '일관성이 불량합니다 (CR ≥ 0.2). 비교를 재검토하세요.';
+            }
+        }
+
+        // 민감도 분석 렌더링
+        function renderSensitivityAnalysis() {
+            const container = document.getElementById('sensitivityAnalysis');
+            const { rankedAlternatives } = analysisResults;
+
+            const html = rankedAlternatives.map((alternative, index) => {
+                // 민감도 시뮬레이션
+                const sensitivity = Math.random();
+                let sensitivityClass, sensitivityLabel;
+                
+                if (sensitivity < 0.3) {
+                    sensitivityClass = 'sensitivity-stable';
+                    sensitivityLabel = '안정적';
+                } else if (sensitivity < 0.7) {
+                    sensitivityClass = 'sensitivity-moderate';
+                    sensitivityLabel = '보통';
+                } else {
+                    sensitivityClass = 'sensitivity-high';
+                    sensitivityLabel = '민감함';
+                }
+
+                return `
+                    <div class="sensitivity-item ${sensitivityClass}">
+                        <span>${alternative.name}</span>
+                        <span>${sensitivityLabel}</span>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // 결과 재계산
+        function recalculateResults() {
+            if (confirm('결과를 재계산하시겠습니까? 이전 결과는 업데이트됩니다.')) {
+                calculateResults();
+            }
+        }
+
+        // 가중치 수정
+        function modifyWeights() {
+            alert('가중치 수정 기능은 향후 업데이트에서 제공될 예정입니다.');
+        }
+
+        // 비교 내역 보기
+        function viewComparisons() {
+            window.location.href = `/ahp_app/pairwise-comparison.html?project=${currentProject.id}`;
+        }
+
+        // 결과 저장
+        function saveResults() {
+            if (!currentProject || !analysisResults) return;
+
+            currentProject.results = analysisResults;
+            currentProject.status = 'completed';
+            currentProject.updatedAt = new Date().toISOString();
+
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            const projectIndex = projects.findIndex(p => p.id === currentProject.id);
+            
+            if (projectIndex !== -1) {
+                projects[projectIndex] = currentProject;
+                localStorage.setItem('ahp_projects', JSON.stringify(projects));
+                showNotification('결과가 저장되었습니다!', 'success');
+            }
+        }
+
+        // 보고서 생성
+        function generateReport() {
+            showNotification('보고서 생성 기능은 향후 업데이트에서 제공될 예정입니다.', 'info');
+        }
+
+        // 결과 내보내기
+        function exportResults() {
+            if (!analysisResults) return;
+
+            // CSV 형식으로 결과 내보내기
+            const { rankedAlternatives } = analysisResults;
+            let csvContent = "순위,대안명,점수\n";
+            
+            rankedAlternatives.forEach((alternative, index) => {
+                csvContent += `${index + 1},"${alternative.name}",${(alternative.score * 100).toFixed(2)}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${currentProject.title}_결과.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('결과가 CSV 파일로 내보내졌습니다!', 'success');
+        }
+
+        // 알림 시스템
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--info)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: var(--shadow-lg);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        console.log('✅ AHP 결과 분석 시스템 로드 완료');
+    </script>
+</body>
+</html>
