@@ -307,7 +307,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ projectId, projectT
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({name, weight}) => `${name}: ${weight}%`}
+                label={({name, weight}: any) => `${name}: ${weight}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="weight"
