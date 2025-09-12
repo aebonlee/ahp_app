@@ -22,30 +22,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: '20'
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: |
-          npm ci --legacy-peer-deps || npm install --legacy-peer-deps
-        
-      - name: Build project
-        run: npm run build
-        env:
-          CI: false
-          NODE_OPTIONS: --max-old-space-size=4096
-          PUBLIC_URL: /ahp_app
-          REACT_APP_API_URL: https://ahp-django-backend.onrender.com
-          GENERATE_SOURCEMAP: false
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./build
+          path: ./
 
   # Deployment job
   deploy:
