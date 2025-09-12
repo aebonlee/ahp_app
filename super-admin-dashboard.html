@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - 슈퍼 관리자 대시보드</title>
+    <link rel="stylesheet" href="/ahp_app/public/styles/layout.css">
+    <style>
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            background-color: var(--bg-secondary);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .admin-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .admin-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-card-icon {
+            font-size: 1.5rem;
+        }
+
+        .admin-card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-card-change {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .change-positive {
+            color: #10b981;
+        }
+
+        .change-negative {
+            color: #ef4444;
+        }
+
+        .management-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .management-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .management-card:hover {
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .management-card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .management-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .management-card-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .activity-icon.user { background: #dbeafe; color: #2563eb; }
+        .activity-icon.project { background: #dcfce7; color: #16a34a; }
+        .activity-icon.system { background: #fef3c7; color: #d97706; }
+        .activity-icon.alert { background: #fee2e2; color: #dc2626; }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-actions {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .management-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <span id="toggle-icon">◀</span>
+            </button>
+            <div class="header-logo">
+                <span class="logo-icon">A</span>
+                <span class="logo-text">AHP System</span>
+                <span class="header-subtitle">슈퍼 관리자</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <nav class="header-nav">
+                <a href="/ahp_app/public/super-admin-dashboard.html" class="nav-item active" data-page="admin">관리자</a>
+                <a href="/ahp_app/public/personal-service-enhanced.html" class="nav-item" data-page="personal">개인서비스</a>
+                <a href="/ahp_app/public/system-monitoring.html" class="nav-item" data-page="system">시스템 모니터링</a>
+                <a href="/ahp_app/public/analytics.html" class="nav-item" data-page="analytics">분석</a>
+            </nav>
+        </div>
+        
+        <div class="header-right">
+            <div class="header-notifications">
+                <button class="notification-btn">
+                    <span>🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+            </div>
+            <div class="header-user">
+                <div class="user-avatar">👤</div>
+                <div class="user-info">
+                    <div class="user-name">슈퍼 관리자</div>
+                    <div class="user-role">System Admin</div>
+                </div>
+                <button class="user-menu-btn" onclick="handleLogout()">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 사이드바 -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <!-- 관리자 메뉴 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">시스템 관리</div>
+                <a href="/ahp_app/public/user-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">👥</span>
+                    <span class="sidebar-text">사용자 관리</span>
+                </a>
+                <a href="/ahp_app/public/project-overview.html" class="sidebar-item">
+                    <span class="sidebar-icon">📊</span>
+                    <span class="sidebar-text">프로젝트 현황</span>
+                </a>
+                <a href="/ahp_app/public/system-settings.html" class="sidebar-item">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span class="sidebar-text">시스템 설정</span>
+                </a>
+                <a href="/ahp_app/public/audit-logs.html" class="sidebar-item">
+                    <span class="sidebar-icon">📋</span>
+                    <span class="sidebar-text">감사 로그</span>
+                </a>
+            </div>
+
+            <!-- 데이터 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">데이터 관리</div>
+                <a href="/ahp_app/public/backup-restore.html" class="sidebar-item">
+                    <span class="sidebar-icon">💾</span>
+                    <span class="sidebar-text">백업 및 복원</span>
+                </a>
+                <a href="/ahp_app/public/database-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">🗄️</span>
+                    <span class="sidebar-text">데이터베이스 관리</span>
+                </a>
+                <a href="/ahp_app/public/data-migration.html" class="sidebar-item">
+                    <span class="sidebar-icon">📤</span>
+                    <span class="sidebar-text">데이터 마이그레이션</span>
+                </a>
+            </div>
+
+            <!-- 보안 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">보안 관리</div>
+                <a href="/ahp_app/public/security-settings.html" class="sidebar-item">
+                    <span class="sidebar-icon">🔒</span>
+                    <span class="sidebar-text">보안 설정</span>
+                </a>
+                <a href="/ahp_app/public/access-control.html" class="sidebar-item">
+                    <span class="sidebar-icon">🛡️</span>
+                    <span class="sidebar-text">접근 제어</span>
+                </a>
+                <a href="/ahp_app/public/security-logs.html" class="sidebar-item">
+                    <span class="sidebar-icon">🚨</span>
+                    <span class="sidebar-text">보안 로그</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <!-- 대시보드 통계 -->
+        <div class="dashboard-grid">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">👥</span>
+                        총 사용자
+                    </div>
+                </div>
+                <div class="admin-card-value">1,247</div>
+                <div class="admin-card-change change-positive">
+                    ↑ +12% (이번 달)
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">📊</span>
+                        활성 프로젝트
+                    </div>
+                </div>
+                <div class="admin-card-value">89</div>
+                <div class="admin-card-change change-positive">
+                    ↑ +8% (이번 주)
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">⚡</span>
+                        시스템 성능
+                    </div>
+                </div>
+                <div class="admin-card-value">98.7%</div>
+                <div class="admin-card-change change-positive">
+                    ↑ 안정적
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">💾</span>
+                        저장소 사용률
+                    </div>
+                </div>
+                <div class="admin-card-value">67.3%</div>
+                <div class="admin-card-change change-negative">
+                    ↑ +5% (이번 달)
+                </div>
+            </div>
+        </div>
+
+        <!-- 관리 섹션 -->
+        <div class="management-section">
+            <div class="section-header">
+                <h2 class="section-title">핵심 관리 기능</h2>
+            </div>
+            <div class="management-grid">
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/user-management.html'">
+                    <div class="management-card-icon">👥</div>
+                    <div class="management-card-title">사용자 관리</div>
+                    <div class="management-card-desc">
+                        사용자 계정, 권한, 프로필 관리 및 접근 제어
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/project-overview.html'">
+                    <div class="management-card-icon">📊</div>
+                    <div class="management-card-title">프로젝트 관리</div>
+                    <div class="management-card-desc">
+                        모든 AHP 프로젝트 현황 모니터링 및 관리
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/system-monitoring.html'">
+                    <div class="management-card-icon">📈</div>
+                    <div class="management-card-title">시스템 모니터링</div>
+                    <div class="management-card-desc">
+                        서버 성능, 데이터베이스, API 상태 실시간 모니터링
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/backup-restore.html'">
+                    <div class="management-card-icon">💾</div>
+                    <div class="management-card-title">백업 관리</div>
+                    <div class="management-card-desc">
+                        데이터 백업, 복원 및 재해 복구 관리
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/security-settings.html'">
+                    <div class="management-card-icon">🔒</div>
+                    <div class="management-card-title">보안 설정</div>
+                    <div class="management-card-desc">
+                        시스템 보안 정책, 인증 및 암호화 설정
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/analytics.html'">
+                    <div class="management-card-icon">📋</div>
+                    <div class="management-card-title">분석 리포트</div>
+                    <div class="management-card-desc">
+                        사용자 활동, 시스템 사용률 및 성능 분석
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 최근 활동 -->
+        <div class="recent-activity">
+            <div class="section-header">
+                <h2 class="section-title">최근 시스템 활동</h2>
+            </div>
+            <ul class="activity-list">
+                <li class="activity-item">
+                    <div class="activity-icon user">👤</div>
+                    <div class="activity-content">
+                        <div class="activity-title">새 사용자 등록: 김철수 (kim.cs@company.com)</div>
+                        <div class="activity-time">5분 전</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon system">⚙️</div>
+                    <div class="activity-content">
+                        <div class="activity-title">시스템 백업 완료 (DB: 2.3GB, Files: 856MB)</div>
+                        <div class="activity-time">1시간 전</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon project">📊</div>
+                    <div class="activity-content">
+                        <div class="activity-title">대규모 AHP 프로젝트 생성: "제품 선택 분석" (15개 기준, 8개 대안)</div>
+                        <div class="activity-time">2시간 전</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon alert">🚨</div>
+                    <div class="activity-content">
+                        <div class="activity-title">CPU 사용률 임계치 초과 경고 (85% → 정상 복구)</div>
+                        <div class="activity-time">3시간 전</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon user">👤</div>
+                    <div class="activity-content">
+                        <div class="activity-title">관리자 권한 변경: 이영희 → 프로젝트 매니저</div>
+                        <div class="activity-time">4시간 전</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- 빠른 작업 버튼 -->
+    <div class="quick-actions">
+        <button class="fab" title="새 사용자 추가" onclick="window.location.href='/ahp_app/public/user-management.html'">
+            👤
+        </button>
+        <button class="fab" title="시스템 설정" onclick="window.location.href='/ahp_app/public/system-settings.html'">
+            ⚙️
+        </button>
+    </div>
+
+    <script src="/ahp_app/public/scripts/layout.js"></script>
+    <script>
+        // 페이지 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 로그인 상태 확인
+            if (!checkLoginStatus()) {
+                return;
+            }
+            
+            // 관리자 권한 확인
+            if (!checkAdminPermission()) {
+                alert('관리자 권한이 필요합니다.');
+                window.location.href = '/ahp_app/public/personal-service-enhanced.html';
+                return;
+            }
+            
+            initializePage({
+                menuId: 'admin-dashboard',
+                pageId: 'admin',
+                title: '슈퍼 관리자 대시보드'
+            });
+            
+            console.log('✅ 슈퍼 관리자 대시보드 로드 완료');
+        });
+
+        // 관리자 권한 확인
+        function checkAdminPermission() {
+            const user = localStorage.getItem('ahp_user');
+            if (!user) return false;
+            
+            try {
+                const userData = JSON.parse(user);
+                return userData.role === 'admin';
+            } catch (error) {
+                console.error('사용자 정보 파싱 오류:', error);
+                return false;
+            }
+        }
+
+        // 로그인 상태 확인
+        function checkLoginStatus() {
+            const token = localStorage.getItem('ahp_token');
+            const user = localStorage.getItem('ahp_user');
+            
+            if (!token || !user) {
+                window.location.href = '/ahp_app/public/login.html';
+                return false;
+            }
+            
+            try {
+                const userData = JSON.parse(user);
+                const userNameElement = document.querySelector('.header-user .user-name');
+                if (userNameElement && userData.name) {
+                    userNameElement.textContent = userData.name;
+                }
+            } catch (error) {
+                console.error('사용자 정보 파싱 오류:', error);
+                localStorage.removeItem('ahp_user');
+                localStorage.removeItem('ahp_token');
+                window.location.href = '/ahp_app/public/login.html';
+                return false;
+            }
+            
+            return true;
+        }
+
+        // 사이드바 토글
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        // 로그아웃
+        function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                localStorage.removeItem('ahp_user');
+                localStorage.removeItem('ahp_token');
+                window.location.href = '/ahp_app/';
+            }
+        }
+    </script>
+</body>
+</html>
