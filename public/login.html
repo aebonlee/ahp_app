@@ -400,10 +400,16 @@
                     localStorage.setItem('ahp_user', JSON.stringify(response.user));
                     localStorage.setItem('ahp_token', response.token);
                     
-                    showMessage('로그인에 성공했습니다! 개인서비스로 이동합니다.', 'success');
+                    // 사용자 역할에 따라 리다이렉트 결정
+                    const redirectUrl = response.user.role === 'admin' 
+                        ? '/ahp_app/public/super-admin-dashboard.html'
+                        : '/ahp_app/public/personal-service-enhanced.html';
+                    
+                    const dashboardName = response.user.role === 'admin' ? '관리자 대시보드' : '개인서비스';
+                    showMessage(`로그인에 성공했습니다! ${dashboardName}로 이동합니다.`, 'success');
                     
                     setTimeout(() => {
-                        window.location.href = '/ahp_app/personal-service-enhanced.html';
+                        window.location.href = redirectUrl;
                     }, 1500);
                 } else {
                     showMessage(response.message || '로그인에 실패했습니다.');
