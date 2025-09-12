@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AHP for Paper - 연구 논문을 위한 AHP 의사결정 분석</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent-primary: #C8A968;
@@ -25,6 +28,19 @@
             --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
         }
 
+        /* 다크 모드 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-subtle: #0f172a;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -32,13 +48,15 @@
         }
 
         body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             color: var(--text-primary);
             background-color: var(--bg-primary);
+            margin: 0;
+            padding: 0;
         }
 
-        /* 헤더 스타일 */
+        /* 헤더 스타일 - AURI 스타일 적용 */
         .header {
             position: fixed;
             top: 0;
@@ -595,9 +613,9 @@
             <nav class="nav-menu">
                 <button class="nav-link" onclick="scrollToSection('features')">기능 및 이용방법</button>
                 <button class="nav-link" onclick="scrollToSection('guide')">사용 가이드</button>
-                <button class="nav-link" onclick="scrollToSection('pricing')">요금제</button>
-                <button class="nav-link">소식 및 사례</button>
-                <button class="nav-link">고객지원</button>
+                <a href="/ahp_app/pricing.html" class="nav-link">요금제</a>
+                <a href="/ahp_app/news.html" class="nav-link">소식 및 사례</a>
+                <a href="/ahp_app/support.html" class="nav-link">고객지원</a>
             </nav>
             
             <div class="nav-actions">
@@ -853,10 +871,84 @@
             html.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
         }
 
-        // 컬러 테마 변경 (기본 기능)
+        // 컬러 테마 변경
         function toggleColorTheme() {
-            // 컬러 테마 변경 로직은 필요에 따라 구현
-            console.log('컬러 테마 변경');
+            const themes = [
+                {
+                    name: 'default',
+                    primary: '#C8A968',
+                    secondary: '#A98C4B', 
+                    light: '#E5D5AA',
+                    hover: '#B59A4D'
+                },
+                {
+                    name: 'blue',
+                    primary: '#3B82F6',
+                    secondary: '#2563EB',
+                    light: '#DBEAFE', 
+                    hover: '#1D4ED8'
+                },
+                {
+                    name: 'green',
+                    primary: '#10B981',
+                    secondary: '#059669',
+                    light: '#D1FAE5',
+                    hover: '#047857'
+                },
+                {
+                    name: 'purple',
+                    primary: '#8B5CF6',
+                    secondary: '#7C3AED',
+                    light: '#EDE9FE',
+                    hover: '#6D28D9'
+                },
+                {
+                    name: 'rose',
+                    primary: '#F43F5E',
+                    secondary: '#E11D48',
+                    light: '#FFE4E6',
+                    hover: '#BE123C'
+                }
+            ];
+            
+            const currentTheme = localStorage.getItem('colorTheme') || 'default';
+            const currentIndex = themes.findIndex(t => t.name === currentTheme);
+            const nextIndex = (currentIndex + 1) % themes.length;
+            const nextTheme = themes[nextIndex];
+            
+            // CSS 변수 업데이트
+            const root = document.documentElement;
+            root.style.setProperty('--accent-primary', nextTheme.primary);
+            root.style.setProperty('--accent-secondary', nextTheme.secondary);
+            root.style.setProperty('--accent-light', nextTheme.light);
+            root.style.setProperty('--accent-hover', nextTheme.hover);
+            
+            // 테마 저장
+            localStorage.setItem('colorTheme', nextTheme.name);
+            
+            console.log(`컬러 테마 변경: ${nextTheme.name}`);
+        }
+
+        // 저장된 테마 적용
+        function loadSavedTheme() {
+            const themes = [
+                { name: 'default', primary: '#C8A968', secondary: '#A98C4B', light: '#E5D5AA', hover: '#B59A4D' },
+                { name: 'blue', primary: '#3B82F6', secondary: '#2563EB', light: '#DBEAFE', hover: '#1D4ED8' },
+                { name: 'green', primary: '#10B981', secondary: '#059669', light: '#D1FAE5', hover: '#047857' },
+                { name: 'purple', primary: '#8B5CF6', secondary: '#7C3AED', light: '#EDE9FE', hover: '#6D28D9' },
+                { name: 'rose', primary: '#F43F5E', secondary: '#E11D48', light: '#FFE4E6', hover: '#BE123C' }
+            ];
+            
+            const savedTheme = localStorage.getItem('colorTheme') || 'default';
+            const theme = themes.find(t => t.name === savedTheme);
+            
+            if (theme) {
+                const root = document.documentElement;
+                root.style.setProperty('--accent-primary', theme.primary);
+                root.style.setProperty('--accent-secondary', theme.secondary);
+                root.style.setProperty('--accent-light', theme.light);
+                root.style.setProperty('--accent-hover', theme.hover);
+            }
         }
 
         // 모바일 메뉴 토글
@@ -879,6 +971,9 @@
             });
         });
 
+        // 페이지 로드 시 저장된 테마 적용
+        loadSavedTheme();
+        
         console.log('✅ AHP for Paper 홈페이지 로드 완료');
     </script>
 </body>

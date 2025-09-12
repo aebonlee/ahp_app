@@ -6,6 +6,19 @@
     <title>AHP System - 슈퍼 관리자 대시보드</title>
     <link rel="stylesheet" href="/ahp_app/public/styles/layout.css">
     <style>
+        /* 다크 모드 추가 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-subtle: #0f172a;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
         .main-content {
             margin-left: var(--sidebar-width);
             margin-top: var(--header-height);
@@ -193,6 +206,32 @@
             color: var(--text-secondary);
         }
 
+        .theme-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 1rem;
+        }
+
+        .theme-toggle {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-light);
+            background: var(--bg-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-light);
+            border-color: var(--accent-primary);
+        }
+
         .quick-actions {
             position: fixed;
             bottom: 2rem;
@@ -260,14 +299,18 @@
         
         <div class="header-center">
             <nav class="header-nav">
-                <a href="/ahp_app/public/super-admin-dashboard.html" class="nav-item active" data-page="admin">관리자</a>
-                <a href="/ahp_app/public/personal-service-enhanced.html" class="nav-item" data-page="personal">개인서비스</a>
+                <a href="/ahp_app/super-admin-dashboard.html" class="nav-item active" data-page="admin">슈퍼 관리자</a>
+                <a href="/ahp_app/personal-service-enhanced.html" class="nav-item" data-page="personal">개인 서비스</a>
                 <a href="/ahp_app/public/system-monitoring.html" class="nav-item" data-page="system">시스템 모니터링</a>
                 <a href="/ahp_app/public/analytics.html" class="nav-item" data-page="analytics">분석</a>
             </nav>
         </div>
         
         <div class="header-right">
+            <div class="theme-controls">
+                <button class="theme-toggle" onclick="toggleColorTheme()" title="컬러테마 변경">🎨</button>
+                <button class="theme-toggle" onclick="toggleDarkMode()" title="다크모드 전환">🌓</button>
+            </div>
             <div class="header-notifications">
                 <button class="notification-btn">
                     <span>🔔</span>
@@ -529,6 +572,15 @@
                 return;
             }
             
+            // 테마 적용
+            loadSavedTheme();
+            
+            // 다크모드 설정 복원
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode) {
+                document.documentElement.setAttribute('data-theme', savedDarkMode);
+            }
+            
             initializePage({
                 menuId: 'admin-dashboard',
                 pageId: 'admin',
@@ -586,6 +638,66 @@
             
             sidebar.classList.toggle('collapsed');
             toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        // 컬러 테마 변경
+        function toggleColorTheme() {
+            const themes = [
+                { name: 'default', primary: '#C8A968', secondary: '#A98C4B', light: '#E5D5AA', hover: '#B59A4D' },
+                { name: 'blue', primary: '#3B82F6', secondary: '#2563EB', light: '#DBEAFE', hover: '#1D4ED8' },
+                { name: 'green', primary: '#10B981', secondary: '#059669', light: '#D1FAE5', hover: '#047857' },
+                { name: 'purple', primary: '#8B5CF6', secondary: '#7C3AED', light: '#EDE9FE', hover: '#6D28D9' },
+                { name: 'rose', primary: '#F43F5E', secondary: '#E11D48', light: '#FFE4E6', hover: '#BE123C' }
+            ];
+            
+            const currentTheme = localStorage.getItem('colorTheme') || 'default';
+            const currentIndex = themes.findIndex(t => t.name === currentTheme);
+            const nextIndex = (currentIndex + 1) % themes.length;
+            const nextTheme = themes[nextIndex];
+            
+            // CSS 변수 업데이트
+            const root = document.documentElement;
+            root.style.setProperty('--accent-primary', nextTheme.primary);
+            root.style.setProperty('--accent-secondary', nextTheme.secondary);
+            root.style.setProperty('--accent-light', nextTheme.light);
+            root.style.setProperty('--accent-hover', nextTheme.hover);
+            
+            // 테마 저장
+            localStorage.setItem('colorTheme', nextTheme.name);
+            
+            console.log(`컬러 테마 변경: ${nextTheme.name}`);
+        }
+
+        // 저장된 테마 적용
+        function loadSavedTheme() {
+            const themes = [
+                { name: 'default', primary: '#C8A968', secondary: '#A98C4B', light: '#E5D5AA', hover: '#B59A4D' },
+                { name: 'blue', primary: '#3B82F6', secondary: '#2563EB', light: '#DBEAFE', hover: '#1D4ED8' },
+                { name: 'green', primary: '#10B981', secondary: '#059669', light: '#D1FAE5', hover: '#047857' },
+                { name: 'purple', primary: '#8B5CF6', secondary: '#7C3AED', light: '#EDE9FE', hover: '#6D28D9' },
+                { name: 'rose', primary: '#F43F5E', secondary: '#E11D48', light: '#FFE4E6', hover: '#BE123C' }
+            ];
+            
+            const savedTheme = localStorage.getItem('colorTheme') || 'default';
+            const theme = themes.find(t => t.name === savedTheme);
+            
+            if (theme) {
+                const root = document.documentElement;
+                root.style.setProperty('--accent-primary', theme.primary);
+                root.style.setProperty('--accent-secondary', theme.secondary);
+                root.style.setProperty('--accent-light', theme.light);
+                root.style.setProperty('--accent-hover', theme.hover);
+            }
+        }
+
+        // 다크모드 토글
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('darkMode', newTheme);
+            console.log(`다크모드 변경: ${newTheme}`);
         }
 
         // 로그아웃
