@@ -356,9 +356,10 @@
         </div>
     </div>
 
+    <!-- API Service 모듈 로드 -->
+    <script src="/ahp_app/public/scripts/api-service.js"></script>
+    
     <script>
-        const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
-        
         // DOM 요소
         const loginForm = document.getElementById('loginForm');
         const loginButton = document.getElementById('loginButton');
@@ -391,22 +392,20 @@
             loginButton.textContent = '로그인 중...';
 
             try {
-                // 실제 환경에서는 Django API를 사용하겠지만, 
-                // 현재는 데모용으로 로컬 스토리지를 사용
-                const response = await mockLogin(loginData);
+                // API 서비스를 통한 로그인
+                const response = await window.ahpApi.login(loginData);
                 
                 if (response.success) {
-                    // 로그인 성공
-                    localStorage.setItem('ahp_user', JSON.stringify(response.user));
-                    localStorage.setItem('ahp_token', response.token);
+                    // 로그인 성공 - 더 이상 localStorage 사용하지 않음
+                    const user = response.user;
                     
                     // 사용자 역할에 따라 리다이렉트 결정
-                    const redirectUrl = response.user.role === 'admin' 
+                    const redirectUrl = user.role === 'admin' 
                         ? '/ahp_app/public/super-admin-dashboard.html'
                         : '/ahp_app/public/personal-service-enhanced.html';
                     
-                    const dashboardName = response.user.role === 'admin' ? '관리자 대시보드' : '개인서비스';
-                    showMessage(`로그인에 성공했습니다! ${dashboardName}로 이동합니다.`, 'success');
+                    const dashboardName = user.role === 'admin' ? '관리자 대시보드' : '개인서비스';
+                    showMessage(`${user.name}님, 로그인에 성공했습니다! ${dashboardName}로 이동합니다.`, 'success');
                     
                     setTimeout(() => {
                         window.location.href = redirectUrl;
@@ -423,56 +422,6 @@
             }
         });
 
-        // 데모용 로그인 함수 (실제로는 Django API 호출)
-        async function mockLogin(loginData) {
-            // 시뮬레이션을 위한 지연
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // 데모 계정
-            const demoUsers = [
-                {
-                    email: 'admin@ahp.com',
-                    password: 'admin123',
-                    name: '관리자',
-                    role: 'admin'
-                },
-                {
-                    email: 'user@ahp.com',
-                    password: 'user123',
-                    name: '사용자',
-                    role: 'user'
-                },
-                {
-                    email: 'demo@ahp.com',
-                    password: 'demo123',
-                    name: '데모 사용자',
-                    role: 'user'
-                }
-            ];
-
-            const user = demoUsers.find(u => 
-                u.email === loginData.email && u.password === loginData.password
-            );
-
-            if (user) {
-                return {
-                    success: true,
-                    user: {
-                        id: Math.floor(Math.random() * 1000),
-                        email: user.email,
-                        name: user.name,
-                        role: user.role
-                    },
-                    token: 'demo_token_' + Date.now()
-                };
-            } else {
-                return {
-                    success: false,
-                    message: '이메일 또는 비밀번호가 올바르지 않습니다.'
-                };
-            }
-        }
-
         // 소셜 로그인 버튼 이벤트
         document.getElementById('googleLogin').addEventListener('click', function() {
             showMessage('Google 로그인은 준비 중입니다.');
@@ -482,23 +431,34 @@
             showMessage('Kakao 로그인은 준비 중입니다.');
         });
 
-        // 이미 로그인된 상태인지 확인
-        if (localStorage.getItem('ahp_token')) {
-            window.location.href = '/ahp_app/personal-service-enhanced.html';
-        }
+        // 이미 로그인된 상태인지 확인 (쿠키 기반으로 서버에서 확인)
+        document.addEventListener('DOMContentLoaded', async function() {
+            const result = await window.ahpApi.getCurrentUser();
+            if (result.success) {
+                // 이미 로그인된 경우 리다이렉트
+                const redirectUrl = result.user.role === 'admin' 
+                    ? '/ahp_app/public/super-admin-dashboard.html'
+                    : '/ahp_app/public/personal-service-enhanced.html';
+                window.location.href = redirectUrl;
+            }
+        });
 
         // URL에서 메시지 파라미터 확인
         const urlParams = new URLSearchParams(window.location.search);
         const message = urlParams.get('message');
         if (message === 'registered') {
             showMessage('회원가입이 완료되었습니다. 로그인해주세요.', 'success');
+        } else if (message === 'logout') {
+            showMessage('로그아웃되었습니다.', 'success');
+        } else if (message === 'session_expired') {
+            showMessage('세션이 만료되었습니다. 다시 로그인해주세요.', 'error');
         }
 
-        console.log('✅ AHP System 로그인 페이지 로드 완료');
+        console.log('✅ AHP System 로그인 페이지 로드 완료 (localStorage 제거 완료)');
         console.log('💡 데모 계정:');
-        console.log('- admin@ahp.com / admin123');
-        console.log('- user@ahp.com / user123');
-        console.log('- demo@ahp.com / demo123');
+        console.log('- admin@ahp.com / admin123 (관리자)');
+        console.log('- user@ahp.com / user123 (일반사용자)');
+        console.log('- demo@ahp.com / demo123 (데모사용자)');
     </script>
 </body>
 </html>

@@ -557,16 +557,19 @@
     </div>
 
     <script src="/ahp_app/public/scripts/layout.js"></script>
+    <script src="/ahp_app/public/scripts/api-service.js"></script>
     <script>
         // 페이지 초기화
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // 로그인 상태 확인
-            if (!checkLoginStatus()) {
+            const loginResult = await checkLoginStatus();
+            if (!loginResult) {
                 return;
             }
             
             // 관리자 권한 확인
-            if (!checkAdminPermission()) {
+            const adminResult = await checkAdminPermission();
+            if (!adminResult) {
                 alert('관리자 권한이 필요합니다.');
                 window.location.href = '/ahp_app/public/personal-service-enhanced.html';
                 return;
@@ -576,9 +579,13 @@
             loadSavedTheme();
             
             // 다크모드 설정 복원
-            const savedDarkMode = localStorage.getItem('darkMode');
-            if (savedDarkMode) {
-                document.documentElement.setAttribute('data-theme', savedDarkMode);
+            try {
+                const result = await window.ahpApi.getUserSettings();
+                if (result.success && result.data.theme) {
+                    document.documentElement.setAttribute('data-theme', result.data.theme);
+                }
+            } catch (error) {
+                console.log('설정 로드 실패, 기본 설정 사용');
             }
             
             initializePage({
@@ -594,44 +601,37 @@
         });
 
         // 관리자 권한 확인
-        function checkAdminPermission() {
-            const user = localStorage.getItem('ahp_user');
-            if (!user) return false;
-            
+        async function checkAdminPermission() {
             try {
-                const userData = JSON.parse(user);
-                return userData.role === 'admin';
+                const result = await window.ahpApi.getCurrentUser();
+                return result.success && result.user.role === 'admin';
             } catch (error) {
-                console.error('사용자 정보 파싱 오류:', error);
+                console.error('사용자 정보 조회 오류:', error);
                 return false;
             }
         }
 
         // 로그인 상태 확인
-        function checkLoginStatus() {
-            const token = localStorage.getItem('ahp_token');
-            const user = localStorage.getItem('ahp_user');
-            
-            if (!token || !user) {
-                window.location.href = '/ahp_app/public/login.html';
-                return false;
-            }
-            
+        async function checkLoginStatus() {
             try {
-                const userData = JSON.parse(user);
-                const userNameElement = document.querySelector('.header-user .user-name');
-                if (userNameElement && userData.name) {
-                    userNameElement.textContent = userData.name;
+                const result = await window.ahpApi.getCurrentUser();
+                if (!result.success) {
+                    window.location.href = '/ahp_app/public/login.html';
+                    return false;
                 }
+                
+                const user = result.user;
+                const userNameElement = document.querySelector('.header-user .user-name');
+                if (userNameElement && user.name) {
+                    userNameElement.textContent = user.name;
+                }
+                
+                return true;
             } catch (error) {
-                console.error('사용자 정보 파싱 오류:', error);
-                localStorage.removeItem('ahp_user');
-                localStorage.removeItem('ahp_token');
+                console.error('사용자 인증 확인 오류:', error);
                 window.location.href = '/ahp_app/public/login.html';
                 return false;
             }
-            
-            return true;
         }
 
         // 사이드바 토글
@@ -694,13 +694,20 @@
         }
 
         // 다크모드 토글
-        function toggleDarkMode() {
+        async function toggleDarkMode() {
             const html = document.documentElement;
             const currentTheme = html.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('darkMode', newTheme);
-            console.log(`다크모드 변경: ${newTheme}`);
+            
+            // 서버에 사용자 설정 저장
+            try {
+                const settings = { theme: newTheme };
+                await window.ahpApi.saveUserSettings(settings);
+                console.log(`다크모드 변경: ${newTheme}`);
+            } catch (error) {
+                console.error('테마 설정 저장 오류:', error);
+            }
         }
 
         // API 기본 설정
@@ -860,12 +867,15 @@
         }
 
         // 로그아웃
-        function handleLogout() {
+        async function handleLogout() {
             if (confirm('로그아웃 하시겠습니까?')) {
-                localStorage.removeItem('ahp_user');
-                localStorage.removeItem('ahp_token');
-                localStorage.removeItem('login_method');
-                window.location.href = '/ahp_app/';
+                try {
+                    await window.ahpApi.logout();
+                    window.location.href = '/ahp_app/public/login.html?message=logout';
+                } catch (error) {
+                    console.error('로그아웃 오류:', error);
+                    window.location.href = '/ahp_app/public/login.html?message=logout';
+                }
             }
         }
     </script>

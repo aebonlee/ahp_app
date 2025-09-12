@@ -929,11 +929,19 @@
         }
 
         // 다크모드 토글
-        function toggleDarkMode() {
+        async function toggleDarkMode() {
             const html = document.documentElement;
             const currentTheme = html.getAttribute('data-theme');
-            html.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
-            localStorage.setItem('darkMode', currentTheme === 'dark' ? 'light' : 'dark');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            
+            // 서버에 사용자 설정 저장
+            try {
+                const settings = { theme: newTheme };
+                await window.ahpApi.saveUserSettings(settings);
+            } catch (error) {
+                console.error('테마 설정 저장 오류:', error);
+            }
         }
 
         // 알림 시스템
@@ -971,10 +979,14 @@
         }
 
         // 초기 다크모드 설정 복원
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('darkMode');
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const result = await window.ahpApi.getUserSettings();
+                if (result.success && result.data.theme) {
+                    document.documentElement.setAttribute('data-theme', result.data.theme);
+                }
+            } catch (error) {
+                console.log('설정 로드 실패, 기본 설정 사용');
             }
         });
 
