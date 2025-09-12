@@ -8,7 +8,6 @@ import ProjectManagement from '../personal/ProjectManagement';
 import AnalyticsPage from '../personal/AnalyticsPage';
 import SettingsPage from '../personal/SettingsPage';
 import AdminPersonalServiceDashboard from '../admin/PersonalServiceDashboard';
-import { AuthProvider } from '../../hooks/useAuth';
 
 interface PersonalServiceDashboardProps {
   user: PersonalServiceUser | BaseUser;
@@ -76,18 +75,17 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
   // Admin 사용자인 경우 바로 완전한 PersonalService 컴포넌트 렌더링
   if (safeUser.user_type === 'admin') {
     return (
-      <AuthProvider>
-        <AdminPersonalServiceDashboard 
-          user={{
-            id: String(safeUser.id),
-            first_name: safeUser.first_name,
-            last_name: safeUser.last_name,
-            email: safeUser.email,
-            role: 'admin',
-            admin_type: 'personal'
-          }}
-          projects={[]}
-          activeTab="personal-service"
+      <AdminPersonalServiceDashboard 
+        user={{
+          id: String(safeUser.id),
+          first_name: safeUser.first_name,
+          last_name: safeUser.last_name,
+          email: safeUser.email,
+          role: 'admin',
+          admin_type: 'personal'
+        }}
+        projects={[]}
+        activeTab="personal-service"
           onTabChange={(tab) => console.log('Tab changed:', tab)}
           onUserUpdate={(user) => console.log('User updated:', user)}
           onCreateProject={async (projectData) => {
@@ -127,10 +125,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
           onPermanentDeleteProject={async (projectId) => {
             console.log('Permanently deleting project:', projectId);
           }}
-          selectedProjectId={null}
-          onSelectProject={(projectId) => console.log('Selected project:', projectId)}
-        />
-      </AuthProvider>
+        selectedProjectId={null}
+        onSelectProject={(projectId) => console.log('Selected project:', projectId)}
+      />
     );
   }
 
