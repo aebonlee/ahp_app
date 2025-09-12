@@ -706,104 +706,149 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         </div>
       </div>
 
-      {/* 주요 기능 6개 인라인 배치 */}
-      <div className="flex flex-wrap justify-center gap-4">
-        {[
-          { id: 'creation', label: '새 프로젝트', icon: '🚀', color: 'from-blue-500 to-blue-600' },
-          { id: 'projects', label: '내 프로젝트', icon: '📂', color: 'from-green-500 to-green-600' },
-          { id: 'trash', label: '휴지통', icon: '🗑️', color: 'from-red-500 to-red-600' },
-          { id: 'evaluators', label: '평가자 관리', icon: '👥', color: 'from-purple-500 to-purple-600' },
-          { id: 'analysis', label: '결과 분석', icon: '📊', color: 'from-orange-500 to-orange-600' },
-          { id: 'export', label: '보고서', icon: '📤', color: 'from-indigo-500 to-indigo-600' }
-        ].map((item) => (
-          <button
-            key={item.id}
-            onClick={() => handleTabChange(item.id)}
-            className="inline-flex items-center px-6 py-3 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            style={{
-              backgroundColor: 'var(--bg-secondary)',
-              borderColor: 'var(--border-light)',
-              color: 'var(--text-primary)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-              e.currentTarget.style.borderColor = 'var(--border-light)';
-            }}
-          >
-            <div className={`w-8 h-8 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center mr-3`}>
-              <span className="text-white text-lg">{item.icon}</span>
-            </div>
-            <span className="font-medium">{item.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* 빠른 시작 및 빠른 접근 통합 - 하단에 크게 배치 */}
+      {/* Enhanced Navigation Menu - 2 Rows Layout - COMPLETE 16 MENUS */}
       <div 
-        className="p-8 rounded-xl border-2 transition-all duration-300"
+        className="card-enhanced p-6"
         style={{
           border: '1px solid var(--border-light)',
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
         }}
       >
-        <div className="text-center mb-8">
+        <div className="mb-4">
           <h2 
-            className="text-2xl lg:text-3xl font-bold mb-2"
-            style={{ color: 'var(--accent-secondary)' }}
+            className="text-lg font-bold mb-1"
+            style={{ color: 'var(--text-primary)' }}
           >
-            ⚡ 빠른 시작 및 접근
+            서비스 메뉴
           </h2>
           <p 
-            className="text-lg"
+            className="text-sm"
             style={{ color: 'var(--text-secondary)' }}
           >
-            AHP 분석의 모든 기능을 빠르고 쉽게 사용해보세요
+            AHP 의사결정 분석의 모든 기능을 한 곳에서
           </p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[
-            { id: 'user-guide', label: '사용자 가이드', icon: '📚', color: 'from-blue-500 to-blue-600' },
-            { id: 'model-builder', label: '모델 구성', icon: '🏗️', color: 'from-green-500 to-green-600' },
-            { id: 'validity-check', label: '평가문항 확인', icon: '🔍', color: 'from-teal-500 to-teal-600' },
-            { id: 'monitoring', label: '진행률 확인', icon: '📈', color: 'from-purple-500 to-purple-600' },
-            { id: 'survey-links', label: '설문 링크', icon: '🔗', color: 'from-orange-500 to-orange-600' },
-            { id: 'workshop', label: '워크숍 관리', icon: '🎯', color: 'from-indigo-500 to-indigo-600' },
-            { id: 'decision-support', label: '의사결정 지원', icon: '🧠', color: 'from-pink-500 to-pink-600' }
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => handleTabChange(item.id)}
-              className="flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                backdropFilter: 'blur(10px)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-                e.currentTarget.style.borderColor = 'var(--accent-primary)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-              }}
-            >
-              <div className={`w-12 h-12 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center mb-3`}>
-                <span className="text-white text-2xl">{item.icon}</span>
+        <div className="space-y-4">
+          {/* First Row - Core Functions (7 items) */}
+          <div className="grid grid-cols-3 lg:grid-cols-7 gap-4">
+            {[
+              { id: 'dashboard', label: '대시보드', icon: '🏠', tooltip: '프로젝트 현황과 통계를 한눈에 확인', priority: 'high' },
+              { id: 'projects', label: '내 프로젝트', icon: '📂', tooltip: '생성한 모든 프로젝트 관리 및 편집', priority: 'high' },
+              { id: 'trash', label: '휴지통', icon: '🗑️', tooltip: '삭제된 프로젝트 복원 및 영구 삭제', priority: 'high' },
+              { id: 'creation', label: '새 프로젝트', icon: '➕', tooltip: '새로운 AHP 분석 프로젝트 생성', priority: 'high' },
+              { id: 'model-builder', label: '모델 구축', icon: '🏗️', tooltip: '기준과 대안을 설정하여 모델 구성', priority: 'high' },
+              { id: 'evaluators', label: '평가자 관리', icon: '👥', tooltip: '평가 참여자 초대 및 권한 관리' },
+              { id: 'monitoring', label: '진행률 확인', icon: '📈', tooltip: '평가 진행 상황 실시간 모니터링' }
+            ].map((item) => (
+              <div key={item.id} className="relative group">
+                <button
+                  onClick={() => handleTabChange(item.id)}
+                  aria-label={item.label}
+                  className="w-full p-4 lg:p-5 rounded-xl border-2 transition-all duration-300 text-center hover:scale-[1.02] hover:shadow-xl transform"
+                  style={{
+                    backgroundColor: activeMenu === item.id ? 'var(--color-gold-pastel-2)' : 'var(--neutral-50)',
+                    borderColor: activeMenu === item.id ? 'var(--color-gold-dark-1)' : 'var(--color-gold-pastel-3)',
+                    color: activeMenu === item.id ? 'var(--color-gold-dark-2)' : 'var(--text-primary)',
+                    transform: activeMenu === item.id ? 'scale(1.02)' : 'scale(1)',
+                    boxShadow: activeMenu === item.id ? 'var(--shadow-xl)' : 'var(--shadow-sm)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeMenu !== item.id) {
+                      e.currentTarget.style.backgroundColor = 'var(--color-gold-pastel-1)';
+                      e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                      e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeMenu !== item.id) {
+                      e.currentTarget.style.backgroundColor = 'var(--neutral-50)';
+                      e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                      e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                    }
+                  }}
+                >
+                  <div className="text-2xl lg:text-3xl mb-2">{item.icon}</div>
+                  <div className="font-bold text-sm lg:text-base leading-tight">{item.label}</div>
+                  {item.priority === 'high' && (
+                    <div 
+                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
+                      style={{ backgroundColor: 'var(--status-danger-bg)' }}
+                    ></div>
+                  )}
+                </button>
+                {/* Enhanced Tooltip */}
+                <div 
+                  className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-30 shadow-xl"
+                  style={{ backgroundColor: 'var(--text-primary)' }}
+                >
+                  {item.tooltip}
+                  <div 
+                    className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent"
+                    style={{ borderTopColor: 'var(--text-primary)' }}
+                  ></div>
+                </div>
               </div>
-              <span 
-                className="text-base font-medium text-center leading-tight"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                {item.label}
-              </span>
-            </button>
-          ))}
+            ))}
+          </div>
+
+          {/* Second Row - Advanced Functions (9 items) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+            {[
+              { id: 'analysis', label: '결과 분석', icon: '📊', tooltip: 'AHP 분석 결과와 순위 확인' },
+              { id: 'demographic-survey', label: '인구통계학적 설문조사', icon: '📋', tooltip: 'Google Forms 스타일 설문 생성 및 관리' },
+              { id: 'export', label: '보고서', icon: '📤', tooltip: 'Excel, PDF, PPT 형식으로 내보내기' },
+              { id: 'survey-links', label: '설문 링크', icon: '🔗', tooltip: '평가자별 설문 링크 생성 및 관리' },
+              { id: 'evaluation-test', label: '평가 테스트', icon: '🧪', tooltip: '실제 평가 환경에서 테스트 진행' },
+              { id: 'workshop', label: '워크숍', icon: '🎯', tooltip: '협업 의사결정 워크숍 관리' },
+              { id: 'decision-support', label: '의사결정 지원', icon: '🧠', tooltip: '과학적 의사결정 지원 도구' },
+              { id: 'usage-management', label: '사용량 관리', icon: '📊', tooltip: '구독 현황, 할당량 및 데이터 관리' },
+              { id: 'settings', label: '설정', icon: '⚙️', tooltip: '개인 계정 및 환경 설정' }
+            ].map((item) => (
+              <div key={item.id} className="relative group">
+                <button
+                  onClick={() => handleTabChange(item.id)}
+                  aria-label={item.label}
+                  className="w-full p-4 lg:p-5 rounded-xl border-2 transition-all duration-300 text-center hover:scale-[1.02] hover:shadow-xl transform"
+                  style={{
+                    backgroundColor: activeMenu === item.id ? 'var(--color-gold-pastel-2)' : 'var(--neutral-50)',
+                    borderColor: activeMenu === item.id ? 'var(--color-gold-dark-1)' : 'var(--color-gold-pastel-3)',
+                    color: activeMenu === item.id ? 'var(--color-gold-dark-2)' : 'var(--text-primary)',
+                    transform: activeMenu === item.id ? 'scale(1.02)' : 'scale(1)',
+                    boxShadow: activeMenu === item.id ? 'var(--shadow-xl)' : 'var(--shadow-sm)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeMenu !== item.id) {
+                      e.currentTarget.style.backgroundColor = 'var(--color-gold-pastel-1)';
+                      e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                      e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeMenu !== item.id) {
+                      e.currentTarget.style.backgroundColor = 'var(--neutral-50)';
+                      e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                      e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                    }
+                  }}
+                >
+                  <div className="text-2xl lg:text-3xl mb-2">{item.icon}</div>
+                  <div className="font-bold text-sm lg:text-base leading-tight">{item.label}</div>
+                </button>
+                {/* Enhanced Tooltip */}
+                <div 
+                  className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-30 shadow-xl"
+                  style={{ backgroundColor: 'var(--text-primary)' }}
+                >
+                  {item.tooltip}
+                  <div 
+                    className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent"
+                    style={{ borderTopColor: 'var(--text-primary)' }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
