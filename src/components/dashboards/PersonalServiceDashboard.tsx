@@ -7,7 +7,6 @@ import { PersonalServiceUser, BaseUser } from '../../types/userTypes';
 import ProjectManagement from '../personal/ProjectManagement';
 import AnalyticsPage from '../personal/AnalyticsPage';
 import SettingsPage from '../personal/SettingsPage';
-import EnhancedSuperAdminDashboard from '../admin/EnhancedSuperAdminDashboard';
 import PersonalService from '../admin/PersonalServiceDashboard';
 import { AuthProvider } from '../../hooks/useAuth';
 
@@ -19,12 +18,43 @@ interface PersonalServiceDashboardProps {
 const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   
-  // URL에서 관리자가 특정 사용자를 조회하는지 확인
-  const targetUserId = searchParams.get('user');
-  const isAdminViewing = user.user_type === 'admin' && targetUserId;
-  
+  // 모든 hooks를 먼저 선언 (React hooks rules 준수)
+  const getCurrentTab = () => {
+    const pathname = location.pathname;
+    if (pathname.includes('/projects')) return 'projects';
+    if (pathname.includes('/analytics')) return 'analytics';
+    if (pathname.includes('/settings')) return 'settings';
+    return 'overview';
+  };
+
+  const [activeTab, setActiveTab] = useState(getCurrentTab());
+  const [projectStats, setProjectStats] = useState({
+    totalProjects: 0,
+    activeProjects: 0,
+    completedProjects: 0,
+    totalEvaluators: 0,
+    storageUsed: 0
+  });
+
+  const loadProjectStats = async () => {
+    setProjectStats({
+      totalProjects: 12,
+      activeProjects: 3,
+      completedProjects: 9,
+      totalEvaluators: 47,
+      storageUsed: 2.3
+    });
+  };
+
+  useEffect(() => {
+    setActiveTab(getCurrentTab());
+  }, [location.pathname]);
+
+  useEffect(() => {
+    loadProjectStats();
+  }, []);
+
   // Provide default subscription if undefined
   const personalUser = user as PersonalServiceUser;
   const safeUser = {
@@ -43,47 +73,66 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
     }
   };
 
-  // 현재 경로에 따라 activeTab 결정
-  const getCurrentTab = () => {
-    const pathname = location.pathname;
-    if (pathname.includes('/projects')) return 'projects';
-    if (pathname.includes('/analytics')) return 'analytics';
-    if (pathname.includes('/settings')) return 'settings';
-    return 'overview';
-  };
-
-  const [activeTab, setActiveTab] = useState(getCurrentTab());
-  // 관리자는 기본적으로 개인서비스 모드로 시작, 일반 사용자는 기본 대시보드
-  const [currentMode, setCurrentMode] = useState<'dashboard' | 'personal' | 'super-admin'>(
-    safeUser.user_type === 'admin' ? 'personal' : 'dashboard'
-  );
-  const [projectStats, setProjectStats] = useState({
-    totalProjects: 0,
-    activeProjects: 0,
-    completedProjects: 0,
-    totalEvaluators: 0,
-    storageUsed: 0
-  });
-
-  // 경로 변경 시 activeTab 업데이트
-  useEffect(() => {
-    setActiveTab(getCurrentTab());
-  }, [location.pathname]);
-
-  useEffect(() => {
-    loadProjectStats();
-  }, []);
-
-  const loadProjectStats = async () => {
-    // 실제로는 API 호출
-    setProjectStats({
-      totalProjects: 12,
-      activeProjects: 3,
-      completedProjects: 9,
-      totalEvaluators: 47,
-      storageUsed: 2.3
-    });
-  };
+  // Admin 사용자인 경우 바로 완전한 PersonalService 컴포넌트 렌더링
+  if (safeUser.user_type === 'admin') {
+    return (
+      <AuthProvider>
+        <PersonalService 
+          user={{
+            id: String(safeUser.id),
+            first_name: safeUser.first_name,
+            last_name: safeUser.last_name,
+            email: safeUser.email,
+            role: 'admin',
+            admin_type: 'personal'
+          }}
+          projects={[]}
+          activeTab="personal-service"
+          onTabChange={(tab) => console.log('Tab changed:', tab)}
+          onUserUpdate={(user) => console.log('User updated:', user)}
+          onCreateProject={async (projectData) => {
+            console.log('Creating project:', projectData);
+            return { id: 'new-project', ...projectData };
+          }}
+          onDeleteProject={async (projectId) => {
+            console.log('Deleting project:', projectId);
+          }}
+          onFetchCriteria={async (projectId) => {
+            console.log('Fetching criteria for:', projectId);
+            return [];
+          }}
+          onCreateCriteria={async (projectId, criteriaData) => {
+            console.log('Creating criteria:', projectId, criteriaData);
+            return criteriaData;
+          }}
+          onFetchAlternatives={async (projectId) => {
+            console.log('Fetching alternatives for:', projectId);
+            return [];
+          }}
+          onCreateAlternative={async (projectId, alternativeData) => {
+            console.log('Creating alternative:', projectId, alternativeData);
+            return alternativeData;
+          }}
+          onSaveEvaluation={async (projectId, evaluationData) => {
+            console.log('Saving evaluation:', projectId, evaluationData);
+            return evaluationData;
+          }}
+          onFetchTrashedProjects={async () => {
+            console.log('Fetching trashed projects');
+            return [];
+          }}
+          onRestoreProject={async (projectId) => {
+            console.log('Restoring project:', projectId);
+          }}
+          onPermanentDeleteProject={async (projectId) => {
+            console.log('Permanently deleting project:', projectId);
+          }}
+          selectedProjectId={null}
+          onSelectProject={(projectId) => console.log('Selected project:', projectId)}
+        />
+      </AuthProvider>
+    );
+  }
 
   const handleLogout = async () => {
     try {
@@ -92,28 +141,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
       console.log('✅ 로그아웃 완료');
     } catch (error) {
       console.error('❌ 로그아웃 실패:', error);
-      // 에러가 발생해도 로그인 페이지로 이동
       navigate('/login');
-    }
-  };
-
-  const getSubscriptionStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return '#10b981';
-      case 'trial': return '#3b82f6';
-      case 'expired': return '#ef4444';
-      case 'cancelled': return '#6b7280';
-      default: return '#6b7280';
-    }
-  };
-
-  const getSubscriptionStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return '정상 구독';
-      case 'trial': return '무료 체험';
-      case 'expired': return '구독 만료';
-      case 'cancelled': return '구독 취소';
-      default: return '알 수 없음';
     }
   };
 
@@ -145,388 +173,50 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
             margin: 0
           }}>
             {safeUser.first_name} {safeUser.last_name} • {safeUser.subscription.tier} 플랜
-            {safeUser.user_type === 'admin' && (
-              <span style={{
-                marginLeft: '0.5rem',
-                padding: '0.25rem 0.5rem',
-                backgroundColor: '#dc2626',
-                color: 'white',
-                borderRadius: '0.25rem',
-                fontSize: '0.75rem',
-                fontWeight: 'bold'
-              }}>
-                🎯 슈퍼관리자 모드
-              </span>
-            )}
           </p>
         </div>
         
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <div style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: getSubscriptionStatusColor(safeUser.subscription.status),
-            color: 'white',
-            borderRadius: '0.5rem',
-            fontSize: '0.875rem',
-            fontWeight: '600'
-          }}>
-            {getSubscriptionStatusText(safeUser.subscription.status)}
-          </div>
-          
-          {safeUser.user_type === 'admin' && (
-            <div style={{ position: 'relative' }}>
-              <select
-                onChange={(e) => {
-                  const mode = e.target.value as 'personal' | 'super-admin';
-                  console.log('🔄 모드 전환 요청:', mode);
-                  
-                  if (mode === 'personal') {
-                    console.log('✅ 개인서비스 모드로 전환');
-                    setCurrentMode('personal');
-                    return;
-                  }
-                  
-                  if (mode === 'super-admin') {
-                    console.log('🎯 슈퍼관리자 모드로 전환');
-                    setCurrentMode('super-admin');
-                    return;
-                  }
-                }}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#dc2626',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)'
-                }}
-                value={currentMode === 'dashboard' ? 'personal' : currentMode}
-              >
-                <option value="personal">💼 개인서비스 모드</option>
-                <option value="super-admin">🎯 슈퍼관리자 모드</option>
-              </select>
-            </div>
-          )}
-          
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleLogout}
-          >
-            로그아웃
-          </Button>
-        </div>
+        <Button variant="secondary" size="sm" onClick={handleLogout}>
+          로그아웃
+        </Button>
       </div>
 
-      {/* 구독 상태 알림 */}
-      {safeUser.subscription.status === 'trial' && (
-        <div style={{
-          padding: '1rem',
-          backgroundColor: '#dbeafe',
-          border: '1px solid #3b82f6',
-          borderRadius: '0.5rem',
-          marginBottom: '2rem'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div>
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#1e40af',
-                margin: 0,
-                fontWeight: '600'
-              }}>
-                🎉 무료 체험 중입니다!
-              </p>
-              <p style={{
-                fontSize: '0.75rem',
-                color: '#3730a3',
-                margin: '0.25rem 0 0 0'
-              }}>
-                체험 종료일: {safeUser.subscription.trial_ends_at} • 남은 일수: {safeUser.subscription.days_remaining}일
-              </p>
-            </div>
-            <Button variant="primary" size="sm">
-              유료 플랜 선택
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* 탭 네비게이션 */}
+      <div style={{
+        display: 'flex',
+        borderBottom: '1px solid var(--border-subtle)',
+        marginBottom: '2rem'
+      }}>
+      {[
+        { id: 'overview', label: '개요', icon: '📊', path: '/personal' },
+        { id: 'projects', label: '프로젝트', icon: '📋', path: '/personal/projects' },
+        { id: 'analytics', label: '분석', icon: '📈', path: '/personal/analytics' },
+        { id: 'settings', label: '설정', icon: '⚙️', path: '/personal/settings' }
+      ].map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => {
+            setActiveTab(tab.id);
+            navigate(tab.path);
+          }}
+          style={{
+            padding: '1rem 1.5rem',
+            backgroundColor: 'transparent',
+            border: 'none',
+            borderBottom: activeTab === tab.id ? '2px solid #2563eb' : '2px solid transparent',
+            color: activeTab === tab.id ? '#2563eb' : 'var(--text-secondary)',
+            fontWeight: activeTab === tab.id ? '600' : '400',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          {tab.icon} {tab.label}
+        </button>
+      ))}
+      </div>
 
-      {/* 탭 네비게이션 - 기본 대시보드 모드에서만 표시 */}
-      {currentMode === 'dashboard' && (
-        <div style={{
-          display: 'flex',
-          borderBottom: '1px solid var(--border-subtle)',
-          marginBottom: '2rem'
-        }}>
-        {[
-          { id: 'overview', label: '개요', icon: '📊', path: '/personal' },
-          { id: 'projects', label: '프로젝트', icon: '📋', path: '/personal/projects' },
-          { id: 'analytics', label: '분석', icon: '📈', path: '/personal/analytics' },
-          { id: 'settings', label: '설정', icon: '⚙️', path: '/personal/settings' }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-              navigate(tab.path);
-            }}
-            style={{
-              padding: '1rem 1.5rem',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === tab.id ? '2px solid #2563eb' : '2px solid transparent',
-              color: activeTab === tab.id ? '#2563eb' : 'var(--text-secondary)',
-              fontWeight: activeTab === tab.id ? '600' : '400',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            {tab.icon} {tab.label}
-          </button>
-        ))}
-        </div>
-      )}
-
-      {/* 모드별 콘텐츠 렌더링 */}
-      {currentMode === 'super-admin' ? (
-        // 슈퍼 관리자 모드 - EnhancedSuperAdminDashboard를 전체 화면으로 사용
-        <div style={{ 
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'var(--bg-primary)',
-          zIndex: 1000,
-          overflow: 'auto'
-        }}>
-          {/* 상단 네비게이션 바 */}
-          <div style={{
-            position: 'sticky',
-            top: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: 'white',
-            borderBottom: '1px solid var(--border-subtle)',
-            padding: '1rem 2rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            zIndex: 1001
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <button
-                onClick={() => setCurrentMode('dashboard')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.5rem 1rem',
-                  backgroundColor: 'var(--bg-subtle)',
-                  border: '1px solid var(--border-default)',
-                  borderRadius: '0.5rem',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.875rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
-                }}
-              >
-                ← 뒤로가기
-              </button>
-              <h1 style={{
-                fontSize: '1.5rem',
-                fontWeight: 'bold',
-                color: '#dc2626',
-                margin: 0
-              }}>
-                🎯 슈퍼관리자 모드
-              </h1>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <span style={{ 
-                fontSize: '0.875rem', 
-                color: 'var(--text-secondary)' 
-              }}>
-                {safeUser.first_name} {safeUser.last_name}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleLogout}
-              >
-                로그아웃
-              </Button>
-            </div>
-          </div>
-          
-          {/* EnhancedSuperAdminDashboard 컴포넌트 */}
-          <EnhancedSuperAdminDashboard 
-            user={{
-              id: String(safeUser.id),
-              email: safeUser.email,
-              first_name: safeUser.first_name,
-              last_name: safeUser.last_name,
-              role: 'super_admin',
-              isActive: safeUser.is_active || true,
-              createdAt: safeUser.date_joined || new Date().toISOString(),
-              updatedAt: safeUser.last_login || new Date().toISOString(),
-              lastLogin: safeUser.last_login
-            }}
-          />
-        </div>
-      ) : currentMode === 'personal' ? (
-        // 개인 서비스 모드 (관리자) - PersonalService 컴포넌트를 전체 화면으로 사용
-        <div style={{ 
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'var(--bg-primary)',
-          zIndex: 1000,
-          overflow: 'auto'
-        }}>
-          {/* 상단 네비게이션 바 */}
-          <div style={{
-            position: 'sticky',
-            top: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: 'white',
-            borderBottom: '1px solid var(--border-subtle)',
-            padding: '1rem 2rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            zIndex: 1001
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <button
-                onClick={() => setCurrentMode('dashboard')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.5rem 1rem',
-                  backgroundColor: 'var(--bg-subtle)',
-                  border: '1px solid var(--border-default)',
-                  borderRadius: '0.5rem',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.875rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
-                }}
-              >
-                ← 뒤로가기
-              </button>
-              <h1 style={{
-                fontSize: '1.5rem',
-                fontWeight: 'bold',
-                color: '#2563eb',
-                margin: 0
-              }}>
-                💼 개인서비스 모드
-              </h1>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <span style={{ 
-                fontSize: '0.875rem', 
-                color: 'var(--text-secondary)' 
-              }}>
-                {safeUser.first_name} {safeUser.last_name}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleLogout}
-              >
-                로그아웃
-              </Button>
-            </div>
-          </div>
-          
-          {/* PersonalService 컴포넌트 */}
-          <AuthProvider>
-            <div style={{ padding: '2rem' }}>
-              <PersonalService 
-                user={{
-                  id: String(safeUser.id),
-                  first_name: safeUser.first_name,
-                  last_name: safeUser.last_name,
-                  email: safeUser.email,
-                  role: 'admin',
-                  admin_type: 'personal'
-                }}
-                projects={[]}
-                activeTab="personal-service"
-                onTabChange={(tab) => console.log('Tab changed:', tab)}
-                onUserUpdate={(user) => console.log('User updated:', user)}
-                onCreateProject={async (projectData) => {
-                  console.log('Creating project:', projectData);
-                  return { id: 'new-project', ...projectData };
-                }}
-                onDeleteProject={async (projectId) => {
-                  console.log('Deleting project:', projectId);
-                }}
-                onFetchCriteria={async (projectId) => {
-                  console.log('Fetching criteria for:', projectId);
-                  return [];
-                }}
-                onCreateCriteria={async (projectId, criteriaData) => {
-                  console.log('Creating criteria:', projectId, criteriaData);
-                  return criteriaData;
-                }}
-                onFetchAlternatives={async (projectId) => {
-                  console.log('Fetching alternatives for:', projectId);
-                  return [];
-                }}
-                onCreateAlternative={async (projectId, alternativeData) => {
-                  console.log('Creating alternative:', projectId, alternativeData);
-                  return alternativeData;
-                }}
-                onSaveEvaluation={async (projectId, evaluationData) => {
-                  console.log('Saving evaluation:', projectId, evaluationData);
-                  return evaluationData;
-                }}
-                onFetchTrashedProjects={async () => {
-                  console.log('Fetching trashed projects');
-                  return [];
-                }}
-                onRestoreProject={async (projectId) => {
-                  console.log('Restoring project:', projectId);
-                }}
-                onPermanentDeleteProject={async (projectId) => {
-                  console.log('Permanently deleting project:', projectId);
-                }}
-                selectedProjectId={null}
-                onSelectProject={(projectId) => console.log('Selected project:', projectId)}
-              />
-            </div>
-          </AuthProvider>
-        </div>
-      ) : currentMode === 'dashboard' ? (
-        // 기본 대시보드 모드
-        <Routes>
+      {/* 라우팅 */}
+      <Routes>
         <Route path="/" element={(
           <>
             {/* 통계 카드들 */}
@@ -612,116 +302,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
                   }}>
                     사용 중인 저장 공간
                   </p>
-                  <div style={{
-                    width: '100%',
-                    height: '4px',
-                    backgroundColor: 'var(--bg-subtle)',
-                    borderRadius: '2px',
-                    marginTop: '0.5rem'
-                  }}>
-                    <div style={{
-                      width: `${(projectStats.storageUsed / safeUser.subscription.storage_limit) * 100}%`,
-                      height: '100%',
-                      backgroundColor: '#dc2626',
-                      borderRadius: '2px'
-                    }} />
-                  </div>
                 </div>
               </Card>
             </div>
 
-            {/* 구독 정보 */}
-            <Card title="구독 정보" variant="bordered">
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '2rem'
-              }}>
-                <div>
-                  <h4 style={{
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '1rem'
-                  }}>
-                    현재 플랜: {safeUser.subscription.tier.toUpperCase()}
-                  </h4>
-                  
-                  <div style={{ display: 'grid', gap: '0.5rem' }}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: '0.875rem'
-                    }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>프로젝트</span>
-                      <span style={{ color: 'var(--text-primary)' }}>
-                        {projectStats.totalProjects} / {safeUser.subscription.limits.projects === 999 ? '무제한' : safeUser.subscription.limits.projects}
-                      </span>
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: '0.875rem'
-                    }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>평가자</span>
-                      <span style={{ color: 'var(--text-primary)' }}>
-                        {safeUser.subscription.limits.evaluators_per_project}명/프로젝트
-                      </span>
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: '0.875rem'
-                    }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>저장공간</span>
-                      <span style={{ color: 'var(--text-primary)' }}>
-                        {projectStats.storageUsed}GB / {safeUser.subscription.storage_limit}GB
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 style={{
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '1rem'
-                  }}>
-                    이용 가능 기능
-                  </h4>
-                  
-                  <ul style={{
-                    listStyle: 'none',
-                    padding: 0,
-                    margin: 0,
-                    display: 'grid',
-                    gap: '0.25rem'
-                  }}>
-                    {safeUser.subscription.features.slice(0, 5).map((feature, index) => (
-                      <li key={index} style={{
-                        fontSize: '0.875rem',
-                        color: 'var(--text-secondary)',
-                        paddingLeft: '1rem',
-                        position: 'relative'
-                      }}>
-                        <span style={{
-                          position: 'absolute',
-                          left: '0',
-                          color: '#10b981'
-                        }}>
-                          ✓
-                        </span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </Card>
-
             {/* 빠른 액션 */}
-            <Card title="빠른 액션" variant="elevated">
+            <Card title="빠른 액션" variant="elevated" style={{ marginTop: '2rem' }}>
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -748,16 +334,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceDashboardProps> = ({ use
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         
-        {/* 기본 리다이렉트 - 대시보드 내 경로만 처리 */}
-        <Route path="*" element={
-          // 대시보드 내의 잘못된 경로는 개요로 리다이렉트
-          <Navigate to="/personal" replace />
-        } />
-        </Routes>
-      ) : (
-        // 기타 상태 - 기본 대시보드로 리다이렉트
-        <div>알 수 없는 모드입니다.</div>
-      )}
+        <Route path="*" element={<Navigate to="/personal" replace />} />
+      </Routes>
     </div>
   );
 };
