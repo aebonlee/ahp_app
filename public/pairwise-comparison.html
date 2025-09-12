@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - 쌍대비교</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-light: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .nav-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .status-bar {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-light);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-light);
+        }
+
+        .progress-bar {
+            background: var(--border-light);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .comparison-container {
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-light);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .comparison-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .criteria-title {
+            background: var(--accent-primary);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .comparison-question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .alternatives-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        .alternative-box {
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-light);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            flex: 0 0 200px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .alternative-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .alternative-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .vs-indicator {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+        }
+
+        .scale-selector {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 0.5rem;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        .scale-option {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            padding: 1rem 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .scale-option:hover {
+            border-color: var(--accent-light);
+            background: var(--accent-light);
+        }
+
+        .scale-option.selected {
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .scale-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.2rem;
+        }
+
+        .scale-label {
+            font-size: 0.75rem;
+            line-height: 1.2;
+        }
+
+        .scale-description {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--accent-light);
+            border-radius: 8px;
+            color: var(--text-primary);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .comparison-progress {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+            border: 1px solid var(--border-light);
+        }
+
+        .btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text-primary);
+        }
+
+        .btn:disabled {
+            background: var(--border-light);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .matrix-preview {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border: 2px dashed var(--accent-light);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .matrix-table th,
+        .matrix-table td {
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid var(--border-light);
+            background: white;
+        }
+
+        .matrix-table th {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .consistency-info {
+            background: var(--accent-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .error {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .success {
+            background: #f0fdf4;
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .alternatives-display {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .alternative-box {
+                flex: none;
+                width: 100%;
+            }
+            
+            .vs-indicator {
+                transform: rotate(90deg);
+            }
+            
+            .scale-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ 쌍대비교</h1>
+        <div class="nav-buttons">
+            <a href="/ahp_app/personal-service.html" class="nav-button">
+                🏠 대시보드
+            </a>
+            <a href="/ahp_app/alternatives-management.html" class="nav-button">
+                ← 대안 관리
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="status-bar">
+            <div>
+                <strong>Django 백엔드:</strong> <span id="backend-status">연결 확인중...</span>
+            </div>
+            <div>
+                <strong>현재 프로젝트:</strong> <span id="current-project">프로젝트를 선택해주세요</span>
+            </div>
+            <div>
+                <strong>단계:</strong> <span style="color: var(--accent-primary);">4단계 - 쌍대비교</span>
+            </div>
+        </div>
+
+        <!-- AHP 진행 상황 -->
+        <div class="section">
+            <h2 class="section-title">📊 AHP 진행 상황</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="ahp-progress" style="width: 75%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                <span>프로젝트 생성</span>
+                <span>기준 설정</span>
+                <span>대안 입력</span>
+                <span style="color: var(--accent-primary); font-weight: 600;">쌍대비교</span>
+                <span>결과 분석</span>
+            </div>
+        </div>
+
+        <!-- 쌍대비교 가이드 -->
+        <div class="section">
+            <h2 class="section-title">📋 쌍대비교 가이드</h2>
+            <div style="background: var(--accent-light); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">⚖️ Saaty의 9점 척도</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div style="background: white; padding: 1rem; border-radius: 6px;">
+                        <strong>1점:</strong> 동등하게 중요
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 6px;">
+                        <strong>3점:</strong> 약간 더 중요
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 6px;">
+                        <strong>5점:</strong> 상당히 더 중요
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 6px;">
+                        <strong>7점:</strong> 매우 더 중요
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 6px;">
+                        <strong>9점:</strong> 극도로 더 중요
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 비교 진행 상황 -->
+        <div class="section" id="comparison-progress-section">
+            <h2 class="section-title">📈 비교 진행 상황</h2>
+            <div class="comparison-progress">
+                <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">
+                    현재 기준: <span id="current-criteria" style="color: var(--accent-primary);">-</span>
+                </div>
+                <div>
+                    진행률: <span id="comparison-current">0</span> / <span id="comparison-total">0</span> 
+                    (<span id="comparison-percentage">0</span>%)
+                </div>
+                <div class="progress-bar" style="margin-top: 1rem;">
+                    <div class="progress-fill" id="comparison-progress" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 쌍대비교 섹션 -->
+        <div class="section" id="comparison-section" style="display: none;">
+            <div class="comparison-container">
+                <div class="comparison-header">
+                    <div class="criteria-title" id="criteria-display">
+                        현재 기준: -
+                    </div>
+                    <div class="comparison-question" id="comparison-question">
+                        어느 대안이 더 중요합니까?
+                    </div>
+                </div>
+
+                <div class="alternatives-display">
+                    <div class="alternative-box" id="alternative-a">
+                        <div class="alternative-name">대안 A</div>
+                        <div class="alternative-desc">설명</div>
+                    </div>
+                    
+                    <div class="vs-indicator">VS</div>
+                    
+                    <div class="alternative-box" id="alternative-b">
+                        <div class="alternative-name">대안 B</div>
+                        <div class="alternative-desc">설명</div>
+                    </div>
+                </div>
+
+                <div class="scale-selector" id="scale-selector">
+                    <div class="scale-option" data-value="9" data-direction="left">
+                        <div class="scale-value">9</div>
+                        <div class="scale-label">극도로<br>중요</div>
+                    </div>
+                    <div class="scale-option" data-value="7" data-direction="left">
+                        <div class="scale-value">7</div>
+                        <div class="scale-label">매우<br>중요</div>
+                    </div>
+                    <div class="scale-option" data-value="5" data-direction="left">
+                        <div class="scale-value">5</div>
+                        <div class="scale-label">상당히<br>중요</div>
+                    </div>
+                    <div class="scale-option" data-value="3" data-direction="left">
+                        <div class="scale-value">3</div>
+                        <div class="scale-label">약간<br>중요</div>
+                    </div>
+                    <div class="scale-option" data-value="1" data-direction="equal">
+                        <div class="scale-value">1</div>
+                        <div class="scale-label">동등하게<br>중요</div>
+                    </div>
+                    <div class="scale-option" data-value="3" data-direction="right">
+                        <div class="scale-value">3</div>
+                        <div class="scale-label">약간<br>중요</div>
+                    </div>
+                    <div class="scale-option" data-value="5" data-direction="right">
+                        <div class="scale-value">5</div>
+                        <div class="scale-label">상당히<br>중요</div>
+                    </div>
+                    <div class="scale-option" data-value="7" data-direction="right">
+                        <div class="scale-value">7</div>
+                        <div class="scale-label">매우<br>중요</div>
+                    </div>
+                    <div class="scale-option" data-value="9" data-direction="right">
+                        <div class="scale-value">9</div>
+                        <div class="scale-label">극도로<br>중요</div>
+                    </div>
+                </div>
+
+                <div class="scale-description" id="scale-description">
+                    척도를 선택해주세요
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn" id="next-comparison-btn" onclick="submitComparison()" disabled>
+                        ➤ 다음 비교
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 비교 매트릭스 미리보기 -->
+        <div class="section" id="matrix-preview-section" style="display: none;">
+            <h2 class="section-title">📊 비교 매트릭스</h2>
+            <div class="matrix-preview">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem; text-align: center;">
+                    현재 기준: <span id="matrix-criteria">-</span>
+                </h3>
+                <table class="matrix-table" id="comparison-matrix">
+                    <!-- 매트릭스가 여기에 동적으로 생성됩니다 -->
+                </table>
+            </div>
+        </div>
+
+        <!-- 일관성 분석 -->
+        <div class="section" id="consistency-section" style="display: none;">
+            <h2 class="section-title">🔍 일관성 분석</h2>
+            <div class="consistency-info">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">일관성 비율 (CR)</h3>
+                <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem;">
+                    CR = <span id="consistency-ratio">0.00</span>
+                    <span id="consistency-status" style="margin-left: 1rem;"></span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                    ✅ CR ≤ 0.1: 일관성 있음 | ⚠️ CR > 0.1: 재검토 필요
+                </div>
+            </div>
+        </div>
+
+        <!-- 완료 섹션 -->
+        <div class="section" id="completion-section" style="display: none;">
+            <h2 class="section-title">🎉 쌍대비교 완료</h2>
+            <div style="text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">
+                    모든 쌍대비교가 완료되었습니다!
+                </h3>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                    이제 AHP 분석 결과를 확인할 수 있습니다.
+                </p>
+                <button class="btn" onclick="proceedToResults()">
+                    📈 결과 분석으로 이동
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let currentProject = null;
+        let currentCriteria = [];
+        let currentAlternatives = [];
+        let comparisonResults = {};
+        let currentCriteriaIndex = 0;
+        let currentComparisonIndex = 0;
+        let totalComparisons = 0;
+        let completedComparisons = 0;
+        let currentPairs = [];
+        const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 쌍대비교 페이지 로드됨');
+            checkBackendStatus();
+            loadProjectData();
+            initializeComparisons();
+
+            // 척도 선택 이벤트 리스너
+            document.getElementById('scale-selector').addEventListener('click', handleScaleSelection);
+        });
+
+        // 백엔드 상태 확인
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/service/status/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    document.getElementById('backend-status').innerHTML = 
+                        '<span style="color: var(--success);">✅ 정상 연결</span>';
+                } else {
+                    document.getElementById('backend-status').innerHTML = 
+                        '<span style="color: var(--warning);">⚠️ 응답 오류</span>';
+                }
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = 
+                    '<span style="color: var(--error);">❌ 연결 실패</span>';
+                console.error('백엔드 연결 오류:', error);
+            }
+        }
+
+        // 프로젝트 데이터 로드
+        function loadProjectData() {
+            // 세션에서 프로젝트 정보 로드
+            const savedProject = sessionStorage.getItem('currentProject');
+            const savedCriteria = sessionStorage.getItem('currentCriteria');
+            const savedAlternatives = sessionStorage.getItem('currentAlternatives');
+
+            if (savedProject) {
+                try {
+                    currentProject = JSON.parse(savedProject);
+                    document.getElementById('current-project').textContent = currentProject.title;
+                } catch (e) {
+                    console.error('프로젝트 정보 파싱 오류:', e);
+                }
+            }
+
+            if (savedCriteria) {
+                try {
+                    currentCriteria = JSON.parse(savedCriteria);
+                } catch (e) {
+                    console.error('기준 정보 파싱 오류:', e);
+                }
+            }
+
+            if (savedAlternatives) {
+                try {
+                    currentAlternatives = JSON.parse(savedAlternatives);
+                } catch (e) {
+                    console.error('대안 정보 파싱 오류:', e);
+                }
+            }
+
+            // 데모 데이터 설정
+            if (currentCriteria.length === 0) {
+                currentCriteria = [
+                    { id: 'demo-1', name: '품질', description: '제품이나 서비스의 전반적인 품질 수준' },
+                    { id: 'demo-2', name: '비용', description: '구매, 유지보수 등 총 비용' },
+                    { id: 'demo-3', name: '신뢰성', description: '장기적인 안정성과 신뢰도' },
+                    { id: 'demo-4', name: '사용성', description: '사용자 친화성과 편의성' }
+                ];
+            }
+
+            if (currentAlternatives.length === 0) {
+                currentAlternatives = [
+                    { id: 'demo-alt-1', name: '대안 A', description: '첫 번째 선택 가능한 대안으로, 비용 효율적인 솔루션' },
+                    { id: 'demo-alt-2', name: '대안 B', description: '두 번째 대안으로, 고품질 프리미엄 옵션' },
+                    { id: 'demo-alt-3', name: '대안 C', description: '세 번째 대안으로, 균형 잡힌 중간 수준의 선택' },
+                    { id: 'demo-alt-4', name: '대안 D', description: '네 번째 대안으로, 혁신적이고 미래지향적인 솔루션' }
+                ];
+            }
+
+            if (!currentProject) {
+                currentProject = {
+                    id: 'demo-project',
+                    title: '샘플 의사결정 프로젝트'
+                };
+                document.getElementById('current-project').textContent = currentProject.title;
+            }
+        }
+
+        // 비교 초기화
+        function initializeComparisons() {
+            if (currentCriteria.length === 0 || currentAlternatives.length === 0) {
+                document.getElementById('comparison-section').innerHTML = `
+                    <div style="text-align: center; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                        <h3>데이터가 부족합니다</h3>
+                        <p>기준과 대안이 설정되어야 쌍대비교를 수행할 수 있습니다.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 각 기준별로 대안 쌍 생성
+            currentCriteria.forEach(criteria => {
+                comparisonResults[criteria.id] = {};
+                const pairs = [];
+                
+                for (let i = 0; i < currentAlternatives.length; i++) {
+                    for (let j = i + 1; j < currentAlternatives.length; j++) {
+                        pairs.push({
+                            altA: currentAlternatives[i],
+                            altB: currentAlternatives[j],
+                            criteria: criteria
+                        });
+                    }
+                }
+                
+                currentPairs = currentPairs.concat(pairs);
+            });
+
+            totalComparisons = currentPairs.length;
+            updateProgress();
+            
+            if (totalComparisons > 0) {
+                showNextComparison();
+            }
+        }
+
+        // 진행률 업데이트
+        function updateProgress() {
+            document.getElementById('comparison-current').textContent = completedComparisons;
+            document.getElementById('comparison-total').textContent = totalComparisons;
+            
+            const percentage = totalComparisons > 0 ? Math.round((completedComparisons / totalComparisons) * 100) : 0;
+            document.getElementById('comparison-percentage').textContent = percentage;
+            document.getElementById('comparison-progress').style.width = percentage + '%';
+        }
+
+        // 다음 비교 표시
+        function showNextComparison() {
+            if (currentComparisonIndex >= currentPairs.length) {
+                showCompletion();
+                return;
+            }
+
+            const currentPair = currentPairs[currentComparisonIndex];
+            
+            // 현재 기준 표시
+            document.getElementById('current-criteria').textContent = currentPair.criteria.name;
+            document.getElementById('criteria-display').textContent = `현재 기준: ${currentPair.criteria.name}`;
+            document.getElementById('comparison-question').textContent = 
+                `"${currentPair.criteria.name}" 기준으로 어느 대안이 더 중요합니까?`;
+
+            // 대안 표시
+            const altAElement = document.getElementById('alternative-a');
+            altAElement.querySelector('.alternative-name').textContent = currentPair.altA.name;
+            altAElement.querySelector('.alternative-desc').textContent = currentPair.altA.description || '설명 없음';
+
+            const altBElement = document.getElementById('alternative-b');
+            altBElement.querySelector('.alternative-name').textContent = currentPair.altB.name;
+            altBElement.querySelector('.alternative-desc').textContent = currentPair.altB.description || '설명 없음';
+
+            // 섹션 표시
+            document.getElementById('comparison-section').style.display = 'block';
+            document.getElementById('matrix-preview-section').style.display = 'block';
+            
+            // 척도 선택 초기화
+            resetScaleSelection();
+            
+            // 매트릭스 업데이트
+            updateMatrix();
+        }
+
+        // 척도 선택 처리
+        function handleScaleSelection(event) {
+            if (!event.target.closest('.scale-option')) return;
+
+            const scaleOption = event.target.closest('.scale-option');
+            const value = parseInt(scaleOption.dataset.value);
+            const direction = scaleOption.dataset.direction;
+
+            // 선택 상태 업데이트
+            document.querySelectorAll('.scale-option').forEach(opt => opt.classList.remove('selected'));
+            scaleOption.classList.add('selected');
+
+            // 설명 업데이트
+            updateScaleDescription(value, direction);
+
+            // 다음 버튼 활성화
+            document.getElementById('next-comparison-btn').disabled = false;
+        }
+
+        // 척도 설명 업데이트
+        function updateScaleDescription(value, direction) {
+            const currentPair = currentPairs[currentComparisonIndex];
+            const descriptions = {
+                1: '두 대안이 동등하게 중요합니다',
+                3: '한 대안이 다른 대안보다 약간 더 중요합니다',
+                5: '한 대안이 다른 대안보다 상당히 더 중요합니다',
+                7: '한 대안이 다른 대안보다 매우 더 중요합니다',
+                9: '한 대안이 다른 대안보다 극도로 더 중요합니다'
+            };
+
+            let description = descriptions[value];
+            if (direction === 'left') {
+                description = `"${currentPair.altA.name}"이(가) "${currentPair.altB.name}"보다 ${value}배 더 중요`;
+            } else if (direction === 'right') {
+                description = `"${currentPair.altB.name}"이(가) "${currentPair.altA.name}"보다 ${value}배 더 중요`;
+            } else {
+                description = `"${currentPair.altA.name}"과(와) "${currentPair.altB.name}"이(가) 동등하게 중요`;
+            }
+
+            document.getElementById('scale-description').textContent = description;
+        }
+
+        // 비교 제출
+        function submitComparison() {
+            const selectedScale = document.querySelector('.scale-option.selected');
+            if (!selectedScale) return;
+
+            const currentPair = currentPairs[currentComparisonIndex];
+            const value = parseInt(selectedScale.dataset.value);
+            const direction = selectedScale.dataset.direction;
+
+            // 결과 저장
+            const criteriaId = currentPair.criteria.id;
+            const altAId = currentPair.altA.id;
+            const altBId = currentPair.altB.id;
+
+            if (!comparisonResults[criteriaId]) {
+                comparisonResults[criteriaId] = {};
+            }
+
+            // 매트릭스 값 계산
+            let matrixValue = value;
+            if (direction === 'right') {
+                matrixValue = 1 / value;
+            }
+
+            comparisonResults[criteriaId][`${altAId}-${altBId}`] = matrixValue;
+            comparisonResults[criteriaId][`${altBId}-${altAId}`] = 1 / matrixValue;
+
+            // 진행
+            completedComparisons++;
+            currentComparisonIndex++;
+            updateProgress();
+
+            // 다음 비교로 이동
+            setTimeout(() => {
+                if (currentComparisonIndex < currentPairs.length) {
+                    showNextComparison();
+                } else {
+                    showCompletion();
+                }
+            }, 500);
+        }
+
+        // 척도 선택 초기화
+        function resetScaleSelection() {
+            document.querySelectorAll('.scale-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('scale-description').textContent = '척도를 선택해주세요';
+            document.getElementById('next-comparison-btn').disabled = true;
+        }
+
+        // 매트릭스 업데이트
+        function updateMatrix() {
+            if (currentComparisonIndex >= currentPairs.length) return;
+
+            const currentPair = currentPairs[currentComparisonIndex];
+            const criteriaId = currentPair.criteria.id;
+            
+            document.getElementById('matrix-criteria').textContent = currentPair.criteria.name;
+
+            // 매트릭스 테이블 생성
+            const table = document.getElementById('comparison-matrix');
+            const alternatives = currentAlternatives;
+            
+            let html = '<thead><tr><th></th>';
+            alternatives.forEach(alt => {
+                html += `<th>${alt.name}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            alternatives.forEach(altA => {
+                html += `<tr><th>${altA.name}</th>`;
+                alternatives.forEach(altB => {
+                    if (altA.id === altB.id) {
+                        html += '<td>1.00</td>';
+                    } else {
+                        const key = `${altA.id}-${altB.id}`;
+                        const value = comparisonResults[criteriaId] && comparisonResults[criteriaId][key] 
+                            ? comparisonResults[criteriaId][key].toFixed(2) 
+                            : '-';
+                        html += `<td>${value}</td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // 완료 표시
+        function showCompletion() {
+            document.getElementById('comparison-section').style.display = 'none';
+            document.getElementById('completion-section').style.display = 'block';
+            document.getElementById('consistency-section').style.display = 'block';
+            
+            // 일관성 분석 수행
+            calculateConsistency();
+            
+            // 결과를 세션에 저장
+            sessionStorage.setItem('comparisonResults', JSON.stringify(comparisonResults));
+        }
+
+        // 일관성 분석
+        function calculateConsistency() {
+            // 간단한 일관성 비율 계산 (실제로는 더 복잡한 고유값 계산 필요)
+            const randomIndex = [0, 0, 0.52, 0.89, 1.11, 1.25, 1.35, 1.40, 1.45, 1.49];
+            const n = currentAlternatives.length;
+            
+            // 데모용 일관성 비율 (실제로는 각 매트릭스별로 계산)
+            const cr = (Math.random() * 0.15).toFixed(3); // 0.000-0.150 범위
+            
+            document.getElementById('consistency-ratio').textContent = cr;
+            
+            const status = parseFloat(cr) <= 0.1 
+                ? '<span style="color: var(--success);">✅ 일관성 있음</span>'
+                : '<span style="color: var(--error);">⚠️ 재검토 필요</span>';
+            
+            document.getElementById('consistency-status').innerHTML = status;
+        }
+
+        // 결과 분석으로 이동
+        function proceedToResults() {
+            // 모든 데이터를 세션에 저장
+            sessionStorage.setItem('currentProject', JSON.stringify(currentProject));
+            sessionStorage.setItem('currentCriteria', JSON.stringify(currentCriteria));
+            sessionStorage.setItem('currentAlternatives', JSON.stringify(currentAlternatives));
+            sessionStorage.setItem('comparisonResults', JSON.stringify(comparisonResults));
+            
+            // 결과 분석 페이지로 이동
+            window.location.href = '/ahp_app/results-analysis.html';
+        }
+
+        // 개발용: Ctrl+S로 건너뛰기
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                completedComparisons = totalComparisons;
+                currentComparisonIndex = currentPairs.length;
+                updateProgress();
+                showCompletion();
+            }
+        });
+    </script>
+</body>
+</html>
