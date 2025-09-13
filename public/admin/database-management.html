@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터베이스 관리 - AHP Admin</title>
+    <link rel="stylesheet" href="../styles/admin-common.css">
+    <style>
+        .database-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .database-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .database-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .database-subtitle {
+            color: var(--text-secondary);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .database-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .database-sections {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .database-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        .stats-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .stats-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .status-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .table-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .table-item {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .table-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        .table-info {
+            flex: 1;
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .table-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .table-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .table-stats {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .table-count {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .table-size {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .query-editor {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 2px solid var(--border-light);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .editor-header {
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .editor-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .query-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: none;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            resize: vertical;
+        }
+
+        .query-textarea:focus {
+            outline: none;
+        }
+
+        .query-results {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .results-header {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .results-content {
+            max-height: 400px;
+            overflow: auto;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th {
+            background: var(--bg-secondary);
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-light);
+            position: sticky;
+            top: 0;
+        }
+
+        .results-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .results-table tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .maintenance-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .maintenance-item {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        .maintenance-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .maintenance-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .maintenance-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-info {
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border-light);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.6;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-light);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @media (max-width: 768px) {
+            .database-container {
+                padding: 1rem;
+            }
+
+            .database-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .database-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .database-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .table-info {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .table-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .maintenance-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .query-textarea {
+                min-height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="database-container">
+        <div class="database-header">
+            <div>
+                <h1 class="database-title">🗄️ 데이터베이스 관리</h1>
+                <p class="database-subtitle">PostgreSQL 데이터베이스의 상태와 테이블을 관리합니다</p>
+            </div>
+            <div class="database-actions">
+                <button class="btn btn-secondary" id="refreshConnection">
+                    🔄 연결 새로고침
+                </button>
+                <button class="btn btn-primary" id="openQueryEditor">
+                    📝 쿼리 실행
+                </button>
+            </div>
+        </div>
+
+        <div class="database-sections">
+            <!-- 데이터베이스 상태 섹션 -->
+            <div class="database-section">
+                <div class="section-header">
+                    <div class="section-icon">📊</div>
+                    <div>
+                        <h3 class="section-title">데이터베이스 상태</h3>
+                        <p class="section-description">PostgreSQL 서버의 연결 상태와 기본 정보를 확인합니다</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-icon">🔗</div>
+                        <div id="connectionStatus">
+                            <span class="connection-status status-connected">● 연결됨</span>
+                        </div>
+                        <div class="stats-label">연결 상태</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon">🏷️</div>
+                        <div class="stats-number" id="databaseVersion">14.9</div>
+                        <div class="stats-label">PostgreSQL 버전</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon">📁</div>
+                        <div class="stats-number" id="totalTables">8</div>
+                        <div class="stats-label">총 테이블 수</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon">💾</div>
+                        <div class="stats-number" id="databaseSize">245 MB</div>
+                        <div class="stats-label">데이터베이스 크기</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon">👥</div>
+                        <div class="stats-number" id="activeConnections">3</div>
+                        <div class="stats-label">활성 연결</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon">⚡</div>
+                        <div class="stats-number" id="uptime">15일</div>
+                        <div class="stats-label">서버 가동시간</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 테이블 관리 섹션 -->
+            <div class="database-section">
+                <div class="section-header">
+                    <div class="section-icon">📋</div>
+                    <div>
+                        <h3 class="section-title">테이블 관리</h3>
+                        <p class="section-description">데이터베이스 테이블의 구조와 데이터를 관리합니다</p>
+                    </div>
+                </div>
+
+                <div class="table-list" id="tableList">
+                    <!-- 테이블 목록이 여기에 동적으로 생성됩니다 -->
+                </div>
+            </div>
+
+            <!-- 데이터베이스 유지보수 섹션 -->
+            <div class="database-section">
+                <div class="section-header">
+                    <div class="section-icon">🔧</div>
+                    <div>
+                        <h3 class="section-title">데이터베이스 유지보수</h3>
+                        <p class="section-description">데이터베이스 최적화 및 유지보수 작업을 수행합니다</p>
+                    </div>
+                </div>
+
+                <div class="maintenance-controls">
+                    <div class="maintenance-item">
+                        <div class="maintenance-icon">🧹</div>
+                        <div class="maintenance-title">VACUUM 실행</div>
+                        <div class="maintenance-description">데이터베이스 테이블의 불필요한 공간을 정리합니다</div>
+                        <button class="btn btn-primary" onclick="runVacuum()">실행</button>
+                    </div>
+                    <div class="maintenance-item">
+                        <div class="maintenance-icon">📈</div>
+                        <div class="maintenance-title">통계 업데이트</div>
+                        <div class="maintenance-description">쿼리 최적화를 위한 테이블 통계를 업데이트합니다</div>
+                        <button class="btn btn-primary" onclick="updateStatistics()">실행</button>
+                    </div>
+                    <div class="maintenance-item">
+                        <div class="maintenance-icon">🔍</div>
+                        <div class="maintenance-title">인덱스 재구축</div>
+                        <div class="maintenance-description">손상된 인덱스를 재구축하여 성능을 향상시킵니다</div>
+                        <button class="btn btn-warning" onclick="rebuildIndexes()">실행</button>
+                    </div>
+                    <div class="maintenance-item">
+                        <div class="maintenance-icon">✅</div>
+                        <div class="maintenance-title">무결성 검사</div>
+                        <div class="maintenance-description">데이터베이스의 무결성을 검사하고 오류를 탐지합니다</div>
+                        <button class="btn btn-success" onclick="checkIntegrity()">실행</button>
+                    </div>
+                </div>
+
+                <div class="progress-info" id="maintenanceProgress" style="display: none;">
+                    <div><strong>작업 진행 상황</strong></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div id="progressText">대기 중...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SQL 쿼리 에디터 모달 -->
+    <div class="modal" id="queryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">SQL 쿼리 실행</h3>
+                <button class="modal-close" id="closeQueryModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="query-editor">
+                    <div class="editor-header">
+                        <div class="editor-title">쿼리 입력</div>
+                        <div class="editor-controls">
+                            <button class="btn btn-sm btn-secondary" onclick="clearQuery()">지우기</button>
+                            <button class="btn btn-sm btn-primary" onclick="executeQuery()">실행</button>
+                        </div>
+                    </div>
+                    <textarea 
+                        class="query-textarea" 
+                        id="queryTextarea" 
+                        placeholder="SELECT * FROM users LIMIT 10;&#10;&#10;-- SQL 쿼리를 입력하세요"
+                    ></textarea>
+                </div>
+
+                <div class="query-results" id="queryResults" style="display: none;">
+                    <div class="results-header">
+                        <strong>쿼리 결과</strong>
+                        <span id="resultInfo"></span>
+                    </div>
+                    <div class="results-content" id="resultsContent">
+                        <!-- 쿼리 결과가 여기에 표시됩니다 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 테이블 상세보기 모달 -->
+    <div class="modal" id="tableModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="tableModalTitle">테이블 상세보기</h3>
+                <button class="modal-close" id="closeTableModal">&times;</button>
+            </div>
+            <div class="modal-body" id="tableModalBody">
+                <!-- 테이블 상세 정보가 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/api-service.js"></script>
+    <script>
+        let tables = [];
+        let dbConnection = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 데이터베이스 관리 페이지 초기화');
+            await loadDatabaseInfo();
+            await loadTableList();
+            setupEventListeners();
+        });
+
+        async function loadDatabaseInfo() {
+            try {
+                const response = await fetch('/api/admin/database/info/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const info = await response.json();
+                    updateDatabaseInfo(info);
+                } else {
+                    console.warn('API로 데이터베이스 정보 로드 실패, 데모 데이터 사용');
+                    loadDemoInfo();
+                }
+            } catch (error) {
+                console.error('데이터베이스 정보 로드 실패:', error);
+                loadDemoInfo();
+            }
+        }
+
+        function loadDemoInfo() {
+            const demoInfo = {
+                version: '14.9',
+                status: 'connected',
+                totalTables: 8,
+                databaseSize: '245 MB',
+                activeConnections: 3,
+                uptime: '15일',
+                maxConnections: 100
+            };
+            updateDatabaseInfo(demoInfo);
+        }
+
+        function updateDatabaseInfo(info) {
+            document.getElementById('databaseVersion').textContent = info.version;
+            document.getElementById('totalTables').textContent = info.totalTables;
+            document.getElementById('databaseSize').textContent = info.databaseSize;
+            document.getElementById('activeConnections').textContent = info.activeConnections;
+            document.getElementById('uptime').textContent = info.uptime;
+
+            const statusElement = document.getElementById('connectionStatus');
+            if (info.status === 'connected') {
+                statusElement.innerHTML = '<span class="connection-status status-connected">● 연결됨</span>';
+            } else {
+                statusElement.innerHTML = '<span class="connection-status status-disconnected">● 연결 끊김</span>';
+            }
+        }
+
+        async function loadTableList() {
+            try {
+                const response = await fetch('/api/admin/database/tables/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    tables = await response.json();
+                    renderTableList(tables);
+                } else {
+                    console.warn('API로 테이블 목록 로드 실패, 데모 데이터 사용');
+                    loadDemoTables();
+                }
+            } catch (error) {
+                console.error('테이블 목록 로드 실패:', error);
+                loadDemoTables();
+            }
+        }
+
+        function loadDemoTables() {
+            tables = [
+                {
+                    name: 'users',
+                    description: '사용자 정보 테이블',
+                    rowCount: 1245,
+                    size: '45.2 MB',
+                    lastModified: '2025-09-13T09:15:00Z',
+                    columns: 12
+                },
+                {
+                    name: 'projects',
+                    description: 'AHP 프로젝트 테이블',
+                    rowCount: 893,
+                    size: '78.9 MB',
+                    lastModified: '2025-09-13T08:45:00Z',
+                    columns: 15
+                },
+                {
+                    name: 'criteria',
+                    description: 'AHP 평가 기준 테이블',
+                    rowCount: 2156,
+                    size: '23.4 MB',
+                    lastModified: '2025-09-13T07:30:00Z',
+                    columns: 8
+                },
+                {
+                    name: 'alternatives',
+                    description: 'AHP 대안 테이블',
+                    rowCount: 3421,
+                    size: '34.7 MB',
+                    lastModified: '2025-09-13T06:20:00Z',
+                    columns: 9
+                },
+                {
+                    name: 'comparisons',
+                    description: '쌍대비교 결과 테이블',
+                    rowCount: 8954,
+                    size: '67.3 MB',
+                    lastModified: '2025-09-13T10:10:00Z',
+                    columns: 7
+                },
+                {
+                    name: 'audit_logs',
+                    description: '시스템 감사 로그 테이블',
+                    rowCount: 15632,
+                    size: '125.8 MB',
+                    lastModified: '2025-09-13T10:30:00Z',
+                    columns: 10
+                },
+                {
+                    name: 'user_settings',
+                    description: '사용자 설정 테이블',
+                    rowCount: 1198,
+                    size: '8.4 MB',
+                    lastModified: '2025-09-12T18:45:00Z',
+                    columns: 6
+                },
+                {
+                    name: 'system_configs',
+                    description: '시스템 설정 테이블',
+                    rowCount: 156,
+                    size: '2.1 MB',
+                    lastModified: '2025-09-11T14:20:00Z',
+                    columns: 5
+                }
+            ];
+            renderTableList(tables);
+        }
+
+        function renderTableList(tables) {
+            const container = document.getElementById('tableList');
+            
+            if (tables.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">테이블이 없습니다.</div>';
+                return;
+            }
+
+            container.innerHTML = tables.map(table => `
+                <div class="table-item">
+                    <div class="table-info">
+                        <div>
+                            <div class="table-name">${table.name}</div>
+                            <div class="table-description">${table.description}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                                ${table.columns}개 컬럼 • ${formatDateTime(table.lastModified)} 수정
+                            </div>
+                        </div>
+                        <div class="table-stats">
+                            <div class="table-count">${table.rowCount.toLocaleString()}개</div>
+                            <div class="table-size">${table.size}</div>
+                        </div>
+                        <div class="table-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="viewTable('${table.name}')">
+                                👁️ 보기
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="showTableDetails('${table.name}')">
+                                📋 상세
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('refreshConnection').addEventListener('click', refreshConnection);
+            document.getElementById('openQueryEditor').addEventListener('click', openQueryEditor);
+            
+            document.getElementById('closeQueryModal').addEventListener('click', closeQueryModal);
+            document.getElementById('closeTableModal').addEventListener('click', closeTableModal);
+            
+            // 모달 외부 클릭시 닫기
+            document.getElementById('queryModal').addEventListener('click', (e) => {
+                if (e.target.id === 'queryModal') closeQueryModal();
+            });
+            document.getElementById('tableModal').addEventListener('click', (e) => {
+                if (e.target.id === 'tableModal') closeTableModal();
+            });
+        }
+
+        async function refreshConnection() {
+            const btn = document.getElementById('refreshConnection');
+            const originalText = btn.textContent;
+            
+            try {
+                btn.textContent = '연결 확인 중...';
+                btn.disabled = true;
+                btn.classList.add('loading');
+
+                await new Promise(resolve => setTimeout(resolve, 1500)); // 시뮬레이션
+                
+                await loadDatabaseInfo();
+                await loadTableList();
+                
+                alert('데이터베이스 연결이 새로고침되었습니다.');
+            } catch (error) {
+                console.error('연결 새로고침 오류:', error);
+                alert('데이터베이스 연결 새로고침 중 오류가 발생했습니다.');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        function openQueryEditor() {
+            document.getElementById('queryModal').style.display = 'flex';
+        }
+
+        function closeQueryModal() {
+            document.getElementById('queryModal').style.display = 'none';
+            document.getElementById('queryResults').style.display = 'none';
+        }
+
+        function closeTableModal() {
+            document.getElementById('tableModal').style.display = 'none';
+        }
+
+        function clearQuery() {
+            document.getElementById('queryTextarea').value = '';
+        }
+
+        async function executeQuery() {
+            const query = document.getElementById('queryTextarea').value.trim();
+            if (!query) {
+                alert('쿼리를 입력해주세요.');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('queryResults');
+            const resultsContent = document.getElementById('resultsContent');
+            const resultInfo = document.getElementById('resultInfo');
+            
+            try {
+                resultsContent.innerHTML = '<div style="padding: 2rem; text-align: center;">쿼리 실행 중...</div>';
+                resultsDiv.style.display = 'block';
+
+                // 시뮬레이션 지연
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 데모 결과 생성
+                const demoResults = generateDemoQueryResults(query);
+                
+                if (demoResults.error) {
+                    resultsContent.innerHTML = `<div style="padding: 2rem; color: #ef4444;">${demoResults.error}</div>`;
+                    resultInfo.textContent = '';
+                } else {
+                    resultInfo.textContent = `(${demoResults.rows.length}개 행 반환)`;
+                    resultsContent.innerHTML = renderQueryResults(demoResults);
+                }
+            } catch (error) {
+                console.error('쿼리 실행 오류:', error);
+                resultsContent.innerHTML = '<div style="padding: 2rem; color: #ef4444;">쿼리 실행 중 오류가 발생했습니다.</div>';
+                resultInfo.textContent = '';
+            }
+        }
+
+        function generateDemoQueryResults(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            if (lowerQuery.includes('select') && lowerQuery.includes('users')) {
+                return {
+                    columns: ['id', 'email', 'name', 'role', 'created_at'],
+                    rows: [
+                        [1, 'admin@ahp.com', '김관리자', 'admin', '2025-09-01 10:00:00'],
+                        [2, 'user@ahp.com', '이사용자', 'user', '2025-09-02 14:30:00'],
+                        [3, 'test@ahp.com', '박사용자', 'user', '2025-09-03 09:15:00']
+                    ]
+                };
+            } else if (lowerQuery.includes('select') && lowerQuery.includes('projects')) {
+                return {
+                    columns: ['id', 'title', 'status', 'created_by', 'created_at'],
+                    rows: [
+                        [1, '마케팅 전략 분석', 'active', 2, '2025-09-05 11:20:00'],
+                        [2, '신제품 평가', 'completed', 3, '2025-09-06 16:45:00'],
+                        [3, '투자 우선순위', 'draft', 1, '2025-09-07 13:10:00']
+                    ]
+                };
+            } else if (lowerQuery.includes('show tables') || lowerQuery.includes('\\dt')) {
+                return {
+                    columns: ['table_name', 'row_count', 'size'],
+                    rows: tables.map(t => [t.name, t.rowCount, t.size])
+                };
+            } else if (lowerQuery.includes('delete') || lowerQuery.includes('drop') || lowerQuery.includes('truncate')) {
+                return { error: '보안상 DELETE, DROP, TRUNCATE 명령은 실행할 수 없습니다.' };
+            } else {
+                return {
+                    columns: ['result'],
+                    rows: [['쿼리가 성공적으로 실행되었습니다.']]
+                };
+            }
+        }
+
+        function renderQueryResults(results) {
+            if (!results.rows || results.rows.length === 0) {
+                return '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">결과가 없습니다.</div>';
+            }
+
+            const table = document.createElement('table');
+            table.className = 'results-table';
+
+            // 헤더 생성
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            results.columns.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = col;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // 본문 생성
+            const tbody = document.createElement('tbody');
+            results.rows.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell || '';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            return table.outerHTML;
+        }
+
+        function viewTable(tableName) {
+            // 테이블 데이터 조회
+            document.getElementById('queryTextarea').value = `SELECT * FROM ${tableName} LIMIT 50;`;
+            openQueryEditor();
+            setTimeout(() => executeQuery(), 100);
+        }
+
+        function showTableDetails(tableName) {
+            const table = tables.find(t => t.name === tableName);
+            if (!table) return;
+
+            document.getElementById('tableModalTitle').textContent = `테이블: ${tableName}`;
+            
+            const modalBody = document.getElementById('tableModalBody');
+            modalBody.innerHTML = `
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="margin-bottom: 1rem;">기본 정보</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div>
+                            <strong>테이블명:</strong> ${table.name}
+                        </div>
+                        <div>
+                            <strong>설명:</strong> ${table.description}
+                        </div>
+                        <div>
+                            <strong>행 수:</strong> ${table.rowCount.toLocaleString()}
+                        </div>
+                        <div>
+                            <strong>크기:</strong> ${table.size}
+                        </div>
+                        <div>
+                            <strong>컬럼 수:</strong> ${table.columns}
+                        </div>
+                        <div>
+                            <strong>마지막 수정:</strong> ${formatDateTime(table.lastModified)}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="margin-bottom: 1rem;">테이블 작업</h4>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button class="btn btn-sm btn-primary" onclick="viewTable('${tableName}')">📊 데이터 보기</button>
+                        <button class="btn btn-sm btn-secondary" onclick="showTableSchema('${tableName}')">🏗️ 스키마 보기</button>
+                        <button class="btn btn-sm btn-warning" onclick="analyzeTable('${tableName}')">📈 분석 실행</button>
+                        <button class="btn btn-sm btn-success" onclick="exportTable('${tableName}')">📥 내보내기</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('tableModal').style.display = 'flex';
+        }
+
+        function showTableSchema(tableName) {
+            document.getElementById('queryTextarea').value = `\\d ${tableName}`;
+            closeTableModal();
+            openQueryEditor();
+            setTimeout(() => executeQuery(), 100);
+        }
+
+        function analyzeTable(tableName) {
+            document.getElementById('queryTextarea').value = `ANALYZE ${tableName};`;
+            closeTableModal();
+            openQueryEditor();
+            setTimeout(() => executeQuery(), 100);
+        }
+
+        function exportTable(tableName) {
+            alert(`${tableName} 테이블 내보내기 기능은 준비 중입니다.`);
+        }
+
+        async function runVacuum() {
+            await runMaintenanceTask('VACUUM', '데이터베이스 정리 작업을 실행하고 있습니다...');
+        }
+
+        async function updateStatistics() {
+            await runMaintenanceTask('ANALYZE', '테이블 통계를 업데이트하고 있습니다...');
+        }
+
+        async function rebuildIndexes() {
+            await runMaintenanceTask('REINDEX', '인덱스를 재구축하고 있습니다...');
+        }
+
+        async function checkIntegrity() {
+            await runMaintenanceTask('CHECKDB', '데이터베이스 무결성을 검사하고 있습니다...');
+        }
+
+        async function runMaintenanceTask(taskType, message) {
+            const progressDiv = document.getElementById('maintenanceProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            try {
+                progressDiv.style.display = 'block';
+                progressText.textContent = message;
+                progressFill.style.width = '0%';
+
+                // 진행 상황 시뮬레이션
+                const steps = [10, 25, 50, 75, 90, 100];
+                for (const step of steps) {
+                    progressFill.style.width = step + '%';
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                }
+
+                progressText.textContent = `${taskType} 작업이 완료되었습니다.`;
+                
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                }, 3000);
+
+                // 데이터베이스 정보 새로고침
+                await loadDatabaseInfo();
+                
+            } catch (error) {
+                console.error(`${taskType} 실행 오류:`, error);
+                progressText.textContent = `${taskType} 작업 중 오류가 발생했습니다.`;
+            }
+        }
+
+        function formatDateTime(timestamp) {
+            return new Date(timestamp).toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>

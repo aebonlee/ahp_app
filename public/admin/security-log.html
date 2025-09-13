@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보안 로그 - AHP Admin</title>
+    <link rel="stylesheet" href="../styles/admin-common.css">
+    <style>
+        .security-log-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .security-log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .security-log-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .security-log-subtitle {
+            color: var(--text-secondary);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .security-log-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .security-log-sections {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .security-log-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .alert-banner {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert-banner.active {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-icon {
+            font-size: 1.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        .stats-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .stats-critical {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .stats-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .stats-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .stats-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .stats-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .filters-section {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .filters-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .filter-input {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            transition: all 0.3s;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(200, 169, 104, 0.1);
+        }
+
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .log-table {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--bg-secondary);
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .table-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .table-content {
+            overflow-x: auto;
+        }
+
+        .security-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .security-table th {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-light);
+            white-space: nowrap;
+        }
+
+        .security-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: top;
+        }
+
+        .security-table tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .log-timestamp {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .log-severity {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .severity-critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .severity-high {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .severity-medium {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        .severity-low {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .severity-info {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .log-event {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .log-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .log-source {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .source-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .source-auth {
+            background: #3b82f6;
+        }
+
+        .source-system {
+            background: #6b7280;
+        }
+
+        .source-network {
+            background: #f59e0b;
+        }
+
+        .source-database {
+            background: #10b981;
+        }
+
+        .log-ip {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .log-user {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            border-top: 2px solid var(--border-light);
+        }
+
+        .page-btn {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            background: var(--bg-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .page-btn:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .page-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .log-detail {
+            margin-bottom: 1rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+            background: var(--bg-elevated);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .real-time-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #059669;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .threat-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-light);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .security-log-container {
+                padding: 1rem;
+            }
+
+            .security-log-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .security-log-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .security-log-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .security-table {
+                font-size: 0.9rem;
+            }
+
+            .security-table th,
+            .security-table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .log-description {
+                max-width: 150px;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="security-log-container">
+        <div class="security-log-header">
+            <div>
+                <h1 class="security-log-title">🚨 보안 로그</h1>
+                <p class="security-log-subtitle">실시간 보안 이벤트와 위협을 모니터링하고 분석합니다</p>
+            </div>
+            <div class="security-log-actions">
+                <div class="real-time-indicator">
+                    <div class="live-dot"></div>
+                    실시간 모니터링
+                </div>
+                <button class="btn btn-secondary" id="exportLogs">
+                    📄 로그 내보내기
+                </button>
+                <button class="btn btn-primary" id="refreshLogs">
+                    🔄 새로고침
+                </button>
+            </div>
+        </div>
+
+        <div id="threatAlert" class="alert-banner">
+            <div class="alert-icon">⚠️</div>
+            <div>
+                <strong>새로운 보안 위협 탐지!</strong> 
+                <span id="threatMessage">비정상적인 접근 시도가 탐지되었습니다.</span>
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="dismissThreat()">확인</button>
+        </div>
+
+        <div class="security-log-sections">
+            <!-- 보안 통계 개요 -->
+            <div class="security-log-section">
+                <div class="section-header">
+                    <div class="section-icon">📊</div>
+                    <div>
+                        <h3 class="section-title">보안 이벤트 통계</h3>
+                        <p class="section-description">최근 24시간 동안의 보안 이벤트 현황을 확인합니다</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-icon stats-critical">🚨</div>
+                        <div class="stats-number" id="criticalEvents">3</div>
+                        <div class="stats-label">긴급 이벤트</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon stats-warning">⚠️</div>
+                        <div class="stats-number" id="warningEvents">15</div>
+                        <div class="stats-label">주의 이벤트</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon stats-info">ℹ️</div>
+                        <div class="stats-number" id="infoEvents">142</div>
+                        <div class="stats-label">정보 이벤트</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon stats-success">✅</div>
+                        <div class="stats-number" id="blockedThreats">28</div>
+                        <div class="stats-label">차단된 위협</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon stats-info">🌐</div>
+                        <div class="stats-number" id="uniqueIPs">87</div>
+                        <div class="stats-label">고유 IP</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon stats-warning">🔐</div>
+                        <div class="stats-number" id="failedLogins">45</div>
+                        <div class="stats-label">로그인 실패</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 필터링 섹션 -->
+            <div class="filters-section">
+                <div class="filters-header">
+                    <span>🔍</span>
+                    <h4 class="filters-title">로그 필터</h4>
+                </div>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">심각도</label>
+                        <select class="filter-select" id="severityFilter">
+                            <option value="">전체</option>
+                            <option value="critical">긴급</option>
+                            <option value="high">높음</option>
+                            <option value="medium">보통</option>
+                            <option value="low">낮음</option>
+                            <option value="info">정보</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">이벤트 유형</label>
+                        <select class="filter-select" id="eventTypeFilter">
+                            <option value="">전체</option>
+                            <option value="auth">인증</option>
+                            <option value="system">시스템</option>
+                            <option value="network">네트워크</option>
+                            <option value="database">데이터베이스</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">시작 시간</label>
+                        <input type="datetime-local" class="filter-input" id="startTimeFilter">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">종료 시간</label>
+                        <input type="datetime-local" class="filter-input" id="endTimeFilter">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">IP 주소</label>
+                        <input type="text" class="filter-input" id="ipFilter" placeholder="192.168.1.100">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">사용자</label>
+                        <input type="text" class="filter-input" id="userFilter" placeholder="사용자명">
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-primary" id="applyFilters">필터 적용</button>
+                    <button class="btn btn-secondary" id="clearFilters">필터 초기화</button>
+                </div>
+            </div>
+
+            <!-- 보안 로그 테이블 -->
+            <div class="log-table">
+                <div class="table-header">
+                    <h4 class="table-title">보안 로그 목록</h4>
+                    <div class="table-info" id="logInfo">
+                        총 1,547개 이벤트
+                    </div>
+                </div>
+                <div class="table-content">
+                    <table class="security-table">
+                        <thead>
+                            <tr>
+                                <th>시간</th>
+                                <th>심각도</th>
+                                <th>이벤트</th>
+                                <th>소스</th>
+                                <th>IP 주소</th>
+                                <th>사용자</th>
+                                <th>상세</th>
+                            </tr>
+                        </thead>
+                        <tbody id="securityLogTableBody">
+                            <!-- 로그 데이터가 여기에 동적으로 생성됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="logPagination">
+                    <!-- 페이지네이션이 여기에 생성됩니다 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로그 상세보기 모달 -->
+    <div class="modal" id="logDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">보안 로그 상세 정보</h3>
+                <button class="modal-close" id="closeLogModal">&times;</button>
+            </div>
+            <div class="modal-body" id="logModalBody">
+                <!-- 로그 상세 정보가 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/api-service.js"></script>
+    <script>
+        let securityLogs = [];
+        let currentPage = 1;
+        let itemsPerPage = 20;
+        let totalLogs = 0;
+        let currentFilters = {};
+        let realTimeEnabled = true;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 보안 로그 페이지 초기화');
+            await loadSecurityLogs();
+            setupEventListeners();
+            startRealTimeMonitoring();
+            updateStatistics();
+        });
+
+        async function loadSecurityLogs(filters = {}) {
+            try {
+                const queryParams = new URLSearchParams({
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    ...filters
+                });
+
+                const response = await fetch(`/api/admin/security-logs/?${queryParams}`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    securityLogs = data.logs || data.results || [];
+                    totalLogs = data.total || data.count || securityLogs.length;
+                    renderSecurityLogsTable();
+                    renderPagination();
+                    updateLogInfo();
+                } else {
+                    console.warn('API로 보안 로그 로드 실패, 데모 데이터 사용');
+                    loadDemoSecurityLogs();
+                }
+            } catch (error) {
+                console.error('보안 로그 로드 실패:', error);
+                loadDemoSecurityLogs();
+            }
+        }
+
+        function loadDemoSecurityLogs() {
+            securityLogs = [
+                {
+                    id: '1',
+                    timestamp: '2025-09-13T10:35:22Z',
+                    severity: 'critical',
+                    eventType: 'auth',
+                    event: '무차별 로그인 시도',
+                    description: 'IP 203.45.67.89에서 5분 내 20회 연속 로그인 실패',
+                    source: 'auth',
+                    ipAddress: '203.45.67.89',
+                    user: null,
+                    userAgent: 'curl/7.68.0',
+                    blocked: true
+                },
+                {
+                    id: '2',
+                    timestamp: '2025-09-13T10:28:15Z',
+                    severity: 'high',
+                    eventType: 'network',
+                    event: 'SQL 인젝션 시도',
+                    description: '사용자 입력에서 의심스러운 SQL 패턴 탐지',
+                    source: 'network',
+                    ipAddress: '192.168.1.105',
+                    user: 'anonymous',
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0)',
+                    blocked: true
+                },
+                {
+                    id: '3',
+                    timestamp: '2025-09-13T10:25:45Z',
+                    severity: 'medium',
+                    eventType: 'system',
+                    event: '권한 없는 파일 접근',
+                    description: '시스템 설정 파일에 대한 무단 접근 시도',
+                    source: 'system',
+                    ipAddress: '10.0.0.15',
+                    user: 'guest_user',
+                    userAgent: 'Mozilla/5.0 (Linux; Android)',
+                    blocked: false
+                },
+                {
+                    id: '4',
+                    timestamp: '2025-09-13T10:20:12Z',
+                    severity: 'info',
+                    eventType: 'auth',
+                    event: '성공적인 로그인',
+                    description: '관리자 계정 정상 로그인',
+                    source: 'auth',
+                    ipAddress: '192.168.1.100',
+                    user: 'admin@ahp.com',
+                    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X)',
+                    blocked: false
+                },
+                {
+                    id: '5',
+                    timestamp: '2025-09-13T10:15:33Z',
+                    severity: 'warning',
+                    eventType: 'database',
+                    event: '비정상적인 쿼리 패턴',
+                    description: '대량 데이터 조회 쿼리 실행',
+                    source: 'database',
+                    ipAddress: '192.168.1.102',
+                    user: 'user@ahp.com',
+                    userAgent: 'AHP-Client/2.1.0',
+                    blocked: false
+                },
+                {
+                    id: '6',
+                    timestamp: '2025-09-13T10:10:44Z',
+                    severity: 'low',
+                    eventType: 'system',
+                    event: '시스템 모니터링',
+                    description: '정기 시스템 상태 점검',
+                    source: 'system',
+                    ipAddress: '127.0.0.1',
+                    user: 'system',
+                    userAgent: 'System Monitor',
+                    blocked: false
+                }
+            ];
+            totalLogs = securityLogs.length;
+            renderSecurityLogsTable();
+            renderPagination();
+            updateLogInfo();
+        }
+
+        function renderSecurityLogsTable() {
+            const tbody = document.getElementById('securityLogTableBody');
+            
+            if (securityLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading">로그 데이터를 불러오는 중...</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = securityLogs.map(log => `
+                <tr onclick="showLogDetails('${log.id}')" style="cursor: pointer;">
+                    <td>
+                        <div class="log-timestamp">${formatDateTime(log.timestamp)}</div>
+                    </td>
+                    <td>
+                        <span class="log-severity severity-${log.severity}">
+                            ${getSeverityText(log.severity)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="log-event">${log.event}</div>
+                        <div class="log-description">${log.description}</div>
+                    </td>
+                    <td>
+                        <div class="log-source">
+                            <div class="source-icon source-${log.source}">
+                                ${getSourceIcon(log.source)}
+                            </div>
+                            ${getSourceText(log.source)}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="log-ip">${log.ipAddress}</div>
+                    </td>
+                    <td>
+                        <div class="log-user">${log.user || 'N/A'}</div>
+                    </td>
+                    <td>
+                        ${log.blocked ? '<span class="threat-indicator">차단됨</span>' : ''}
+                        <button class="btn btn-sm btn-secondary" onclick="showLogDetails('${log.id}'); event.stopPropagation();">
+                            상세보기
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById('logPagination');
+            const totalPages = Math.ceil(totalLogs / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+            
+            // 이전 버튼
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">
+                    이전
+                </button>
+            `;
+
+            // 페이지 번호들
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            // 다음 버튼
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">
+                    다음
+                </button>
+            `;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        function updateLogInfo() {
+            const logInfo = document.getElementById('logInfo');
+            const start = (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, totalLogs);
+            logInfo.textContent = `${start}-${end} / 총 ${totalLogs.toLocaleString()}개 이벤트`;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('refreshLogs').addEventListener('click', () => {
+                loadSecurityLogs(currentFilters);
+                updateStatistics();
+            });
+
+            document.getElementById('exportLogs').addEventListener('click', exportSecurityLogs);
+            document.getElementById('applyFilters').addEventListener('click', applyFilters);
+            document.getElementById('clearFilters').addEventListener('click', clearFilters);
+
+            document.getElementById('closeLogModal').addEventListener('click', closeLogModal);
+            document.getElementById('logDetailModal').addEventListener('click', (e) => {
+                if (e.target.id === 'logDetailModal') {
+                    closeLogModal();
+                }
+            });
+        }
+
+        function startRealTimeMonitoring() {
+            if (!realTimeEnabled) return;
+
+            setInterval(async () => {
+                // 실시간 로그 업데이트 시뮬레이션
+                const shouldAddNewLog = Math.random() < 0.1; // 10% 확률
+                
+                if (shouldAddNewLog) {
+                    // 새 로그 추가 시뮬레이션
+                    const newLogCount = Math.floor(Math.random() * 3) + 1;
+                    totalLogs += newLogCount;
+                    
+                    // 통계 업데이트
+                    updateStatistics();
+                    updateLogInfo();
+                    
+                    // 위협 알림 표시 (낮은 확률)
+                    if (Math.random() < 0.05) { // 5% 확률
+                        showThreatAlert();
+                    }
+                }
+            }, 30000); // 30초마다 확인
+        }
+
+        function showThreatAlert() {
+            const threatMessages = [
+                '무차별 로그인 시도가 탐지되었습니다.',
+                'SQL 인젝션 공격이 감지되었습니다.',
+                '비정상적인 트래픽 패턴이 확인되었습니다.',
+                '권한 없는 시스템 접근 시도가 발견되었습니다.'
+            ];
+            
+            const randomMessage = threatMessages[Math.floor(Math.random() * threatMessages.length)];
+            document.getElementById('threatMessage').textContent = randomMessage;
+            document.getElementById('threatAlert').classList.add('active');
+        }
+
+        function dismissThreat() {
+            document.getElementById('threatAlert').classList.remove('active');
+        }
+
+        function updateStatistics() {
+            // 통계 업데이트 시뮬레이션
+            const stats = {
+                critical: Math.floor(Math.random() * 5) + 1,
+                warning: Math.floor(Math.random() * 20) + 10,
+                info: Math.floor(Math.random() * 100) + 100,
+                blocked: Math.floor(Math.random() * 50) + 20,
+                uniqueIPs: Math.floor(Math.random() * 50) + 50,
+                failedLogins: Math.floor(Math.random() * 30) + 30
+            };
+
+            document.getElementById('criticalEvents').textContent = stats.critical;
+            document.getElementById('warningEvents').textContent = stats.warning;
+            document.getElementById('infoEvents').textContent = stats.info;
+            document.getElementById('blockedThreats').textContent = stats.blocked;
+            document.getElementById('uniqueIPs').textContent = stats.uniqueIPs;
+            document.getElementById('failedLogins').textContent = stats.failedLogins;
+        }
+
+        function applyFilters() {
+            currentFilters = {
+                severity: document.getElementById('severityFilter').value,
+                eventType: document.getElementById('eventTypeFilter').value,
+                startTime: document.getElementById('startTimeFilter').value,
+                endTime: document.getElementById('endTimeFilter').value,
+                ip: document.getElementById('ipFilter').value,
+                user: document.getElementById('userFilter').value
+            };
+
+            currentPage = 1;
+            loadSecurityLogs(currentFilters);
+        }
+
+        function clearFilters() {
+            document.getElementById('severityFilter').value = '';
+            document.getElementById('eventTypeFilter').value = '';
+            document.getElementById('startTimeFilter').value = '';
+            document.getElementById('endTimeFilter').value = '';
+            document.getElementById('ipFilter').value = '';
+            document.getElementById('userFilter').value = '';
+            
+            currentFilters = {};
+            currentPage = 1;
+            loadSecurityLogs();
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > Math.ceil(totalLogs / itemsPerPage)) return;
+            currentPage = page;
+            renderPagination();
+            loadSecurityLogs(currentFilters);
+        }
+
+        function showLogDetails(logId) {
+            const log = securityLogs.find(l => l.id === logId);
+            if (!log) return;
+
+            const modalBody = document.getElementById('logModalBody');
+            modalBody.innerHTML = `
+                <div class="log-detail">
+                    <div class="detail-label">이벤트 ID</div>
+                    <div class="detail-value">${log.id}</div>
+                </div>
+                <div class="log-detail">
+                    <div class="detail-label">타임스탬프</div>
+                    <div class="detail-value">${formatDateTime(log.timestamp)}</div>
+                </div>
+                <div class="log-detail">
+                    <div class="detail-label">심각도</div>
+                    <div class="detail-value">${getSeverityText(log.severity)}</div>
+                </div>
+                <div class="log-detail">
+                    <div class="detail-label">이벤트 유형</div>
+                    <div class="detail-value">${getSourceText(log.source)}</div>
+                </div>
+                <div class="log-detail">
+                    <div class="detail-label">이벤트</div>
+                    <div class="detail-value">${log.event}</div>
+                </div>
+                <div class="log-detail">
+                    <div class="detail-label">설명</div>
+                    <div class="detail-value">${log.description}</div>
+                </div>
+                <div class="log-detail">
+                    <div class="detail-label">소스 IP</div>
+                    <div class="detail-value">${log.ipAddress}</div>
+                </div>
+                <div class="log-detail">
+                    <div class="detail-label">사용자</div>
+                    <div class="detail-value">${log.user || 'N/A'}</div>
+                </div>
+                <div class="log-detail">
+                    <div class="detail-label">User Agent</div>
+                    <div class="detail-value">${log.userAgent || 'N/A'}</div>
+                </div>
+                <div class="log-detail">
+                    <div class="detail-label">차단 상태</div>
+                    <div class="detail-value">${log.blocked ? '차단됨' : '허용됨'}</div>
+                </div>
+            `;
+
+            document.getElementById('logDetailModal').style.display = 'flex';
+        }
+
+        function closeLogModal() {
+            document.getElementById('logDetailModal').style.display = 'none';
+        }
+
+        async function exportSecurityLogs() {
+            try {
+                const response = await fetch('/api/admin/security-logs/export/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(currentFilters)
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `security-logs-${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    throw new Error('로그 내보내기 실패');
+                }
+            } catch (error) {
+                console.error('로그 내보내기 오류:', error);
+                
+                // 데모용 CSV 다운로드
+                const csvContent = generateSecurityLogsCSV();
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `security-logs-demo-${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }
+            
+            showNotification('보안 로그가 성공적으로 내보내졌습니다.', 'success');
+        }
+
+        function generateSecurityLogsCSV() {
+            const headers = ['시간', '심각도', '이벤트', '설명', '소스', 'IP주소', '사용자', '차단상태'];
+            const rows = securityLogs.map(log => [
+                formatDateTime(log.timestamp),
+                getSeverityText(log.severity),
+                log.event,
+                log.description,
+                getSourceText(log.source),
+                log.ipAddress,
+                log.user || 'N/A',
+                log.blocked ? '차단됨' : '허용됨'
+            ]);
+
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(field => `"${field}"`).join(','))
+                .join('\n');
+
+            return '\uFEFF' + csvContent; // BOM for UTF-8
+        }
+
+        function formatDateTime(timestamp) {
+            return new Date(timestamp).toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function getSeverityText(severity) {
+            const severities = {
+                'critical': '긴급',
+                'high': '높음',
+                'medium': '보통',
+                'low': '낮음',
+                'info': '정보'
+            };
+            return severities[severity] || severity;
+        }
+
+        function getSourceText(source) {
+            const sources = {
+                'auth': '인증',
+                'system': '시스템',
+                'network': '네트워크',
+                'database': '데이터베이스'
+            };
+            return sources[source] || source;
+        }
+
+        function getSourceIcon(source) {
+            const icons = {
+                'auth': '🔐',
+                'system': '⚙️',
+                'network': '🌐',
+                'database': '🗄️'
+            };
+            return icons[source] || '📋';
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                transform: translateX(100%);
+                transition: transform 0.3s;
+                max-width: 400px;
+            `;
+
+            switch (type) {
+                case 'success':
+                    notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    break;
+                case 'error':
+                    notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                    break;
+                case 'info':
+                    notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                    break;
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

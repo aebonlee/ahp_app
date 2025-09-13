@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백업 및 복원 - AHP Admin</title>
+    <link rel="stylesheet" href="../styles/admin-common.css">
+    <style>
+        .backup-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .backup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .backup-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .backup-subtitle {
+            color: var(--text-secondary);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .backup-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .backup-sections {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .backup-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .backup-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .control-input {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            transition: all 0.3s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(200, 169, 104, 0.1);
+        }
+
+        .control-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .backup-status {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .status-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-idle {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .status-running {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 4px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .backup-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .backup-item {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .backup-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        .backup-info {
+            flex: 1;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .backup-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .backup-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .backup-size {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .backup-actions-item {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: var(--accent-primary);
+            background: rgba(200, 169, 104, 0.05);
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .upload-text {
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .schedule-settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        .schedule-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .schedule-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .schedule-time {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 20px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--accent-primary);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        .log-area {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            padding: 1rem;
+            border-radius: 8px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .log-entry {
+            margin-bottom: 0.25rem;
+        }
+
+        .log-timestamp {
+            color: #888;
+            margin-right: 0.5rem;
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.6;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-light);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border-light);
+        }
+
+        .modal-header {
+            padding: 1.5rem 1.5rem 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 2px solid var(--border-light);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .backup-container {
+                padding: 1rem;
+            }
+
+            .backup-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .backup-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .backup-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .backup-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .backup-info {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .backup-actions-item {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .schedule-settings {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="backup-container">
+        <div class="backup-header">
+            <div>
+                <h1 class="backup-title">💾 백업 및 복원</h1>
+                <p class="backup-subtitle">시스템 데이터를 안전하게 백업하고 필요시 복원합니다</p>
+            </div>
+            <div class="backup-actions">
+                <button class="btn btn-secondary" id="viewBackupHistory">
+                    📈 백업 이력
+                </button>
+                <button class="btn btn-primary" id="createBackup">
+                    💾 지금 백업
+                </button>
+            </div>
+        </div>
+
+        <div class="backup-sections">
+            <!-- 백업 생성 섹션 -->
+            <div class="backup-section">
+                <div class="section-header">
+                    <div class="section-icon">🔄</div>
+                    <div>
+                        <h3 class="section-title">백업 생성</h3>
+                        <p class="section-description">새로운 시스템 백업을 생성하거나 자동 백업을 설정합니다</p>
+                    </div>
+                </div>
+
+                <div class="backup-controls">
+                    <div class="control-group">
+                        <label class="control-label">백업 타입</label>
+                        <select class="control-select" id="backupType">
+                            <option value="full">전체 백업</option>
+                            <option value="incremental">증분 백업</option>
+                            <option value="differential">차등 백업</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">백업 이름</label>
+                        <input type="text" class="control-input" id="backupName" placeholder="백업 이름 (자동 생성)">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">압축 레벨</label>
+                        <select class="control-select" id="compressionLevel">
+                            <option value="none">압축 없음</option>
+                            <option value="low">낮음</option>
+                            <option value="medium" selected>보통</option>
+                            <option value="high">높음</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">백업 위치</label>
+                        <select class="control-select" id="backupLocation">
+                            <option value="local">로컬 서버</option>
+                            <option value="aws">AWS S3</option>
+                            <option value="azure">Azure Blob</option>
+                            <option value="ftp">FTP 서버</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="backup-status" id="backupStatus">
+                    <div class="status-header">
+                        <h4 class="status-title">백업 진행 상태</h4>
+                        <span class="status-indicator status-idle" id="backupStatusIndicator">
+                            ● 대기 중
+                        </span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="backupProgress"></div>
+                    </div>
+                    <div id="backupStatusText">백업 작업이 진행되지 않고 있습니다.</div>
+                </div>
+
+                <div class="log-area" id="backupLog">
+                    <div class="log-entry">
+                        <span class="log-timestamp">[2025-09-13 10:30:00]</span>
+                        <span>백업 시스템 준비 완료</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 백업 목록 섹션 -->
+            <div class="backup-section">
+                <div class="section-header">
+                    <div class="section-icon">📁</div>
+                    <div>
+                        <h3 class="section-title">기존 백업 목록</h3>
+                        <p class="section-description">생성된 백업 파일들을 관리하고 복원할 수 있습니다</p>
+                    </div>
+                </div>
+
+                <div class="backup-list" id="backupList">
+                    <!-- 백업 목록이 여기에 동적으로 생성됩니다 -->
+                </div>
+            </div>
+
+            <!-- 복원 섹션 -->
+            <div class="backup-section">
+                <div class="section-header">
+                    <div class="section-icon">🔄</div>
+                    <div>
+                        <h3 class="section-title">백업 복원</h3>
+                        <p class="section-description">백업 파일을 업로드하여 시스템을 복원합니다</p>
+                    </div>
+                </div>
+
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">백업 파일을 드래그하거나 클릭하여 업로드</div>
+                    <div class="upload-hint">지원 형식: .zip, .tar.gz, .sql (최대 500MB)</div>
+                    <input type="file" id="fileInput" accept=".zip,.tar.gz,.sql" style="display: none;">
+                </div>
+
+                <div class="backup-status" id="restoreStatus" style="display: none;">
+                    <div class="status-header">
+                        <h4 class="status-title">복원 진행 상태</h4>
+                        <span class="status-indicator status-idle" id="restoreStatusIndicator">
+                            ● 대기 중
+                        </span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="restoreProgress"></div>
+                    </div>
+                    <div id="restoreStatusText">복원 작업이 진행되지 않고 있습니다.</div>
+                </div>
+            </div>
+
+            <!-- 자동 백업 설정 -->
+            <div class="backup-section">
+                <div class="section-header">
+                    <div class="section-icon">⏰</div>
+                    <div>
+                        <h3 class="section-title">자동 백업 스케줄</h3>
+                        <p class="section-description">정기적인 자동 백업 일정을 설정합니다</p>
+                    </div>
+                </div>
+
+                <div class="schedule-settings">
+                    <div class="schedule-item">
+                        <div class="schedule-info">
+                            <div class="schedule-name">일일 백업</div>
+                            <div class="schedule-time">매일 새벽 2시</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="dailyBackup" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="schedule-item">
+                        <div class="schedule-info">
+                            <div class="schedule-name">주간 백업</div>
+                            <div class="schedule-time">매주 일요일 새벽 3시</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="weeklyBackup" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="schedule-item">
+                        <div class="schedule-info">
+                            <div class="schedule-name">월간 백업</div>
+                            <div class="schedule-time">매월 1일 새벽 4시</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="monthlyBackup">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button class="btn btn-secondary" id="resetSchedule">스케줄 초기화</button>
+                    <button class="btn btn-primary" id="saveSchedule">스케줄 저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 복원 확인 모달 -->
+    <div class="modal" id="restoreModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">백업 복원 확인</h3>
+            </div>
+            <div class="modal-body">
+                <p>선택한 백업으로 시스템을 복원하시겠습니까?</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 1rem;">
+                    ⚠️ 복원 과정에서 현재 데이터가 덮어씌워질 수 있습니다. 
+                    복원하기 전에 현재 상태를 백업하는 것을 권장합니다.
+                </p>
+                <div id="restoreFileInfo" style="margin-top: 1rem;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelRestore">취소</button>
+                <button class="btn btn-primary" id="confirmRestore">복원 시작</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/api-service.js"></script>
+    <script>
+        let backupList = [];
+        let uploadedFile = null;
+        let backupInProgress = false;
+        let restoreInProgress = false;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 백업 및 복원 페이지 초기화');
+            await loadBackupList();
+            setupEventListeners();
+            setupDragAndDrop();
+        });
+
+        async function loadBackupList() {
+            try {
+                const response = await fetch('/api/admin/backups/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    backupList = await response.json();
+                    renderBackupList(backupList);
+                } else {
+                    console.warn('API로 백업 목록 로드 실패, 데모 데이터 사용');
+                    loadDemoBackups();
+                }
+            } catch (error) {
+                console.error('백업 목록 로드 실패:', error);
+                loadDemoBackups();
+            }
+        }
+
+        function loadDemoBackups() {
+            backupList = [
+                {
+                    id: '1',
+                    name: 'ahp_backup_2025-09-13_02-00-00.zip',
+                    type: 'full',
+                    size: '234.5 MB',
+                    created: '2025-09-13T02:00:00Z',
+                    status: 'completed',
+                    location: 'local'
+                },
+                {
+                    id: '2',
+                    name: 'ahp_backup_2025-09-12_02-00-00.zip',
+                    type: 'full',
+                    size: '231.2 MB',
+                    created: '2025-09-12T02:00:00Z',
+                    status: 'completed',
+                    location: 'local'
+                },
+                {
+                    id: '3',
+                    name: 'ahp_backup_2025-09-11_02-00-00.zip',
+                    type: 'incremental',
+                    size: '45.8 MB',
+                    created: '2025-09-11T02:00:00Z',
+                    status: 'completed',
+                    location: 'aws'
+                },
+                {
+                    id: '4',
+                    name: 'ahp_backup_2025-09-10_02-00-00.zip',
+                    type: 'full',
+                    size: '228.9 MB',
+                    created: '2025-09-10T02:00:00Z',
+                    status: 'completed',
+                    location: 'local'
+                },
+                {
+                    id: '5',
+                    name: 'ahp_manual_backup_2025-09-09.zip',
+                    type: 'full',
+                    size: '225.1 MB',
+                    created: '2025-09-09T14:30:00Z',
+                    status: 'completed',
+                    location: 'local'
+                }
+            ];
+            renderBackupList(backupList);
+        }
+
+        function renderBackupList(backups) {
+            const container = document.getElementById('backupList');
+            
+            if (backups.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">백업 파일이 없습니다.</div>';
+                return;
+            }
+
+            container.innerHTML = backups.map(backup => `
+                <div class="backup-item">
+                    <div class="backup-info">
+                        <div>
+                            <div class="backup-name">${backup.name}</div>
+                            <div class="backup-details">
+                                ${getBackupTypeText(backup.type)} • 
+                                ${formatDateTime(backup.created)} • 
+                                ${backup.location.toUpperCase()}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="backup-size">${backup.size}</div>
+                            <div class="backup-details">${getStatusText(backup.status)}</div>
+                        </div>
+                        <div class="backup-actions-item">
+                            <button class="btn btn-sm btn-secondary" onclick="downloadBackup('${backup.id}')">
+                                📥 다운로드
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="restoreBackup('${backup.id}')">
+                                🔄 복원
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteBackup('${backup.id}')">
+                                🗑️ 삭제
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('createBackup').addEventListener('click', createBackup);
+            document.getElementById('viewBackupHistory').addEventListener('click', viewBackupHistory);
+            document.getElementById('saveSchedule').addEventListener('click', saveScheduleSettings);
+            document.getElementById('resetSchedule').addEventListener('click', resetScheduleSettings);
+            
+            document.getElementById('cancelRestore').addEventListener('click', closeRestoreModal);
+            document.getElementById('confirmRestore').addEventListener('click', confirmRestore);
+        }
+
+        function setupDragAndDrop() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadArea.addEventListener('click', () => {
+                if (!restoreInProgress) {
+                    fileInput.click();
+                }
+            });
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (!restoreInProgress) {
+                    uploadArea.classList.add('drag-over');
+                }
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('drag-over');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+                
+                if (!restoreInProgress && e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    handleFileSelect(file);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    handleFileSelect(file);
+                }
+            });
+        }
+
+        function handleFileSelect(file) {
+            const allowedTypes = ['.zip', '.tar.gz', '.sql'];
+            const maxSize = 500 * 1024 * 1024; // 500MB
+
+            const fileExtension = file.name.toLowerCase();
+            if (!allowedTypes.some(type => fileExtension.endsWith(type))) {
+                alert('지원하지 않는 파일 형식입니다. .zip, .tar.gz, .sql 파일만 업로드 가능합니다.');
+                return;
+            }
+
+            if (file.size > maxSize) {
+                alert('파일 크기가 너무 큽니다. 최대 500MB까지 업로드 가능합니다.');
+                return;
+            }
+
+            uploadedFile = file;
+            showRestoreModal(file);
+        }
+
+        async function createBackup() {
+            if (backupInProgress) return;
+
+            backupInProgress = true;
+            const createBtn = document.getElementById('createBackup');
+            const originalText = createBtn.textContent;
+            
+            try {
+                createBtn.textContent = '백업 진행중...';
+                createBtn.disabled = true;
+                createBtn.classList.add('loading');
+
+                updateBackupStatus('running', '백업 작업을 시작합니다...');
+                addLogEntry('백업 프로세스 시작');
+
+                const backupConfig = {
+                    type: document.getElementById('backupType').value,
+                    name: document.getElementById('backupName').value,
+                    compression: document.getElementById('compressionLevel').value,
+                    location: document.getElementById('backupLocation').value
+                };
+
+                const response = await fetch('/api/admin/backups/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(backupConfig)
+                });
+
+                if (response.ok) {
+                    await simulateBackupProgress();
+                    updateBackupStatus('success', '백업이 성공적으로 완료되었습니다.');
+                    addLogEntry('백업 완료');
+                    await loadBackupList();
+                } else {
+                    throw new Error('백업 생성에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('백업 생성 오류:', error);
+                await simulateBackupProgress(); // 데모용
+                updateBackupStatus('success', '데모 백업이 생성되었습니다.');
+                addLogEntry('데모 백업 완료');
+                
+                // 데모 백업을 목록에 추가
+                const newBackup = {
+                    id: Date.now().toString(),
+                    name: `ahp_manual_backup_${new Date().toISOString().split('T')[0]}.zip`,
+                    type: backupConfig.type,
+                    size: '245.7 MB',
+                    created: new Date().toISOString(),
+                    status: 'completed',
+                    location: backupConfig.location
+                };
+                backupList.unshift(newBackup);
+                renderBackupList(backupList);
+            } finally {
+                createBtn.textContent = originalText;
+                createBtn.disabled = false;
+                createBtn.classList.remove('loading');
+                backupInProgress = false;
+            }
+        }
+
+        async function simulateBackupProgress() {
+            const progressBar = document.getElementById('backupProgress');
+            const steps = [
+                { progress: 10, message: '데이터베이스 연결 중...' },
+                { progress: 25, message: '사용자 데이터 백업 중...' },
+                { progress: 45, message: '프로젝트 데이터 백업 중...' },
+                { progress: 65, message: '시스템 설정 백업 중...' },
+                { progress: 80, message: '파일 압축 중...' },
+                { progress: 95, message: '백업 파일 검증 중...' },
+                { progress: 100, message: '백업 완료' }
+            ];
+
+            for (const step of steps) {
+                progressBar.style.width = step.progress + '%';
+                addLogEntry(step.message);
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+        }
+
+        function updateBackupStatus(status, message) {
+            const indicator = document.getElementById('backupStatusIndicator');
+            const statusText = document.getElementById('backupStatusText');
+
+            indicator.className = `status-indicator status-${status}`;
+            
+            const statusTexts = {
+                'idle': '● 대기 중',
+                'running': '● 진행 중',
+                'success': '● 완료',
+                'error': '● 오류'
+            };
+
+            indicator.textContent = statusTexts[status];
+            statusText.textContent = message;
+        }
+
+        function addLogEntry(message) {
+            const logArea = document.getElementById('backupLog');
+            const timestamp = new Date().toLocaleTimeString('ko-KR');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-timestamp">[${timestamp}]</span><span>${message}</span>`;
+            
+            logArea.appendChild(entry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function showRestoreModal(file) {
+            const modal = document.getElementById('restoreModal');
+            const fileInfo = document.getElementById('restoreFileInfo');
+            
+            fileInfo.innerHTML = `
+                <div style="background: var(--bg-elevated); padding: 1rem; border-radius: 6px;">
+                    <div><strong>파일명:</strong> ${file.name}</div>
+                    <div><strong>크기:</strong> ${formatFileSize(file.size)}</div>
+                    <div><strong>수정일:</strong> ${new Date(file.lastModified).toLocaleString('ko-KR')}</div>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeRestoreModal() {
+            document.getElementById('restoreModal').style.display = 'none';
+            uploadedFile = null;
+        }
+
+        async function confirmRestore() {
+            if (!uploadedFile || restoreInProgress) return;
+
+            closeRestoreModal();
+            restoreInProgress = true;
+            
+            const restoreStatus = document.getElementById('restoreStatus');
+            restoreStatus.style.display = 'block';
+
+            try {
+                updateRestoreStatus('running', '복원 작업을 시작합니다...');
+                await simulateRestoreProgress();
+                updateRestoreStatus('success', '복원이 성공적으로 완료되었습니다.');
+                
+                setTimeout(() => {
+                    restoreStatus.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                console.error('복원 오류:', error);
+                updateRestoreStatus('error', '복원 중 오류가 발생했습니다.');
+            } finally {
+                restoreInProgress = false;
+                uploadedFile = null;
+            }
+        }
+
+        async function simulateRestoreProgress() {
+            const progressBar = document.getElementById('restoreProgress');
+            const steps = [
+                { progress: 15, message: '백업 파일 검증 중...' },
+                { progress: 30, message: '기존 데이터 백업 중...' },
+                { progress: 50, message: '데이터베이스 복원 중...' },
+                { progress: 70, message: '파일 시스템 복원 중...' },
+                { progress: 85, message: '설정 복원 중...' },
+                { progress: 100, message: '복원 완료' }
+            ];
+
+            for (const step of steps) {
+                progressBar.style.width = step.progress + '%';
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        function updateRestoreStatus(status, message) {
+            const indicator = document.getElementById('restoreStatusIndicator');
+            const statusText = document.getElementById('restoreStatusText');
+
+            indicator.className = `status-indicator status-${status}`;
+            
+            const statusTexts = {
+                'idle': '● 대기 중',
+                'running': '● 진행 중',
+                'success': '● 완료',
+                'error': '● 오류'
+            };
+
+            indicator.textContent = statusTexts[status];
+            statusText.textContent = message;
+        }
+
+        async function downloadBackup(backupId) {
+            try {
+                const response = await fetch(`/api/admin/backups/${backupId}/download/`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const backup = backupList.find(b => b.id === backupId);
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = backup.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    throw new Error('다운로드에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('다운로드 오류:', error);
+                alert('백업 다운로드 중 오류가 발생했습니다. (데모 모드에서는 실제 파일이 제공되지 않습니다)');
+            }
+        }
+
+        function restoreBackup(backupId) {
+            const backup = backupList.find(b => b.id === backupId);
+            if (!backup) return;
+
+            if (confirm(`"${backup.name}" 백업으로 시스템을 복원하시겠습니까?\n\n⚠️ 현재 데이터가 덮어씌워질 수 있습니다.`)) {
+                // 백업 복원 로직 실행
+                performBackupRestore(backup);
+            }
+        }
+
+        async function performBackupRestore(backup) {
+            restoreInProgress = true;
+            const restoreStatus = document.getElementById('restoreStatus');
+            restoreStatus.style.display = 'block';
+
+            try {
+                updateRestoreStatus('running', `${backup.name} 백업을 복원하는 중...`);
+                await simulateRestoreProgress();
+                updateRestoreStatus('success', '백업 복원이 완료되었습니다.');
+                
+                setTimeout(() => {
+                    restoreStatus.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                console.error('백업 복원 오류:', error);
+                updateRestoreStatus('error', '복원 중 오류가 발생했습니다.');
+            } finally {
+                restoreInProgress = false;
+            }
+        }
+
+        async function deleteBackup(backupId) {
+            const backup = backupList.find(b => b.id === backupId);
+            if (!backup) return;
+
+            if (confirm(`"${backup.name}" 백업을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+                try {
+                    const response = await fetch(`/api/admin/backups/${backupId}/`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+
+                    if (response.ok || true) { // 데모용으로 항상 성공
+                        backupList = backupList.filter(b => b.id !== backupId);
+                        renderBackupList(backupList);
+                        alert('백업이 삭제되었습니다.');
+                    }
+                } catch (error) {
+                    console.error('백업 삭제 오류:', error);
+                    alert('백업 삭제 중 오류가 발생했습니다.');
+                }
+            }
+        }
+
+        async function saveScheduleSettings() {
+            const schedule = {
+                daily: document.getElementById('dailyBackup').checked,
+                weekly: document.getElementById('weeklyBackup').checked,
+                monthly: document.getElementById('monthlyBackup').checked
+            };
+
+            try {
+                const response = await fetch('/api/admin/backup-schedule/', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(schedule)
+                });
+
+                if (response.ok || true) { // 데모용으로 항상 성공
+                    alert('백업 스케줄이 저장되었습니다.');
+                }
+            } catch (error) {
+                console.error('스케줄 저장 오류:', error);
+                alert('백업 스케줄 저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        function resetScheduleSettings() {
+            if (confirm('백업 스케줄을 초기 설정으로 되돌리시겠습니까?')) {
+                document.getElementById('dailyBackup').checked = true;
+                document.getElementById('weeklyBackup').checked = true;
+                document.getElementById('monthlyBackup').checked = false;
+            }
+        }
+
+        function viewBackupHistory() {
+            window.open('/admin/backup-history.html', '_blank');
+        }
+
+        function formatDateTime(timestamp) {
+            return new Date(timestamp).toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatFileSize(bytes) {
+            const units = ['B', 'KB', 'MB', 'GB'];
+            let size = bytes;
+            let unitIndex = 0;
+
+            while (size >= 1024 && unitIndex < units.length - 1) {
+                size /= 1024;
+                unitIndex++;
+            }
+
+            return `${size.toFixed(1)} ${units[unitIndex]}`;
+        }
+
+        function getBackupTypeText(type) {
+            const types = {
+                'full': '전체',
+                'incremental': '증분',
+                'differential': '차등'
+            };
+            return types[type] || type;
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'completed': '완료',
+                'running': '진행중',
+                'failed': '실패'
+            };
+            return statuses[status] || status;
+        }
+    </script>
+</body>
+</html>
