@@ -299,11 +299,11 @@
                     <span class="sidebar-icon">📊</span>
                     <span class="sidebar-text">프로젝트 현황</span>
                 </a>
-                <a href="/ahp_app/public/system-settings.html" class="sidebar-item">
+                <a href="/ahp_app/public/admin/system-settings.html" class="sidebar-item">
                     <span class="sidebar-icon">⚙️</span>
                     <span class="sidebar-text">시스템 설정</span>
                 </a>
-                <a href="/ahp_app/public/audit-logs.html" class="sidebar-item">
+                <a href="/ahp_app/public/admin/audit-log.html" class="sidebar-item">
                     <span class="sidebar-icon">📋</span>
                     <span class="sidebar-text">감사 로그</span>
                 </a>
@@ -312,15 +312,15 @@
             <!-- 데이터 관리 -->
             <div class="sidebar-section">
                 <div class="sidebar-section-title">데이터 관리</div>
-                <a href="/ahp_app/public/backup-restore.html" class="sidebar-item">
+                <a href="/ahp_app/public/admin/backup-restore.html" class="sidebar-item">
                     <span class="sidebar-icon">💾</span>
                     <span class="sidebar-text">백업 및 복원</span>
                 </a>
-                <a href="/ahp_app/public/database-management.html" class="sidebar-item">
+                <a href="/ahp_app/public/admin/database-management.html" class="sidebar-item">
                     <span class="sidebar-icon">🗄️</span>
                     <span class="sidebar-text">데이터베이스 관리</span>
                 </a>
-                <a href="/ahp_app/public/data-migration.html" class="sidebar-item">
+                <a href="/ahp_app/public/admin/data-migration.html" class="sidebar-item">
                     <span class="sidebar-icon">📤</span>
                     <span class="sidebar-text">데이터 마이그레이션</span>
                 </a>
@@ -329,15 +329,15 @@
             <!-- 보안 관리 -->
             <div class="sidebar-section">
                 <div class="sidebar-section-title">보안 관리</div>
-                <a href="/ahp_app/public/security-settings.html" class="sidebar-item">
+                <a href="/ahp_app/public/admin/security-settings.html" class="sidebar-item">
                     <span class="sidebar-icon">🔒</span>
                     <span class="sidebar-text">보안 설정</span>
                 </a>
-                <a href="/ahp_app/public/access-control.html" class="sidebar-item">
+                <a href="/ahp_app/public/admin/access-control.html" class="sidebar-item">
                     <span class="sidebar-icon">🛡️</span>
                     <span class="sidebar-text">접근 제어</span>
                 </a>
-                <a href="/ahp_app/public/security-logs.html" class="sidebar-item">
+                <a href="/ahp_app/public/admin/security-log.html" class="sidebar-item">
                     <span class="sidebar-icon">🚨</span>
                     <span class="sidebar-text">보안 로그</span>
                 </a>
@@ -424,7 +424,7 @@
                     </div>
                 </div>
 
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/system-monitoring.html'">
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/admin/system-settings.html'">
                     <div class="management-card-icon">📈</div>
                     <div class="management-card-title">시스템 모니터링</div>
                     <div class="management-card-desc">
@@ -432,7 +432,7 @@
                     </div>
                 </div>
 
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/backup-restore.html'">
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/admin/backup-restore.html'">
                     <div class="management-card-icon">💾</div>
                     <div class="management-card-title">백업 관리</div>
                     <div class="management-card-desc">
@@ -440,7 +440,7 @@
                     </div>
                 </div>
 
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/security-settings.html'">
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/admin/security-settings.html'">
                     <div class="management-card-icon">🔒</div>
                     <div class="management-card-title">보안 설정</div>
                     <div class="management-card-desc">
@@ -448,7 +448,7 @@
                     </div>
                 </div>
 
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/analytics.html'">
+                <div class="management-card" onclick="window.location.href='/ahp_app/public/admin/audit-log.html'">
                     <div class="management-card-icon">📋</div>
                     <div class="management-card-title">분석 리포트</div>
                     <div class="management-card-desc">
@@ -508,25 +508,20 @@
         <button class="fab" title="새 사용자 추가" onclick="window.location.href='/ahp_app/public/user-management.html'">
             👤
         </button>
-        <button class="fab" title="시스템 설정" onclick="window.location.href='/ahp_app/public/system-settings.html'">
+        <button class="fab" title="시스템 설정" onclick="window.location.href='/ahp_app/public/admin/system-settings.html'">
             ⚙️
         </button>
     </div>
 
     <script src="/ahp_app/public/scripts/layout.js"></script>
     <script>
-        // 페이지 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            // 로그인 상태 확인
-            if (!checkLoginStatus()) {
+        // 페이지 초기화 (async/await)
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 로그인 상태 및 권한 확인
+            const loginResult = await checkLoginStatus();
+            if (!loginResult) {
                 return;
             }
-            
-            // 관리자 권한 확인
-            if (!checkAdminPermission()) {
-                alert('관리자 권한이 필요합니다.');
-                window.location.href = '/ahp_app/public/personal-service-enhanced.html';
-                return;
             }
             
             initializePage({
@@ -538,45 +533,49 @@
             console.log('✅ 슈퍼 관리자 대시보드 로드 완료');
         });
 
-        // 관리자 권한 확인
-        function checkAdminPermission() {
-            const user = localStorage.getItem('ahp_user');
-            if (!user) return false;
-            
+        // 관리자 권한 확인 (Django API 기반)
+        async function checkAdminPermission() {
             try {
-                const userData = JSON.parse(user);
-                return userData.role === 'admin';
+                const response = await window.ahpApi.getCurrentUser();
+                if (response.success && response.user) {
+                    return response.user.role === 'admin' || response.user.is_superuser;
+                }
+                return false;
             } catch (error) {
-                console.error('사용자 정보 파싱 오류:', error);
+                console.error('권한 확인 오류:', error);
                 return false;
             }
         }
 
-        // 로그인 상태 확인
-        function checkLoginStatus() {
-            const token = localStorage.getItem('ahp_token');
-            const user = localStorage.getItem('ahp_user');
-            
-            if (!token || !user) {
-                window.location.href = '/ahp_app/public/login.html';
-                return false;
-            }
-            
+        // 로그인 상태 확인 (Django API 기반)
+        async function checkLoginStatus() {
             try {
-                const userData = JSON.parse(user);
-                const userNameElement = document.querySelector('.header-user .user-name');
-                if (userNameElement && userData.name) {
-                    userNameElement.textContent = userData.name;
+                const response = await window.ahpApi.getCurrentUser();
+                
+                if (!response.success || !response.user) {
+                    window.location.href = '/ahp_app/public/login.html?message=session_expired';
+                    return false;
                 }
+                
+                // 관리자 권한 확인
+                if (response.user.role !== 'admin' && !response.user.is_superuser) {
+                    alert('관리자 권한이 필요합니다.');
+                    window.location.href = '/ahp_app/public/personal-service-enhanced.html';
+                    return false;
+                }
+                
+                // 사용자 이름 표시
+                const userNameElement = document.querySelector('.header-user .user-name');
+                if (userNameElement && response.user.name) {
+                    userNameElement.textContent = response.user.name;
+                }
+                
+                return true;
             } catch (error) {
-                console.error('사용자 정보 파싱 오류:', error);
-                localStorage.removeItem('ahp_user');
-                localStorage.removeItem('ahp_token');
-                window.location.href = '/ahp_app/public/login.html';
+                console.error('로그인 상태 확인 오류:', error);
+                window.location.href = '/ahp_app/public/login.html?message=session_expired';
                 return false;
             }
-            
-            return true;
         }
 
         // 사이드바 토글
@@ -588,12 +587,17 @@
             toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
         }
 
-        // 로그아웃
-        function handleLogout() {
+        // 로그아웃 (Django API 기반)
+        async function handleLogout() {
             if (confirm('로그아웃 하시겠습니까?')) {
-                localStorage.removeItem('ahp_user');
-                localStorage.removeItem('ahp_token');
-                window.location.href = '/ahp_app/';
+                try {
+                    await window.ahpApi.logout();
+                    window.location.href = '/ahp_app/public/login.html?message=logout';
+                } catch (error) {
+                    console.error('로그아웃 오류:', error);
+                    // 오류가 발생해도 로그인 페이지로 이동
+                    window.location.href = '/ahp_app/public/login.html';
+                }
             }
         }
     </script>
