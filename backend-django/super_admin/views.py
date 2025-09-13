@@ -206,7 +206,7 @@ class AHPProjectViewSet(viewsets.ReadOnlyModelViewSet):
 # ===== 슈퍼관리자 10개 페이지 API 엔드포인트 =====
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def system_settings_api(request):
     """시스템 설정 API"""
     
@@ -244,7 +244,7 @@ def system_settings_api(request):
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def audit_logs_api(request):
     """감사 로그 API"""
     
@@ -293,7 +293,7 @@ def audit_logs_api(request):
 
 
 @api_view(['GET', 'POST', 'DELETE'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def backup_restore_api(request):
     """백업 및 복원 API"""
     
@@ -345,7 +345,7 @@ def backup_restore_api(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def database_management_api(request):
     """데이터베이스 관리 API"""
     
@@ -401,7 +401,7 @@ def database_management_api(request):
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def data_migration_api(request):
     """데이터 마이그레이션 API"""
     
@@ -447,7 +447,7 @@ def data_migration_api(request):
 
 
 @api_view(['GET', 'POST', 'PUT'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def security_settings_api(request):
     """보안 설정 API"""
     
@@ -490,7 +490,7 @@ def security_settings_api(request):
 
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def access_control_api(request):
     """접근 제어 API"""
     
@@ -530,7 +530,7 @@ def access_control_api(request):
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def security_logs_api(request):
     """보안 로그 API"""
     
@@ -604,7 +604,7 @@ def security_logs_api(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def dashboard_stats_api(request):
     """대시보드 통계 API"""
     
@@ -671,7 +671,7 @@ def dashboard_stats_api(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def dashboard_stats(request):
     """대시보드 통계 API"""
     
@@ -716,7 +716,7 @@ def dashboard_stats(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def recent_activities(request):
     """최근 활동 조회 API"""
     
@@ -727,7 +727,7 @@ def recent_activities(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def bulk_user_action(request):
     """사용자 대량 작업 API"""
     
@@ -767,7 +767,7 @@ def bulk_user_action(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def system_health(request):
     """시스템 상태 확인 API"""
     
@@ -791,7 +791,7 @@ def system_health(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def user_statistics(request):
     """사용자 통계 API"""
     
@@ -842,7 +842,7 @@ def user_statistics(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def payment_statistics(request):
     """결제 통계 API"""
     
@@ -897,7 +897,7 @@ def payment_statistics(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def project_statistics(request):
     """프로젝트 통계 API"""
     
@@ -948,7 +948,7 @@ def project_statistics(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def export_users(request):
     """사용자 데이터 내보내기 API"""
     
@@ -985,7 +985,7 @@ def export_users(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def system_backup(request):
     """시스템 백업 API (데이터 요약)"""
     

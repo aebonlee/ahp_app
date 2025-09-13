@@ -26,7 +26,6 @@ urlpatterns = [
     path('api/', include(router.urls)),
     
     # 추가 API 엔드포인트
-    path('api/dashboard/stats/', views.dashboard_stats, name='dashboard_stats'),
     path('api/activities/recent/', views.recent_activities, name='recent_activities'),
     path('api/users/bulk-action/', views.bulk_user_action, name='bulk_user_action'),
     path('api/system/health/', views.system_health, name='system_health'),
