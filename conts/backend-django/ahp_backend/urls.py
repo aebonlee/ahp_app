@@ -89,7 +89,7 @@ def login_api(request):
             'method': 'GET',
             'expected_format': {
                 'username': 'admin',
-                'password': 'ahp2025admin'
+                'password': 'admin123'
             },
             'note': 'Use POST with JSON body for actual login'
         })
@@ -107,13 +107,13 @@ def login_api(request):
                 }, status=400)
             
             # 하드코드 테스트 - admin 계정 직접 확인
-            if username in ['admin', 'admin@ahp-platform.com'] and password == 'ahp2025admin':
+            if username in ['admin', 'admin@ahp.com'] and password == 'admin123':
                 # 데이터베이스에서 admin 사용자 가져오기
                 try:
                     from django.contrib.auth import get_user_model
                     User = get_user_model()
                     # CustomUser는 email을 USERNAME_FIELD로 사용하므로 email로 찾기
-                    admin_user = User.objects.get(email='admin@ahp-platform.com')
+                    admin_user = User.objects.get(email='admin@ahp.com')
                     login(request, admin_user)
                     
                     return JsonResponse({
@@ -251,8 +251,8 @@ def login_api(request):
     return JsonResponse({
         'message': 'POST 요청으로 로그인하세요',
         'format': {
-            'username': 'admin 또는 admin@ahp-platform.com',
-            'password': 'ahp2025admin'
+            'username': 'admin 또는 admin@ahp.com',
+            'password': 'admin123'
         }
     })
 
@@ -512,16 +512,16 @@ def create_admin_simple(request):
         try:
             admin = User.objects.create_superuser(
                 username='admin',
-                email='admin@ahp-platform.com',
-                password='ahp2025admin'
+                email='admin@ahp.com',
+                password='admin123'
             )
         except Exception as create_error:
             # create_superuser 실패시 수동 생성
             admin = User(
                 username='admin',
-                email='admin@ahp-platform.com'
+                email='admin@ahp.com'
             )
-            admin.set_password('ahp2025admin')
+            admin.set_password('admin123')
             admin.is_staff = True
             admin.is_superuser = True
             admin.is_active = True
@@ -555,8 +555,8 @@ def create_admin_simple(request):
             'admin_info': admin_info,
             'credentials': {
                 'username': 'admin',
-                'email': 'admin@ahp-platform.com', 
-                'password': 'ahp2025admin'
+                'email': 'admin@ahp.com', 
+                'password': 'admin123'
             }
         })
             
@@ -575,7 +575,7 @@ def simple_login_api(request):
             'message': 'Simple login API - use POST',
             'test_credentials': {
                 'username': 'admin',
-                'password': 'ahp2025admin'
+                'password': 'admin123'
             }
         })
     
@@ -592,7 +592,7 @@ def simple_login_api(request):
             password = data.get('password', '')
             
             # 하드코드 검증
-            if (username == 'admin' or username == 'admin@ahp-platform.com') and password == 'ahp2025admin':
+            if (username == 'admin' or username == 'admin@ahp.com') and password == 'admin123':
                 # 성공 응답
                 return JsonResponse({
                     'success': True,
@@ -600,7 +600,7 @@ def simple_login_api(request):
                     'user': {
                         'id': '1',
                         'username': 'admin',
-                        'email': 'admin@ahp-platform.com',
+                        'email': 'admin@ahp.com',
                         'is_staff': True,
                         'is_superuser': True,
                         'user_type': 'admin'
@@ -614,8 +614,8 @@ def simple_login_api(request):
                     'debug': {
                         'username_received': username,
                         'password_received': '***' if password else 'empty',
-                        'expected_username': 'admin or admin@ahp-platform.com',
-                        'expected_password': 'ahp2025admin'
+                        'expected_username': 'admin or admin@ahp.com',
+                        'expected_password': 'admin123'
                     }
                 }, status=401)
                 
@@ -646,15 +646,15 @@ def test_login_api(request):
         test_results = {}
         
         # 1. 사용자명으로 인증
-        user1 = authenticate(username='admin', password='ahp2025admin')
+        user1 = authenticate(username='admin', password='admin123')
         test_results['username_auth'] = user1 is not None
         
         # 2. 이메일로 인증  
-        user2 = authenticate(username='admin@ahp-platform.com', password='ahp2025admin')
+        user2 = authenticate(username='admin@ahp.com', password='admin123')
         test_results['email_auth'] = user2 is not None
         
         # 3. 비밀번호 직접 확인
-        password_check = admin.check_password('ahp2025admin')
+        password_check = admin.check_password('admin123')
         test_results['password_check'] = password_check
         
         return JsonResponse({
@@ -694,8 +694,8 @@ def create_admin_api(request):
             # 새 superuser 관리자 생성
             admin = User.objects.create_superuser(
                 username='admin',
-                email='admin@ahp-platform.com',
-                password='ahp2025admin',
+                email='admin@ahp.com',
+                password='admin123',
                 first_name='Admin',
                 last_name='User'
             )
@@ -711,7 +711,7 @@ def create_admin_api(request):
                 },
                 'credentials': {
                     'username': 'admin',
-                    'password': 'ahp2025admin'
+                    'password': 'admin123'
                 },
                 'database_stats': {
                     'total_users': User.objects.count(),
@@ -744,16 +744,16 @@ def create_admin_api(request):
                 },
                 'credentials': {
                     'username': 'admin',
-                    'email': 'admin@ahp-platform.com',
-                    'password': 'ahp2025admin'
+                    'email': 'admin@ahp.com',
+                    'password': 'admin123'
                 }
             })
         
         # 새 superuser 관리자 생성
         admin = User.objects.create_superuser(
             username='admin',
-            email='admin@ahp-platform.com',
-            password='ahp2025admin',
+            email='admin@ahp.com',
+            password='admin123',
             first_name='Admin',
             last_name='User'
         )
@@ -769,8 +769,8 @@ def create_admin_api(request):
             },
             'credentials': {
                 'username': 'admin',
-                'email': 'admin@ahp-platform.com',
-                'password': 'ahp2025admin'
+                'email': 'admin@ahp.com',
+                'password': 'admin123'
             },
             'database_stats': {
                 'total_users': User.objects.count(),
@@ -869,8 +869,8 @@ urlpatterns = [
         },
         'test_credentials': {
             'username': 'admin',
-            'password': 'ahp2025admin',
-            'email': 'admin@ahp-platform.com'
+            'password': 'admin123',
+            'email': 'admin@ahp.com'
         }
     })),
 ]
