@@ -424,7 +424,11 @@ class AccessControl(models.Model):
     
     # 권한 설정
     required_user_types = models.JSONField(default=list)  # ['admin', 'super_admin']
-    allowed_users = models.ManyToManyField(CustomUser, blank=True)
+    allowed_users = models.ManyToManyField(
+        CustomUser, 
+        blank=True, 
+        related_name='allowed_access_controls'
+    )
     
     # 제한 설정
     is_active = models.BooleanField(default=True)
@@ -437,7 +441,11 @@ class AccessControl(models.Model):
     # 메타데이터
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='created_access_controls'
+    )
     
     class Meta:
         verbose_name = '접근 제어'
