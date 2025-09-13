@@ -75,8 +75,8 @@ try:
     admin_accounts = [
         {
             'username': 'admin',
-            'email': 'admin@ahp-platform.com',
-            'password': 'ahp2025admin',
+            'email': 'admin@ahp.com',
+            'password': 'admin123',
             'first_name': 'AHP',
             'last_name': 'Administrator'
         }
@@ -106,8 +106,8 @@ try:
     print(f"📍 Django Admin 로그인: https://ahp-django-backend.onrender.com/admin/")
     print(f"🔑 로그인 정보:")
     print(f"   - 사용자명: admin")
-    print(f"   - 이메일: admin@ahp-platform.com")
-    print(f"   - 비밀번호: ahp2025admin")
+    print(f"   - 이메일: admin@ahp.com")
+    print(f"   - 비밀번호: admin123")
     
 except Exception as e:
     print(f"💥 전체 프로세스 중 오류 발생: {str(e)}")

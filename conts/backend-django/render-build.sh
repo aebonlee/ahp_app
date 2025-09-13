@@ -32,27 +32,35 @@ import os
 import django
 django.setup()
 
-from django.contrib.auth.models import User
+from super_admin.models import CustomUser as User
 
 try:
     # Check if admin exists
-    if User.objects.filter(username='admin').exists():
+    admin_email = 'admin@ahp.com'
+    if User.objects.filter(email=admin_email).exists():
         print('✅ Admin account already exists')
-        admin = User.objects.get(username='admin')
+        admin = User.objects.get(email=admin_email)
         print(f'Username: {admin.username}, Email: {admin.email}')
+        print(f'User Type: {admin.user_type}')
     else:
-        # Create new admin
-        admin = User.objects.create_superuser(
+        # Create new admin with CustomUser model
+        admin = User.objects.create_user(
             username='admin',
-            email='admin@ahp-platform.com',
-            password='ahp2025admin',
+            email=admin_email,
+            password='admin123',
             first_name='Admin',
-            last_name='User'
+            last_name='User',
+            user_type='super_admin',
+            is_superuser=True,
+            is_staff=True,
+            is_active=True,
+            is_verified=True
         )
         print('✅ Admin account created successfully!')
         print(f'Username: {admin.username}')
         print(f'Email: {admin.email}') 
-        print('Password: ahp2025admin')
+        print('Password: admin123')
+        print(f'User Type: {admin.user_type}')
         print(f'Superuser: {admin.is_superuser}')
         print(f'Staff: {admin.is_staff}')
         
