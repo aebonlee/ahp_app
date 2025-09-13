@@ -708,7 +708,7 @@
 
         async function loadSystemSettings() {
             try {
-                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/system/settings/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/system/settings/', {
                     credentials: 'include'
                 });
 
@@ -831,7 +831,7 @@
 
                 const formData = collectFormData();
 
-                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/system/settings/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/system/settings/', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -913,7 +913,7 @@
                 btn.disabled = true;
                 btn.classList.add('loading');
 
-                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/backup/restore/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/backup/restore/', {
                     method: 'POST',
                     credentials: 'include'
                 });
@@ -940,7 +940,7 @@
 
         async function updateSystemStatus() {
             try {
-                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/dashboard/stats/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/dashboard/stats/', {
                     credentials: 'include'
                 });
 

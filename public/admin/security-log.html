@@ -849,7 +849,7 @@
                     ...filters
                 });
 
-                const response = await fetch(`https://ahp-django-backend.onrender.com/super_admin/api/security/logs/?${queryParams}`, {
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/security/logs/?${queryParams}`, {
                     credentials: 'include'
                 });
 
@@ -1219,7 +1219,7 @@
 
         async function exportSecurityLogs() {
             try {
-                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/security/logs/export/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/security/logs/export/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
