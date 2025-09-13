@@ -571,20 +571,22 @@
         // 시스템 통계 데이터 로딩
         async function loadSystemStats() {
             try {
-                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/dashboard/stats/', {
-                    credentials: 'include'
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/dashboard/stats/?_t=${Date.now()}`, {
+                    credentials: 'include',
+                    cache: 'no-cache'
                 });
 
                 if (response.ok) {
                     const stats = await response.json();
                     updateSystemStats(stats);
                 } else {
-                    // API 실패시 기본값 표시
+                    // API 실패시 연결 오류 표시
+                    console.error('API 실패:', response.status, response.statusText);
                     updateSystemStats({
-                        total_users: 'N/A',
-                        active_projects: 'N/A', 
-                        system_performance: 'N/A',
-                        storage_usage: 'N/A'
+                        total_users: 'API 연결 실패',
+                        active_projects: 'API 연결 실패', 
+                        system_performance: 'API 연결 실패',
+                        storage_usage: 'API 연결 실패'
                     });
                 }
             } catch (error) {
@@ -615,8 +617,9 @@
         // 최근 활동 데이터 로딩
         async function loadRecentActivity() {
             try {
-                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/audit/logs/?limit=5', {
-                    credentials: 'include'
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/audit/logs/?limit=5&_t=${Date.now()}`, {
+                    credentials: 'include',
+                    cache: 'no-cache'
                 });
 
                 if (response.ok) {
