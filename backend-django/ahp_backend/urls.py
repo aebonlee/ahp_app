@@ -199,10 +199,18 @@ def login_api(request):
                         user_data['subscription_tier'] = getattr(user, 'subscription_tier', 'free')
                         user_data['subscription_tier_display'] = getattr(user, 'get_subscription_tier_display', lambda: 'Free')()
                     
+                    # Add role field for frontend compatibility
+                    if user.is_superuser or user.is_staff or user_type == 'admin':
+                        user_data['role'] = 'admin'
+                        user_data['name'] = user.get_full_name() or user.username
+                    else:
+                        user_data['role'] = 'user'
+                        user_data['name'] = user.get_full_name() or user.username
+                    
                     # Add aebon special flags
                     if is_aebon:
                         user_data.update({
-                            'role': 'super_admin',
+                            'role': 'admin',
                             'admin_type': 'super',
                             'canSwitchModes': True,
                             'isAebon': True,
@@ -368,25 +376,39 @@ def register_api(request):
 def user_info_api(request):
     """현재 로그인한 사용자 정보"""
     if request.user.is_authenticated:
+        # 사용자 타입 결정
+        user_type = determine_user_type(request.user)
+        
+        # 역할 결정
+        if request.user.is_superuser or request.user.is_staff or user_type == 'admin':
+            role = 'admin'
+        else:
+            role = 'user'
+            
         return JsonResponse({
+            'success': True,
             'authenticated': True,
             'user': {
                 'id': request.user.id,
                 'username': request.user.username,
                 'email': request.user.email,
+                'name': request.user.get_full_name() or request.user.username,
                 'first_name': request.user.first_name,
                 'last_name': request.user.last_name,
+                'role': role,
+                'user_type': user_type,
                 'is_staff': request.user.is_staff,
                 'is_superuser': request.user.is_superuser,
-                'last_login': request.user.last_login,
-                'date_joined': request.user.date_joined
+                'last_login': request.user.last_login.isoformat() if request.user.last_login else None,
+                'date_joined': request.user.date_joined.isoformat() if request.user.date_joined else None
             }
         })
     else:
         return JsonResponse({
+            'success': False,
             'authenticated': False,
             'message': '로그인이 필요합니다.'
-        })
+        }, status=401)
 
 @csrf_exempt
 def logout_api(request):

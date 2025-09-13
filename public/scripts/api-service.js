@@ -39,13 +39,19 @@ class AHPApiService {
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/auth/login/`, {
+            // 로그인 요청 데이터 준비 (email 또는 username 처리)
+            const loginData = {
+                username: credentials.email || credentials.username,
+                password: credentials.password
+            };
+
+            const response = await fetch(`${this.baseURL}/login/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 credentials: 'include', // 쿠키 포함
-                body: JSON.stringify(credentials)
+                body: JSON.stringify(loginData)
             });
 
             if (!response.ok) {
@@ -76,7 +82,7 @@ class AHPApiService {
      */
     async logout() {
         try {
-            await fetch(`${this.baseURL}/auth/logout/`, {
+            await fetch(`${this.baseURL}/logout/`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -105,7 +111,7 @@ class AHPApiService {
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/auth/me/`, {
+            const response = await fetch(`${this.baseURL}/user/`, {
                 credentials: 'include'
             });
 

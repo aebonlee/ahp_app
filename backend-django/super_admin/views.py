@@ -660,13 +660,19 @@ def dashboard_stats_api(request):
     
     return Response({
         'success': True,
-        'data': {
-            'user_stats': user_stats,
-            'payment_stats': payment_stats,
-            'project_stats': project_stats,
-            'system_stats': system_stats,
-            'last_updated': timezone.now().isoformat()
-        }
+        'total_users': user_stats['total_users'],
+        'active_projects': project_stats['active_projects'], 
+        'system_performance': 98.5,  # 시뮬레이션 데이터
+        'storage_usage': 67.3,       # 시뮬레이션 데이터
+        'user_growth': 12.5,         # 시뮬레이션 데이터  
+        'project_growth': 8.7,       # 시뮬레이션 데이터
+        'performance_status': '시스템 정상 작동',
+        'storage_status': '여유 공간 충분',
+        'user_stats': user_stats,
+        'payment_stats': payment_stats,
+        'project_stats': project_stats,
+        'system_stats': system_stats,
+        'last_updated': timezone.now().isoformat()
     })
 
 

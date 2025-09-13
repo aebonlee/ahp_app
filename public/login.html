@@ -401,8 +401,8 @@
                     
                     // 사용자 역할에 따라 리다이렉트 결정
                     const redirectUrl = user.role === 'admin' 
-                        ? '/ahp_app/public/super-admin-dashboard.html'
-                        : '/ahp_app/public/personal-service-enhanced.html';
+                        ? 'super-admin-dashboard.html'
+                        : 'personal-service-enhanced.html';
                     
                     const dashboardName = user.role === 'admin' ? '관리자 대시보드' : '개인서비스';
                     showMessage(`${user.name}님, 로그인에 성공했습니다! ${dashboardName}로 이동합니다.`, 'success');
