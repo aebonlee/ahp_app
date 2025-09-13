@@ -157,7 +157,7 @@ def login_api(request):
             
             if user is not None:
                 if user.is_active:
-                    login(request, user)
+                    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                     
                     # AEBON SPECIAL HANDLING - Ultimate Super Admin privileges
                     is_aebon = (user.username.lower() == 'aebon' or 

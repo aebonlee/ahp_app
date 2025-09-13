@@ -604,7 +604,7 @@ def security_logs_api(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([])
 def dashboard_stats_api(request):
     """대시보드 통계 API"""
     
