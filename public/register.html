@@ -584,7 +584,7 @@
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             // 이메일 중복 체크 (데모용)
-            const existingEmails = ['admin@ahp.com', 'user@ahp.com'];
+            const existingEmails = ['admin@ahp-platform.com', 'user@ahp.com'];
             if (existingEmails.includes(registerData.email)) {
                 return {
                     success: false,

@@ -37,6 +37,13 @@ from super_admin.models import CustomUser as User
 try:
     # Check if admin exists
     admin_email = 'admin@ahp.com'
+    
+    # Delete any existing admin accounts with old credentials
+    old_admins = User.objects.filter(email__in=['admin@ahp-platform.com', 'admin@ahp.com'])
+    if old_admins.exists():
+        print('🗑️ Deleting old admin accounts...')
+        old_admins.delete()
+    
     if User.objects.filter(email=admin_email).exists():
         print('✅ Admin account already exists')
         admin = User.objects.get(email=admin_email)
