@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AHP System - 슈퍼 관리자 대시보드</title>
-    <link rel="stylesheet" href="/ahp_app/public/styles/layout.css">
+    <link rel="stylesheet" href="styles/layout.css">
     <style>
         .main-content {
             margin-left: var(--sidebar-width);
@@ -260,10 +260,10 @@
         
         <div class="header-center">
             <nav class="header-nav">
-                <a href="/ahp_app/public/super-admin-dashboard.html" class="nav-item active" data-page="admin">관리자</a>
-                <a href="/ahp_app/public/personal-service-enhanced.html" class="nav-item" data-page="personal">개인서비스</a>
-                <a href="/ahp_app/public/system-monitoring.html" class="nav-item" data-page="system">시스템 모니터링</a>
-                <a href="/ahp_app/public/analytics.html" class="nav-item" data-page="analytics">분석</a>
+                <a href="super-admin-dashboard.html" class="nav-item active" data-page="admin">관리자</a>
+                <a href="personal-service-enhanced.html" class="nav-item" data-page="personal">개인서비스</a>
+                <a href="system-monitoring.html" class="nav-item" data-page="system">시스템 모니터링</a>
+                <a href="analytics.html" class="nav-item" data-page="analytics">분석</a>
             </nav>
         </div>
         
@@ -291,19 +291,19 @@
             <!-- 관리자 메뉴 -->
             <div class="sidebar-section">
                 <div class="sidebar-section-title">시스템 관리</div>
-                <a href="/ahp_app/public/user-management.html" class="sidebar-item">
+                <a href="user-management.html" class="sidebar-item">
                     <span class="sidebar-icon">👥</span>
                     <span class="sidebar-text">사용자 관리</span>
                 </a>
-                <a href="/ahp_app/public/project-overview.html" class="sidebar-item">
+                <a href="project-overview.html" class="sidebar-item">
                     <span class="sidebar-icon">📊</span>
                     <span class="sidebar-text">프로젝트 현황</span>
                 </a>
-                <a href="/ahp_app/public/admin/system-settings.html" class="sidebar-item">
+                <a href="admin/system-settings.html" class="sidebar-item">
                     <span class="sidebar-icon">⚙️</span>
                     <span class="sidebar-text">시스템 설정</span>
                 </a>
-                <a href="/ahp_app/public/admin/audit-log.html" class="sidebar-item">
+                <a href="admin/audit-log.html" class="sidebar-item">
                     <span class="sidebar-icon">📋</span>
                     <span class="sidebar-text">감사 로그</span>
                 </a>
@@ -312,15 +312,15 @@
             <!-- 데이터 관리 -->
             <div class="sidebar-section">
                 <div class="sidebar-section-title">데이터 관리</div>
-                <a href="/ahp_app/public/admin/backup-restore.html" class="sidebar-item">
+                <a href="admin/backup-restore.html" class="sidebar-item">
                     <span class="sidebar-icon">💾</span>
                     <span class="sidebar-text">백업 및 복원</span>
                 </a>
-                <a href="/ahp_app/public/admin/database-management.html" class="sidebar-item">
+                <a href="admin/database-management.html" class="sidebar-item">
                     <span class="sidebar-icon">🗄️</span>
                     <span class="sidebar-text">데이터베이스 관리</span>
                 </a>
-                <a href="/ahp_app/public/admin/data-migration.html" class="sidebar-item">
+                <a href="admin/data-migration.html" class="sidebar-item">
                     <span class="sidebar-icon">📤</span>
                     <span class="sidebar-text">데이터 마이그레이션</span>
                 </a>
@@ -329,15 +329,15 @@
             <!-- 보안 관리 -->
             <div class="sidebar-section">
                 <div class="sidebar-section-title">보안 관리</div>
-                <a href="/ahp_app/public/admin/security-settings.html" class="sidebar-item">
+                <a href="admin/security-settings.html" class="sidebar-item">
                     <span class="sidebar-icon">🔒</span>
                     <span class="sidebar-text">보안 설정</span>
                 </a>
-                <a href="/ahp_app/public/admin/access-control.html" class="sidebar-item">
+                <a href="admin/access-control.html" class="sidebar-item">
                     <span class="sidebar-icon">🛡️</span>
                     <span class="sidebar-text">접근 제어</span>
                 </a>
-                <a href="/ahp_app/public/admin/security-log.html" class="sidebar-item">
+                <a href="admin/security-log.html" class="sidebar-item">
                     <span class="sidebar-icon">🚨</span>
                     <span class="sidebar-text">보안 로그</span>
                 </a>
@@ -408,7 +408,7 @@
                 <h2 class="section-title">핵심 관리 기능</h2>
             </div>
             <div class="management-grid">
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/user-management.html'">
+                <div class="management-card" onclick="window.location.href='user-management.html'">
                     <div class="management-card-icon">👥</div>
                     <div class="management-card-title">사용자 관리</div>
                     <div class="management-card-desc">
@@ -416,7 +416,7 @@
                     </div>
                 </div>
 
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/project-overview.html'">
+                <div class="management-card" onclick="window.location.href='project-overview.html'">
                     <div class="management-card-icon">📊</div>
                     <div class="management-card-title">프로젝트 관리</div>
                     <div class="management-card-desc">
@@ -424,7 +424,7 @@
                     </div>
                 </div>
 
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/admin/system-settings.html'">
+                <div class="management-card" onclick="window.location.href='admin/system-settings.html'">
                     <div class="management-card-icon">📈</div>
                     <div class="management-card-title">시스템 모니터링</div>
                     <div class="management-card-desc">
@@ -432,7 +432,7 @@
                     </div>
                 </div>
 
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/admin/backup-restore.html'">
+                <div class="management-card" onclick="window.location.href='admin/backup-restore.html'">
                     <div class="management-card-icon">💾</div>
                     <div class="management-card-title">백업 관리</div>
                     <div class="management-card-desc">
@@ -440,7 +440,7 @@
                     </div>
                 </div>
 
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/admin/security-settings.html'">
+                <div class="management-card" onclick="window.location.href='admin/security-settings.html'">
                     <div class="management-card-icon">🔒</div>
                     <div class="management-card-title">보안 설정</div>
                     <div class="management-card-desc">
@@ -448,7 +448,7 @@
                     </div>
                 </div>
 
-                <div class="management-card" onclick="window.location.href='/ahp_app/public/admin/audit-log.html'">
+                <div class="management-card" onclick="window.location.href='admin/audit-log.html'">
                     <div class="management-card-icon">📋</div>
                     <div class="management-card-title">분석 리포트</div>
                     <div class="management-card-desc">
@@ -505,10 +505,10 @@
 
     <!-- 빠른 작업 버튼 -->
     <div class="quick-actions">
-        <button class="fab" title="새 사용자 추가" onclick="window.location.href='/ahp_app/public/user-management.html'">
+        <button class="fab" title="새 사용자 추가" onclick="window.location.href='user-management.html'">
             👤
         </button>
-        <button class="fab" title="시스템 설정" onclick="window.location.href='/ahp_app/public/admin/system-settings.html'">
+        <button class="fab" title="시스템 설정" onclick="window.location.href='admin/system-settings.html'">
             ⚙️
         </button>
     </div>
