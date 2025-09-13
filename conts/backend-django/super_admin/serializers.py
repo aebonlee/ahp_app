@@ -7,7 +7,8 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from .models import (
     CustomUser, PaymentPlan, PaymentTransaction, 
-    AHPProject, ProjectEvaluator, SystemSettings, ActivityLog
+    AHPProject, ProjectEvaluator, SystemSettings, ActivityLog,
+    SystemBackup, SecurityLog, AccessControl, DataMigration
 )
 
 
@@ -302,3 +303,100 @@ class UserSearchSerializer(serializers.Serializer):
             if data['date_from'] > data['date_to']:
                 raise serializers.ValidationError("시작 날짜는 종료 날짜보다 이전이어야 합니다.")
         return data
+
+
+class SystemBackupSerializer(serializers.ModelSerializer):
+    """시스템 백업 직렬화"""
+    
+    created_by_info = CustomUserSummarySerializer(source='created_by', read_only=True)
+    backup_type_display = serializers.CharField(source='get_backup_type_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    file_size_display = serializers.SerializerMethodField()
+    duration = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = SystemBackup
+        fields = [
+            'id', 'name', 'backup_type', 'backup_type_display', 
+            'status', 'status_display', 'file_path', 'file_size', 'file_size_display',
+            'created_by_info', 'started_at', 'completed_at', 'duration',
+            'description', 'error_message'
+        ]
+    
+    def get_file_size_display(self, obj):
+        if not obj.file_size:
+            return "N/A"
+        
+        size = obj.file_size
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size < 1024:
+                return f"{size:.1f} {unit}"
+            size /= 1024
+        return f"{size:.1f} TB"
+    
+    def get_duration(self, obj):
+        if obj.started_at and obj.completed_at:
+            duration = obj.completed_at - obj.started_at
+            return str(duration).split('.')[0]  # Remove microseconds
+        return None
+
+
+class SecurityLogSerializer(serializers.ModelSerializer):
+    """보안 로그 직렬화"""
+    
+    user_info = CustomUserSummarySerializer(source='user', read_only=True)
+    event_type_display = serializers.CharField(source='get_event_type_display', read_only=True)
+    threat_level_display = serializers.CharField(source='get_threat_level_display', read_only=True)
+    resolved_by_info = CustomUserSummarySerializer(source='resolved_by', read_only=True)
+    
+    class Meta:
+        model = SecurityLog
+        fields = [
+            'id', 'event_type', 'event_type_display', 'threat_level', 'threat_level_display',
+            'description', 'user_info', 'ip_address', 'user_agent', 'extra_data',
+            'timestamp', 'is_resolved', 'resolved_by_info', 'resolved_at'
+        ]
+
+
+class AccessControlSerializer(serializers.ModelSerializer):
+    """접근 제어 직렬화"""
+    
+    created_by_info = CustomUserSummarySerializer(source='created_by', read_only=True)
+    resource_type_display = serializers.CharField(source='get_resource_type_display', read_only=True)
+    allowed_users_info = CustomUserSummarySerializer(source='allowed_users', many=True, read_only=True)
+    
+    class Meta:
+        model = AccessControl
+        fields = [
+            'id', 'resource_name', 'resource_type', 'resource_type_display', 'resource_path',
+            'required_user_types', 'allowed_users_info', 'is_active',
+            'ip_whitelist', 'ip_blacklist', 'time_restrictions',
+            'created_at', 'updated_at', 'created_by_info'
+        ]
+
+
+class DataMigrationSerializer(serializers.ModelSerializer):
+    """데이터 마이그레이션 직렬화"""
+    
+    created_by_info = CustomUserSummarySerializer(source='created_by', read_only=True)
+    migration_type_display = serializers.CharField(source='get_migration_type_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    progress_percentage = serializers.ReadOnlyField()
+    duration = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = DataMigration
+        fields = [
+            'id', 'name', 'migration_type', 'migration_type_display',
+            'status', 'status_display', 'source_type', 'target_type',
+            'source_config', 'target_config', 'total_records', 'processed_records',
+            'success_records', 'failed_records', 'progress_percentage',
+            'created_by_info', 'started_at', 'completed_at', 'duration',
+            'log_messages', 'error_messages'
+        ]
+    
+    def get_duration(self, obj):
+        if obj.started_at and obj.completed_at:
+            duration = obj.completed_at - obj.started_at
+            return str(duration).split('.')[0]  # Remove microseconds
+        return None

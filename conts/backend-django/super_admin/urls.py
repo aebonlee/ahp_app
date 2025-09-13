@@ -39,4 +39,15 @@ urlpatterns = [
     # 관리 작업 API
     path('api/admin/export-users/', views.export_users, name='export_users'),
     path('api/admin/system-backup/', views.system_backup, name='system_backup'),
+    
+    # ===== 슈퍼관리자 10개 페이지 API 엔드포인트 =====
+    path('api/system/settings/', views.system_settings_api, name='system_settings_api'),
+    path('api/audit/logs/', views.audit_logs_api, name='audit_logs_api'),
+    path('api/backup/restore/', views.backup_restore_api, name='backup_restore_api'),
+    path('api/database/', views.database_management_api, name='database_management_api'),
+    path('api/migration/', views.data_migration_api, name='data_migration_api'),
+    path('api/security/settings/', views.security_settings_api, name='security_settings_api'),
+    path('api/access/control/', views.access_control_api, name='access_control_api'),
+    path('api/security/logs/', views.security_logs_api, name='security_logs_api'),
+    path('api/dashboard/stats/', views.dashboard_stats_api, name='dashboard_stats_api'),
 ]

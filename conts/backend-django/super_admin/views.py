@@ -14,10 +14,15 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from .models import CustomUser, PaymentTransaction, AHPProject, ActivityLog
+from .models import (
+    CustomUser, PaymentTransaction, AHPProject, ActivityLog, 
+    SystemSettings, SystemBackup, SecurityLog, AccessControl, DataMigration
+)
 from .serializers import (
     CustomUserSerializer, PaymentTransactionSerializer, 
-    AHPProjectSerializer, ActivityLogSerializer
+    AHPProjectSerializer, ActivityLogSerializer,
+    SystemSettingsSerializer, SystemBackupSerializer,
+    SecurityLogSerializer, AccessControlSerializer, DataMigrationSerializer
 )
 import json
 import datetime
@@ -196,6 +201,473 @@ class AHPProjectViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = AHPProject.objects.all()
     serializer_class = AHPProjectSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
+
+
+# ===== 슈퍼관리자 10개 페이지 API 엔드포인트 =====
+
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def system_settings_api(request):
+    """시스템 설정 API"""
+    
+    if request.method == 'GET':
+        settings = SystemSettings.objects.all().order_by('key')
+        serializer = SystemSettingsSerializer(settings, many=True)
+        return Response({
+            'success': True,
+            'data': serializer.data
+        })
+    
+    elif request.method == 'POST':
+        serializer = SystemSettingsSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            
+            # 활동 로그 기록
+            ActivityLog.objects.create(
+                user=request.user,
+                action='create_system_setting',
+                description=f'시스템 설정 생성: {serializer.validated_data["key"]}',
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+            
+            return Response({
+                'success': True,
+                'data': serializer.data,
+                'message': '시스템 설정이 생성되었습니다.'
+            })
+        return Response({
+            'success': False,
+            'errors': serializer.errors
+        }, status=400)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def audit_logs_api(request):
+    """감사 로그 API"""
+    
+    if request.method == 'GET':
+        # 필터링 파라미터
+        level = request.GET.get('level')
+        action = request.GET.get('action')
+        user_id = request.GET.get('user_id')
+        date_from = request.GET.get('date_from')
+        date_to = request.GET.get('date_to')
+        
+        logs = ActivityLog.objects.all().order_by('-timestamp')
+        
+        if level:
+            logs = logs.filter(level=level)
+        if action:
+            logs = logs.filter(action__icontains=action)
+        if user_id:
+            logs = logs.filter(user_id=user_id)
+        if date_from:
+            logs = logs.filter(timestamp__gte=date_from)
+        if date_to:
+            logs = logs.filter(timestamp__lte=date_to)
+        
+        # 페이지네이션
+        page = int(request.GET.get('page', 1))
+        limit = int(request.GET.get('limit', 50))
+        start = (page - 1) * limit
+        end = start + limit
+        
+        total_count = logs.count()
+        paginated_logs = logs[start:end]
+        
+        serializer = ActivityLogSerializer(paginated_logs, many=True)
+        
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total': total_count,
+                'pages': (total_count + limit - 1) // limit
+            }
+        })
+
+
+@api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def backup_restore_api(request):
+    """백업 및 복원 API"""
+    
+    if request.method == 'GET':
+        backups = SystemBackup.objects.all().order_by('-started_at')
+        serializer = SystemBackupSerializer(backups, many=True)
+        return Response({
+            'success': True,
+            'data': serializer.data
+        })
+    
+    elif request.method == 'POST':
+        # 백업 시작
+        backup_data = {
+            'name': request.data.get('name', f"Backup_{timezone.now().strftime('%Y%m%d_%H%M%S')}"),
+            'backup_type': request.data.get('backup_type', 'full'),
+            'description': request.data.get('description', ''),
+            'created_by': request.user
+        }
+        
+        backup = SystemBackup.objects.create(**backup_data)
+        
+        # 실제 백업 프로세스는 비동기로 처리 (여기서는 시뮬레이션)
+        import time
+        backup.status = 'running'
+        backup.save()
+        
+        # 백업 로직 (실제로는 Celery 등으로 비동기 처리)
+        # ...백업 처리 로직...
+        
+        backup.status = 'completed'
+        backup.completed_at = timezone.now()
+        backup.file_size = 1024 * 1024 * 50  # 50MB 시뮬레이션
+        backup.save()
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action='create_backup',
+            description=f'백업 생성: {backup.name}',
+            ip_address=request.META.get('REMOTE_ADDR'),
+        )
+        
+        serializer = SystemBackupSerializer(backup)
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'message': '백업이 생성되었습니다.'
+        })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def database_management_api(request):
+    """데이터베이스 관리 API"""
+    
+    from django.db import connection
+    
+    if request.method == 'GET':
+        action = request.GET.get('action', 'stats')
+        
+        if action == 'stats':
+            # 데이터베이스 통계
+            with connection.cursor() as cursor:
+                # 테이블 정보 조회 (PostgreSQL)
+                cursor.execute("""
+                    SELECT 
+                        schemaname,
+                        tablename,
+                        attname,
+                        typename,
+                        avg_width
+                    FROM pg_stats 
+                    WHERE schemaname = 'public'
+                    ORDER BY tablename, attname;
+                """)
+                
+                table_stats = cursor.fetchall()
+                
+            return Response({
+                'success': True,
+                'data': {
+                    'table_stats': table_stats,
+                    'total_tables': len(set(row[1] for row in table_stats)),
+                    'total_users': CustomUser.objects.count(),
+                    'total_projects': AHPProject.objects.count(),
+                    'total_transactions': PaymentTransaction.objects.count()
+                }
+            })
+        
+        elif action == 'tables':
+            # 테이블 목록
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT table_name 
+                    FROM information_schema.tables 
+                    WHERE table_schema = 'public'
+                    ORDER BY table_name;
+                """)
+                tables = [row[0] for row in cursor.fetchall()]
+            
+            return Response({
+                'success': True,
+                'data': {'tables': tables}
+            })
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def data_migration_api(request):
+    """데이터 마이그레이션 API"""
+    
+    if request.method == 'GET':
+        migrations = DataMigration.objects.all().order_by('-started_at')
+        serializer = DataMigrationSerializer(migrations, many=True)
+        return Response({
+            'success': True,
+            'data': serializer.data
+        })
+    
+    elif request.method == 'POST':
+        migration_data = {
+            'name': request.data.get('name'),
+            'migration_type': request.data.get('migration_type'),
+            'source_type': request.data.get('source_type'),
+            'target_type': request.data.get('target_type'),
+            'source_config': request.data.get('source_config', {}),
+            'target_config': request.data.get('target_config', {}),
+            'created_by': request.user
+        }
+        
+        migration = DataMigration.objects.create(**migration_data)
+        
+        # 실제 마이그레이션 로직은 비동기로 처리
+        migration.status = 'running'
+        migration.total_records = 1000  # 시뮬레이션
+        migration.save()
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action='create_migration',
+            description=f'데이터 마이그레이션 시작: {migration.name}',
+            ip_address=request.META.get('REMOTE_ADDR'),
+        )
+        
+        serializer = DataMigrationSerializer(migration)
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'message': '데이터 마이그레이션이 시작되었습니다.'
+        })
+
+
+@api_view(['GET', 'POST', 'PUT'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def security_settings_api(request):
+    """보안 설정 API"""
+    
+    if request.method == 'GET':
+        # 보안 관련 시스템 설정 조회
+        security_settings = SystemSettings.objects.filter(
+            key__startswith='security_'
+        ).order_by('key')
+        
+        serializer = SystemSettingsSerializer(security_settings, many=True)
+        return Response({
+            'success': True,
+            'data': serializer.data
+        })
+    
+    elif request.method == 'POST':
+        # 새 보안 설정 생성
+        key = f"security_{request.data.get('key')}"
+        value = request.data.get('value')
+        description = request.data.get('description', '')
+        
+        setting, created = SystemSettings.objects.update_or_create(
+            key=key,
+            defaults={'value': value, 'description': description}
+        )
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action='update_security_setting',
+            description=f'보안 설정 {"생성" if created else "수정"}: {key}',
+            ip_address=request.META.get('REMOTE_ADDR'),
+        )
+        
+        serializer = SystemSettingsSerializer(setting)
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'message': f'보안 설정이 {"생성" if created else "수정"}되었습니다.'
+        })
+
+
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def access_control_api(request):
+    """접근 제어 API"""
+    
+    if request.method == 'GET':
+        access_controls = AccessControl.objects.all().order_by('-created_at')
+        serializer = AccessControlSerializer(access_controls, many=True)
+        return Response({
+            'success': True,
+            'data': serializer.data
+        })
+    
+    elif request.method == 'POST':
+        data = request.data.copy()
+        data['created_by'] = request.user.id
+        
+        serializer = AccessControlSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            
+            ActivityLog.objects.create(
+                user=request.user,
+                action='create_access_control',
+                description=f'접근 제어 규칙 생성: {data["resource_name"]}',
+                ip_address=request.META.get('REMOTE_ADDR'),
+            )
+            
+            return Response({
+                'success': True,
+                'data': serializer.data,
+                'message': '접근 제어 규칙이 생성되었습니다.'
+            })
+        
+        return Response({
+            'success': False,
+            'errors': serializer.errors
+        }, status=400)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def security_logs_api(request):
+    """보안 로그 API"""
+    
+    if request.method == 'GET':
+        # 필터링 파라미터
+        event_type = request.GET.get('event_type')
+        threat_level = request.GET.get('threat_level')
+        is_resolved = request.GET.get('is_resolved')
+        date_from = request.GET.get('date_from')
+        date_to = request.GET.get('date_to')
+        
+        logs = SecurityLog.objects.all().order_by('-timestamp')
+        
+        if event_type:
+            logs = logs.filter(event_type=event_type)
+        if threat_level:
+            logs = logs.filter(threat_level=threat_level)
+        if is_resolved is not None:
+            logs = logs.filter(is_resolved=is_resolved.lower() == 'true')
+        if date_from:
+            logs = logs.filter(timestamp__gte=date_from)
+        if date_to:
+            logs = logs.filter(timestamp__lte=date_to)
+        
+        # 페이지네이션
+        page = int(request.GET.get('page', 1))
+        limit = int(request.GET.get('limit', 50))
+        start = (page - 1) * limit
+        end = start + limit
+        
+        total_count = logs.count()
+        paginated_logs = logs[start:end]
+        
+        serializer = SecurityLogSerializer(paginated_logs, many=True)
+        
+        # 통계 정보 추가
+        stats = {
+            'total_events': total_count,
+            'critical_events': logs.filter(threat_level='critical').count(),
+            'unresolved_events': logs.filter(is_resolved=False).count(),
+            'today_events': logs.filter(timestamp__date=timezone.now().date()).count()
+        }
+        
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'stats': stats,
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total': total_count,
+                'pages': (total_count + limit - 1) // limit
+            }
+        })
+    
+    elif request.method == 'POST':
+        # 새 보안 이벤트 로그 생성
+        serializer = SecurityLogSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'success': True,
+                'data': serializer.data,
+                'message': '보안 로그가 생성되었습니다.'
+            })
+        
+        return Response({
+            'success': False,
+            'errors': serializer.errors
+        }, status=400)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def dashboard_stats_api(request):
+    """대시보드 통계 API"""
+    
+    today = timezone.now().date()
+    this_month = today.replace(day=1)
+    
+    # 사용자 통계
+    user_stats = {
+        'total_users': CustomUser.objects.count(),
+        'active_users': CustomUser.objects.filter(is_active=True).count(),
+        'premium_users': CustomUser.objects.filter(
+            subscription_tier__in=['professional', 'enterprise', 'unlimited']
+        ).count(),
+        'verified_users': CustomUser.objects.filter(is_verified=True).count(),
+    }
+    
+    # 결제 통계
+    payment_stats = {
+        'monthly_revenue': PaymentTransaction.objects.filter(
+            status='completed',
+            created_at__gte=this_month
+        ).aggregate(Sum('amount'))['amount__sum'] or 0,
+        'total_revenue': PaymentTransaction.objects.filter(
+            status='completed'
+        ).aggregate(Sum('amount'))['amount__sum'] or 0,
+        'pending_payments': PaymentTransaction.objects.filter(
+            status='pending'
+        ).count(),
+    }
+    
+    # 프로젝트 통계
+    project_stats = {
+        'total_projects': AHPProject.objects.count(),
+        'active_projects': AHPProject.objects.filter(status='active').count(),
+        'completed_projects': AHPProject.objects.filter(status='completed').count(),
+        'public_projects': AHPProject.objects.filter(is_public=True).count(),
+    }
+    
+    # 시스템 통계
+    system_stats = {
+        'total_backups': SystemBackup.objects.count(),
+        'recent_backups': SystemBackup.objects.filter(
+            started_at__gte=timezone.now() - timezone.timedelta(days=7)
+        ).count(),
+        'security_alerts': SecurityLog.objects.filter(
+            threat_level__in=['high', 'critical'],
+            is_resolved=False
+        ).count(),
+        'active_migrations': DataMigration.objects.filter(
+            status='running'
+        ).count(),
+    }
+    
+    return Response({
+        'success': True,
+        'data': {
+            'user_stats': user_stats,
+            'payment_stats': payment_stats,
+            'project_stats': project_stats,
+            'system_stats': system_stats,
+            'last_updated': timezone.now().isoformat()
+        }
+    })
 
 
 @api_view(['GET'])

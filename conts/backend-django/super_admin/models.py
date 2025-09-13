@@ -305,3 +305,203 @@ class ActivityLog(models.Model):
     def __str__(self):
         user_str = self.user.email if self.user else 'Anonymous'
         return f"{user_str} - {self.action} ({self.timestamp})"
+
+
+class SystemBackup(models.Model):
+    """시스템 백업 관리"""
+    
+    BACKUP_TYPES = (
+        ('full', '전체 백업'),
+        ('database', '데이터베이스 백업'),
+        ('files', '파일 백업'),
+        ('incremental', '증분 백업'),
+    )
+    
+    BACKUP_STATUS = (
+        ('pending', '대기중'),
+        ('running', '진행중'),
+        ('completed', '완료'),
+        ('failed', '실패'),
+    )
+    
+    # 기본 정보
+    name = models.CharField(max_length=200)
+    backup_type = models.CharField(max_length=20, choices=BACKUP_TYPES)
+    status = models.CharField(max_length=20, choices=BACKUP_STATUS, default='pending')
+    
+    # 백업 파일 정보
+    file_path = models.CharField(max_length=500, blank=True)
+    file_size = models.BigIntegerField(null=True, blank=True)  # bytes
+    
+    # 실행 정보
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    # 추가 정보
+    description = models.TextField(blank=True)
+    error_message = models.TextField(blank=True)
+    
+    class Meta:
+        verbose_name = '시스템 백업'
+        verbose_name_plural = '시스템 백업 관리'
+        ordering = ['-started_at']
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_backup_type_display()}) - {self.get_status_display()}"
+
+
+class SecurityLog(models.Model):
+    """보안 로그"""
+    
+    SECURITY_EVENTS = (
+        ('login_success', '로그인 성공'),
+        ('login_failed', '로그인 실패'),
+        ('password_changed', '비밀번호 변경'),
+        ('account_locked', '계정 잠금'),
+        ('suspicious_activity', '의심스러운 활동'),
+        ('unauthorized_access', '무권한 접근'),
+        ('privilege_escalation', '권한 상승'),
+        ('data_breach_attempt', '데이터 유출 시도'),
+    )
+    
+    THREAT_LEVELS = (
+        ('low', '낮음'),
+        ('medium', '보통'),
+        ('high', '높음'),
+        ('critical', '치명적'),
+    )
+    
+    # 기본 정보
+    event_type = models.CharField(max_length=50, choices=SECURITY_EVENTS)
+    threat_level = models.CharField(max_length=20, choices=THREAT_LEVELS)
+    description = models.TextField()
+    
+    # 사용자 정보
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    ip_address = models.GenericIPAddressField()
+    user_agent = models.TextField(blank=True)
+    
+    # 추가 메타데이터
+    extra_data = models.JSONField(default=dict)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    # 처리 상태
+    is_resolved = models.BooleanField(default=False)
+    resolved_by = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='resolved_security_logs'
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        verbose_name = '보안 로그'
+        verbose_name_plural = '보안 로그 관리'
+        ordering = ['-timestamp']
+    
+    def __str__(self):
+        user_str = self.user.email if self.user else 'Unknown'
+        return f"{self.get_event_type_display()} - {user_str} ({self.threat_level})"
+
+
+class AccessControl(models.Model):
+    """접근 제어 관리"""
+    
+    RESOURCE_TYPES = (
+        ('page', '페이지'),
+        ('api', 'API'),
+        ('feature', '기능'),
+        ('data', '데이터'),
+    )
+    
+    # 리소스 정보
+    resource_name = models.CharField(max_length=200)
+    resource_type = models.CharField(max_length=20, choices=RESOURCE_TYPES)
+    resource_path = models.CharField(max_length=500)
+    
+    # 권한 설정
+    required_user_types = models.JSONField(default=list)  # ['admin', 'super_admin']
+    allowed_users = models.ManyToManyField(CustomUser, blank=True)
+    
+    # 제한 설정
+    is_active = models.BooleanField(default=True)
+    ip_whitelist = models.JSONField(default=list, blank=True)
+    ip_blacklist = models.JSONField(default=list, blank=True)
+    
+    # 시간 제한
+    time_restrictions = models.JSONField(default=dict, blank=True)  # {'start': '09:00', 'end': '18:00'}
+    
+    # 메타데이터
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    
+    class Meta:
+        verbose_name = '접근 제어'
+        verbose_name_plural = '접근 제어 관리'
+        unique_together = ['resource_name', 'resource_type']
+    
+    def __str__(self):
+        return f"{self.resource_name} ({self.get_resource_type_display()})"
+
+
+class DataMigration(models.Model):
+    """데이터 마이그레이션 관리"""
+    
+    MIGRATION_TYPES = (
+        ('import', '데이터 가져오기'),
+        ('export', '데이터 내보내기'),
+        ('sync', '데이터 동기화'),
+        ('transform', '데이터 변환'),
+    )
+    
+    MIGRATION_STATUS = (
+        ('pending', '대기중'),
+        ('running', '진행중'),
+        ('completed', '완료'),
+        ('failed', '실패'),
+        ('cancelled', '취소됨'),
+    )
+    
+    # 기본 정보
+    name = models.CharField(max_length=200)
+    migration_type = models.CharField(max_length=20, choices=MIGRATION_TYPES)
+    status = models.CharField(max_length=20, choices=MIGRATION_STATUS, default='pending')
+    
+    # 소스/타겟 정보
+    source_type = models.CharField(max_length=100)  # 'csv', 'json', 'database', etc.
+    target_type = models.CharField(max_length=100)
+    source_config = models.JSONField(default=dict)
+    target_config = models.JSONField(default=dict)
+    
+    # 진행 상황
+    total_records = models.IntegerField(default=0)
+    processed_records = models.IntegerField(default=0)
+    success_records = models.IntegerField(default=0)
+    failed_records = models.IntegerField(default=0)
+    
+    # 실행 정보
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    # 로그 및 오류
+    log_messages = models.JSONField(default=list)
+    error_messages = models.JSONField(default=list)
+    
+    class Meta:
+        verbose_name = '데이터 마이그레이션'
+        verbose_name_plural = '데이터 마이그레이션 관리'
+        ordering = ['-started_at']
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_migration_type_display()}) - {self.get_status_display()}"
+    
+    @property
+    def progress_percentage(self):
+        if self.total_records == 0:
+            return 0
+        return (self.processed_records / self.total_records) * 100
