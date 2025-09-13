@@ -356,9 +356,9 @@
                         총 사용자
                     </div>
                 </div>
-                <div class="admin-card-value">1,247</div>
-                <div class="admin-card-change change-positive">
-                    ↑ +12% (이번 달)
+                <div class="admin-card-value" id="totalUsers">로딩...</div>
+                <div class="admin-card-change change-positive" id="userChange">
+                    데이터 로딩 중...
                 </div>
             </div>
 
@@ -369,9 +369,9 @@
                         활성 프로젝트
                     </div>
                 </div>
-                <div class="admin-card-value">89</div>
-                <div class="admin-card-change change-positive">
-                    ↑ +8% (이번 주)
+                <div class="admin-card-value" id="activeProjects">로딩...</div>
+                <div class="admin-card-change change-positive" id="projectChange">
+                    데이터 로딩 중...
                 </div>
             </div>
 
@@ -382,9 +382,9 @@
                         시스템 성능
                     </div>
                 </div>
-                <div class="admin-card-value">98.7%</div>
-                <div class="admin-card-change change-positive">
-                    ↑ 안정적
+                <div class="admin-card-value" id="systemPerformance">로딩...</div>
+                <div class="admin-card-change change-positive" id="performanceStatus">
+                    시스템 상태 확인 중...
                 </div>
             </div>
 
@@ -395,9 +395,9 @@
                         저장소 사용률
                     </div>
                 </div>
-                <div class="admin-card-value">67.3%</div>
-                <div class="admin-card-change change-negative">
-                    ↑ +5% (이번 달)
+                <div class="admin-card-value" id="storageUsage">로딩...</div>
+                <div class="admin-card-change change-positive" id="storageStatus">
+                    저장소 상태 확인 중...
                 </div>
             </div>
         </div>
@@ -463,40 +463,12 @@
             <div class="section-header">
                 <h2 class="section-title">최근 시스템 활동</h2>
             </div>
-            <ul class="activity-list">
+            <ul class="activity-list" id="activityList">
                 <li class="activity-item">
-                    <div class="activity-icon user">👤</div>
+                    <div class="activity-icon system">📡</div>
                     <div class="activity-content">
-                        <div class="activity-title">새 사용자 등록: 김철수 (kim.cs@company.com)</div>
-                        <div class="activity-time">5분 전</div>
-                    </div>
-                </li>
-                <li class="activity-item">
-                    <div class="activity-icon system">⚙️</div>
-                    <div class="activity-content">
-                        <div class="activity-title">시스템 백업 완료 (DB: 2.3GB, Files: 856MB)</div>
-                        <div class="activity-time">1시간 전</div>
-                    </div>
-                </li>
-                <li class="activity-item">
-                    <div class="activity-icon project">📊</div>
-                    <div class="activity-content">
-                        <div class="activity-title">대규모 AHP 프로젝트 생성: "제품 선택 분석" (15개 기준, 8개 대안)</div>
-                        <div class="activity-time">2시간 전</div>
-                    </div>
-                </li>
-                <li class="activity-item">
-                    <div class="activity-icon alert">🚨</div>
-                    <div class="activity-content">
-                        <div class="activity-title">CPU 사용률 임계치 초과 경고 (85% → 정상 복구)</div>
-                        <div class="activity-time">3시간 전</div>
-                    </div>
-                </li>
-                <li class="activity-item">
-                    <div class="activity-icon user">👤</div>
-                    <div class="activity-content">
-                        <div class="activity-title">관리자 권한 변경: 이영희 → 프로젝트 매니저</div>
-                        <div class="activity-time">4시간 전</div>
+                        <div class="activity-title">최근 활동 데이터를 로딩하고 있습니다...</div>
+                        <div class="activity-time">잠시만 기다려주세요</div>
                     </div>
                 </li>
             </ul>
@@ -513,7 +485,7 @@
         </button>
     </div>
 
-    <script src="/ahp_app/public/scripts/layout.js"></script>
+    <script src="scripts/layout.js"></script>
     <script>
         // 페이지 초기화 (async/await)
         document.addEventListener('DOMContentLoaded', async function() {
@@ -522,13 +494,9 @@
             if (!loginResult) {
                 return;
             }
-            }
             
-            initializePage({
-                menuId: 'admin-dashboard',
-                pageId: 'admin',
-                title: '슈퍼 관리자 대시보드'
-            });
+            // 대시보드 데이터 로딩
+            await loadDashboardData();
             
             console.log('✅ 슈퍼 관리자 대시보드 로드 완료');
         });
@@ -553,14 +521,14 @@
                 const response = await window.ahpApi.getCurrentUser();
                 
                 if (!response.success || !response.user) {
-                    window.location.href = '/ahp_app/public/login.html?message=session_expired';
+                    window.location.href = 'login.html?message=session_expired';
                     return false;
                 }
                 
                 // 관리자 권한 확인
                 if (response.user.role !== 'admin' && !response.user.is_superuser) {
                     alert('관리자 권한이 필요합니다.');
-                    window.location.href = '/ahp_app/public/personal-service-enhanced.html';
+                    window.location.href = 'personal-service-enhanced.html';
                     return false;
                 }
                 
@@ -573,7 +541,7 @@
                 return true;
             } catch (error) {
                 console.error('로그인 상태 확인 오류:', error);
-                window.location.href = '/ahp_app/public/login.html?message=session_expired';
+                window.location.href = 'login.html?message=session_expired';
                 return false;
             }
         }
@@ -587,16 +555,152 @@
             toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
         }
 
+        // 대시보드 데이터 로딩
+        async function loadDashboardData() {
+            try {
+                // 병렬로 데이터 로딩
+                await Promise.all([
+                    loadSystemStats(),
+                    loadRecentActivity()
+                ]);
+            } catch (error) {
+                console.error('대시보드 데이터 로딩 오류:', error);
+            }
+        }
+
+        // 시스템 통계 데이터 로딩
+        async function loadSystemStats() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/dashboard/stats/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    updateSystemStats(stats);
+                } else {
+                    // API 실패시 기본값 표시
+                    updateSystemStats({
+                        total_users: 'N/A',
+                        active_projects: 'N/A', 
+                        system_performance: 'N/A',
+                        storage_usage: 'N/A'
+                    });
+                }
+            } catch (error) {
+                console.error('시스템 통계 로딩 실패:', error);
+                updateSystemStats({
+                    total_users: 'API 연결 실패',
+                    active_projects: 'API 연결 실패',
+                    system_performance: 'API 연결 실패', 
+                    storage_usage: 'API 연결 실패'
+                });
+            }
+        }
+
+        // 시스템 통계 업데이트
+        function updateSystemStats(stats) {
+            document.getElementById('totalUsers').textContent = stats.total_users || '0';
+            document.getElementById('activeProjects').textContent = stats.active_projects || '0';
+            document.getElementById('systemPerformance').textContent = stats.system_performance ? `${stats.system_performance}%` : '정상';
+            document.getElementById('storageUsage').textContent = stats.storage_usage ? `${stats.storage_usage}%` : '정상';
+
+            // 변경률 표시
+            document.getElementById('userChange').textContent = stats.user_growth ? `↑ +${stats.user_growth}% (이번 달)` : '데이터 준비 중...';
+            document.getElementById('projectChange').textContent = stats.project_growth ? `↑ +${stats.project_growth}% (이번 주)` : '데이터 준비 중...';
+            document.getElementById('performanceStatus').textContent = stats.performance_status || '시스템 정상 작동';
+            document.getElementById('storageStatus').textContent = stats.storage_status || '여유 공간 충분';
+        }
+
+        // 최근 활동 데이터 로딩
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/audit/logs/?limit=5', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const activities = await response.json();
+                    updateRecentActivity(activities.results || activities);
+                } else {
+                    updateRecentActivity([]);
+                }
+            } catch (error) {
+                console.error('최근 활동 로딩 실패:', error);
+                updateRecentActivity([]);
+            }
+        }
+
+        // 최근 활동 업데이트
+        function updateRecentActivity(activities) {
+            const activityList = document.getElementById('activityList');
+            
+            if (!activities || activities.length === 0) {
+                activityList.innerHTML = `
+                    <li class="activity-item">
+                        <div class="activity-icon system">📊</div>
+                        <div class="activity-content">
+                            <div class="activity-title">아직 활동 기록이 없습니다</div>
+                            <div class="activity-time">서비스 사용이 시작되면 활동 내역이 표시됩니다</div>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+
+            const activityHtml = activities.map(activity => {
+                const iconMap = {
+                    'user_created': { icon: '👤', class: 'user' },
+                    'project_created': { icon: '📊', class: 'project' },
+                    'system_backup': { icon: '💾', class: 'system' },
+                    'login_success': { icon: '🔓', class: 'user' },
+                    'admin_action': { icon: '⚙️', class: 'system' },
+                    'security_alert': { icon: '🚨', class: 'alert' }
+                };
+
+                const iconData = iconMap[activity.action_type] || { icon: '📋', class: 'system' };
+
+                return `
+                    <li class="activity-item">
+                        <div class="activity-icon ${iconData.class}">${iconData.icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-title">${activity.description || activity.action}</div>
+                            <div class="activity-time">${formatTimeAgo(activity.timestamp || activity.created_at)}</div>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+
+            activityList.innerHTML = activityHtml;
+        }
+
+        // 시간 차이 계산 
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '시간 불명';
+            
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diffMs = now - time;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return '방금 전';
+            if (diffMins < 60) return `${diffMins}분 전`;
+            if (diffHours < 24) return `${diffHours}시간 전`;
+            return `${diffDays}일 전`;
+        }
+
         // 로그아웃 (Django API 기반)
         async function handleLogout() {
             if (confirm('로그아웃 하시겠습니까?')) {
                 try {
                     await window.ahpApi.logout();
-                    window.location.href = '/ahp_app/public/login.html?message=logout';
+                    window.location.href = 'login.html?message=logout';
                 } catch (error) {
                     console.error('로그아웃 오류:', error);
                     // 오류가 발생해도 로그인 페이지로 이동
-                    window.location.href = '/ahp_app/public/login.html';
+                    window.location.href = 'login.html';
                 }
             }
         }
