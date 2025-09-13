@@ -66,6 +66,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'ahp_backend.middleware.SessionManagementMiddleware',  # 세션 관리
+    'ahp_backend.middleware.APIAuthenticationMiddleware',  # API 인증
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
