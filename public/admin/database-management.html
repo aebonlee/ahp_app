@@ -740,7 +740,7 @@
 
         async function loadDatabaseInfo() {
             try {
-                const response = await fetch('/api/admin/database/info/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/database/info/', {
                     credentials: 'include'
                 });
 
@@ -787,7 +787,7 @@
 
         async function loadTableList() {
             try {
-                const response = await fetch('/api/admin/database/tables/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/database/tables/', {
                     credentials: 'include'
                 });
 

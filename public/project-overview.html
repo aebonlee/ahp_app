@@ -775,7 +775,7 @@
         // 프로젝트 통계 로드
         async function loadProjectStats() {
             try {
-                const response = await fetch('/api/admin/projects/stats/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/projects/stats/', {
                     credentials: 'include'
                 });
 
@@ -837,7 +837,7 @@
                     ...currentFilters
                 });
 
-                const response = await fetch(`/api/admin/projects/?${queryParams}`, {
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super_admin/api/projects/?${queryParams}`, {
                     credentials: 'include'
                 });
 
@@ -1001,7 +1001,7 @@
         // 프로젝트 내보내기
         async function exportProjects() {
             try {
-                const response = await fetch('/api/admin/projects/export/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/projects/export/', {
                     credentials: 'include'
                 });
 

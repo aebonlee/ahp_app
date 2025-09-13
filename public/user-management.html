@@ -815,7 +815,7 @@
         // 사용자 통계 로드
         async function loadUserStats() {
             try {
-                const response = await fetch('/api/admin/users/stats/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/users/stats/', {
                     credentials: 'include'
                 });
 
@@ -853,7 +853,7 @@
                     ...currentFilters
                 });
 
-                const response = await fetch(`/api/admin/users/?${queryParams}`, {
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super_admin/api/users/?${queryParams}`, {
                     credentials: 'include'
                 });
 
@@ -1027,7 +1027,7 @@
             document.getElementById('passwordGroup').style.display = 'none';
             
             try {
-                const response = await fetch(`/api/admin/users/${userId}/`, {
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super_admin/api/users/${userId}/`, {
                     credentials: 'include'
                 });
 
@@ -1081,8 +1081,8 @@
                 }
 
                 const url = isEditing 
-                    ? `/api/admin/users/${document.getElementById('userId').value}/`
-                    : '/api/admin/users/';
+                    ? `https://ahp-django-backend.onrender.com/super_admin/api/users/${document.getElementById('userId').value}/`
+                    : 'https://ahp-django-backend.onrender.com/super_admin/api/users/';
                 
                 const method = isEditing ? 'PUT' : 'POST';
 
@@ -1120,7 +1120,7 @@
             }
 
             try {
-                const response = await fetch(`/api/admin/users/${userId}/`, {
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super_admin/api/users/${userId}/`, {
                     method: 'DELETE',
                     credentials: 'include'
                 });

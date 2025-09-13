@@ -769,7 +769,7 @@
 
         async function loadBackupList() {
             try {
-                const response = await fetch('/api/admin/backups/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/backup/restore/', {
                     credentials: 'include'
                 });
 
@@ -966,7 +966,7 @@
                     location: document.getElementById('backupLocation').value
                 };
 
-                const response = await fetch('/api/admin/backups/create/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/backup/restore/create/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1224,7 +1224,7 @@
             };
 
             try {
-                const response = await fetch('/api/admin/backup-schedule/', {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super_admin/api/backup/restore/schedule/', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
