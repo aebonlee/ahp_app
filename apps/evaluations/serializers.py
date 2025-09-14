@@ -3,7 +3,7 @@ Serializers for Evaluation API
 """
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Evaluation, PairwiseComparison, EvaluationInvitation, EvaluationSession
+from .models import Evaluation, PairwiseComparison, EvaluationInvitation, EvaluationSession, DemographicSurvey
 from apps.projects.serializers import ProjectSerializer, CriteriaSerializer
 
 User = get_user_model()
@@ -219,3 +219,104 @@ class EvaluatorDashboardSerializer(serializers.Serializer):
             'pending_invitations': EvaluationInvitationSerializer(pending_invitations, many=True, context=self.context).data,
             'statistics': stats
         }
+
+
+class DemographicSurveySerializer(serializers.ModelSerializer):
+    """인구통계학적 설문조사 Serializer"""
+    evaluator_name = serializers.CharField(source='evaluator.get_full_name', read_only=True)
+    project_title = serializers.CharField(source='project.title', read_only=True)
+    completion_percentage = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = DemographicSurvey
+        fields = [
+            'id', 'evaluator', 'evaluator_name', 'project', 'project_title',
+            'age', 'gender', 'education', 'occupation', 'experience',
+            'department', 'position', 'project_experience', 'decision_role',
+            'additional_info', 'created_at', 'updated_at', 'is_completed',
+            'completion_timestamp', 'completion_percentage'
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'completion_timestamp']
+        
+    def create(self, validated_data):
+        """설문조사 생성"""
+        # evaluator는 요청한 사용자로 설정
+        request = self.context.get('request')
+        if request and request.user:
+            validated_data['evaluator'] = request.user
+            
+        survey = super().create(validated_data)
+        
+        # 모든 필수 필드가 채워지면 자동으로 완료 처리
+        if survey.completion_percentage >= 100:
+            survey.mark_completed()
+            
+        return survey
+        
+    def update(self, instance, validated_data):
+        """설문조사 업데이트"""
+        survey = super().update(instance, validated_data)
+        
+        # 업데이트 후 완성도 확인
+        if survey.completion_percentage >= 100 and not survey.is_completed:
+            survey.mark_completed()
+            
+        return survey
+
+
+class DemographicSurveyCreateSerializer(serializers.ModelSerializer):
+    """설문조사 생성용 간단한 Serializer"""
+    
+    class Meta:
+        model = DemographicSurvey
+        fields = [
+            'age', 'gender', 'education', 'occupation', 'experience',
+            'department', 'position', 'project_experience', 'decision_role',
+            'additional_info', 'project'
+        ]
+        
+    def validate(self, data):
+        """데이터 유효성 검사"""
+        # 최소한 필수 정보는 입력되어야 함
+        required_fields = ['age', 'gender', 'education', 'occupation']
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        
+        if len(missing_fields) > 2:  # 절반 이상은 입력되어야 함
+            raise serializers.ValidationError(
+                f"다음 필수 정보를 입력해주세요: {', '.join(missing_fields)}"
+            )
+            
+        return data
+
+
+class DemographicSurveyListSerializer(serializers.ModelSerializer):
+    """설문조사 목록용 Serializer"""
+    evaluator_info = serializers.SerializerMethodField()
+    project_info = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = DemographicSurvey
+        fields = [
+            'id', 'evaluator_info', 'project_info', 'completion_percentage',
+            'is_completed', 'created_at', 'updated_at'
+        ]
+        
+    def get_evaluator_info(self, obj):
+        """평가자 정보"""
+        return {
+            'id': obj.evaluator.id,
+            'username': obj.evaluator.username,
+            'full_name': obj.evaluator.get_full_name(),
+            'organization': getattr(obj.evaluator, 'organization', ''),
+            'department': getattr(obj.evaluator, 'department', '')
+        }
+        
+    def get_project_info(self, obj):
+        """프로젝트 정보"""
+        if obj.project:
+            return {
+                'id': obj.project.id,
+                'title': obj.project.title,
+                'status': obj.project.status
+            }
+        return None

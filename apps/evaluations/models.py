@@ -76,6 +76,7 @@ class Evaluation(models.Model):
         if self.expires_at and timezone.now() > self.expires_at:
             return True
         return False
+
         
     def calculate_consistency_ratio(self):
         """Calculate consistency ratio for all pairwise comparisons"""
@@ -271,3 +272,103 @@ class EvaluationInvitation(models.Model):
         if self.expires_at and timezone.now() > self.expires_at:
             return True
         return False
+
+
+class DemographicSurvey(models.Model):
+    """인구통계학적 설문조사 데이터"""
+    
+    AGE_CHOICES = [
+        ('20s', '20대'),
+        ('30s', '30대'),
+        ('40s', '40대'),
+        ('50s', '50대'),
+        ('60s', '60대 이상'),
+    ]
+    
+    GENDER_CHOICES = [
+        ('male', '남성'),
+        ('female', '여성'),
+        ('other', '기타'),
+        ('prefer-not', '응답하지 않음'),
+    ]
+    
+    EDUCATION_CHOICES = [
+        ('high-school', '고등학교 졸업'),
+        ('bachelor', '학사'),
+        ('master', '석사'),
+        ('phd', '박사'),
+        ('other', '기타'),
+    ]
+    
+    EXPERIENCE_CHOICES = [
+        ('less-1', '1년 미만'),
+        ('1-3', '1-3년'),
+        ('3-5', '3-5년'),
+        ('5-10', '5-10년'),
+        ('more-10', '10년 이상'),
+    ]
+    
+    PROJECT_EXPERIENCE_CHOICES = [
+        ('none', '없음'),
+        ('1-2', '1-2회'),
+        ('3-5', '3-5회'),
+        ('more-5', '5회 이상'),
+    ]
+    
+    DECISION_ROLE_CHOICES = [
+        ('decision-maker', '최종 의사결정권자'),
+        ('advisor', '자문/조언자'),
+        ('analyst', '분석가'),
+        ('evaluator', '평가자'),
+        ('observer', '관찰자'),
+    ]
+    
+    # 기본 정보
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    evaluator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='demographic_surveys')
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='demographic_surveys', null=True, blank=True)
+    
+    # 인구통계학적 정보
+    age = models.CharField(max_length=10, choices=AGE_CHOICES, blank=True)
+    gender = models.CharField(max_length=15, choices=GENDER_CHOICES, blank=True)
+    education = models.CharField(max_length=20, choices=EDUCATION_CHOICES, blank=True)
+    occupation = models.CharField(max_length=100, blank=True)
+    
+    # 전문 정보
+    experience = models.CharField(max_length=10, choices=EXPERIENCE_CHOICES, blank=True)
+    department = models.CharField(max_length=100, blank=True)
+    position = models.CharField(max_length=100, blank=True)
+    project_experience = models.CharField(max_length=10, choices=PROJECT_EXPERIENCE_CHOICES, blank=True)
+    
+    # 의사결정 역할
+    decision_role = models.CharField(max_length=20, choices=DECISION_ROLE_CHOICES, blank=True)
+    additional_info = models.TextField(blank=True)
+    
+    # 메타데이터
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_completed = models.BooleanField(default=False)
+    completion_timestamp = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'demographic_surveys'
+        ordering = ['-created_at']
+        unique_together = ['evaluator', 'project']
+        
+    def __str__(self):
+        project_name = self.project.title if self.project else "일반"
+        return f"{self.evaluator.username} - {project_name} 설문조사"
+        
+    def mark_completed(self):
+        """설문조사를 완료 상태로 표시"""
+        if not self.is_completed:
+            self.is_completed = True
+            self.completion_timestamp = timezone.now()
+            self.save()
+            
+    @property
+    def completion_percentage(self):
+        """설문조사 완성도 계산"""
+        required_fields = ['age', 'gender', 'education', 'occupation', 'experience', 'project_experience', 'decision_role']
+        completed_fields = sum(1 for field in required_fields if getattr(self, field))
+        return (completed_fields / len(required_fields)) * 100

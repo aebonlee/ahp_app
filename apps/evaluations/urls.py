@@ -10,6 +10,7 @@ router = DefaultRouter()
 router.register(r'evaluations', views.EvaluationViewSet, basename='evaluation')
 router.register(r'comparisons', views.PairwiseComparisonViewSet, basename='comparison')
 router.register(r'invitations', views.EvaluationInvitationViewSet, basename='invitation')
+router.register(r'demographic-surveys', views.DemographicSurveyViewSet, basename='demographic-survey')
 
 # Custom URL patterns
 urlpatterns = [

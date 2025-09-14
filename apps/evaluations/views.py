@@ -11,10 +11,11 @@ from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from .models import Evaluation, PairwiseComparison, EvaluationInvitation, EvaluationSession
+from .models import Evaluation, PairwiseComparison, EvaluationInvitation, EvaluationSession, DemographicSurvey
 from .serializers import (
     EvaluationSerializer, EvaluationCreateSerializer, PairwiseComparisonSerializer,
-    EvaluationInvitationSerializer, EvaluationProgressSerializer, EvaluatorDashboardSerializer
+    EvaluationInvitationSerializer, EvaluationProgressSerializer, EvaluatorDashboardSerializer,
+    DemographicSurveySerializer, DemographicSurveyCreateSerializer, DemographicSurveyListSerializer
 )
 from apps.common.permissions import IsOwnerOrReadOnly, IsEvaluatorOrProjectMember
 
@@ -311,3 +312,169 @@ def evaluation_statistics(request):
     }
     
     return Response(stats)
+
+
+class DemographicSurveyViewSet(viewsets.ModelViewSet):
+    """인구통계학적 설문조사 ViewSet"""
+    
+    serializer_class = DemographicSurveySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['project', 'is_completed', 'evaluator']
+    search_fields = ['evaluator__username', 'evaluator__full_name', 'project__title']
+    ordering_fields = ['created_at', 'updated_at', 'completion_timestamp']
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        """사용자별 권한에 따른 설문조사 필터링"""
+        user = self.request.user
+        
+        if user.is_superuser:
+            return DemographicSurvey.objects.all()
+            
+        # 프로젝트 관리자는 자신의 프로젝트 설문조사 확인 가능
+        if user.is_project_manager:
+            return DemographicSurvey.objects.filter(
+                models.Q(evaluator=user) |
+                models.Q(project__owner=user) |
+                models.Q(project__collaborators=user)
+            ).distinct().select_related('evaluator', 'project')
+        
+        # 일반 사용자는 자신의 설문조사만 확인 가능
+        return DemographicSurvey.objects.filter(
+            evaluator=user
+        ).select_related('project')
+    
+    def get_serializer_class(self):
+        """액션에 따른 적절한 시리얼라이저 반환"""
+        if self.action == 'create':
+            return DemographicSurveyCreateSerializer
+        elif self.action == 'list':
+            return DemographicSurveyListSerializer
+        return DemographicSurveySerializer
+    
+    def perform_create(self, serializer):
+        """설문조사 생성 시 evaluator 자동 설정"""
+        serializer.save(evaluator=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def my_survey(self, request):
+        """현재 사용자의 설문조사 조회"""
+        project_id = request.query_params.get('project')
+        
+        if project_id:
+            survey = DemographicSurvey.objects.filter(
+                evaluator=request.user,
+                project_id=project_id
+            ).first()
+        else:
+            # 프로젝트가 지정되지 않은 경우 가장 최근 설문조사
+            survey = DemographicSurvey.objects.filter(
+                evaluator=request.user
+            ).first()
+            
+        if survey:
+            serializer = self.get_serializer(survey)
+            return Response(serializer.data)
+        else:
+            return Response(
+                {'detail': '설문조사를 찾을 수 없습니다.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=False, methods=['post'])
+    def submit_survey(self, request):
+        """설문조사 제출"""
+        project_id = request.data.get('project')
+        
+        # 기존 설문조사가 있는지 확인
+        existing_survey = None
+        if project_id:
+            existing_survey = DemographicSurvey.objects.filter(
+                evaluator=request.user,
+                project_id=project_id
+            ).first()
+        
+        if existing_survey:
+            # 기존 설문조사 업데이트
+            serializer = DemographicSurveyCreateSerializer(
+                existing_survey, 
+                data=request.data, 
+                context={'request': request}
+            )
+        else:
+            # 새 설문조사 생성
+            serializer = DemographicSurveyCreateSerializer(
+                data=request.data, 
+                context={'request': request}
+            )
+        
+        if serializer.is_valid():
+            survey = serializer.save(evaluator=request.user)
+            
+            response_serializer = DemographicSurveySerializer(survey)
+            return Response(
+                {
+                    'message': '설문조사가 성공적으로 저장되었습니다.',
+                    'data': response_serializer.data
+                },
+                status=status.HTTP_201_CREATED if not existing_survey else status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {
+                    'message': '설문조사 저장에 실패했습니다.',
+                    'errors': serializer.errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=False, methods=['get'])
+    def statistics(self, request):
+        """설문조사 통계"""
+        user = request.user
+        
+        # 프로젝트별 통계 (프로젝트 관리자인 경우)
+        if user.is_project_manager or user.is_superuser:
+            project_stats = []
+            
+            # 사용자가 관리하는 프로젝트들
+            projects = []
+            if user.is_superuser:
+                from apps.projects.models import Project
+                projects = Project.objects.all()
+            else:
+                projects = user.owned_projects.all() | user.collaborating_projects.all()
+            
+            for project in projects.distinct():
+                surveys = DemographicSurvey.objects.filter(project=project)
+                project_stats.append({
+                    'project_id': project.id,
+                    'project_title': project.title,
+                    'total_surveys': surveys.count(),
+                    'completed_surveys': surveys.filter(is_completed=True).count(),
+                    'completion_rate': (
+                        surveys.filter(is_completed=True).count() / surveys.count() * 100
+                        if surveys.count() > 0 else 0
+                    )
+                })
+            
+            return Response({
+                'project_statistics': project_stats,
+                'overall_stats': {
+                    'total_surveys': DemographicSurvey.objects.count(),
+                    'completed_surveys': DemographicSurvey.objects.filter(is_completed=True).count(),
+                    'total_evaluators': DemographicSurvey.objects.values('evaluator').distinct().count()
+                }
+            })
+        else:
+            # 일반 사용자는 자신의 설문조사 통계만
+            user_surveys = DemographicSurvey.objects.filter(evaluator=user)
+            return Response({
+                'my_surveys': user_surveys.count(),
+                'completed_surveys': user_surveys.filter(is_completed=True).count(),
+                'completion_rate': (
+                    user_surveys.filter(is_completed=True).count() / user_surveys.count() * 100
+                    if user_surveys.count() > 0 else 0
+                )
+            })
