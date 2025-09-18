@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 현황 - AHP System</title>
+    <link rel="stylesheet" href="styles/layout.css">
+    <style>
+        /* 다크 모드 추가 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-subtle: #0f172a;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            background-color: var(--bg-secondary);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-icon {
+            font-size: 2rem;
+        }
+
+        /* 통계 대시보드 */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-primary);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.total { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .stat-icon.active { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-icon.completed { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .stat-icon.draft { background: linear-gradient(135deg, #6b7280, #4b5563); }
+
+        .stat-content {
+            flex: 1;
+            margin-left: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-change.positive {
+            color: #10b981;
+        }
+
+        .stat-change.negative {
+            color: #ef4444;
+        }
+
+        /* 차트 컨테이너 */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-container {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* 프로젝트 테이블 */
+        .projects-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--bg-elevated);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-light);
+        }
+
+        .projects-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .projects-table th,
+        .projects-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .projects-table th {
+            background: var(--bg-elevated);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .project-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .project-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--accent-primary);
+        }
+
+        .project-details h4 {
+            margin: 0;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .project-details p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-completed {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-draft {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .status-archived {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--border-light);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: var(--bg-elevated);
+        }
+
+        .pagination button {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-light);
+            background: white;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+            
+            .projects-section {
+                overflow-x: auto;
+            }
+            
+            .projects-table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <span id="toggle-icon">◀</span>
+            </button>
+            <div class="header-logo">
+                <span class="logo-icon">A</span>
+                <span class="logo-text">AHP System</span>
+                <span class="header-subtitle">프로젝트 현황</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <nav class="header-nav">
+                <a href="super-admin-dashboard.html" class="nav-item" data-page="admin">슈퍼 관리자</a>
+                <a href="personal-service-enhanced.html" class="nav-item" data-page="personal">개인 서비스</a>
+                <a href="system-monitoring.html" class="nav-item" data-page="system">시스템 모니터링</a>
+                <a href="analytics.html" class="nav-item" data-page="analytics">분석</a>
+            </nav>
+        </div>
+        
+        <div class="header-right">
+            <div class="theme-controls">
+                <button class="theme-toggle" onclick="toggleColorTheme()" title="컬러테마 변경">🎨</button>
+                <button class="theme-toggle" onclick="toggleDarkMode()" title="다크모드 전환">🌓</button>
+            </div>
+            <div class="header-notifications">
+                <button class="notification-btn">
+                    <span>🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+            </div>
+            <div class="header-user">
+                <div class="user-avatar">👤</div>
+                <div class="user-info">
+                    <div class="user-name">슈퍼 관리자</div>
+                    <div class="user-role">System Admin</div>
+                </div>
+                <button class="user-menu-btn" onclick="handleLogout()">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 사이드바 -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <!-- 관리자 메뉴 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">시스템 관리</div>
+                <a href="user-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">👥</span>
+                    <span class="sidebar-text">사용자 관리</span>
+                </a>
+                <a href="project-overview.html" class="sidebar-item active">
+                    <span class="sidebar-icon">📊</span>
+                    <span class="sidebar-text">프로젝트 현황</span>
+                </a>
+                <a href="admin/system-settings.html" class="sidebar-item">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span class="sidebar-text">시스템 설정</span>
+                </a>
+                <a href="admin/audit-log.html" class="sidebar-item">
+                    <span class="sidebar-icon">📋</span>
+                    <span class="sidebar-text">감사 로그</span>
+                </a>
+            </div>
+
+            <!-- 데이터 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">데이터 관리</div>
+                <a href="admin/backup-restore.html" class="sidebar-item">
+                    <span class="sidebar-icon">💾</span>
+                    <span class="sidebar-text">백업 및 복원</span>
+                </a>
+                <a href="admin/database-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">🗄️</span>
+                    <span class="sidebar-text">데이터베이스 관리</span>
+                </a>
+                <a href="admin/data-migration.html" class="sidebar-item">
+                    <span class="sidebar-icon">📤</span>
+                    <span class="sidebar-text">데이터 마이그레이션</span>
+                </a>
+            </div>
+
+            <!-- 보안 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">보안 관리</div>
+                <a href="admin/security-settings.html" class="sidebar-item">
+                    <span class="sidebar-icon">🔒</span>
+                    <span class="sidebar-text">보안 설정</span>
+                </a>
+                <a href="admin/access-control.html" class="sidebar-item">
+                    <span class="sidebar-icon">🛡️</span>
+                    <span class="sidebar-text">접근 제어</span>
+                </a>
+                <a href="admin/security-log.html" class="sidebar-item">
+                    <span class="sidebar-icon">🚨</span>
+                    <span class="sidebar-text">보안 로그</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <span class="page-icon">📊</span>
+                프로젝트 현황
+            </h1>
+            <button class="btn btn-primary" onclick="exportProjects()">
+                <span>📥</span> 내보내기
+            </button>
+        </div>
+
+        <!-- 통계 개요 -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon total">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalProjects">-</div>
+                        <div class="stat-label">전체 프로젝트</div>
+                        <div class="stat-change positive" id="totalChange">
+                            <span>▲</span> +0% (이번 달)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon active">🟢</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="activeProjects">-</div>
+                        <div class="stat-label">진행 중인 프로젝트</div>
+                        <div class="stat-change positive" id="activeChange">
+                            <span>▲</span> +0% (이번 달)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon completed">🏆</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="completedProjects">-</div>
+                        <div class="stat-label">완료된 프로젝트</div>
+                        <div class="stat-change positive" id="completedChange">
+                            <span>▲</span> +0% (이번 달)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon draft">📝</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="draftProjects">-</div>
+                        <div class="stat-label">초안 프로젝트</div>
+                        <div class="stat-change" id="draftChange">
+                            <span>-</span> 변화 없음
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 차트 영역 -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">월별 프로젝트 생성 추이</h3>
+                </div>
+                <div class="chart-container" id="monthlyChart">
+                    📈 차트가 여기에 표시됩니다 (Chart.js 연동 예정)
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">프로젝트 상태 분포</h3>
+                </div>
+                <div class="chart-container" id="statusChart">
+                    🥧 파이 차트가 여기에 표시됩니다 (Chart.js 연동 예정)
+                </div>
+            </div>
+        </div>
+
+        <!-- 프로젝트 목록 -->
+        <div class="projects-section">
+            <div class="section-header">
+                <h3 class="section-title">프로젝트 목록</h3>
+                <div class="controls">
+                    <input type="text" id="searchInput" class="search-input" placeholder="프로젝트 검색...">
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">모든 상태</option>
+                        <option value="active">진행 중</option>
+                        <option value="completed">완료</option>
+                        <option value="draft">초안</option>
+                        <option value="archived">보관됨</option>
+                    </select>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">모든 카테고리</option>
+                        <option value="business">비즈니스</option>
+                        <option value="research">연구</option>
+                        <option value="technology">기술</option>
+                        <option value="policy">정책</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        🔄 초기화
+                    </button>
+                </div>
+            </div>
+            
+            <div id="loadingContainer" class="loading">
+                <div class="loading-spinner"></div>
+                <p>프로젝트 데이터를 불러오는 중...</p>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">📋</div>
+                <h3>프로젝트가 없습니다</h3>
+                <p>아직 생성된 프로젝트가 없습니다.</p>
+            </div>
+
+            <table class="projects-table" id="projectsTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>프로젝트</th>
+                        <th>소유자</th>
+                        <th>상태</th>
+                        <th>진행률</th>
+                        <th>생성일</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody id="projectsTableBody">
+                    <!-- 동적으로 채워짐 -->
+                </tbody>
+            </table>
+
+            <div class="pagination" id="pagination">
+                <!-- 동적으로 채워짐 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- API Service 및 레이아웃 스크립트 -->
+    <script src="scripts/api-service.js"></script>
+    <script src="scripts/layout.js"></script>
+    <script>
+        // 전역 변수
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+        let currentFilters = {
+            search: '',
+            status: '',
+            category: ''
+        };
+
+        // 페이지 초기화
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 관리자 인증 확인
+            const authResult = await window.ahpApi.getCurrentUser();
+            if (!authResult.success || authResult.user.role !== 'admin') {
+                alert('관리자 권한이 필요합니다.');
+                window.location.href = '/ahp_app/public/login.html';
+                return;
+            }
+
+            await initializePage();
+            setupEventListeners();
+        });
+
+        // 페이지 초기화
+        async function initializePage() {
+            await loadProjectStats();
+            await loadProjects();
+        }
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 검색 입력
+            document.getElementById('searchInput').addEventListener('input', debounce(handleSearch, 300));
+            
+            // 필터 변경
+            document.getElementById('statusFilter').addEventListener('change', handleFilterChange);
+            document.getElementById('categoryFilter').addEventListener('change', handleFilterChange);
+        }
+
+        // 프로젝트 통계 로드
+        async function loadProjectStats() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/projects/stats/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    updateStatsDisplay(stats);
+                } else {
+                    console.error('통계 조회 실패:', response.status);
+                    updateStatsDisplay({});
+                }
+            } catch (error) {
+                console.error('통계 로드 오류:', error);
+                updateStatsDisplay({});
+            }
+        }
+
+        // 통계 화면 업데이트
+        function updateStatsDisplay(stats) {
+            document.getElementById('totalProjects').textContent = stats.total_projects || 0;
+            document.getElementById('activeProjects').textContent = stats.active_projects || 0;
+            document.getElementById('completedProjects').textContent = stats.completed_projects || 0;
+            document.getElementById('draftProjects').textContent = stats.draft_projects || 0;
+
+            // 변화율 업데이트
+            updateChangeIndicator('totalChange', stats.total_change || 0);
+            updateChangeIndicator('activeChange', stats.active_change || 0);
+            updateChangeIndicator('completedChange', stats.completed_change || 0);
+            updateChangeIndicator('draftChange', stats.draft_change || 0);
+        }
+
+        // 변화율 표시 업데이트
+        function updateChangeIndicator(elementId, change) {
+            const element = document.getElementById(elementId);
+            const isPositive = change > 0;
+            const isNegative = change < 0;
+            
+            element.className = `stat-change ${isPositive ? 'positive' : isNegative ? 'negative' : ''}`;
+            
+            const icon = isPositive ? '▲' : isNegative ? '▼' : '-';
+            const text = change === 0 ? '변화 없음' : `${Math.abs(change)}% (이번 달)`;
+            
+            element.innerHTML = `<span>${icon}</span> ${change === 0 ? text : (isPositive ? '+' : '') + text}`;
+        }
+
+        // 프로젝트 목록 로드
+        async function loadProjects() {
+            const loadingContainer = document.getElementById('loadingContainer');
+            const projectsTable = document.getElementById('projectsTable');
+            const emptyState = document.getElementById('emptyState');
+            
+            loadingContainer.style.display = 'block';
+            projectsTable.style.display = 'none';
+            emptyState.style.display = 'none';
+
+            try {
+                const queryParams = new URLSearchParams({
+                    page: currentPage,
+                    page_size: pageSize,
+                    ...currentFilters
+                });
+
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/projects/?${queryParams}`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.results.length === 0) {
+                        loadingContainer.style.display = 'none';
+                        emptyState.style.display = 'block';
+                    } else {
+                        displayProjects(data.results);
+                        updatePagination(data);
+                        
+                        loadingContainer.style.display = 'none';
+                        projectsTable.style.display = 'table';
+                    }
+                } else {
+                    throw new Error(`프로젝트 목록 조회 실패: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('프로젝트 로드 오류:', error);
+                loadingContainer.innerHTML = `
+                    <p style="color: var(--error);">
+                        프로젝트 데이터를 불러올 수 없습니다. 
+                        <button onclick="loadProjects()" class="btn btn-secondary btn-sm">다시 시도</button>
+                    </p>
+                `;
+            }
+        }
+
+        // 프로젝트 목록 표시
+        function displayProjects(projects) {
+            const tbody = document.getElementById('projectsTableBody');
+            
+            tbody.innerHTML = projects.map(project => `
+                <tr>
+                    <td>
+                        <div class="project-info">
+                            <div class="project-icon">
+                                ${getProjectIcon(project.category)}
+                            </div>
+                            <div class="project-details">
+                                <h4>${project.title}</h4>
+                                <p>${project.description || '설명 없음'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="user-info">
+                            <strong>${project.owner?.first_name || '알 수 없음'}</strong>
+                            <br>
+                            <small style="color: var(--text-secondary);">${project.owner?.email || ''}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${project.status}">
+                            ${getStatusLabel(project.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${project.progress || 0}%"></div>
+                        </div>
+                        <div class="progress-text">${project.progress || 0}%</div>
+                    </td>
+                    <td>${formatDate(project.created_at)}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-secondary btn-sm" onclick="viewProject(${project.id})">
+                                👁️ 보기
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="editProject(${project.id})">
+                                ✏️ 편집
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 페이지네이션 업데이트
+        function updatePagination(data) {
+            totalPages = Math.ceil(data.count / pageSize);
+            const pagination = document.getElementById('pagination');
+            
+            let paginationHTML = '';
+            
+            // 이전 버튼
+            paginationHTML += `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    ◀ 이전
+                </button>
+            `;
+            
+            // 페이지 번호들
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button onclick="changePage(${i})" ${i === currentPage ? 'class="current"' : ''}>
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            // 다음 버튼
+            paginationHTML += `
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    다음 ▶
+                </button>
+            `;
+            
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // 페이지 변경
+        function changePage(page) {
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                loadProjects();
+            }
+        }
+
+        // 검색 처리
+        function handleSearch(e) {
+            currentFilters.search = e.target.value;
+            currentPage = 1;
+            loadProjects();
+        }
+
+        // 필터 변경 처리
+        function handleFilterChange() {
+            currentFilters.status = document.getElementById('statusFilter').value;
+            currentFilters.category = document.getElementById('categoryFilter').value;
+            currentPage = 1;
+            loadProjects();
+        }
+
+        // 필터 초기화
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('categoryFilter').value = '';
+            
+            currentFilters = { search: '', status: '', category: '' };
+            currentPage = 1;
+            loadProjects();
+        }
+
+        // 프로젝트 보기
+        function viewProject(projectId) {
+            window.open(`/ahp_app/project-details.html?id=${projectId}`, '_blank');
+        }
+
+        // 프로젝트 편집
+        function editProject(projectId) {
+            window.location.href = `/ahp_app/project-management.html?edit=${projectId}`;
+        }
+
+        // 프로젝트 내보내기
+        async function exportProjects() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/projects/export/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `projects_export_${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    alert('프로젝트 데이터가 성공적으로 내보내졌습니다.');
+                } else {
+                    alert('데이터 내보내기에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('내보내기 오류:', error);
+                alert('내보내기 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 유틸리티 함수들
+        function getProjectIcon(category) {
+            const icons = {
+                'business': '💼',
+                'research': '🔬',
+                'technology': '💻',
+                'policy': '📜',
+                'investment': '💰',
+                'other': '📊'
+            };
+            return icons[category] || '📊';
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'active': '진행 중',
+                'completed': '완료',
+                'draft': '초안',
+                'archived': '보관됨'
+            };
+            return labels[status] || status;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 사이드바 토글
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        // 다크모드 토글
+        async function toggleDarkMode() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            
+            try {
+                await window.ahpApi.saveUserSettings({ theme: newTheme });
+            } catch (error) {
+                console.error('테마 설정 저장 오류:', error);
+            }
+        }
+
+        // 컬러 테마 변경
+        function toggleColorTheme() {
+            console.log('컬러 테마 변경');
+        }
+
+        // 로그아웃
+        async function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                try {
+                    await window.ahpApi.logout();
+                    window.location.href = '/ahp_app/public/login.html?message=logout';
+                } catch (error) {
+                    console.error('로그아웃 오류:', error);
+                    window.location.href = '/ahp_app/public/login.html?message=logout';
+                }
+            }
+        }
+
+        console.log('✅ 프로젝트 현황 페이지 로드 완료');
+    </script>
+</body>
+</html>
