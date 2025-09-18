@@ -8,6 +8,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  name: string; // fullName computed property
   fullName?: string;
   role: 'admin' | 'manager' | 'evaluator' | 'viewer';
   createdAt: string;
@@ -19,10 +20,11 @@ export interface User {
 // 프로젝트 타입 (확장)
 export interface Project {
   id: string;
+  name: string; // project name
   title: string;
   description: string;
   goal: string;
-  status: 'draft' | 'active' | 'completed' | 'archived';
+  status: 'draft' | 'active' | 'completed' | 'archived' | 'pending';
   createdBy: string;
   createdAt: string;
   updatedAt: string;

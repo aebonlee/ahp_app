@@ -14,7 +14,7 @@ import { initializeTheme } from '@/store/uiStore';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import DashboardPage from '@/pages/DashboardPage';
-import ProjectPage from '@/pages/ProjectPage';
+// import ProjectPage from '@/pages/ProjectPage';
 // import ComparisonPage from '@/pages/ComparisonPage';
 // import ResultsPage from '@/pages/ResultsPage';
 
@@ -119,7 +119,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <ProjectPage />
+                    <DashboardPage />
                   </Layout>
                 </ProtectedRoute>
               } 
@@ -129,7 +129,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <ProjectPage />
+                    <DashboardPage />
                   </Layout>
                 </ProtectedRoute>
               } 
