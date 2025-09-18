@@ -1,25 +1,8 @@
 version: 2
 updates:
-  # Frontend dependencies
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "05:00"
-    open-pull-requests-limit: 5
-    reviewers:
-      - "aebonlee"
-    labels:
-      - "dependencies"
-      - "frontend"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-    
-  # Backend dependencies
-  - package-ecosystem: "npm"
-    directory: "/backend"
+  # Django Backend dependencies  
+  - package-ecosystem: "pip"
+    directory: "/backend-django"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -30,6 +13,7 @@ updates:
     labels:
       - "dependencies"
       - "backend"
+      - "django"
     commit-message:
       prefix: "chore"
       include: "scope"
