@@ -11,21 +11,12 @@ import useAuthStore from './store/authStore';
 import { initializeTheme } from './store/uiStore';
 
 // Pages
-<<<<<<< HEAD
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 // import ProjectPage from './pages/ProjectPage';
 // import ComparisonPage from './pages/ComparisonPage';
 // import ResultsPage from './pages/ResultsPage';
-=======
-import HomePage from '@/pages/HomePage';
-import LoginPage from '@/pages/LoginPage';
-import DashboardPage from '@/pages/DashboardPage';
-// import ProjectPage from '@/pages/ProjectPage';
-// import ComparisonPage from '@/pages/ComparisonPage';
-// import ResultsPage from '@/pages/ResultsPage';
->>>>>>> 9509bf3ce9c8a1c5e1be607bc08c0e445b105130
 
 // Components
 import LoadingSpinner from './components/ui/LoadingSpinner';
