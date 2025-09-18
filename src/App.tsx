@@ -1,49 +1,149 @@
-import React from 'react';
+// =============================================================================
+// AHP Enterprise Platform - Main Application (3차 개발)
+// =============================================================================
 
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+// Stores
+import useAuthStore from '@/store/authStore';
+import { initializeTheme } from '@/store/uiStore';
+
+// Pages
+import HomePage from '@/pages/HomePage';
+import LoginPage from '@/pages/LoginPage';
+import DashboardPage from '@/pages/DashboardPage';
+import ProjectPage from '@/pages/ProjectPage';
+// import ComparisonPage from '@/pages/ComparisonPage';
+// import ResultsPage from '@/pages/ResultsPage';
+
+// Components
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import ToastContainer from '@/components/ui/ToastContainer';
+import Layout from '@/components/layout/Layout';
+
+// Styles
+import '@/styles/globals.css';
+
+// React Query 클라이언트 설정
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5분
+    },
+  },
+});
+
+// Protected Route 컴포넌트
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuthStore();
+  
+  if (isLoading) {
+    return <LoadingSpinner message="인증 확인 중..." />;
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Public Route 컴포넌트 (로그인된 사용자는 대시보드로 리다이렉트)
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuthStore();
+  
+  if (isLoading) {
+    return <LoadingSpinner message="로딩 중..." />;
+  }
+  
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <>{children}</>;
+};
 
 function App() {
-  console.log('🚀 React App 시작');
-
-  // 개인서비스 페이지로 직접 리다이렉트
-  React.useEffect(() => {
-    console.log('✅ React App 로드됨 - personal-service.html로 리다이렉트');
-    window.location.href = '/ahp_app/personal-service.html';
-  }, []);
+  const { checkSession } = useAuthStore();
+  
+  useEffect(() => {
+    // 테마 초기화
+    initializeTheme();
+    
+    // 세션 확인
+    checkSession();
+    
+    console.log('🚀 AHP Enterprise Platform v3.0.0 시작');
+  }, [checkSession]);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#f9fafb',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    }}>
-      <div style={{ textAlign: 'center' }}>
-        <h1 style={{ color: '#C8A968', marginBottom: '1rem' }}>
-          🎯 AHP System 로딩중...
-        </h1>
-        <p style={{ color: '#6b7280' }}>
-          개인서비스 대시보드로 이동합니다...
-        </p>
-        <div style={{ marginTop: '2rem' }}>
-          <a 
-            href="/ahp_app/personal-service.html" 
-            style={{
-              display: 'inline-block',
-              padding: '12px 24px',
-              backgroundColor: '#C8A968',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: '8px',
-              fontWeight: '500'
-            }}
-          >
-            개인서비스 대시보드로 바로가기
-          </a>
+    <QueryClientProvider client={queryClient}>
+      <Router basename="/ahp_app">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <Routes>
+            {/* Public Routes */}
+            <Route 
+              path="/" 
+              element={
+                <PublicRoute>
+                  <HomePage />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/login" 
+              element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              } 
+            />
+            
+            {/* Protected Routes */}
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <DashboardPage />
+                  </Layout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/projects" 
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProjectPage />
+                  </Layout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/projects/:id" 
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProjectPage />
+                  </Layout>
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Fallback Route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          
+          {/* Global UI Components */}
+          <ToastContainer />
         </div>
-      </div>
-    </div>
+      </Router>
+    </QueryClientProvider>
   );
 }
 

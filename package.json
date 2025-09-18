@@ -1,10 +1,76 @@
 {
-  "name": "ahp_app",
-  "version": "0.1.2",
+  "name": "ahp-enterprise-platform",
+  "version": "3.0.0",
   "private": true,
   "homepage": "https://aebonlee.github.io/ahp_app/",
-  "description": "AHP (Analytic Hierarchy Process) Platform - Static HTML/CSS/JS Application",
+  "description": "AHP Enterprise Platform - React + TypeScript + Django Integration",
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4",
+    
+    "zustand": "^4.4.0",
+    "react-router-dom": "^6.15.0",
+    "axios": "^1.5.0",
+    "react-query": "^3.39.3",
+    
+    "recharts": "^2.8.0",
+    "chart.js": "^4.4.0",
+    "react-chartjs-2": "^5.2.0",
+    
+    "tailwindcss": "^3.3.0",
+    "@headlessui/react": "^1.7.17",
+    "lucide-react": "^0.263.1",
+    
+    "react-hook-form": "^7.45.4",
+    "@hookform/resolvers": "^3.3.1",
+    "zod": "^3.22.2",
+    
+    "clsx": "^2.0.0",
+    "date-fns": "^2.30.0",
+    "lodash": "^4.17.21",
+    "@types/lodash": "^4.14.195"
+  },
   "scripts": {
-    "deploy": "echo 'Static deployment to GitHub Pages'"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "deploy": "npm run build && gh-pages -d build",
+    "analyze": "npm run build && npx bundle-analyzer build/static/js/*.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "gh-pages": "^6.0.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0"
   }
 }

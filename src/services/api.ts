@@ -1,6 +1,68 @@
-import { API_BASE_URL } from '../config/api';
+// =============================================================================
+// AHP Enterprise Platform - API Service Layer (3차 개발)
+// =============================================================================
 
-// API 응답 타입 정의
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { APIResponse } from '@/types';
+
+// API 기본 설정
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-app-vuzk.onrender.com/api/v1';
+
+// Axios 인스턴스 생성
+const apiClient: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+});
+
+// 요청 인터셉터
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// 응답 인터셉터
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// API 기본 함수
+const apiRequest = async <T>(config: AxiosRequestConfig): Promise<APIResponse<T>> => {
+  try {
+    const response = await apiClient(config);
+    return {
+      success: true,
+      data: response.data.data || response.data,
+      message: response.data.message,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      errors: [error.response?.data?.message || error.message || 'API request failed'],
+      timestamp: new Date().toISOString(),
+    };
+  }
+};
+
+// Legacy API 응답 타입 (호환성 유지)
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
