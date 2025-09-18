@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: ahp-django-backend-new
+    runtime: python
+    rootDir: src/backend-django
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && python manage.py migrate && python manage.py create_superuser && python manage.py collectstatic --no-input"
+    startCommand: "gunicorn ahp_backend.wsgi:application --bind 0.0.0.0:$PORT"
+    plan: starter
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        value: "django-insecure-ahp2025-production-secret-key-change-me"
+    healthCheckPath: /health/

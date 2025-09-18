@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ahp-django-backend
+    runtime: python
+    rootDir: src/backend-django
+    buildCommand: "./render-build.sh"
+    startCommand: "gunicorn ahp_backend.wsgi:application --bind 0.0.0.0:$PORT"
+    plan: starter
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        value: "django-insecure-ahp2025-production-secret-key-change-me"
+      - key: DATABASE_URL
+        sync: false
+    healthCheckPath: /health/

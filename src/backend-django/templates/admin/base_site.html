@@ -1,0 +1,57 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | AHP Platform 관리자{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <i class="fas fa-crown"></i>
+        AHP Platform 관리자
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}
+<div style="float: right; margin: 10px; font-size: 14px;">
+    <a href="https://aebonlee.github.io/ahp-platform/" target="_blank" 
+       style="color: #79aec8; text-decoration: none; margin-right: 15px;"
+       title="웹 앱으로 돌아가기">
+        <i class="fas fa-home"></i> 웹 앱
+    </a>
+    {% if user.is_authenticated %}
+        <span style="color: #ccc; margin-right: 10px;">
+            <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
+        </span>
+        <a href="{% url 'admin:logout' %}" 
+           style="color: #79aec8; text-decoration: none;"
+           onclick="handleLogout(event)"
+           title="로그아웃">
+            <i class="fas fa-sign-out-alt"></i> 로그아웃
+        </a>
+    {% endif %}
+</div>
+
+<script>
+function handleLogout(event) {
+    // Django 관리자 로그아웃 후 웹 앱 홈페이지로 리다이렉트
+    fetch('/api/logout/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+        }
+    }).then(() => {
+        // 로그아웃 후 웹 앱 홈페이지로 이동
+        window.location.href = 'https://aebonlee.github.io/ahp-platform/';
+    }).catch(() => {
+        // 에러 발생 시에도 웹 앱으로 이동
+        window.location.href = 'https://aebonlee.github.io/ahp-platform/';
+    });
+    
+    // 기본 로그아웃 동작 방지
+    event.preventDefault();
+    return false;
+}
+</script>
+{% endblock %}

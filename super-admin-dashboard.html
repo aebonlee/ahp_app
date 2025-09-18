@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - 슈퍼 관리자 대시보드</title>
+    <link rel="stylesheet" href="styles/layout.css">
+    <style>
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            background-color: var(--bg-secondary);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .admin-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .admin-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-card-icon {
+            font-size: 1.5rem;
+        }
+
+        .admin-card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-card-change {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .change-positive {
+            color: #10b981;
+        }
+
+        .change-negative {
+            color: #ef4444;
+        }
+
+        .management-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .management-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .management-card:hover {
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .management-card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .management-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .management-card-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .activity-icon.user { background: #dbeafe; color: #2563eb; }
+        .activity-icon.project { background: #dcfce7; color: #16a34a; }
+        .activity-icon.system { background: #fef3c7; color: #d97706; }
+        .activity-icon.alert { background: #fee2e2; color: #dc2626; }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-actions {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .management-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <span id="toggle-icon">◀</span>
+            </button>
+            <div class="header-logo">
+                <span class="logo-icon">A</span>
+                <span class="logo-text">AHP System</span>
+                <span class="header-subtitle">슈퍼 관리자</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <nav class="header-nav">
+                <a href="super-admin-dashboard.html" class="nav-item active" data-page="admin">관리자</a>
+                <a href="personal-service-enhanced.html" class="nav-item" data-page="personal">개인서비스</a>
+                <a href="system-monitoring.html" class="nav-item" data-page="system">시스템 모니터링</a>
+                <a href="analytics.html" class="nav-item" data-page="analytics">분석</a>
+            </nav>
+        </div>
+        
+        <div class="header-right">
+            <div class="header-notifications">
+                <button class="notification-btn">
+                    <span>🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+            </div>
+            <div class="header-user">
+                <div class="user-avatar">👤</div>
+                <div class="user-info">
+                    <div class="user-name">슈퍼 관리자</div>
+                    <div class="user-role">System Admin</div>
+                </div>
+                <button class="user-menu-btn" onclick="handleLogout()">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 사이드바 -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <!-- 관리자 메뉴 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">시스템 관리</div>
+                <a href="user-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">👥</span>
+                    <span class="sidebar-text">사용자 관리</span>
+                </a>
+                <a href="project-overview.html" class="sidebar-item">
+                    <span class="sidebar-icon">📊</span>
+                    <span class="sidebar-text">프로젝트 현황</span>
+                </a>
+                <a href="admin/system-settings.html" class="sidebar-item">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span class="sidebar-text">시스템 설정</span>
+                </a>
+                <a href="admin/audit-log.html" class="sidebar-item">
+                    <span class="sidebar-icon">📋</span>
+                    <span class="sidebar-text">감사 로그</span>
+                </a>
+            </div>
+
+            <!-- 데이터 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">데이터 관리</div>
+                <a href="admin/backup-restore.html" class="sidebar-item">
+                    <span class="sidebar-icon">💾</span>
+                    <span class="sidebar-text">백업 및 복원</span>
+                </a>
+                <a href="admin/database-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">🗄️</span>
+                    <span class="sidebar-text">데이터베이스 관리</span>
+                </a>
+                <a href="admin/data-migration.html" class="sidebar-item">
+                    <span class="sidebar-icon">📤</span>
+                    <span class="sidebar-text">데이터 마이그레이션</span>
+                </a>
+            </div>
+
+            <!-- 보안 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">보안 관리</div>
+                <a href="admin/security-settings.html" class="sidebar-item">
+                    <span class="sidebar-icon">🔒</span>
+                    <span class="sidebar-text">보안 설정</span>
+                </a>
+                <a href="admin/access-control.html" class="sidebar-item">
+                    <span class="sidebar-icon">🛡️</span>
+                    <span class="sidebar-text">접근 제어</span>
+                </a>
+                <a href="admin/security-log.html" class="sidebar-item">
+                    <span class="sidebar-icon">🚨</span>
+                    <span class="sidebar-text">보안 로그</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <!-- 대시보드 통계 -->
+        <div class="dashboard-grid">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">👥</span>
+                        총 사용자
+                    </div>
+                </div>
+                <div class="admin-card-value" id="totalUsers">로딩...</div>
+                <div class="admin-card-change change-positive" id="userChange">
+                    데이터 로딩 중...
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">📊</span>
+                        활성 프로젝트
+                    </div>
+                </div>
+                <div class="admin-card-value" id="activeProjects">로딩...</div>
+                <div class="admin-card-change change-positive" id="projectChange">
+                    데이터 로딩 중...
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">⚡</span>
+                        시스템 성능
+                    </div>
+                </div>
+                <div class="admin-card-value" id="systemPerformance">로딩...</div>
+                <div class="admin-card-change change-positive" id="performanceStatus">
+                    시스템 상태 확인 중...
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">💾</span>
+                        저장소 사용률
+                    </div>
+                </div>
+                <div class="admin-card-value" id="storageUsage">로딩...</div>
+                <div class="admin-card-change change-positive" id="storageStatus">
+                    저장소 상태 확인 중...
+                </div>
+            </div>
+        </div>
+
+        <!-- 관리 섹션 -->
+        <div class="management-section">
+            <div class="section-header">
+                <h2 class="section-title">핵심 관리 기능</h2>
+            </div>
+            <div class="management-grid">
+                <div class="management-card" onclick="window.open('https://ahp-django-backend.onrender.com/admin/', '_blank')">
+                    <div class="management-card-icon">👥</div>
+                    <div class="management-card-title">Django 슈퍼 관리자</div>
+                    <div class="management-card-desc">
+                        🔥 실제 PostgreSQL 사용자 관리, 결제 관리, 프로젝트 관리 - 완전 관리 시스템
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="loadRealUserData()">
+                    <div class="management-card-icon">📊</div>
+                    <div class="management-card-title">실시간 사용자 현황</div>
+                    <div class="management-card-desc">
+                        🔥 PostgreSQL 실시간 사용자 데이터, 가입 현황, 활동 통계
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="window.location.href='admin/system-settings.html'">
+                    <div class="management-card-icon">📈</div>
+                    <div class="management-card-title">시스템 모니터링</div>
+                    <div class="management-card-desc">
+                        서버 성능, 데이터베이스, API 상태 실시간 모니터링
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="window.location.href='admin/backup-restore.html'">
+                    <div class="management-card-icon">💾</div>
+                    <div class="management-card-title">백업 관리</div>
+                    <div class="management-card-desc">
+                        데이터 백업, 복원 및 재해 복구 관리
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="window.location.href='admin/security-settings.html'">
+                    <div class="management-card-icon">🔒</div>
+                    <div class="management-card-title">보안 설정</div>
+                    <div class="management-card-desc">
+                        시스템 보안 정책, 인증 및 암호화 설정
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="window.location.href='admin/audit-log.html'">
+                    <div class="management-card-icon">📋</div>
+                    <div class="management-card-title">분석 리포트</div>
+                    <div class="management-card-desc">
+                        사용자 활동, 시스템 사용률 및 성능 분석
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 최근 활동 -->
+        <div class="recent-activity">
+            <div class="section-header">
+                <h2 class="section-title">최근 시스템 활동</h2>
+            </div>
+            <ul class="activity-list" id="activityList">
+                <li class="activity-item">
+                    <div class="activity-icon system">📡</div>
+                    <div class="activity-content">
+                        <div class="activity-title">최근 활동 데이터를 로딩하고 있습니다...</div>
+                        <div class="activity-time">잠시만 기다려주세요</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- 빠른 작업 버튼 -->
+    <div class="quick-actions">
+        <button class="fab" title="새 사용자 추가" onclick="window.location.href='user-management.html'">
+            👤
+        </button>
+        <button class="fab" title="시스템 설정" onclick="window.location.href='admin/system-settings.html'">
+            ⚙️
+        </button>
+    </div>
+
+    <script src="scripts/layout.js"></script>
+    <script>
+        // 페이지 초기화 (async/await)
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 로그인 상태 및 권한 확인
+            const loginResult = await checkLoginStatus();
+            if (!loginResult) {
+                return;
+            }
+            
+            // 대시보드 데이터 로딩
+            await loadDashboardData();
+            
+            console.log('✅ 슈퍼 관리자 대시보드 로드 완료');
+        });
+
+        // 관리자 권한 확인 (Django API 기반)
+        async function checkAdminPermission() {
+            try {
+                const response = await window.ahpApi.getCurrentUser();
+                if (response.success && response.user) {
+                    return response.user.role === 'admin' || response.user.is_superuser;
+                }
+                return false;
+            } catch (error) {
+                console.error('권한 확인 오류:', error);
+                return false;
+            }
+        }
+
+        // 로그인 상태 확인 (Django API 기반)
+        async function checkLoginStatus() {
+            try {
+                const response = await window.ahpApi.getCurrentUser();
+                
+                if (!response.success || !response.user) {
+                    window.location.href = 'login.html?message=session_expired';
+                    return false;
+                }
+                
+                // 관리자 권한 확인
+                if (response.user.role !== 'admin' && !response.user.is_superuser) {
+                    alert('관리자 권한이 필요합니다.');
+                    window.location.href = 'personal-service-enhanced.html';
+                    return false;
+                }
+                
+                // 사용자 이름 표시
+                const userNameElement = document.querySelector('.header-user .user-name');
+                if (userNameElement && response.user.name) {
+                    userNameElement.textContent = response.user.name;
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('로그인 상태 확인 오류:', error);
+                window.location.href = 'login.html?message=session_expired';
+                return false;
+            }
+        }
+
+        // 사이드바 토글
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        // 대시보드 데이터 로딩
+        async function loadDashboardData() {
+            try {
+                // 병렬로 데이터 로딩
+                await Promise.all([
+                    loadSystemStats(),
+                    loadRecentActivity()
+                ]);
+            } catch (error) {
+                console.error('대시보드 데이터 로딩 오류:', error);
+            }
+        }
+
+        // 시스템 통계 데이터 로딩 (강화된 retry 로직)
+        async function loadSystemStats() {
+            const maxRetries = 3;
+            let currentTry = 0;
+            
+            while (currentTry < maxRetries) {
+                try {
+                    console.log(`🔄 Django API 호출 시도 ${currentTry + 1}/${maxRetries}`);
+                    
+                    const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/dashboard/stats/?_t=${Date.now()}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        cache: 'no-cache'
+                    });
+
+                    if (response.ok) {
+                        const stats = await response.json();
+                        console.log('✅ Django PostgreSQL 데이터 로드 성공:', stats);
+                        updateSystemStats(stats);
+                        return; // 성공시 종료
+                    } else if (response.status === 403) {
+                        console.warn(`⚠️ 403 Forbidden - Render 업데이트 중... (시도 ${currentTry + 1})`);
+                        if (currentTry < maxRetries - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 2000 * (currentTry + 1))); // 점진적 지연
+                        }
+                    } else {
+                        console.error('API 오류:', response.status, response.statusText);
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error(`시도 ${currentTry + 1} 실패:`, error);
+                    if (currentTry < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1000 * (currentTry + 1)));
+                    }
+                }
+                currentTry++;
+            }
+            
+            // 모든 시도 실패시 fallback 데이터
+            console.warn('🔄 모든 API 시도 실패 - Render 업데이트 대기 중');
+            updateSystemStats({
+                total_users: 'Render 업데이트 중...',
+                active_projects: 'Django 재시작 중...', 
+                system_performance: '백엔드 로딩 중...',
+                storage_usage: '데이터 준비 중...'
+            });
+            }
+        }
+
+        // 시스템 통계 업데이트
+        function updateSystemStats(stats) {
+            console.log('📊 실제 Django 백엔드 데이터:', stats);
+            
+            // 실제 PostgreSQL 데이터 표시
+            document.getElementById('totalUsers').textContent = stats.total_users || '0';
+            document.getElementById('activeProjects').textContent = stats.active_projects || '0';
+            document.getElementById('systemPerformance').textContent = stats.system_performance ? `${stats.system_performance}%` : '정상';
+            document.getElementById('storageUsage').textContent = stats.storage_usage ? `${stats.storage_usage}%` : '정상';
+
+            // Django 계산된 실제 증가율 표시
+            document.getElementById('userChange').textContent = stats.user_growth ? `↑ +${stats.user_growth}% (이번 달)` : '실시간 PostgreSQL 데이터';
+            document.getElementById('projectChange').textContent = stats.project_growth ? `↑ +${stats.project_growth}% (이번 주)` : '실시간 Django 통계';
+            document.getElementById('performanceStatus').textContent = stats.performance_status || '시스템 정상 작동';
+            document.getElementById('storageStatus').textContent = stats.storage_status || '여유 공간 충분';
+            
+            // Django 백엔드 성공 표시
+            const statusEl = document.querySelector('.admin-card-value');
+            if (statusEl) {
+                statusEl.style.color = '#10b981'; // 녹색으로 성공 표시
+            }
+        }
+
+        // 최근 활동 데이터 로딩
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/audit/logs/?limit=5&_t=${Date.now()}`, {
+                    credentials: 'include',
+                    cache: 'no-cache'
+                });
+
+                if (response.ok) {
+                    const activities = await response.json();
+                    updateRecentActivity(activities.results || activities);
+                } else {
+                    updateRecentActivity([]);
+                }
+            } catch (error) {
+                console.error('최근 활동 로딩 실패:', error);
+                updateRecentActivity([]);
+            }
+        }
+
+        // 최근 활동 업데이트
+        function updateRecentActivity(activities) {
+            const activityList = document.getElementById('activityList');
+            
+            if (!activities || activities.length === 0) {
+                activityList.innerHTML = `
+                    <li class="activity-item">
+                        <div class="activity-icon system">📊</div>
+                        <div class="activity-content">
+                            <div class="activity-title">아직 활동 기록이 없습니다</div>
+                            <div class="activity-time">서비스 사용이 시작되면 활동 내역이 표시됩니다</div>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+
+            const activityHtml = activities.map(activity => {
+                const iconMap = {
+                    'user_created': { icon: '👤', class: 'user' },
+                    'project_created': { icon: '📊', class: 'project' },
+                    'system_backup': { icon: '💾', class: 'system' },
+                    'login_success': { icon: '🔓', class: 'user' },
+                    'admin_action': { icon: '⚙️', class: 'system' },
+                    'security_alert': { icon: '🚨', class: 'alert' }
+                };
+
+                const iconData = iconMap[activity.action_type] || { icon: '📋', class: 'system' };
+
+                return `
+                    <li class="activity-item">
+                        <div class="activity-icon ${iconData.class}">${iconData.icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-title">${activity.description || activity.action}</div>
+                            <div class="activity-time">${formatTimeAgo(activity.timestamp || activity.created_at)}</div>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+
+            activityList.innerHTML = activityHtml;
+        }
+
+        // 시간 차이 계산 
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '시간 불명';
+            
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diffMs = now - time;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return '방금 전';
+            if (diffMins < 60) return `${diffMins}분 전`;
+            if (diffHours < 24) return `${diffHours}시간 전`;
+            return `${diffDays}일 전`;
+        }
+
+        // 실시간 사용자 데이터 로딩 - Django PostgreSQL 직접 연동
+        async function loadRealUserData() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/api/users/list/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    showUserDataModal(userData);
+                } else {
+                    alert('사용자 데이터 로딩 실패. 로그인 상태를 확인하세요.');
+                }
+            } catch (error) {
+                console.error('사용자 데이터 로딩 오류:', error);
+                alert('서버 연결 오류가 발생했습니다.');
+            }
+        }
+
+        // 사용자 데이터 모달 표시
+        function showUserDataModal(data) {
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="
+                    position: fixed; 
+                    top: 0; left: 0; 
+                    width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.8); 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center;
+                    z-index: 10000;
+                " onclick="this.remove()">
+                    <div style="
+                        background: white; 
+                        padding: 2rem; 
+                        border-radius: 12px; 
+                        max-width: 800px; 
+                        max-height: 80vh; 
+                        overflow-y: auto;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    " onclick="event.stopPropagation()">
+                        <h2>🔥 실시간 PostgreSQL 사용자 데이터</h2>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>총 사용자:</strong> ${data.total || 0}명<br>
+                            <strong>활성 사용자:</strong> ${data.stats?.active_users || 0}명<br>
+                            <strong>관리자:</strong> ${data.stats?.staff_users || 0}명<br>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            ${data.users ? data.users.map(user => `
+                                <div style="
+                                    border: 1px solid #eee; 
+                                    padding: 1rem; 
+                                    margin: 0.5rem 0; 
+                                    border-radius: 8px;
+                                    background: #f9f9f9;
+                                ">
+                                    <strong>${user.email}</strong> (${user.username})<br>
+                                    <small>
+                                        타입: ${user.user_type} | 
+                                        구독: ${user.subscription_tier} | 
+                                        가입일: ${new Date(user.date_joined).toLocaleDateString('ko-KR')}
+                                        ${user.last_login ? ` | 최종로그인: ${new Date(user.last_login).toLocaleDateString('ko-KR')}` : ''}
+                                    </small>
+                                </div>
+                            `).join('') : '데이터 없음'}
+                        </div>
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <button onclick="window.open('https://ahp-django-backend.onrender.com/admin/', '_blank')" 
+                                style="
+                                    background: #C8A968; 
+                                    color: white; 
+                                    border: none; 
+                                    padding: 0.7rem 1.5rem; 
+                                    border-radius: 6px; 
+                                    cursor: pointer;
+                                    margin-right: 1rem;
+                                ">Django 관리자 패널</button>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                                style="
+                                    background: #6b7280; 
+                                    color: white; 
+                                    border: none; 
+                                    padding: 0.7rem 1.5rem; 
+                                    border-radius: 6px; 
+                                    cursor: pointer;
+                                ">닫기</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // 로그아웃 (Django API 기반)
+        async function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                try {
+                    await window.ahpApi.logout();
+                    window.location.href = 'login.html?message=logout';
+                } catch (error) {
+                    console.error('로그아웃 오류:', error);
+                    // 오류가 발생해도 로그인 페이지로 이동
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

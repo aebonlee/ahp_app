@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터 관리 - AHP for Paper</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-elevated: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        /* 다크 모드 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Pretendard', sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* 헤더 */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        /* 메인 레이아웃 */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .data-card {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        /* 백업 관리 */
+        .backup-section {
+            margin-bottom: 2rem;
+        }
+
+        .backup-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .backup-status {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        /* 백업 목록 */
+        .backup-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .backup-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.2s;
+        }
+
+        .backup-item:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .backup-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .backup-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .backup-size {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .backup-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .backup-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 파일 업로드 */
+        .upload-area {
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-medium);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-primary);
+            background: var(--accent-light);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent-primary);
+            background: var(--accent-light);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 데이터 통계 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border-light);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 진행률 표시 */
+        .progress-section {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid var(--border-light);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .progress-percentage {
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .progress-bar {
+            background: var(--border-light);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            background: var(--accent-primary);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-status {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* 로그 뷰어 */
+        .log-viewer {
+            background: #1a1a1a;
+            color: #f0f0f0;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .log-line {
+            margin-bottom: 0.25rem;
+        }
+
+        .log-timestamp {
+            color: #888;
+        }
+
+        .log-level-info {
+            color: #4ade80;
+        }
+
+        .log-level-warning {
+            color: #fbbf24;
+        }
+
+        .log-level-error {
+            color: #f87171;
+        }
+
+        /* 테이블 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .data-table th {
+            background: var(--bg-elevated);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .backup-controls {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .backup-item-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .backup-actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/ahp_app/" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP for Paper</span>
+            </a>
+            <h1 class="page-title">데이터 관리</h1>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-success" onclick="performFullBackup()">
+                💾 전체 백업
+            </button>
+            <button class="btn btn-secondary" onclick="goBack()">
+                이전으로
+            </button>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <!-- 데이터 통계 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalProjects">0</div>
+                <div class="stat-label">총 프로젝트 수</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalBackups">0</div>
+                <div class="stat-label">백업 파일 수</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-label">사용자 수</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="storageUsed">0</div>
+                <div class="stat-label">사용 용량 (MB)</div>
+            </div>
+        </div>
+
+        <!-- 메인 데이터 관리 그리드 -->
+        <div class="data-grid">
+            <!-- 백업 관리 -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">💾</span>
+                        백업 관리
+                    </h2>
+                </div>
+
+                <div class="backup-controls">
+                    <button class="btn btn-primary" onclick="createBackup()">
+                        📁 프로젝트 백업
+                    </button>
+                    <button class="btn btn-success" onclick="createSystemBackup()">
+                        🔧 시스템 백업
+                    </button>
+                    <button class="btn btn-warning" onclick="scheduleBackup()">
+                        ⏰ 자동 백업 설정
+                    </button>
+                </div>
+
+                <div class="backup-status">
+                    <div class="status-item">
+                        <span class="status-label">마지막 백업</span>
+                        <span class="status-value" id="lastBackupTime">없음</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">다음 자동 백업</span>
+                        <span class="status-value" id="nextBackupTime">설정되지 않음</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">백업 상태</span>
+                        <span class="status-value" id="backupStatus">대기 중</span>
+                    </div>
+                </div>
+
+                <div id="backupProgress" class="progress-section" style="display: none;">
+                    <div class="progress-header">
+                        <span class="progress-title">백업 진행 중...</span>
+                        <span class="progress-percentage" id="backupPercentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="backupProgressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-status" id="backupProgressStatus">백업 준비 중...</div>
+                </div>
+
+                <div id="backupList" class="backup-list">
+                    <!-- 동적으로 생성됩니다 -->
+                </div>
+            </div>
+
+            <!-- 데이터 복원 -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">🔄</span>
+                        데이터 복원
+                    </h2>
+                </div>
+
+                <div class="upload-area" onclick="document.getElementById('restoreFile').click()" 
+                     ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                    <input type="file" id="restoreFile" accept=".json,.zip" style="display: none;" onchange="handleFileSelect(event)">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">복원할 백업 파일을 선택하거나 드래그하세요</div>
+                    <div class="upload-hint">지원 형식: JSON, ZIP</div>
+                </div>
+
+                <div class="backup-controls">
+                    <button class="btn btn-primary" onclick="selectRestoreFile()">
+                        📁 파일 선택
+                    </button>
+                    <button class="btn btn-warning" onclick="showRestoreOptions()">
+                        ⚙️ 복원 옵션
+                    </button>
+                </div>
+
+                <div id="restoreOptions" style="display: none;">
+                    <h4 style="margin: 1rem 0 0.5rem 0; color: var(--text-primary);">복원 옵션</h4>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                        <input type="checkbox" id="restoreProjects" checked>
+                        프로젝트 데이터 복원
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                        <input type="checkbox" id="restoreSettings">
+                        시스템 설정 복원
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                        <input type="checkbox" id="restoreUsers">
+                        사용자 데이터 복원
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                        <input type="checkbox" id="overwriteExisting">
+                        기존 데이터 덮어쓰기
+                    </label>
+                </div>
+
+                <div id="restoreProgress" class="progress-section" style="display: none;">
+                    <div class="progress-header">
+                        <span class="progress-title">복원 진행 중...</span>
+                        <span class="progress-percentage" id="restorePercentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="restoreProgressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-status" id="restoreProgressStatus">복원 준비 중...</div>
+                </div>
+            </div>
+
+            <!-- 데이터 내보내기/가져오기 -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">📊</span>
+                        데이터 내보내기/가져오기
+                    </h2>
+                </div>
+
+                <h4 style="margin-bottom: 1rem; color: var(--text-primary);">내보내기</h4>
+                <div class="backup-controls">
+                    <button class="btn btn-primary" onclick="exportToJSON()">
+                        📄 JSON 내보내기
+                    </button>
+                    <button class="btn btn-success" onclick="exportToCSV()">
+                        📈 CSV 내보내기
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportToExcel()">
+                        📊 Excel 내보내기
+                    </button>
+                </div>
+
+                <h4 style="margin: 2rem 0 1rem 0; color: var(--text-primary);">가져오기</h4>
+                <div class="upload-area" onclick="document.getElementById('importFile').click()">
+                    <input type="file" id="importFile" accept=".json,.csv,.xlsx" style="display: none;" onchange="handleImportFile(event)">
+                    <div class="upload-icon">📥</div>
+                    <div class="upload-text">가져올 데이터 파일을 선택하세요</div>
+                    <div class="upload-hint">지원 형식: JSON, CSV, Excel</div>
+                </div>
+
+                <div class="backup-controls">
+                    <button class="btn btn-primary" onclick="selectImportFile()">
+                        📁 파일 선택
+                    </button>
+                    <button class="btn btn-warning" onclick="validateImportData()">
+                        ✅ 데이터 검증
+                    </button>
+                </div>
+            </div>
+
+            <!-- 데이터 정리 -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">🧹</span>
+                        데이터 정리
+                    </h2>
+                </div>
+
+                <div class="backup-controls">
+                    <button class="btn btn-warning" onclick="cleanupOldBackups()">
+                        🗑️ 오래된 백업 정리
+                    </button>
+                    <button class="btn btn-danger" onclick="clearTempData()">
+                        🔥 임시 데이터 정리
+                    </button>
+                    <button class="btn btn-secondary" onclick="optimizeStorage()">
+                        ⚡ 저장소 최적화
+                    </button>
+                </div>
+
+                <div class="backup-status">
+                    <div class="status-item">
+                        <span class="status-label">임시 파일</span>
+                        <span class="status-value" id="tempFilesCount">검사 중...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">오래된 백업</span>
+                        <span class="status-value" id="oldBackupsCount">검사 중...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">저장소 사용률</span>
+                        <span class="status-value" id="storageUsage">계산 중...</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--text-primary);">정리 로그</h4>
+                    <div id="cleanupLogs" class="log-viewer">
+                        <div class="log-line">
+                            <span class="log-timestamp">[2025-09-12 10:30:00]</span>
+                            <span class="log-level-info">[INFO]</span>
+                            데이터 정리 시스템 준비 완료
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 데이터베이스 관리 -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">🗄️</span>
+                        데이터베이스 관리
+                    </h2>
+                </div>
+
+                <div class="backup-controls">
+                    <button class="btn btn-primary" onclick="analyzeDatabase()">
+                        🔍 데이터베이스 분석
+                    </button>
+                    <button class="btn btn-success" onclick="optimizeDatabase()">
+                        ⚡ 성능 최적화
+                    </button>
+                    <button class="btn btn-warning" onclick="repairDatabase()">
+                        🔧 데이터베이스 복구
+                    </button>
+                </div>
+
+                <div class="backup-status">
+                    <div class="status-item">
+                        <span class="status-label">데이터베이스 크기</span>
+                        <span class="status-value" id="dbSize">계산 중...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">인덱스 상태</span>
+                        <span class="status-value" id="indexStatus">검사 중...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">마지막 최적화</span>
+                        <span class="status-value" id="lastOptimization">없음</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--text-primary);">테이블 정보</h4>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>테이블명</th>
+                                <th>레코드 수</th>
+                                <th>크기</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableInfo">
+                            <tr>
+                                <td>ahp_projects</td>
+                                <td id="projectsCount">-</td>
+                                <td>245 KB</td>
+                                <td>정상</td>
+                            </tr>
+                            <tr>
+                                <td>ahp_users</td>
+                                <td id="usersCount">-</td>
+                                <td>89 KB</td>
+                                <td>정상</td>
+                            </tr>
+                            <tr>
+                                <td>ahp_backups</td>
+                                <td id="backupsCount">-</td>
+                                <td>1.2 MB</td>
+                                <td>정상</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 시스템 모니터링 -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">📈</span>
+                        시스템 모니터링
+                    </h2>
+                </div>
+
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 1rem;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="cpuUsage">0%</div>
+                        <div class="stat-label">CPU 사용률</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="memoryUsage">0%</div>
+                        <div class="stat-label">메모리 사용률</div>
+                    </div>
+                </div>
+
+                <div class="backup-controls">
+                    <button class="btn btn-primary" onclick="refreshSystemInfo()">
+                        🔄 정보 새로고침
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadSystemReport()">
+                        📄 시스템 리포트
+                    </button>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--text-primary);">시스템 로그</h4>
+                    <div id="systemLogs" class="log-viewer">
+                        <div class="log-line">
+                            <span class="log-timestamp">[2025-09-12 10:30:15]</span>
+                            <span class="log-level-info">[INFO]</span>
+                            시스템 모니터링 시작
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let backups = JSON.parse(localStorage.getItem('ahp_backups')) || [];
+        let systemLogs = [];
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatistics();
+            loadBackupList();
+            updateSystemInfo();
+            startSystemMonitoring();
+            addLog('시스템', 'info', 'AHP 데이터 관리 시스템 초기화 완료');
+        });
+
+        // 통계 업데이트
+        function updateStatistics() {
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            const users = JSON.parse(localStorage.getItem('ahp_users')) || [];
+            
+            document.getElementById('totalProjects').textContent = projects.length;
+            document.getElementById('totalBackups').textContent = backups.length;
+            document.getElementById('totalUsers').textContent = users.length;
+            
+            // 사용 용량 계산 (시뮬레이션)
+            const storageUsed = Math.round((projects.length * 0.5 + users.length * 0.1 + backups.length * 2.3) * 10) / 10;
+            document.getElementById('storageUsed').textContent = storageUsed;
+
+            // 테이블 정보 업데이트
+            document.getElementById('projectsCount').textContent = projects.length;
+            document.getElementById('usersCount').textContent = users.length;
+            document.getElementById('backupsCount').textContent = backups.length;
+        }
+
+        // 시스템 정보 업데이트
+        function updateSystemInfo() {
+            // 시뮬레이션된 시스템 정보
+            document.getElementById('dbSize').textContent = '2.4 MB';
+            document.getElementById('indexStatus').textContent = '양호';
+            document.getElementById('lastOptimization').textContent = '2025-09-10';
+            
+            document.getElementById('tempFilesCount').textContent = '3개';
+            document.getElementById('oldBackupsCount').textContent = '2개';
+            document.getElementById('storageUsage').textContent = '67%';
+
+            // 백업 상태 정보
+            if (backups.length > 0) {
+                const lastBackup = new Date(backups[0].createdAt);
+                document.getElementById('lastBackupTime').textContent = lastBackup.toLocaleDateString('ko-KR');
+            }
+            document.getElementById('backupStatus').textContent = '정상';
+        }
+
+        // 시스템 모니터링 시작
+        function startSystemMonitoring() {
+            updateSystemMetrics();
+            setInterval(updateSystemMetrics, 5000); // 5초마다 업데이트
+        }
+
+        // 시스템 메트릭 업데이트
+        function updateSystemMetrics() {
+            // 시뮬레이션된 CPU/메모리 사용률
+            const cpuUsage = Math.floor(Math.random() * 30) + 10; // 10-40%
+            const memoryUsage = Math.floor(Math.random() * 20) + 40; // 40-60%
+            
+            document.getElementById('cpuUsage').textContent = `${cpuUsage}%`;
+            document.getElementById('memoryUsage').textContent = `${memoryUsage}%`;
+
+            // 높은 사용률일 때 경고 로그
+            if (cpuUsage > 35) {
+                addLog('모니터링', 'warning', `CPU 사용률 높음: ${cpuUsage}%`);
+            }
+        }
+
+        // 전체 백업 수행
+        function performFullBackup() {
+            showProgress('backup', '전체 백업 시작...');
+            addLog('백업', 'info', '전체 백업 프로세스 시작');
+
+            simulateBackupProcess('전체 시스템 백업', () => {
+                addLog('백업', 'info', '전체 백업 성공적으로 완료');
+                showNotification('전체 백업이 완료되었습니다!', 'success');
+            });
+        }
+
+        // 프로젝트 백업 생성
+        function createBackup() {
+            showProgress('backup', '프로젝트 백업 생성 중...');
+            addLog('백업', 'info', '프로젝트 백업 시작');
+
+            simulateBackupProcess('프로젝트 데이터 백업', () => {
+                addLog('백업', 'info', '프로젝트 백업 완료');
+                showNotification('프로젝트 백업이 생성되었습니다!', 'success');
+            });
+        }
+
+        // 시스템 백업 생성
+        function createSystemBackup() {
+            showProgress('backup', '시스템 백업 생성 중...');
+            addLog('백업', 'info', '시스템 백업 시작');
+
+            simulateBackupProcess('시스템 설정 백업', () => {
+                addLog('백업', 'info', '시스템 백업 완료');
+                showNotification('시스템 백업이 생성되었습니다!', 'success');
+            });
+        }
+
+        // 백업 프로세스 시뮬레이션
+        function simulateBackupProcess(backupName, onComplete) {
+            const steps = [
+                '데이터 수집 중...',
+                '압축 진행 중...',
+                '체크섬 계산 중...',
+                '저장 완료 중...'
+            ];
+
+            let progress = 0;
+            let stepIndex = 0;
+
+            const interval = setInterval(() => {
+                progress += Math.random() * 30 + 10;
+                if (progress > 100) progress = 100;
+
+                updateProgress('backup', progress, steps[stepIndex] || '완료 중...');
+
+                if (stepIndex < steps.length - 1 && progress > (stepIndex + 1) * 25) {
+                    stepIndex++;
+                }
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    hideProgress('backup');
+
+                    // 백업 생성
+                    const backup = {
+                        id: Date.now().toString(),
+                        name: backupName,
+                        type: backupName.includes('전체') ? 'full' : backupName.includes('시스템') ? 'system' : 'project',
+                        size: `${(Math.random() * 10 + 1).toFixed(1)} MB`,
+                        createdAt: new Date().toISOString(),
+                        status: 'completed'
+                    };
+
+                    backups.unshift(backup);
+                    localStorage.setItem('ahp_backups', JSON.stringify(backups));
+                    loadBackupList();
+                    updateStatistics();
+
+                    if (onComplete) onComplete();
+                }
+            }, 500);
+        }
+
+        // 백업 목록 로드
+        function loadBackupList() {
+            const backupList = document.getElementById('backupList');
+            
+            if (backups.length === 0) {
+                backupList.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">💾</div>
+                        <p>아직 백업 파일이 없습니다</p>
+                    </div>
+                `;
+                return;
+            }
+
+            backupList.innerHTML = backups.map(backup => `
+                <div class="backup-item">
+                    <div class="backup-item-header">
+                        <span class="backup-name">${backup.name}</span>
+                        <span class="backup-size">${backup.size}</span>
+                    </div>
+                    <div class="backup-meta">
+                        <span>생성일: ${new Date(backup.createdAt).toLocaleDateString('ko-KR')}</span>
+                        <span>유형: ${getBackupTypeLabel(backup.type)}</span>
+                    </div>
+                    <div class="backup-actions">
+                        <button class="btn btn-primary btn-sm" onclick="downloadBackup('${backup.id}')">
+                            💾 다운로드
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="restoreBackup('${backup.id}')">
+                            🔄 복원
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteBackup('${backup.id}')">
+                            🗑️ 삭제
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 백업 타입 라벨
+        function getBackupTypeLabel(type) {
+            const labels = {
+                full: '전체 백업',
+                system: '시스템 백업',
+                project: '프로젝트 백업'
+            };
+            return labels[type] || type;
+        }
+
+        // 백업 다운로드
+        function downloadBackup(backupId) {
+            const backup = backups.find(b => b.id === backupId);
+            if (!backup) return;
+
+            // 실제 환경에서는 서버에서 파일 다운로드
+            const data = {
+                backup: backup,
+                projects: JSON.parse(localStorage.getItem('ahp_projects')) || [],
+                timestamp: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${backup.name}_${backup.id}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            addLog('백업', 'info', `백업 파일 다운로드: ${backup.name}`);
+            showNotification('백업 파일을 다운로드했습니다.', 'success');
+        }
+
+        // 백업 복원
+        function restoreBackup(backupId) {
+            const backup = backups.find(b => b.id === backupId);
+            if (!backup) return;
+
+            if (!confirm(`${backup.name} 백업을 복원하시겠습니까?\n기존 데이터가 덮어쓰여질 수 있습니다.`)) return;
+
+            showProgress('restore', '백업 복원 중...');
+            addLog('복원', 'info', `백업 복원 시작: ${backup.name}`);
+
+            // 복원 프로세스 시뮬레이션
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 25 + 5;
+                if (progress > 100) progress = 100;
+
+                updateProgress('restore', progress, '데이터 복원 중...');
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    hideProgress('restore');
+                    addLog('복원', 'info', '백업 복원 완료');
+                    showNotification('백업이 성공적으로 복원되었습니다!', 'success');
+                }
+            }, 300);
+        }
+
+        // 백업 삭제
+        function deleteBackup(backupId) {
+            const backup = backups.find(b => b.id === backupId);
+            if (!backup) return;
+
+            if (!confirm(`${backup.name} 백업을 삭제하시겠습니까?`)) return;
+
+            backups = backups.filter(b => b.id !== backupId);
+            localStorage.setItem('ahp_backups', JSON.stringify(backups));
+            loadBackupList();
+            updateStatistics();
+
+            addLog('백업', 'info', `백업 파일 삭제: ${backup.name}`);
+            showNotification('백업이 삭제되었습니다.', 'info');
+        }
+
+        // 파일 선택/드래그앤드롭 처리
+        function selectRestoreFile() {
+            document.getElementById('restoreFile').click();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processRestoreFile(file);
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                processRestoreFile(files[0]);
+            }
+        }
+
+        // 복원 파일 처리
+        function processRestoreFile(file) {
+            addLog('복원', 'info', `복원 파일 선택: ${file.name}`);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    showNotification('복원 파일이 성공적으로 로드되었습니다!', 'success');
+                    addLog('복원', 'info', '복원 파일 유효성 검사 통과');
+                } catch (error) {
+                    showNotification('잘못된 파일 형식입니다.', 'error');
+                    addLog('복원', 'error', `파일 형식 오류: ${error.message}`);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 데이터 내보내기
+        function exportToJSON() {
+            const data = {
+                projects: JSON.parse(localStorage.getItem('ahp_projects')) || [],
+                users: JSON.parse(localStorage.getItem('ahp_users')) || [],
+                backups: backups,
+                exportedAt: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ahp_data_export_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            addLog('내보내기', 'info', 'JSON 데이터 내보내기 완료');
+            showNotification('데이터를 JSON으로 내보냈습니다!', 'success');
+        }
+
+        function exportToCSV() {
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            const csvContent = [
+                'ID,제목,설명,카테고리,상태,생성일',
+                ...projects.map(p => `${p.id},"${p.title}","${p.description || ''}",${p.category},${p.status},${p.createdAt}`)
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ahp_projects_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            addLog('내보내기', 'info', 'CSV 데이터 내보내기 완료');
+            showNotification('데이터를 CSV로 내보냈습니다!', 'success');
+        }
+
+        function exportToExcel() {
+            showNotification('Excel 내보내기 기능은 향후 구현될 예정입니다.', 'info');
+            addLog('내보내기', 'info', 'Excel 내보내기 요청 (미구현)');
+        }
+
+        // 데이터 정리 기능들
+        function cleanupOldBackups() {
+            const oldBackups = backups.filter(b => {
+                const backupDate = new Date(b.createdAt);
+                const daysDiff = (new Date() - backupDate) / (1000 * 60 * 60 * 24);
+                return daysDiff > 30; // 30일 이상 된 백업
+            });
+
+            if (oldBackups.length === 0) {
+                showNotification('정리할 오래된 백업이 없습니다.', 'info');
+                return;
+            }
+
+            if (confirm(`${oldBackups.length}개의 오래된 백업을 삭제하시겠습니까?`)) {
+                backups = backups.filter(b => !oldBackups.includes(b));
+                localStorage.setItem('ahp_backups', JSON.stringify(backups));
+                loadBackupList();
+                updateStatistics();
+
+                addLog('정리', 'info', `${oldBackups.length}개의 오래된 백업 정리 완료`);
+                showNotification(`${oldBackups.length}개의 오래된 백업을 정리했습니다.`, 'success');
+            }
+        }
+
+        function clearTempData() {
+            // 임시 데이터 정리 시뮬레이션
+            const tempKeys = Object.keys(localStorage).filter(key => key.includes('temp_'));
+            tempKeys.forEach(key => localStorage.removeItem(key));
+
+            addLog('정리', 'info', `${tempKeys.length}개의 임시 파일 정리 완료`);
+            showNotification('임시 데이터를 정리했습니다.', 'success');
+        }
+
+        // 진행률 표시/숨기기
+        function showProgress(type, message) {
+            const progressDiv = document.getElementById(`${type}Progress`);
+            const statusDiv = document.getElementById(`${type}ProgressStatus`);
+            
+            progressDiv.style.display = 'block';
+            statusDiv.textContent = message;
+        }
+
+        function updateProgress(type, percentage, message) {
+            const fillDiv = document.getElementById(`${type}ProgressFill`);
+            const percentDiv = document.getElementById(`${type}Percentage`);
+            const statusDiv = document.getElementById(`${type}ProgressStatus`);
+            
+            fillDiv.style.width = `${percentage}%`;
+            percentDiv.textContent = `${Math.round(percentage)}%`;
+            statusDiv.textContent = message;
+        }
+
+        function hideProgress(type) {
+            const progressDiv = document.getElementById(`${type}Progress`);
+            progressDiv.style.display = 'none';
+        }
+
+        // 로그 추가
+        function addLog(category, level, message) {
+            const timestamp = new Date().toLocaleString('ko-KR');
+            const log = {
+                timestamp,
+                category,
+                level,
+                message
+            };
+
+            systemLogs.unshift(log);
+            if (systemLogs.length > 100) systemLogs = systemLogs.slice(0, 100); // 최대 100개 유지
+
+            updateLogDisplay();
+        }
+
+        // 로그 표시 업데이트
+        function updateLogDisplay() {
+            const cleanupLogs = document.getElementById('cleanupLogs');
+            const systemLogsDiv = document.getElementById('systemLogs');
+            
+            const logsHtml = systemLogs.slice(0, 10).map(log => `
+                <div class="log-line">
+                    <span class="log-timestamp">[${log.timestamp}]</span>
+                    <span class="log-level-${log.level}">[${log.level.toUpperCase()}]</span>
+                    [${log.category}] ${log.message}
+                </div>
+            `).join('');
+
+            cleanupLogs.innerHTML = logsHtml;
+            systemLogsDiv.innerHTML = logsHtml;
+        }
+
+        // 기타 기능들
+        function scheduleBackup() {
+            showNotification('자동 백업 스케줄링 기능은 향후 구현될 예정입니다.', 'info');
+        }
+
+        function showRestoreOptions() {
+            const options = document.getElementById('restoreOptions');
+            options.style.display = options.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function analyzeDatabase() {
+            addLog('데이터베이스', 'info', '데이터베이스 분석 시작');
+            showNotification('데이터베이스 분석이 시작되었습니다.', 'info');
+            
+            setTimeout(() => {
+                addLog('데이터베이스', 'info', '데이터베이스 분석 완료 - 상태 양호');
+                showNotification('데이터베이스 분석이 완료되었습니다.', 'success');
+            }, 2000);
+        }
+
+        function optimizeDatabase() {
+            addLog('데이터베이스', 'info', '데이터베이스 최적화 시작');
+            showNotification('데이터베이스 최적화가 진행됩니다.', 'info');
+            
+            setTimeout(() => {
+                document.getElementById('lastOptimization').textContent = new Date().toLocaleDateString('ko-KR');
+                addLog('데이터베이스', 'info', '데이터베이스 최적화 완료');
+                showNotification('데이터베이스 최적화가 완료되었습니다.', 'success');
+            }, 3000);
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        // 알림 시스템
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--info)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: var(--shadow-lg);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        console.log('✅ AHP 데이터 관리 시스템 로드 완료');
+    </script>
+</body>
+</html>

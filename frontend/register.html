@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - AHP Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .password-input-wrapper {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            font-size: 20px;
+            user-select: none;
+            background: white;
+            padding: 0 5px;
+        }
+        
+        .password-toggle:hover {
+            color: #667eea;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .password-strength {
+            margin-top: 5px;
+            height: 4px;
+            border-radius: 2px;
+            background: #e0e0e0;
+            overflow: hidden;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s;
+        }
+        
+        .password-strength-weak { background: #f44336; width: 33%; }
+        .password-strength-medium { background: #ff9800; width: 66%; }
+        .password-strength-strong { background: #4caf50; width: 100%; }
+        
+        .error-message {
+            color: #f44336;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #999;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>회원가입</h1>
+            <p>AHP Platform에 오신 것을 환영합니다</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="success-message" id="successMessage">
+                회원가입이 완료되었습니다! 잠시 후 로그인 페이지로 이동합니다.
+            </div>
+            
+            <form id="registerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">이름</label>
+                        <input type="text" id="firstName" name="first_name" placeholder="홍">
+                        <div class="error-message" id="firstNameError"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lastName">성</label>
+                        <input type="text" id="lastName" name="last_name" placeholder="길동">
+                        <div class="error-message" id="lastNameError"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">사용자명 *</label>
+                    <input type="text" id="username" name="username" placeholder="영문, 숫자 3-30자" required>
+                    <div class="error-message" id="usernameError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">이메일 *</label>
+                    <input type="email" id="email" name="email" placeholder="example@email.com" required>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">비밀번호 *</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password" name="password" placeholder="8자 이상" required>
+                        <span class="password-toggle" id="passwordToggle">👁️</span>
+                    </div>
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="passwordStrength"></div>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">비밀번호 확인 *</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요" required>
+                        <span class="password-toggle" id="confirmPasswordToggle">👁️</span>
+                    </div>
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>처리 중...</p>
+                </div>
+                
+                <button type="submit" class="btn" id="submitBtn">회원가입</button>
+            </form>
+            
+            <div class="divider">
+                <span>또는</span>
+            </div>
+            
+            <div class="login-link">
+                이미 계정이 있으신가요? <a href="/login">로그인</a>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 15px; background: #f5f5f5; border-radius: 10px; font-size: 13px;">
+                <strong>테스트 계정:</strong><br>
+                이메일: admin@ahp-platform.com<br>
+                비밀번호: ahp2025admin
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API 엔드포인트
+        const API_BASE = 'https://ahp-django-backend.onrender.com';
+        const REGISTER_API = `${API_BASE}/api/auth/register/`;
+        
+        // 폼 요소들
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const successMessage = document.getElementById('successMessage');
+        
+        // 입력 필드들
+        const username = document.getElementById('username');
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const firstName = document.getElementById('firstName');
+        const lastName = document.getElementById('lastName');
+        
+        // 에러 메시지 요소들
+        const usernameError = document.getElementById('usernameError');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        const confirmPasswordError = document.getElementById('confirmPasswordError');
+        
+        // 비밀번호 강도 표시
+        const passwordStrength = document.getElementById('passwordStrength');
+        
+        // 비밀번호 토글 버튼
+        const passwordToggle = document.getElementById('passwordToggle');
+        const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+        
+        // 비밀번호 표시/숨기기 기능
+        passwordToggle.addEventListener('click', () => {
+            const type = password.type === 'password' ? 'text' : 'password';
+            password.type = type;
+            passwordToggle.textContent = type === 'password' ? '👁️' : '👁️‍🗨️';
+        });
+        
+        confirmPasswordToggle.addEventListener('click', () => {
+            const type = confirmPassword.type === 'password' ? 'text' : 'password';
+            confirmPassword.type = type;
+            confirmPasswordToggle.textContent = type === 'password' ? '👁️' : '👁️‍🗨️';
+        });
+        
+        // 실시간 검증
+        username.addEventListener('input', validateUsername);
+        email.addEventListener('input', validateEmail);
+        password.addEventListener('input', () => {
+            validatePassword();
+            checkPasswordStrength();
+        });
+        confirmPassword.addEventListener('input', validatePasswordMatch);
+        
+        function validateUsername() {
+            const value = username.value.trim();
+            if (value.length < 3) {
+                showError(usernameError, '사용자명은 3자 이상이어야 합니다.');
+                return false;
+            }
+            if (value.length > 30) {
+                showError(usernameError, '사용자명은 30자 이하여야 합니다.');
+                return false;
+            }
+            if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+                showError(usernameError, '영문, 숫자, 언더스코어만 사용 가능합니다.');
+                return false;
+            }
+            hideError(usernameError);
+            return true;
+        }
+        
+        function validateEmail() {
+            const value = email.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                showError(emailError, '올바른 이메일 주소를 입력하세요.');
+                return false;
+            }
+            hideError(emailError);
+            return true;
+        }
+        
+        function validatePassword() {
+            const value = password.value;
+            if (value.length < 8) {
+                showError(passwordError, '비밀번호는 8자 이상이어야 합니다.');
+                return false;
+            }
+            hideError(passwordError);
+            return true;
+        }
+        
+        function validatePasswordMatch() {
+            const value = confirmPassword.value;
+            if (value !== password.value) {
+                showError(confirmPasswordError, '비밀번호가 일치하지 않습니다.');
+                return false;
+            }
+            hideError(confirmPasswordError);
+            return true;
+        }
+        
+        function checkPasswordStrength() {
+            const value = password.value;
+            let strength = 0;
+            
+            if (value.length >= 8) strength++;
+            if (value.length >= 12) strength++;
+            if (/[a-z]/.test(value) && /[A-Z]/.test(value)) strength++;
+            if (/[0-9]/.test(value)) strength++;
+            if (/[^a-zA-Z0-9]/.test(value)) strength++;
+            
+            passwordStrength.className = 'password-strength-bar';
+            if (strength <= 2) {
+                passwordStrength.classList.add('password-strength-weak');
+            } else if (strength <= 3) {
+                passwordStrength.classList.add('password-strength-medium');
+            } else {
+                passwordStrength.classList.add('password-strength-strong');
+            }
+        }
+        
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function hideError(element) {
+            element.style.display = 'none';
+        }
+        
+        // 폼 제출
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // 모든 필드 검증
+            const isUsernameValid = validateUsername();
+            const isEmailValid = validateEmail();
+            const isPasswordValid = validatePassword();
+            const isPasswordMatchValid = validatePasswordMatch();
+            
+            if (!isUsernameValid || !isEmailValid || !isPasswordValid || !isPasswordMatchValid) {
+                return;
+            }
+            
+            // 로딩 표시
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch(REGISTER_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username.value.trim(),
+                        email: email.value.trim(),
+                        password: password.value,
+                        first_name: firstName.value.trim(),
+                        last_name: lastName.value.trim()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 성공 메시지 표시
+                    successMessage.style.display = 'block';
+                    form.style.display = 'none';
+                    
+                    // 자동 로그인이면 대시보드로, 아니면 로그인 페이지로
+                    setTimeout(() => {
+                        if (data.auto_login && data.redirect) {
+                            window.location.href = data.redirect;
+                        } else {
+                            window.location.href = '/login';
+                        }
+                    }, 2000);
+                } else {
+                    // 에러 표시
+                    if (data.message.includes('사용자명')) {
+                        showError(usernameError, data.message);
+                    } else if (data.message.includes('이메일')) {
+                        showError(emailError, data.message);
+                    } else if (data.message.includes('비밀번호')) {
+                        showError(passwordError, data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

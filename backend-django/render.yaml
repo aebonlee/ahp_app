@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: ahp-django-backend
+    runtime: python
+    rootDir: backend-django
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --no-input"
+    startCommand: "gunicorn ahp_backend.wsgi:application --bind 0.0.0.0:$PORT"
+    plan: starter
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DJANGO_SETTINGS_MODULE
+        value: ahp_backend.settings
+    healthCheckPath: /api/health/
+
+databases:
+  - name: ahp-postgres-db
+    databaseName: ahp_app_db
+    user: ahp_app_user
+    plan: starter

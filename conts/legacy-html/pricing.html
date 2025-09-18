@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>요금제 - AHP for Paper</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --accent-primary-rgb: 200, 169, 104;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-subtle: #fafbfc;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: white;
+            border-bottom: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 4rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: none;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-primary);
+        }
+
+        .nav-actions {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(var(--accent-primary-rgb), 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .main-content {
+            margin-top: 4rem;
+            padding: 4rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .pricing-card {
+            background: white;
+            border: 2px solid var(--border-light);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--accent-primary);
+            background: linear-gradient(135deg, #ffffff 0%, #fafaf9 100%);
+        }
+
+        .pricing-card.featured::before {
+            content: '가장 인기';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-period {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .plan-features li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .plan-features .check {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .plan-button {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .plan-button.primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .plan-button.secondary {
+            background: white;
+            color: var(--accent-primary);
+            border: 2px solid var(--accent-primary);
+        }
+
+        .plan-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(var(--accent-primary-rgb), 0.3);
+        }
+
+        .faq-section {
+            background: var(--bg-secondary);
+            padding: 4rem 1.5rem;
+        }
+
+        .faq-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .faq-list {
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-4px);
+        }
+
+        @media (min-width: 768px) {
+            .nav-menu {
+                display: flex;
+            }
+            
+            .nav-actions {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="nav-container">
+            <a href="/ahp_app/" class="logo">
+                <h1>AHP for Paper</h1>
+            </a>
+            
+            <nav class="nav-menu">
+                <a href="/ahp_app/#features" class="nav-link">기능 및 이용방법</a>
+                <a href="/ahp_app/#guide" class="nav-link">사용 가이드</a>
+                <a href="/ahp_app/pricing.html" class="nav-link active">요금제</a>
+                <a href="/ahp_app/news.html" class="nav-link">소식 및 사례</a>
+                <a href="/ahp_app/support.html" class="nav-link">고객지원</a>
+            </nav>
+            
+            <div class="nav-actions">
+                <a href="/ahp_app/login.html" class="btn btn-primary">시작하기</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <div class="container">
+            <a href="/ahp_app/" class="back-btn">
+                ← 홈으로 돌아가기
+            </a>
+            
+            <div class="page-header">
+                <h1 class="page-title">연구에 맞는 요금제를 선택하세요</h1>
+                <p class="page-subtitle">
+                    개인 연구자부터 대학 연구실, 기업까지 모든 규모의 연구에 최적화된 요금제를 제공합니다
+                </p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- 무료 체험 -->
+                <div class="pricing-card">
+                    <div class="plan-name">무료 체험</div>
+                    <div class="plan-price">₩0</div>
+                    <div class="plan-period">30일 무료</div>
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> 프로젝트 3개까지</li>
+                        <li><span class="check">✓</span> 기준/대안 각 10개</li>
+                        <li><span class="check">✓</span> 기본 결과 분석</li>
+                        <li><span class="check">✓</span> PDF 내보내기</li>
+                        <li><span class="check">✓</span> 이메일 지원</li>
+                    </ul>
+                    <a href="/ahp_app/register.html" class="plan-button secondary">무료로 시작하기</a>
+                </div>
+
+                <!-- 개인 연구자 -->
+                <div class="pricing-card featured">
+                    <div class="plan-name">개인 연구자</div>
+                    <div class="plan-price">₩29,000</div>
+                    <div class="plan-period">월</div>
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> 무제한 프로젝트</li>
+                        <li><span class="check">✓</span> 기준/대안 각 50개</li>
+                        <li><span class="check">✓</span> 고급 결과 분석</li>
+                        <li><span class="check">✓</span> 다중 내보내기 (PDF, Excel)</li>
+                        <li><span class="check">✓</span> 우선 이메일 지원</li>
+                        <li><span class="check">✓</span> 데이터 백업</li>
+                    </ul>
+                    <a href="/ahp_app/register.html" class="plan-button primary">지금 시작하기</a>
+                </div>
+
+                <!-- 연구실/팀 -->
+                <div class="pricing-card">
+                    <div class="plan-name">연구실/팀</div>
+                    <div class="plan-price">₩89,000</div>
+                    <div class="plan-period">월</div>
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> 팀원 5명까지</li>
+                        <li><span class="check">✓</span> 협업 프로젝트 관리</li>
+                        <li><span class="check">✓</span> 다중 평가자 지원</li>
+                        <li><span class="check">✓</span> 고급 시각화</li>
+                        <li><span class="check">✓</span> API 접근</li>
+                        <li><span class="check">✓</span> 전화 지원</li>
+                    </ul>
+                    <a href="/ahp_app/register.html" class="plan-button secondary">팀 플랜 시작</a>
+                </div>
+
+                <!-- 기업/기관 -->
+                <div class="pricing-card">
+                    <div class="plan-name">기업/기관</div>
+                    <div class="plan-price">문의</div>
+                    <div class="plan-period">맞춤형</div>
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> 무제한 사용자</li>
+                        <li><span class="check">✓</span> 온프레미스 설치</li>
+                        <li><span class="check">✓</span> 맞춤형 기능 개발</li>
+                        <li><span class="check">✓</span> 전용 계정 관리</li>
+                        <li><span class="check">✓</span> SLA 보장</li>
+                        <li><span class="check">✓</span> 24/7 지원</li>
+                    </ul>
+                    <a href="/ahp_app/support.html" class="plan-button secondary">문의하기</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FAQ 섹션 -->
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="faq-title">자주 묻는 질문</h2>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        요금제를 언제든 변경할 수 있나요?
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        네, 언제든지 요금제를 업그레이드하거나 다운그레이드할 수 있습니다. 변경사항은 다음 청구 주기부터 적용됩니다.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        학생 할인이 있나요?
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        대학생과 대학원생에게는 50% 할인을 제공합니다. 학생증 또는 재학증명서를 제출하시면 할인이 적용됩니다.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        데이터 보안은 어떻게 보장되나요?
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        모든 데이터는 SSL 암호화로 전송되고, 서버에서는 AES-256 암호화로 저장됩니다. 또한 정기적인 보안 감사를 통해 안전성을 유지합니다.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        환불 정책은 어떻게 되나요?
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        구독 후 7일 이내에는 100% 환불이 가능합니다. 그 이후에는 사용하지 않은 기간에 대해 일할 계산으로 환불해드립니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function toggleFaq(element) {
+            const faqItem = element.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            // 모든 FAQ 아이템 닫기
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+                item.querySelector('.faq-question span').textContent = '+';
+            });
+            
+            // 클릭한 아이템 토글
+            if (!isActive) {
+                faqItem.classList.add('active');
+                element.querySelector('span').textContent = '−';
+            }
+        }
+
+        console.log('✅ AHP for Paper 요금제 페이지 로드 완료');
+    </script>
+</body>
+</html>

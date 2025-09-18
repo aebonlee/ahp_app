@@ -1,0 +1,487 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card.users {
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card.projects {
+            border-left: 4px solid #10b981;
+        }
+        
+        .stat-card.payments {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .stat-card.system {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-card.users .stat-icon {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .stat-card.projects .stat-icon {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .stat-card.payments .stat-icon {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .stat-card.system .stat-icon {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .stat-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-description {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .quick-actions {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .quick-actions h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .action-button {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .action-button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-button i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .welcome-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .welcome-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+        
+        .welcome-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            transform: translate(-50px, 50px);
+        }
+        
+        .welcome-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .welcome-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .welcome-subtitle {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .recent-activity {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .recent-activity h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            color: white;
+            background: #6b7280;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .activity-time {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block title %}{% trans 'Site administration' %}{% endblock %}
+
+{% block content_title %}<h1>AHP Platform 관리자 대시보드</h1>{% endblock %}
+
+{% block content %}
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <h2 class="welcome-title">
+                <i class="fas fa-crown"></i>
+                환영합니다, {{ user.get_full_name|default:user.username }}님!
+            </h2>
+            <p class="welcome-subtitle">
+                AHP Platform 총 관리자 시스템에 오신 것을 환영합니다. 
+                사용자, 결제, 프로젝트를 효율적으로 관리하세요.
+            </p>
+        </div>
+    </div>
+
+    <!-- Dashboard Statistics -->
+    <div class="dashboard-stats">
+        <div class="stat-card users">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-title">총 사용자</div>
+            </div>
+            <div class="stat-value" id="total-users">-</div>
+            <div class="stat-description">활성 사용자 포함</div>
+        </div>
+        
+        <div class="stat-card projects">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div class="stat-title">AHP 프로젝트</div>
+            </div>
+            <div class="stat-value" id="total-projects">-</div>
+            <div class="stat-description">진행중인 프로젝트</div>
+        </div>
+        
+        <div class="stat-card payments">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="stat-title">결제 거래</div>
+            </div>
+            <div class="stat-value" id="total-payments">-</div>
+            <div class="stat-description">이번 달 매출</div>
+        </div>
+        
+        <div class="stat-card system">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-server"></i>
+                </div>
+                <div class="stat-title">시스템 상태</div>
+            </div>
+            <div class="stat-value">정상</div>
+            <div class="stat-description">모든 서비스 작동</div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3><i class="fas fa-bolt"></i> 빠른 작업</h3>
+        <div class="action-buttons">
+            <a href="{% url 'admin:super_admin_customuser_add' %}" class="action-button">
+                <i class="fas fa-user-plus"></i>
+                새 사용자 추가
+            </a>
+            <a href="{% url 'admin:super_admin_customuser_changelist' %}" class="action-button">
+                <i class="fas fa-users-cog"></i>
+                사용자 관리
+            </a>
+            <a href="{% url 'admin:super_admin_paymentplan_changelist' %}" class="action-button">
+                <i class="fas fa-tags"></i>
+                결제 플랜 관리
+            </a>
+            <a href="{% url 'admin:super_admin_ahpproject_changelist' %}" class="action-button">
+                <i class="fas fa-project-diagram"></i>
+                프로젝트 관리
+            </a>
+            <a href="{% url 'admin:super_admin_paymenttransaction_changelist' %}" class="action-button">
+                <i class="fas fa-receipt"></i>
+                결제 내역
+            </a>
+            <a href="{% url 'admin:super_admin_systemsettings_changelist' %}" class="action-button">
+                <i class="fas fa-cog"></i>
+                시스템 설정
+            </a>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- App List -->
+        <div>
+            {% if app_list %}
+                {% for app in app_list %}
+                    <div class="app-{{ app.app_label }} module">
+                        <table>
+                            <caption>
+                                <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">
+                                    {% if app.app_label == 'super_admin' %}
+                                        <i class="fas fa-crown"></i> {{ app.name }}
+                                    {% else %}
+                                        {{ app.name }}
+                                    {% endif %}
+                                </a>
+                            </caption>
+                            {% for model in app.models %}
+                                <tr class="model-{{ model.object_name|lower }}">
+                                    {% if model.admin_url %}
+                                        <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+                                    {% else %}
+                                        <th scope="row">{{ model.name }}</th>
+                                    {% endif %}
+                                    
+                                    {% if model.add_url %}
+                                        <td><a href="{{ model.add_url }}" class="addlink">{% trans 'Add' %}</a></td>
+                                    {% else %}
+                                        <td>&nbsp;</td>
+                                    {% endif %}
+                                    
+                                    {% if model.admin_url %}
+                                        {% if model.view_only %}
+                                            <td><a href="{{ model.admin_url }}" class="viewlink">{% trans 'View' %}</a></td>
+                                        {% else %}
+                                            <td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
+                                        {% endif %}
+                                    {% else %}
+                                        <td>&nbsp;</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>{% trans "You don't have permission to view or edit anything." %}</p>
+            {% endif %}
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h3><i class="fas fa-clock"></i> 최근 활동</h3>
+            <div class="activity-item">
+                <div class="activity-icon" style="background: #10b981;">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">새 사용자 등록</div>
+                    <div class="activity-time">2시간 전</div>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon" style="background: #667eea;">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">AHP 프로젝트 생성</div>
+                    <div class="activity-time">4시간 전</div>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon" style="background: #f59e0b;">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">결제 처리 완료</div>
+                    <div class="activity-time">6시간 전</div>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon" style="background: #ef4444;">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">시스템 설정 변경</div>
+                    <div class="activity-time">1일 전</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load dashboard statistics
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate loading stats (replace with actual API calls)
+            setTimeout(() => {
+                document.getElementById('total-users').textContent = '{{ app_list|length|default:"0" }}+';
+                document.getElementById('total-projects').textContent = '{{ app_list.0.models|length|default:"0" }}+';
+                document.getElementById('total-payments').textContent = '₩2,450,000';
+            }, 500);
+            
+            // Add loading animation
+            ['total-users', 'total-projects', 'total-payments'].forEach(id => {
+                const element = document.getElementById(id);
+                element.style.opacity = '0.5';
+                element.textContent = '로딩중...';
+            });
+        });
+    </script>
+{% endblock %}
+{% endblock %}

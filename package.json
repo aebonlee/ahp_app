@@ -1,0 +1,10 @@
+{
+  "name": "ahp_app",
+  "version": "0.1.2",
+  "private": true,
+  "homepage": "https://aebonlee.github.io/ahp_app/",
+  "description": "AHP (Analytic Hierarchy Process) Platform - Static HTML/CSS/JS Application",
+  "scripts": {
+    "deploy": "echo 'Static deployment to GitHub Pages'"
+  }
+}

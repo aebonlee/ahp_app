@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기준 설정 - AHP for Paper</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-elevated: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        /* 다크 모드 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Pretendard', sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* 헤더 */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--accent-primary);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* 메인 레이아웃 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .content-area {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* 프로젝트 정보 */
+        .project-info {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .project-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 진행 상황 */
+        .progress-section {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .progress-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .progress-step.current {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .progress-step.completed {
+            color: var(--success);
+        }
+
+        .step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .step-icon.current {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .step-icon.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-icon.pending {
+            background: var(--bg-elevated);
+            color: var(--text-muted);
+        }
+
+        /* 기준 설정 폼 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .criteria-form {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            padding: 0.75rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(200, 169, 104, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* 기준 목록 */
+        .criteria-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .criteria-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .criteria-item:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .criteria-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .criteria-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .criteria-weight {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .criteria-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .criteria-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        /* 계층 구조 시각화 */
+        .hierarchy-visualization {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .hierarchy-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .hierarchy-tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tree-node {
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem;
+            text-align: center;
+            min-width: 150px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .tree-node.goal {
+            background: var(--accent-primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .tree-children {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .tree-connector {
+            width: 2px;
+            height: 20px;
+            background: var(--border-medium);
+            margin: 0 auto;
+        }
+
+        /* 빈 상태 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-description {
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .breadcrumb {
+                font-size: 0.8rem;
+            }
+
+            .tree-children {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/ahp_app/" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP for Paper</span>
+            </a>
+            <div>
+                <div class="breadcrumb">
+                    <a href="/ahp_app/project-management.html">프로젝트 관리</a>
+                    <span>→</span>
+                    <span>기준 설정</span>
+                </div>
+                <h1 class="page-title">평가 기준 설정</h1>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-secondary" onclick="saveAndNext()">
+                다음 단계: 대안 관리
+            </button>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <!-- 메인 콘텐츠 -->
+        <div class="content-area">
+            <div class="section-header">
+                <h2 class="section-title">평가 기준 정의</h2>
+                <button class="btn btn-primary" onclick="toggleCriteriaForm()">
+                    <span id="form-toggle-text">새 기준 추가</span>
+                </button>
+            </div>
+
+            <!-- 계층 구조 시각화 -->
+            <div class="hierarchy-visualization">
+                <h3 class="hierarchy-title">계층 구조 미리보기</h3>
+                <div id="hierarchyTree" class="hierarchy-tree">
+                    <!-- 동적으로 생성됩니다 -->
+                </div>
+            </div>
+
+            <!-- 기준 추가 폼 -->
+            <div id="criteriaForm" class="criteria-form" style="display: none;">
+                <form id="addCriteriaForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="criteriaName">기준 이름 *</label>
+                            <input type="text" id="criteriaName" class="form-input" 
+                                   placeholder="예: 비용 효율성, 기술적 우수성, 시장성" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="criteriaDescription">기준 설명</label>
+                            <textarea id="criteriaDescription" class="form-textarea" 
+                                      placeholder="이 기준이 무엇을 평가하는지 상세히 설명하세요..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="criteriaType">기준 유형</label>
+                            <select id="criteriaType" class="form-select">
+                                <option value="quantitative">정량적 기준</option>
+                                <option value="qualitative">정성적 기준</option>
+                                <option value="mixed">복합적 기준</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn btn-secondary" onclick="resetCriteriaForm()">
+                            초기화
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            기준 추가
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 기준 목록 -->
+            <div id="criteriaList" class="criteria-list">
+                <!-- 동적으로 생성됩니다 -->
+            </div>
+
+            <!-- 빈 상태 -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">⚖️</div>
+                <h3 class="empty-title">아직 기준이 설정되지 않았습니다</h3>
+                <p class="empty-description">
+                    AHP 분석을 위한 평가 기준을 추가하여 계층 구조를 만들어보세요.<br>
+                    일반적으로 3-7개의 기준을 설정하는 것이 좋습니다.
+                </p>
+                <button class="btn btn-primary" onclick="toggleCriteriaForm()">
+                    첫 번째 기준 추가하기
+                </button>
+            </div>
+        </div>
+
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <!-- 프로젝트 정보 -->
+            <div class="project-info">
+                <h3 class="project-title" id="currentProjectTitle">프로젝트 로딩 중...</h3>
+                <p class="project-description" id="currentProjectDescription">설명을 불러오는 중...</p>
+                <div class="project-meta">
+                    <span id="currentProjectGoal">목표: 로딩 중...</span>
+                    <span id="currentProjectDate">생성일: 로딩 중...</span>
+                </div>
+            </div>
+
+            <!-- 진행 상황 -->
+            <div class="progress-section">
+                <h3 class="progress-title">AHP 분석 단계</h3>
+                <div class="progress-steps">
+                    <div class="progress-step completed">
+                        <div class="step-icon completed">1</div>
+                        <span>프로젝트 생성</span>
+                    </div>
+                    <div class="progress-step current">
+                        <div class="step-icon current">2</div>
+                        <span>기준 설정</span>
+                    </div>
+                    <div class="progress-step">
+                        <div class="step-icon pending">3</div>
+                        <span>대안 관리</span>
+                    </div>
+                    <div class="progress-step">
+                        <div class="step-icon pending">4</div>
+                        <span>쌍대비교</span>
+                    </div>
+                    <div class="progress-step">
+                        <div class="step-icon pending">5</div>
+                        <span>결과 분석</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기준 설정 가이드 -->
+            <div class="project-info">
+                <h3 class="project-title">💡 기준 설정 가이드</h3>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                    <p><strong>좋은 기준의 특징:</strong></p>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.2rem;">
+                        <li>명확하고 측정 가능</li>
+                        <li>서로 독립적</li>
+                        <li>중복되지 않음</li>
+                        <li>의사결정 목표와 관련성 높음</li>
+                    </ul>
+                    <p><strong>권장 기준 수:</strong> 3-7개</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProject = null;
+        let criteria = [];
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentProject();
+            loadCriteria();
+            setupEventListeners();
+        });
+
+        // URL에서 프로젝트 ID 가져오기
+        function getProjectIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('project');
+        }
+
+        // 현재 프로젝트 로드
+        function loadCurrentProject() {
+            const projectId = getProjectIdFromUrl();
+            if (!projectId) {
+                alert('프로젝트가 지정되지 않았습니다.');
+                window.location.href = '/ahp_app/project-management.html';
+                return;
+            }
+
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            currentProject = projects.find(p => p.id === projectId);
+
+            if (!currentProject) {
+                alert('프로젝트를 찾을 수 없습니다.');
+                window.location.href = '/ahp_app/project-management.html';
+                return;
+            }
+
+            // 프로젝트 정보 표시
+            document.getElementById('currentProjectTitle').textContent = currentProject.title;
+            document.getElementById('currentProjectDescription').textContent = 
+                currentProject.description || '설명이 없습니다.';
+            document.getElementById('currentProjectGoal').textContent = 
+                `목표: ${currentProject.goal || '설정되지 않음'}`;
+            document.getElementById('currentProjectDate').textContent = 
+                `생성일: ${new Date(currentProject.createdAt).toLocaleDateString('ko-KR')}`;
+        }
+
+        // 기준 데이터 로드
+        function loadCriteria() {
+            if (!currentProject) return;
+            
+            criteria = currentProject.criteria || [];
+            renderCriteria();
+            renderHierarchyTree();
+        }
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            document.getElementById('addCriteriaForm').addEventListener('submit', addCriteria);
+        }
+
+        // 기준 추가
+        function addCriteria(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('criteriaName').value.trim();
+            const description = document.getElementById('criteriaDescription').value.trim();
+            const type = document.getElementById('criteriaType').value;
+
+            if (!name) {
+                alert('기준 이름을 입력해주세요.');
+                return;
+            }
+
+            // 중복 이름 체크
+            if (criteria.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+                alert('이미 존재하는 기준 이름입니다.');
+                return;
+            }
+
+            const newCriteria = {
+                id: Date.now().toString(),
+                name: name,
+                description: description,
+                type: type,
+                weight: null, // 나중에 쌍대비교에서 계산됨
+                createdAt: new Date().toISOString()
+            };
+
+            criteria.push(newCriteria);
+            saveCriteria();
+            renderCriteria();
+            renderHierarchyTree();
+            resetCriteriaForm();
+            toggleCriteriaForm();
+
+            showNotification('기준이 성공적으로 추가되었습니다!', 'success');
+        }
+
+        // 기준 렌더링
+        function renderCriteria() {
+            const criteriaList = document.getElementById('criteriaList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (criteria.length === 0) {
+                criteriaList.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            criteriaList.style.display = 'flex';
+            emptyState.style.display = 'none';
+
+            criteriaList.innerHTML = criteria.map(criterion => createCriteriaItem(criterion)).join('');
+        }
+
+        // 기준 항목 생성
+        function createCriteriaItem(criterion) {
+            const typeLabels = {
+                quantitative: '정량적',
+                qualitative: '정성적',
+                mixed: '복합적'
+            };
+
+            return `
+                <div class="criteria-item" data-criteria-id="${criterion.id}">
+                    <div class="criteria-header">
+                        <div>
+                            <h3 class="criteria-name">${criterion.name}</h3>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">
+                                ${typeLabels[criterion.type]} • ${new Date(criterion.createdAt).toLocaleDateString('ko-KR')}
+                            </span>
+                        </div>
+                        <div class="criteria-weight">
+                            ${criterion.weight ? `가중치: ${(criterion.weight * 100).toFixed(1)}%` : '미계산'}
+                        </div>
+                    </div>
+                    
+                    <p class="criteria-description">
+                        ${criterion.description || '설명이 없습니다.'}
+                    </p>
+                    
+                    <div class="criteria-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editCriteria('${criterion.id}')">
+                            편집
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCriteria('${criterion.id}')">
+                            삭제
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 계층 구조 시각화
+        function renderHierarchyTree() {
+            const hierarchyTree = document.getElementById('hierarchyTree');
+            
+            if (criteria.length === 0) {
+                hierarchyTree.innerHTML = `
+                    <div class="tree-node goal">${currentProject ? currentProject.goal || '의사결정 목표' : '목표'}</div>
+                    <div class="tree-connector"></div>
+                    <div style="color: var(--text-muted); font-style: italic;">기준을 추가하면 계층 구조가 표시됩니다</div>
+                `;
+                return;
+            }
+
+            hierarchyTree.innerHTML = `
+                <div class="tree-node goal">${currentProject.goal || '의사결정 목표'}</div>
+                <div class="tree-connector"></div>
+                <div class="tree-children">
+                    ${criteria.map(criterion => `
+                        <div class="tree-node">${criterion.name}</div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // 기준 편집
+        function editCriteria(criteriaId) {
+            const criterion = criteria.find(c => c.id === criteriaId);
+            if (!criterion) return;
+
+            const newName = prompt('기준 이름을 수정하세요:', criterion.name);
+            if (newName && newName.trim() && newName !== criterion.name) {
+                // 중복 체크
+                if (criteria.some(c => c.id !== criteriaId && c.name.toLowerCase() === newName.toLowerCase())) {
+                    alert('이미 존재하는 기준 이름입니다.');
+                    return;
+                }
+
+                criterion.name = newName.trim();
+                criterion.updatedAt = new Date().toISOString();
+                saveCriteria();
+                renderCriteria();
+                renderHierarchyTree();
+                showNotification('기준이 수정되었습니다!', 'success');
+            }
+        }
+
+        // 기준 삭제
+        function deleteCriteria(criteriaId) {
+            if (!confirm('정말로 이 기준을 삭제하시겠습니까?')) return;
+
+            criteria = criteria.filter(c => c.id !== criteriaId);
+            saveCriteria();
+            renderCriteria();
+            renderHierarchyTree();
+            showNotification('기준이 삭제되었습니다.', 'info');
+        }
+
+        // 기준 데이터 저장
+        function saveCriteria() {
+            if (!currentProject) return;
+
+            currentProject.criteria = criteria;
+            currentProject.updatedAt = new Date().toISOString();
+
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            const projectIndex = projects.findIndex(p => p.id === currentProject.id);
+            
+            if (projectIndex !== -1) {
+                projects[projectIndex] = currentProject;
+                localStorage.setItem('ahp_projects', JSON.stringify(projects));
+            }
+        }
+
+        // 폼 토글
+        function toggleCriteriaForm() {
+            const form = document.getElementById('criteriaForm');
+            const toggleText = document.getElementById('form-toggle-text');
+            
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                toggleText.textContent = '폼 닫기';
+                document.getElementById('criteriaName').focus();
+            } else {
+                form.style.display = 'none';
+                toggleText.textContent = '새 기준 추가';
+            }
+        }
+
+        // 폼 초기화
+        function resetCriteriaForm() {
+            document.getElementById('addCriteriaForm').reset();
+        }
+
+        // 다음 단계로 이동
+        function saveAndNext() {
+            if (criteria.length === 0) {
+                if (confirm('기준이 설정되지 않았습니다. 그래도 다음 단계로 이동하시겠습니까?')) {
+                    window.location.href = `/ahp_app/alternatives-management.html?project=${currentProject.id}`;
+                }
+                return;
+            }
+
+            if (criteria.length < 2) {
+                alert('AHP 분석을 위해서는 최소 2개 이상의 기준이 필요합니다.');
+                return;
+            }
+
+            saveCriteria();
+            window.location.href = `/ahp_app/alternatives-management.html?project=${currentProject.id}`;
+        }
+
+        // 알림 시스템
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--info)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: var(--shadow-lg);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        console.log('✅ AHP 기준 설정 시스템 로드 완료');
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "name": "backend",
+  "version": "2.4.3",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc --skipLibCheck",
+    "copy-files": "node copy-files.js || true",
+    "migrate": "node -e \"require('./dist/database/migrate.js').runMigrations()\"",
+    "test": "echo \"No test specified\" && exit 0",
+    "lint": "echo \"No linter configured\" && exit 0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.3.1",
+    "@types/pg": "^8.15.5",
+    "@types/uuid": "^10.0.0",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.16.3",
+    "typescript": "^5.9.2",
+    "uuid": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^8.2.3",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2"
+  }
+}

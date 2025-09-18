@@ -1,0 +1,34 @@
+# GitHub Pages Configuration for AHP Platform
+title: "AHP Platform - 계층적 의사결정 분석 도구"
+description: "Django backend with PostgreSQL integration for comprehensive decision analysis"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Plugins
+plugins:
+  - jekyll-sitemap
+  - jekyll-feed
+
+# Include these files in the build
+include:
+  - public/
+  - backend-django/
+  - _redirects
+
+# Exclude from processing
+exclude:
+  - node_modules/
+  - package*.json
+  - .gitignore
+  - README.md
+  - conts/
+  - src/
+  - build/
+
+# Permalink structure
+permalink: pretty
+
+# Security
+safe: true

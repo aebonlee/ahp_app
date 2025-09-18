@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - AHP Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .password-input-wrapper {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            font-size: 20px;
+            user-select: none;
+            background: white;
+            padding: 0 5px;
+            transition: color 0.3s;
+        }
+        
+        .password-toggle:hover {
+            color: #667eea;
+        }
+        
+        .password-toggle.show {
+            color: #667eea;
+        }
+        
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        .remember-forgot label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .remember-forgot input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .remember-forgot a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .remember-forgot a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #999;
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .test-account {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+        
+        .test-account strong {
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .test-account .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .test-account .copy-btn:hover {
+            background: #5a67d8;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .input-feedback {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+        
+        .input-feedback.valid {
+            color: #4caf50;
+        }
+        
+        .input-feedback.invalid {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>로그인</h1>
+            <p>AHP Platform에 오신 것을 환영합니다</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">이메일 또는 사용자명</label>
+                    <div class="password-input-wrapper">
+                        <input type="text" id="username" name="username" placeholder="admin@ahp-platform.com" required autofocus>
+                        <span class="input-feedback" id="usernameFeedback"></span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+                        <span class="password-toggle" id="passwordToggle">👁️</span>
+                    </div>
+                </div>
+                
+                <div class="remember-forgot">
+                    <label>
+                        <input type="checkbox" id="rememberMe"> 로그인 상태 유지
+                    </label>
+                    <a href="#" onclick="alert('비밀번호 재설정 기능은 준비중입니다.')">비밀번호를 잊으셨나요?</a>
+                </div>
+                
+                <button type="submit" class="btn" id="submitBtn">
+                    <span id="btnText">로그인</span>
+                </button>
+            </form>
+            
+            <div class="divider">
+                <span>또는</span>
+            </div>
+            
+            <div class="register-link">
+                계정이 없으신가요? <a href="/register">회원가입</a>
+            </div>
+            
+            <div class="test-account">
+                <strong>🧪 테스트 계정</strong>
+                <div style="margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <span>이메일: admin@ahp-platform.com</span>
+                        <button class="copy-btn" onclick="copyTestEmail()">복사</button>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>비밀번호: ahp2025admin</span>
+                        <button class="copy-btn" onclick="copyTestPassword()">복사</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API 엔드포인트
+        const API_BASE = 'https://ahp-django-backend.onrender.com';
+        const LOGIN_API = `${API_BASE}/api/auth/login/`;
+        
+        // 폼 요소들
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        
+        // 입력 필드들
+        const username = document.getElementById('username');
+        const password = document.getElementById('password');
+        const rememberMe = document.getElementById('rememberMe');
+        
+        // 피드백 요소
+        const usernameFeedback = document.getElementById('usernameFeedback');
+        
+        // 비밀번호 토글
+        const passwordToggle = document.getElementById('passwordToggle');
+        let isPasswordVisible = false;
+        
+        passwordToggle.addEventListener('click', () => {
+            isPasswordVisible = !isPasswordVisible;
+            password.type = isPasswordVisible ? 'text' : 'password';
+            passwordToggle.textContent = isPasswordVisible ? '👁️‍🗨️' : '👁️';
+            passwordToggle.classList.toggle('show', isPasswordVisible);
+        });
+        
+        // 이메일 형식 검증
+        username.addEventListener('input', () => {
+            const value = username.value.trim();
+            if (value) {
+                if (value.includes('@')) {
+                    // 이메일 형식 검증
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (emailRegex.test(value)) {
+                        usernameFeedback.textContent = '✓';
+                        usernameFeedback.className = 'input-feedback valid';
+                    } else {
+                        usernameFeedback.textContent = '✗';
+                        usernameFeedback.className = 'input-feedback invalid';
+                    }
+                } else {
+                    // 사용자명 형식 검증
+                    if (value.length >= 3 && /^[a-zA-Z0-9_]+$/.test(value)) {
+                        usernameFeedback.textContent = '✓';
+                        usernameFeedback.className = 'input-feedback valid';
+                    } else {
+                        usernameFeedback.textContent = '';
+                        usernameFeedback.className = 'input-feedback';
+                    }
+                }
+            } else {
+                usernameFeedback.textContent = '';
+                usernameFeedback.className = 'input-feedback';
+            }
+        });
+        
+        // 테스트 계정 복사 기능
+        function copyTestEmail() {
+            navigator.clipboard.writeText('admin@ahp-platform.com');
+            username.value = 'admin@ahp-platform.com';
+            username.dispatchEvent(new Event('input'));
+            showSuccess('이메일이 복사되었습니다.');
+        }
+        
+        function copyTestPassword() {
+            navigator.clipboard.writeText('ahp2025admin');
+            password.value = 'ahp2025admin';
+            showSuccess('비밀번호가 복사되었습니다.');
+        }
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 폼 제출
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usernameValue = username.value.trim();
+            const passwordValue = password.value;
+            
+            if (!usernameValue || !passwordValue) {
+                showError('이메일/사용자명과 비밀번호를 입력해주세요.');
+                return;
+            }
+            
+            // 로딩 상태
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            btnText.textContent = '로그인 중...';
+            errorMessage.style.display = 'none';
+            
+            try {
+                const response = await fetch(LOGIN_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: usernameValue,
+                        password: passwordValue
+                    }),
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('로그인 성공! 대시보드로 이동합니다...');
+                    
+                    // 로그인 정보 저장
+                    if (rememberMe.checked) {
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                    } else {
+                        sessionStorage.setItem('user', JSON.stringify(data.user));
+                    }
+                    
+                    // 리다이렉트
+                    setTimeout(() => {
+                        const redirectUrl = data.redirect || '/personal-dashboard/';
+                        window.location.href = redirectUrl;
+                    }, 1000);
+                } else {
+                    showError(data.message || '로그인에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+                btnText.textContent = '로그인';
+            }
+        });
+        
+        // 엔터키로 제출
+        password.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // 페이지 로드시 저장된 정보 확인
+        window.addEventListener('load', () => {
+            const savedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    if (user.email) {
+                        username.value = user.email;
+                        username.dispatchEvent(new Event('input'));
+                    }
+                } catch (e) {
+                    // 무시
+                }
+            }
+        });
+    </script>
+</body>
+</html>
