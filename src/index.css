@@ -1,3 +1,8 @@
+/* Tailwind CSS imports */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Import global theme and color system */
 @import './styles/global.css';
 @import './styles/design-system.css';

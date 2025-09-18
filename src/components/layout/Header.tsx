@@ -6,8 +6,8 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Bars3Icon, BellIcon, UserCircleIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid';
-import useAuthStore from '@/store/authStore';
-import useUIStore from '@/store/uiStore';
+import useAuthStore from '../../store/authStore';
+import useUIStore from '../../store/uiStore';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();

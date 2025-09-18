@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { Project, Criteria, Alternative, APIResponse } from '@/types';
+import { Project, Criteria, Alternative, APIResponse } from '../types';
 import axios from 'axios';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'https://ahp-app-vuzk.onrender.com/api/v1';

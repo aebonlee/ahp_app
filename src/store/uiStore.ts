@@ -4,11 +4,15 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { UIState, Notification, LoadingState, ErrorState } from '@/types';
+import { UIState, Notification, LoadingState, ErrorState } from '../types';
 
 interface UIStore extends UIState {
   // Loading states
   loadingStates: Record<string, LoadingState>;
+  
+  // Dark mode
+  darkMode: boolean;
+  toggleDarkMode: () => void;
   
   // Actions
   setTheme: (theme: 'light' | 'dark' | 'auto') => void;
@@ -44,11 +48,26 @@ const useUIStore = create<UIStore>()(
       (set, get) => ({
         // Initial State
         theme: 'auto',
+        darkMode: false,
         sidebarCollapsed: false,
         notifications: [],
         loadingStates: {},
         modals: {},
         toasts: [],
+
+        // Toggle Dark Mode
+        toggleDarkMode: () => {
+          set((state) => {
+            const newDarkMode = !state.darkMode;
+            const newTheme = newDarkMode ? 'dark' : 'light';
+            
+            // Apply theme to document
+            const root = document.documentElement;
+            root.classList.toggle('dark', newDarkMode);
+            
+            return { darkMode: newDarkMode, theme: newTheme };
+          });
+        },
 
         // Set Theme
         setTheme: (theme) => {
@@ -59,8 +78,11 @@ const useUIStore = create<UIStore>()(
           if (theme === 'auto') {
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             root.classList.toggle('dark', prefersDark);
+            set({ darkMode: prefersDark });
           } else {
-            root.classList.toggle('dark', theme === 'dark');
+            const isDark = theme === 'dark';
+            root.classList.toggle('dark', isDark);
+            set({ darkMode: isDark });
           }
         },
 
@@ -79,8 +101,8 @@ const useUIStore = create<UIStore>()(
           const notification: Notification = {
             id: `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             timestamp: new Date().toISOString(),
-            read: false,
             ...notificationData,
+            read: false,
           };
           
           set((state) => ({

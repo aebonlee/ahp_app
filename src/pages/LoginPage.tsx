@@ -5,9 +5,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon, UserIcon, LockClosedIcon } from '@heroicons/react/24/outline';
-import useAuthStore from '@/store/authStore';
-import useUIStore from '@/store/uiStore';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import useAuthStore from '../store/authStore';
+import useUIStore from '../store/uiStore';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();

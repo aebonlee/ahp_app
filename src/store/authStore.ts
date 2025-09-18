@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { User, AuthToken, LoginCredentials, RegisterData, APIResponse } from '@/types';
+import { User, AuthToken, LoginCredentials, RegisterData, APIResponse } from '../types';
 import axios from 'axios';
 
 // API 기본 설정

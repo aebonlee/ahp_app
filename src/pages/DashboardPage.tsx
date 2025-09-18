@@ -14,10 +14,10 @@ import {
   ExclamationTriangleIcon,
   CalculatorIcon
 } from '@heroicons/react/24/outline';
-import useAuthStore from '@/store/authStore';
-import useProjectStore from '@/store/projectStore';
-import useUIStore from '@/store/uiStore';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import useAuthStore from '../store/authStore';
+import useProjectStore from '../store/projectStore';
+import useUIStore from '../store/uiStore';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();

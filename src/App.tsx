@@ -7,24 +7,24 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 // Stores
-import useAuthStore from '@/store/authStore';
-import { initializeTheme } from '@/store/uiStore';
+import useAuthStore from './store/authStore';
+import { initializeTheme } from './store/uiStore';
 
 // Pages
-import HomePage from '@/pages/HomePage';
-import LoginPage from '@/pages/LoginPage';
-import DashboardPage from '@/pages/DashboardPage';
-import ProjectPage from '@/pages/ProjectPage';
-// import ComparisonPage from '@/pages/ComparisonPage';
-// import ResultsPage from '@/pages/ResultsPage';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+// import ProjectPage from './pages/ProjectPage';
+// import ComparisonPage from './pages/ComparisonPage';
+// import ResultsPage from './pages/ResultsPage';
 
 // Components
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import ToastContainer from '@/components/ui/ToastContainer';
-import Layout from '@/components/layout/Layout';
+import LoadingSpinner from './components/ui/LoadingSpinner';
+import ToastContainer from './components/ui/ToastContainer';
+import Layout from './components/layout/Layout';
 
 // Styles
-import '@/styles/globals.css';
+import './styles/global.css';
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -119,7 +119,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <ProjectPage />
+                    <DashboardPage />
                   </Layout>
                 </ProtectedRoute>
               } 
@@ -129,7 +129,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <ProjectPage />
+                    <DashboardPage />
                   </Layout>
                 </ProtectedRoute>
               } 

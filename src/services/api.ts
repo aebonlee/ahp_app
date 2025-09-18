@@ -3,7 +3,7 @@
 // =============================================================================
 
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { APIResponse } from '@/types';
+import { APIResponse } from '../types';
 
 // API 기본 설정
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-app-vuzk.onrender.com/api/v1';

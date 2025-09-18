@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import useUIStore from '@/store/uiStore';
+import useUIStore from '../../store/uiStore';
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, InformationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const ToastContainer: React.FC = () => {

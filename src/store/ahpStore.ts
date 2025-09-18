@@ -10,7 +10,7 @@ import {
   MatrixValidation, 
   WeightCalculation,
   APIResponse 
-} from '@/types';
+} from '../types';
 import axios from 'axios';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'https://ahp-app-vuzk.onrender.com/api/v1';
