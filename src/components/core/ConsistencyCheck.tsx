@@ -123,7 +123,7 @@ export const ConsistencyCheck: React.FC<ConsistencyCheckProps> = ({
                   </div>
                   <div className="text-center">
                     <div className="text-red-600 font-medium">심각</div>
-                    <div>> 0.20</div>
+                    <div>&gt; 0.20</div>
                   </div>
                 </div>
               </div>
