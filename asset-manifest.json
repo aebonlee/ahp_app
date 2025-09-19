@@ -1,9 +1,9 @@
 {
   "files": {
-    "main.css": "/ahp-platform/static/css/main.8e2f80f5.css",
-    "main.js": "/ahp-platform/static/js/main.12aa8974.js",
-    "static/js/206.c8c95004.chunk.js": "/ahp-platform/static/js/206.c8c95004.chunk.js",
-    "index.html": "/ahp-platform/index.html"
+    "main.css": "./static/css/main.8e2f80f5.css",
+    "main.js": "./static/js/main.12aa8974.js",
+    "static/js/206.c8c95004.chunk.js": "./static/js/206.c8c95004.chunk.js",
+    "index.html": "./index.html"
   },
   "entrypoints": [
     "static/css/main.8e2f80f5.css",
