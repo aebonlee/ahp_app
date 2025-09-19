@@ -2,7 +2,7 @@
   "name": "ahp-enterprise-platform",
   "version": "3.0.0",
   "private": true,
-  "homepage": "https://aebonlee.github.io/ahp_app",
+  "homepage": ".",
   "description": "AHP Enterprise Platform - React + TypeScript + Django Integration",
   "dependencies": {
     "@headlessui/react": "^1.7.17",
