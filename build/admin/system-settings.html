@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시스템 설정 - AHP Admin</title>
+    <link rel="stylesheet" href="../styles/layout.css">
+    <style>
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .settings-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .settings-subtitle {
+            color: var(--text-secondary);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .settings-sections {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .settings-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(200, 169, 104, 0.1);
+        }
+
+        .form-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(200, 169, 104, 0.1);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--accent-primary);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .form-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--border-light);
+            margin-top: 1.5rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-online {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .status-offline {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .info-card {
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .maintenance-banner {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .maintenance-banner.active {
+            display: block;
+        }
+
+        .backup-schedule {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        .schedule-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .schedule-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .schedule-time {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.6;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-light);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: 1rem;
+            }
+
+            .settings-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .settings-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-header">
+            <div>
+                <h1 class="settings-title">⚙️ 시스템 설정</h1>
+                <p class="settings-subtitle">시스템 전반적인 설정을 관리하고 모니터링합니다</p>
+            </div>
+            <div class="settings-actions">
+                <button class="btn btn-secondary" id="resetSettings">
+                    🔄 설정 초기화
+                </button>
+                <button class="btn btn-primary" id="saveSettings">
+                    💾 변경사항 저장
+                </button>
+            </div>
+        </div>
+
+        <div id="maintenanceBanner" class="maintenance-banner">
+            ⚠️ 시스템 점검이 예정되어 있습니다. 점검 시간: 2025-09-14 02:00 ~ 04:00
+        </div>
+
+        <div class="settings-sections">
+            <!-- 일반 시스템 설정 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <div class="section-icon">🎛️</div>
+                    <div>
+                        <h3 class="section-title">일반 시스템 설정</h3>
+                        <p class="section-description">기본적인 시스템 동작을 설정합니다</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">시스템 이름</label>
+                        <input type="text" class="form-input" id="systemName" value="AHP Analysis Platform">
+                        <span class="form-description">사용자에게 표시되는 시스템 이름</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">시스템 언어</label>
+                        <select class="form-select" id="systemLanguage">
+                            <option value="ko">한국어</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">시간대</label>
+                        <select class="form-select" id="timezone">
+                            <option value="Asia/Seoul">Asia/Seoul (GMT+9)</option>
+                            <option value="UTC">UTC (GMT+0)</option>
+                            <option value="America/New_York">America/New_York (GMT-5)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">날짜 형식</label>
+                        <select class="form-select" id="dateFormat">
+                            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                            <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="system-info">
+                    <div class="info-card">
+                        <div class="info-label">시스템 버전</div>
+                        <div class="info-value">v2.1.0</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">데이터베이스 상태</div>
+                        <div class="info-value">
+                            <span class="status-indicator status-online">
+                                ● 정상
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">마지막 업데이트</div>
+                        <div class="info-value">2025-09-13 10:30</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">서버 상태</div>
+                        <div class="info-value">
+                            <span class="status-indicator status-online">
+                                ● 온라인
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사용자 설정 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <div class="section-icon">👥</div>
+                    <div>
+                        <h3 class="section-title">사용자 관리 설정</h3>
+                        <p class="section-description">사용자 관련 정책과 제한을 설정합니다</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">신규 사용자 자동 승인</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoApproveUsers" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="form-description">새로 가입한 사용자를 자동으로 승인합니다</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">이메일 인증 필수</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="requireEmailVerification" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="form-description">회원가입 시 이메일 인증을 필수로 합니다</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">최대 프로젝트 수</label>
+                        <input type="number" class="form-input" id="maxProjects" value="10" min="1" max="100">
+                        <span class="form-description">사용자당 생성 가능한 최대 프로젝트 수</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">세션 만료 시간 (분)</label>
+                        <input type="number" class="form-input" id="sessionTimeout" value="60" min="5" max="480">
+                        <span class="form-description">사용자 세션이 만료되는 시간</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 보안 설정 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <div class="section-icon">🔒</div>
+                    <div>
+                        <h3 class="section-title">보안 설정</h3>
+                        <p class="section-description">시스템 보안 정책을 관리합니다</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">비밀번호 최소 길이</label>
+                        <input type="number" class="form-input" id="minPasswordLength" value="8" min="6" max="20">
+                        <span class="form-description">사용자 비밀번호 최소 길이</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">로그인 시도 제한</label>
+                        <input type="number" class="form-input" id="maxLoginAttempts" value="5" min="3" max="10">
+                        <span class="form-description">연속 로그인 실패 허용 횟수</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">2단계 인증 강제</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="force2FA">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="form-description">모든 사용자에게 2단계 인증을 강제합니다</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">IP 기반 접근 제한</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="ipRestriction">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="form-description">특정 IP 주소로만 접근을 제한합니다</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 백업 설정 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <div class="section-icon">💾</div>
+                    <div>
+                        <h3 class="section-title">백업 설정</h3>
+                        <p class="section-description">자동 백업 정책을 설정합니다</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">자동 백업 활성화</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableAutoBackup" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="form-description">정기적인 자동 백업을 실행합니다</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">백업 주기</label>
+                        <select class="form-select" id="backupFrequency">
+                            <option value="daily">매일</option>
+                            <option value="weekly">매주</option>
+                            <option value="monthly">매월</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">백업 보관 기간 (일)</label>
+                        <input type="number" class="form-input" id="backupRetention" value="30" min="7" max="365">
+                        <span class="form-description">백업 파일을 보관할 기간</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">백업 위치</label>
+                        <select class="form-select" id="backupLocation">
+                            <option value="local">로컬 서버</option>
+                            <option value="aws">AWS S3</option>
+                            <option value="azure">Azure Blob</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="backup-schedule">
+                    <div class="schedule-item">
+                        <div class="schedule-info">
+                            <div class="schedule-title">다음 백업 예정</div>
+                            <div class="schedule-time">2025-09-14 02:00</div>
+                        </div>
+                        <button class="btn btn-secondary" id="runBackupNow">지금 백업</button>
+                    </div>
+                    <div class="schedule-item">
+                        <div class="schedule-info">
+                            <div class="schedule-title">마지막 백업</div>
+                            <div class="schedule-time">2025-09-13 02:00 (성공)</div>
+                        </div>
+                        <button class="btn btn-secondary" id="viewBackupHistory">백업 기록</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 알림 설정 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <div class="section-icon">🔔</div>
+                    <div>
+                        <h3 class="section-title">알림 설정</h3>
+                        <p class="section-description">시스템 알림과 이메일 설정을 관리합니다</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">이메일 알림 활성화</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableEmailNotifications" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="form-description">중요한 시스템 이벤트를 이메일로 알립니다</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">관리자 이메일</label>
+                        <input type="email" class="form-input" id="adminEmail" value="admin@ahp-platform.com">
+                        <span class="form-description">시스템 알림을 받을 관리자 이메일</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">SMTP 서버</label>
+                        <input type="text" class="form-input" id="smtpServer" value="smtp.gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">SMTP 포트</label>
+                        <input type="number" class="form-input" id="smtpPort" value="587">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 성능 설정 -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <div class="section-icon">⚡</div>
+                    <div>
+                        <h3 class="section-title">성능 설정</h3>
+                        <p class="section-description">시스템 성능 최적화 옵션을 설정합니다</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">캐시 활성화</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableCache" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="form-description">응답 속도 향상을 위한 캐시를 활성화합니다</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">캐시 만료 시간 (분)</label>
+                        <input type="number" class="form-input" id="cacheExpiration" value="30" min="5" max="1440">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">압축 활성화</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableCompression" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="form-description">데이터 전송량 감소를 위한 압축을 활성화합니다</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">최대 동시 사용자</label>
+                        <input type="number" class="form-input" id="maxConcurrentUsers" value="1000" min="100" max="10000">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/api-service.js"></script>
+    <script>
+        let settings = {};
+        let hasUnsavedChanges = false;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 시스템 설정 페이지 초기화');
+            await loadSystemSettings();
+            setupEventListeners();
+            updateSystemStatus();
+            checkMaintenanceMode();
+        });
+
+        async function loadSystemSettings() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/system/settings/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    settings = await response.json();
+                    populateSettingsForm(settings);
+                } else {
+                    console.warn('API로 설정 로드 실패, 기본값 사용');
+                    loadDefaultSettings();
+                }
+            } catch (error) {
+                console.error('시스템 설정 로드 실패:', error);
+                loadDefaultSettings();
+            }
+        }
+
+        function loadDefaultSettings() {
+            settings = {
+                systemName: 'AHP Analysis Platform',
+                systemLanguage: 'ko',
+                timezone: 'Asia/Seoul',
+                dateFormat: 'YYYY-MM-DD',
+                autoApproveUsers: true,
+                requireEmailVerification: true,
+                maxProjects: 10,
+                sessionTimeout: 60,
+                minPasswordLength: 8,
+                maxLoginAttempts: 5,
+                force2FA: false,
+                ipRestriction: false,
+                enableAutoBackup: true,
+                backupFrequency: 'daily',
+                backupRetention: 30,
+                backupLocation: 'local',
+                enableEmailNotifications: true,
+                adminEmail: 'admin@ahp-platform.com',
+                smtpServer: 'smtp.gmail.com',
+                smtpPort: 587,
+                enableCache: true,
+                cacheExpiration: 30,
+                enableCompression: true,
+                maxConcurrentUsers: 1000
+            };
+            populateSettingsForm(settings);
+        }
+
+        function populateSettingsForm(settings) {
+            document.getElementById('systemName').value = settings.systemName || '';
+            document.getElementById('systemLanguage').value = settings.systemLanguage || 'ko';
+            document.getElementById('timezone').value = settings.timezone || 'Asia/Seoul';
+            document.getElementById('dateFormat').value = settings.dateFormat || 'YYYY-MM-DD';
+            
+            document.getElementById('autoApproveUsers').checked = settings.autoApproveUsers || false;
+            document.getElementById('requireEmailVerification').checked = settings.requireEmailVerification || false;
+            document.getElementById('maxProjects').value = settings.maxProjects || 10;
+            document.getElementById('sessionTimeout').value = settings.sessionTimeout || 60;
+            
+            document.getElementById('minPasswordLength').value = settings.minPasswordLength || 8;
+            document.getElementById('maxLoginAttempts').value = settings.maxLoginAttempts || 5;
+            document.getElementById('force2FA').checked = settings.force2FA || false;
+            document.getElementById('ipRestriction').checked = settings.ipRestriction || false;
+            
+            document.getElementById('enableAutoBackup').checked = settings.enableAutoBackup || false;
+            document.getElementById('backupFrequency').value = settings.backupFrequency || 'daily';
+            document.getElementById('backupRetention').value = settings.backupRetention || 30;
+            document.getElementById('backupLocation').value = settings.backupLocation || 'local';
+            
+            document.getElementById('enableEmailNotifications').checked = settings.enableEmailNotifications || false;
+            document.getElementById('adminEmail').value = settings.adminEmail || '';
+            document.getElementById('smtpServer').value = settings.smtpServer || '';
+            document.getElementById('smtpPort').value = settings.smtpPort || 587;
+            
+            document.getElementById('enableCache').checked = settings.enableCache || false;
+            document.getElementById('cacheExpiration').value = settings.cacheExpiration || 30;
+            document.getElementById('enableCompression').checked = settings.enableCompression || false;
+            document.getElementById('maxConcurrentUsers').value = settings.maxConcurrentUsers || 1000;
+        }
+
+        function setupEventListeners() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    hasUnsavedChanges = true;
+                    updateSaveButton();
+                });
+            });
+
+            document.getElementById('saveSettings').addEventListener('click', saveSystemSettings);
+            document.getElementById('resetSettings').addEventListener('click', resetSettings);
+            document.getElementById('runBackupNow').addEventListener('click', runBackupNow);
+            document.getElementById('viewBackupHistory').addEventListener('click', viewBackupHistory);
+
+            window.addEventListener('beforeunload', (e) => {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        }
+
+        function updateSaveButton() {
+            const saveBtn = document.getElementById('saveSettings');
+            if (hasUnsavedChanges) {
+                saveBtn.textContent = '💾 변경사항 저장 *';
+                saveBtn.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            } else {
+                saveBtn.textContent = '💾 변경사항 저장';
+                saveBtn.style.background = 'var(--gradient-primary)';
+            }
+        }
+
+        async function saveSystemSettings() {
+            const saveBtn = document.getElementById('saveSettings');
+            const originalText = saveBtn.textContent;
+            
+            try {
+                saveBtn.textContent = '저장 중...';
+                saveBtn.disabled = true;
+                saveBtn.classList.add('loading');
+
+                const formData = collectFormData();
+
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/system/settings/', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    settings = formData;
+                    hasUnsavedChanges = false;
+                    updateSaveButton();
+                    showNotification('시스템 설정이 성공적으로 저장되었습니다.', 'success');
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || '설정 저장에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('설정 저장 오류:', error);
+                showNotification(`설정 저장 실패: ${error.message}`, 'error');
+            } finally {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('loading');
+            }
+        }
+
+        function collectFormData() {
+            return {
+                systemName: document.getElementById('systemName').value,
+                systemLanguage: document.getElementById('systemLanguage').value,
+                timezone: document.getElementById('timezone').value,
+                dateFormat: document.getElementById('dateFormat').value,
+                autoApproveUsers: document.getElementById('autoApproveUsers').checked,
+                requireEmailVerification: document.getElementById('requireEmailVerification').checked,
+                maxProjects: parseInt(document.getElementById('maxProjects').value),
+                sessionTimeout: parseInt(document.getElementById('sessionTimeout').value),
+                minPasswordLength: parseInt(document.getElementById('minPasswordLength').value),
+                maxLoginAttempts: parseInt(document.getElementById('maxLoginAttempts').value),
+                force2FA: document.getElementById('force2FA').checked,
+                ipRestriction: document.getElementById('ipRestriction').checked,
+                enableAutoBackup: document.getElementById('enableAutoBackup').checked,
+                backupFrequency: document.getElementById('backupFrequency').value,
+                backupRetention: parseInt(document.getElementById('backupRetention').value),
+                backupLocation: document.getElementById('backupLocation').value,
+                enableEmailNotifications: document.getElementById('enableEmailNotifications').checked,
+                adminEmail: document.getElementById('adminEmail').value,
+                smtpServer: document.getElementById('smtpServer').value,
+                smtpPort: parseInt(document.getElementById('smtpPort').value),
+                enableCache: document.getElementById('enableCache').checked,
+                cacheExpiration: parseInt(document.getElementById('cacheExpiration').value),
+                enableCompression: document.getElementById('enableCompression').checked,
+                maxConcurrentUsers: parseInt(document.getElementById('maxConcurrentUsers').value)
+            };
+        }
+
+        async function resetSettings() {
+            if (!confirm('모든 설정을 기본값으로 초기화하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                loadDefaultSettings();
+                hasUnsavedChanges = true;
+                updateSaveButton();
+                showNotification('설정이 기본값으로 초기화되었습니다. 저장 버튼을 클릭하여 적용하세요.', 'info');
+            } catch (error) {
+                console.error('설정 초기화 오류:', error);
+                showNotification('설정 초기화 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        async function runBackupNow() {
+            const btn = document.getElementById('runBackupNow');
+            const originalText = btn.textContent;
+            
+            try {
+                btn.textContent = '백업 실행 중...';
+                btn.disabled = true;
+                btn.classList.add('loading');
+
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/backup/restore/', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showNotification('백업이 성공적으로 완료되었습니다.', 'success');
+                } else {
+                    throw new Error('백업 실행에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('백업 실행 오류:', error);
+                showNotification(`백업 실행 실패: ${error.message}`, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        function viewBackupHistory() {
+            window.open('/admin/backup-history.html', '_blank');
+        }
+
+        async function updateSystemStatus() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/dashboard/stats/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const status = await response.json();
+                    updateStatusIndicators(status);
+                }
+            } catch (error) {
+                console.error('시스템 상태 확인 오류:', error);
+            }
+        }
+
+        function updateStatusIndicators(status) {
+            const dbStatus = document.querySelector('.info-card:nth-child(2) .status-indicator');
+            const serverStatus = document.querySelector('.info-card:nth-child(4) .status-indicator');
+            
+            if (status.database_connected) {
+                dbStatus.className = 'status-indicator status-online';
+                dbStatus.innerHTML = '● 정상';
+            } else {
+                dbStatus.className = 'status-indicator status-offline';
+                dbStatus.innerHTML = '● 오프라인';
+            }
+
+            if (status.server_online) {
+                serverStatus.className = 'status-indicator status-online';
+                serverStatus.innerHTML = '● 온라인';
+            } else {
+                serverStatus.className = 'status-indicator status-offline';
+                serverStatus.innerHTML = '● 오프라인';
+            }
+        }
+
+        function checkMaintenanceMode() {
+            const maintenanceBanner = document.getElementById('maintenanceBanner');
+            
+            const maintenanceScheduled = new Date('2025-09-14T02:00:00');
+            const now = new Date();
+            const timeDiff = maintenanceScheduled.getTime() - now.getTime();
+            
+            if (timeDiff > 0 && timeDiff < 24 * 60 * 60 * 1000) {
+                maintenanceBanner.classList.add('active');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                transform: translateX(100%);
+                transition: transform 0.3s;
+            `;
+
+            switch (type) {
+                case 'success':
+                    notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    break;
+                case 'error':
+                    notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                    break;
+                case 'info':
+                    notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                    break;
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

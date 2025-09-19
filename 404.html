@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#3B82F6" />
+    <meta
+      name="description"
+      content="AHP for Paper - 연구 논문을 위한 전문적인 AHP(Analytic Hierarchy Process) 의사결정 분석 도구"
+    />
+    <meta name="keywords" content="AHP, Analytic Hierarchy Process, 의사결정, 다기준의사결정, 연구, 논문, 분석도구" />
+    <meta name="author" content="AHP for Paper Team" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>AHP for Paper - 연구 논문을 위한 AHP 의사결정 분석</title>
+    <script>
+      // GitHub Pages SPA redirect - preserve query parameters and paths
+      const currentUrl = window.location.href;
+      const pathname = window.location.pathname;
+      const searchParams = window.location.search;
+      const hash = window.location.hash;
+      
+      // Check if we're on a survey evaluation path
+      const surveyMatch = pathname.match(/\/survey\/eval\/(.+)/);
+      
+      if (surveyMatch) {
+        // Handle survey evaluation paths
+        const surveyId = surveyMatch[1];
+        // Store survey info in sessionStorage for React to pick up
+        sessionStorage.setItem('survey_redirect', JSON.stringify({
+          path: pathname,
+          id: surveyId
+        }));
+        // Redirect to main app with survey indicator
+        const newUrl = window.location.origin + '/ahp-platform/?survey=' + surveyId + hash;
+        window.location.replace(newUrl);
+      } else if (!currentUrl.includes('/ahp-platform/')) {
+        // Normal redirect to the correct base path while preserving query parameters and hash
+        const newUrl = window.location.origin + '/ahp-platform/' + searchParams + hash;
+        window.location.replace(newUrl);
+      }
+      // If we're already on the correct path, let React handle routing
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

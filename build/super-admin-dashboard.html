@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - 슈퍼 관리자 대시보드</title>
+    <link rel="stylesheet" href="styles/layout.css">
+    <style>
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            background-color: var(--bg-secondary);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .admin-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .admin-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-card-icon {
+            font-size: 1.5rem;
+        }
+
+        .admin-card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-card-change {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .change-positive {
+            color: #10b981;
+        }
+
+        .change-negative {
+            color: #ef4444;
+        }
+
+        .management-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .admin-mode-toggle {
+            padding: 0.5rem 1rem;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .admin-mode-toggle:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .admin-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+        }
+
+        .user-role {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            color: var(--text-primary);
+        }
+
+        /* 엔터프라이즈급 상태 표시 */
+        .status-indicator {
+            position: relative;
+            display: inline-block;
+        }
+
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-indicator.offline::after {
+            background: #ef4444;
+        }
+
+        /* 프리미엄 그라데이션 */
+        .premium-gradient {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 50%, #8B5A2B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .management-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .management-card:hover {
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .management-card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .management-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .management-card-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .activity-icon.user { background: #dbeafe; color: #2563eb; }
+        .activity-icon.project { background: #dcfce7; color: #16a34a; }
+        .activity-icon.system { background: #fef3c7; color: #d97706; }
+        .activity-icon.alert { background: #fee2e2; color: #dc2626; }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-actions {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .management-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <span id="toggle-icon">◀</span>
+            </button>
+            <div class="header-logo">
+                <span class="logo-icon">A</span>
+                <span class="logo-text">AHP System</span>
+                <span class="header-subtitle">슈퍼 관리자</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <nav class="header-nav">
+                <a href="./super-admin-dashboard.html" class="nav-item active" data-page="admin">관리자</a>
+                <a href="./personal-service-enhanced.html" class="nav-item" data-page="personal">개인서비스</a>
+                <a href="#" class="nav-item" data-page="system" onclick="loadContent('system-settings', this); return false;">시스템 모니터링</a>
+                <a href="#" class="nav-item" data-page="analytics" onclick="loadContent('audit-log', this); return false;">분석</a>
+            </nav>
+        </div>
+        
+        <div class="header-right">
+            <!-- 개인 서비스 모드 전환 버튼 (슈퍼 관리자에게만 표시) -->
+            <button id="personalServiceToggle" class="admin-mode-toggle" onclick="switchToPersonalService()" style="background: var(--accent-secondary); margin-right: 1rem;">
+                👤 개인 서비스
+            </button>
+            
+            <div class="header-notifications">
+                <button class="notification-btn">
+                    <span>🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+            </div>
+            <div class="header-user">
+                <div class="user-avatar status-indicator" id="userAvatar">👤</div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">슈퍼 관리자</div>
+                    <div class="user-role" id="userRole">
+                        <span id="userRoleText" class="premium-gradient">System Admin</span>
+                        <span id="adminBadge" class="admin-badge">🛡️ 슈퍼 관리자</span>
+                    </div>
+                </div>
+                <button class="user-menu-btn" onclick="handleLogout()">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 사이드바 -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <!-- 관리자 메뉴 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">시스템 관리</div>
+                <div class="sidebar-item active" data-content="dashboard" style="cursor: pointer;" onclick="handleMenuClick('dashboard', this)">
+                    <span class="sidebar-icon">🏠</span>
+                    <span class="sidebar-text">대시보드</span>
+                </div>
+                <div class="sidebar-item" data-content="user-management" style="cursor: pointer;" onclick="handleMenuClick('user-management', this)">
+                    <span class="sidebar-icon">👥</span>
+                    <span class="sidebar-text">사용자 관리</span>
+                </div>
+                <div class="sidebar-item" data-content="project-overview" style="cursor: pointer;" onclick="handleMenuClick('project-overview', this)">
+                    <span class="sidebar-icon">📊</span>
+                    <span class="sidebar-text">프로젝트 현황</span>
+                </div>
+                <div class="sidebar-item" data-content="system-settings" style="cursor: pointer;" onclick="handleMenuClick('system-settings', this)">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span class="sidebar-text">시스템 설정</span>
+                </div>
+                <div class="sidebar-item" data-content="audit-log" style="cursor: pointer;" onclick="handleMenuClick('audit-log', this)">
+                    <span class="sidebar-icon">📋</span>
+                    <span class="sidebar-text">감사 로그</span>
+                </div>
+            </div>
+
+            <!-- 데이터 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">데이터 관리</div>
+                <div class="sidebar-item" data-content="backup-restore" style="cursor: pointer;" onclick="handleMenuClick('backup-restore', this)">
+                    <span class="sidebar-icon">💾</span>
+                    <span class="sidebar-text">백업 및 복원</span>
+                </div>
+                <div class="sidebar-item" data-content="database-management" style="cursor: pointer;" onclick="handleMenuClick('database-management', this)">
+                    <span class="sidebar-icon">🗄️</span>
+                    <span class="sidebar-text">데이터베이스 관리</span>
+                </div>
+                <div class="sidebar-item" data-content="data-migration" style="cursor: pointer;" onclick="handleMenuClick('data-migration', this)">
+                    <span class="sidebar-icon">📤</span>
+                    <span class="sidebar-text">데이터 마이그레이션</span>
+                </div>
+            </div>
+
+            <!-- 보안 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">보안 관리</div>
+                <div class="sidebar-item" data-content="security-settings" style="cursor: pointer;" onclick="handleMenuClick('security-settings', this)">
+                    <span class="sidebar-icon">🔒</span>
+                    <span class="sidebar-text">보안 설정</span>
+                </div>
+                <div class="sidebar-item" data-content="access-control" style="cursor: pointer;" onclick="handleMenuClick('access-control', this)">
+                    <span class="sidebar-icon">🛡️</span>
+                    <span class="sidebar-text">접근 제어</span>
+                </div>
+                <div class="sidebar-item" data-content="security-log" style="cursor: pointer;" onclick="handleMenuClick('security-log', this)">
+                    <span class="sidebar-icon">🚨</span>
+                    <span class="sidebar-text">보안 로그</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <!-- 대시보드 통계 -->
+        <div class="dashboard-grid">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">👥</span>
+                        총 사용자
+                    </div>
+                </div>
+                <div class="admin-card-value" id="totalUsers">로딩...</div>
+                <div class="admin-card-change change-positive" id="userChange">
+                    데이터 로딩 중...
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">📊</span>
+                        활성 프로젝트
+                    </div>
+                </div>
+                <div class="admin-card-value" id="activeProjects">로딩...</div>
+                <div class="admin-card-change change-positive" id="projectChange">
+                    데이터 로딩 중...
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">⚡</span>
+                        시스템 성능
+                    </div>
+                </div>
+                <div class="admin-card-value" id="systemPerformance">로딩...</div>
+                <div class="admin-card-change change-positive" id="performanceStatus">
+                    시스템 상태 확인 중...
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <span class="admin-card-icon">💾</span>
+                        저장소 사용률
+                    </div>
+                </div>
+                <div class="admin-card-value" id="storageUsage">로딩...</div>
+                <div class="admin-card-change change-positive" id="storageStatus">
+                    저장소 상태 확인 중...
+                </div>
+            </div>
+        </div>
+
+        <!-- 관리 섹션 -->
+        <div class="management-section">
+            <div class="section-header">
+                <h2 class="section-title">핵심 관리 기능</h2>
+            </div>
+            <div class="management-grid">
+                <div class="management-card" onclick="window.open('https://ahp-django-backend.onrender.com/admin/', '_blank')">
+                    <div class="management-card-icon">👥</div>
+                    <div class="management-card-title">Django 슈퍼 관리자</div>
+                    <div class="management-card-desc">
+                        🔥 실제 PostgreSQL 사용자 관리, 결제 관리, 프로젝트 관리 - 완전 관리 시스템
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="loadRealUserData()">
+                    <div class="management-card-icon">📊</div>
+                    <div class="management-card-title">실시간 사용자 현황</div>
+                    <div class="management-card-desc">
+                        🔥 PostgreSQL 실시간 사용자 데이터, 가입 현황, 활동 통계
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="loadContent('system-settings', null)">
+                    <div class="management-card-icon">📈</div>
+                    <div class="management-card-title">시스템 모니터링</div>
+                    <div class="management-card-desc">
+                        서버 성능, 데이터베이스, API 상태 실시간 모니터링
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="loadContent('backup-restore', null)">
+                    <div class="management-card-icon">💾</div>
+                    <div class="management-card-title">백업 관리</div>
+                    <div class="management-card-desc">
+                        데이터 백업, 복원 및 재해 복구 관리
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="loadContent('security-settings', null)">
+                    <div class="management-card-icon">🔒</div>
+                    <div class="management-card-title">보안 설정</div>
+                    <div class="management-card-desc">
+                        시스템 보안 정책, 인증 및 암호화 설정
+                    </div>
+                </div>
+
+                <div class="management-card" onclick="loadContent('audit-log', null)">
+                    <div class="management-card-icon">📋</div>
+                    <div class="management-card-title">분석 리포트</div>
+                    <div class="management-card-desc">
+                        사용자 활동, 시스템 사용률 및 성능 분석
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 최근 활동 -->
+        <div class="recent-activity">
+            <div class="section-header">
+                <h2 class="section-title">최근 시스템 활동</h2>
+            </div>
+            <ul class="activity-list" id="activityList">
+                <li class="activity-item">
+                    <div class="activity-icon system">📡</div>
+                    <div class="activity-content">
+                        <div class="activity-title">최근 활동 데이터를 로딩하고 있습니다...</div>
+                        <div class="activity-time">잠시만 기다려주세요</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- 빠른 작업 버튼 -->
+    <div class="quick-actions">
+        <button class="fab" title="사용자 관리" onclick="loadContent('user-management', null)">
+            👤
+        </button>
+        <button class="fab" title="시스템 설정" onclick="loadContent('system-settings', null)">
+            ⚙️
+        </button>
+    </div>
+
+    <script>
+        // API 서비스의 자동 인증 확인 비활성화 플래그
+        window.SKIP_AUTO_AUTH_CHECK = true;
+    </script>
+    <script src="scripts/api-service.js"></script>
+    <script src="scripts/layout.js"></script>
+    <script>
+        // 페이지 초기화 (async/await)
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🛡️ 슈퍼 관리자 대시보드 초기화 시작');
+            
+            // 로딩 상태 표시
+            showLoadingState();
+            
+            // 사용자 정보 캐싱 초기화
+            window.currentUser = null;
+            window.sessionChecked = false;
+            window.authenticationInProgress = false;
+            
+            // API 서비스 로드 대기
+            let apiLoadAttempts = 0;
+            while (typeof window.ahpApi === 'undefined' && apiLoadAttempts < 10) {
+                console.log('⏳ API 서비스 로드 대기 중...');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                apiLoadAttempts++;
+            }
+            
+            if (typeof window.ahpApi === 'undefined') {
+                console.error('❌ API 서비스 로드 실패');
+                showErrorState('API 서비스를 로드할 수 없습니다. 페이지를 새로고침해주세요.');
+                return;
+            }
+            
+            // 로그인 상태 및 권한 확인
+            try {
+                const loginResult = await checkLoginStatus();
+                if (!loginResult) {
+                    console.error('❌ 로그인되지 않음');
+                    showAuthErrorState('로그인이 필요합니다.', './login.html');
+                    return;
+                }
+                
+                // 관리자 권한 재확인
+                if (!window.currentUser || (window.currentUser.role !== 'admin' && !window.currentUser.is_superuser)) {
+                    console.error('❌ 관리자 권한 없음');
+                    showAuthErrorState('관리자 권한이 필요합니다.', './personal-service-enhanced.html');
+                    return;
+                }
+                
+                // 인증 성공 - 로딩 상태 해제하고 정상 페이지 표시
+                hideLoadingState();
+                console.log('✅ 인증 성공 - 관리자 대시보드 표시');
+                
+            } catch (error) {
+                console.error('❌ 인증 확인 실패:', error);
+                showAuthErrorState('인증 확인에 실패했습니다.', './login.html');
+                return;
+            }
+            
+            // 세션 체크 완료 플래그 설정
+            window.sessionChecked = true;
+            console.log('✅ 인증 완료 - 이후 메뉴 클릭에서 재인증 안함');
+            
+            // 대시보드 데이터 로딩
+            await loadDashboardData();
+            
+            console.log('✅ 슈퍼 관리자 대시보드 로드 완료 - SPA 모드 활성화');
+            
+            // 사이드바 메뉴 클릭 이벤트 리스너 추가
+            setupSidebarEventListeners();
+        });
+
+        // 로딩 및 에러 상태 관리 함수들
+        function showLoadingState() {
+            // 기존 로딩 오버레이가 있다면 제거
+            const existingOverlay = document.getElementById('loading-overlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
+            
+            // 로딩 오버레이를 body에 추가 (기존 콘텐츠는 유지)
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'loading-overlay';
+            loadingOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(249, 250, 251, 0.98);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            `;
+            
+            loadingOverlay.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="
+                        width: 50px;
+                        height: 50px;
+                        border: 4px solid #e5e7eb;
+                        border-top: 4px solid #C8A968;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                        margin: 0 auto 1rem;
+                    "></div>
+                    <h2 style="color: #1f2937; margin-bottom: 0.5rem;">AHP 시스템 로딩 중...</h2>
+                    <p style="color: #6b7280;">잠시만 기다려주세요</p>
+                </div>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+            
+            document.body.appendChild(loadingOverlay);
+            console.log('🔄 로딩 오버레이 표시');
+        }
+
+        function showErrorState(message) {
+            document.body.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: #f9fafb;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                ">
+                    <div style="text-align: center; max-width: 500px; padding: 2rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                        <h2 style="color: #dc2626; margin-bottom: 1rem;">시스템 오류</h2>
+                        <p style="color: #6b7280; margin-bottom: 2rem;">${message}</p>
+                        <button onclick="window.location.reload()" style="
+                            background: #C8A968;
+                            color: white;
+                            border: none;
+                            padding: 0.75rem 1.5rem;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 1rem;
+                        ">페이지 새로고침</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showAuthErrorState(message, redirectUrl) {
+            document.body.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: #f9fafb;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                ">
+                    <div style="text-align: center; max-width: 500px; padding: 2rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">🔐</div>
+                        <h2 style="color: #dc2626; margin-bottom: 1rem;">접근 권한 필요</h2>
+                        <p style="color: #6b7280; margin-bottom: 2rem;">${message}</p>
+                        <div>
+                            <button onclick="window.location.href='${redirectUrl}'" style="
+                                background: #C8A968;
+                                color: white;
+                                border: none;
+                                padding: 0.75rem 1.5rem;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-size: 1rem;
+                                margin-right: 1rem;
+                            ">로그인하기</button>
+                            <button onclick="window.location.href='/ahp_app/'" style="
+                                background: #6b7280;
+                                color: white;
+                                border: none;
+                                padding: 0.75rem 1.5rem;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-size: 1rem;
+                            ">홈으로</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 3초 후 자동 리다이렉트
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 3000);
+        }
+
+        function hideLoadingState() {
+            // 로딩 오버레이 제거
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.remove();
+                console.log('✅ 로딩 오버레이 제거 완료');
+            }
+            
+            // body가 숨겨져 있다면 표시
+            if (document.body.style.display === 'none') {
+                document.body.style.display = '';
+                console.log('✅ 페이지 콘텐츠 표시');
+            }
+        }
+        
+        // 직접 온클릭 핸들러 (fallback) - 간소화 버전
+        // window에 등록하여 HTML onclick에서 접근 가능하도록 함
+        window.handleMenuClick = async function(contentType, element) {
+            console.log(`🖱️ 메뉴 클릭: ${contentType}`);
+            
+            // 이벤트 전파 중지
+            if (typeof event !== 'undefined' && event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            const mainContent = document.querySelector('.main-content');
+            if (!mainContent) {
+                console.error('❌ main-content 영역을 찾을 수 없습니다');
+                return;
+            }
+            
+            // 시각적 피드백
+            if (element) {
+                // 모든 메뉴에서 active 클래스 제거
+                document.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                // 클릭된 메뉴에 active 클래스 추가
+                element.classList.add('active');
+            }
+            
+            // 간단한 콘텐츠 직접 표시 (loadContent 우회)
+            let content = '';
+            switch(contentType) {
+                case 'user-management':
+                    content = `
+                        <div style="padding: 2rem;">
+                            <h1 style="color: #C8A968; margin-bottom: 2rem;">👥 사용자 관리</h1>
+                            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <p>사용자 관리 페이지입니다.</p>
+                                <button onclick="window.open('https://ahp-django-backend.onrender.com/admin/', '_blank')" 
+                                        style="margin-top: 1rem; padding: 0.75rem 1.5rem; background: #C8A968; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                    Django 관리자 패널 열기
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'project-overview':
+                    content = `
+                        <div style="padding: 2rem;">
+                            <h1 style="color: #C8A968; margin-bottom: 2rem;">📊 프로젝트 현황</h1>
+                            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <p>프로젝트 현황 페이지입니다.</p>
+                                <p style="margin-top: 1rem;">현재 진행 중인 프로젝트: 5개</p>
+                                <p>완료된 프로젝트: 12개</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'system-settings':
+                    content = `
+                        <div style="padding: 2rem;">
+                            <h1 style="color: #C8A968; margin-bottom: 2rem;">⚙️ 시스템 설정</h1>
+                            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <p>시스템 설정 페이지입니다.</p>
+                                <div style="margin-top: 1rem;">
+                                    <p><strong>서버 상태:</strong> 정상 작동 중</p>
+                                    <p><strong>데이터베이스:</strong> PostgreSQL 연결됨</p>
+                                    <p><strong>API 상태:</strong> 활성</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'dashboard':
+                    // 대시보드로 돌아가기
+                    window.location.reload();
+                    return;
+                    
+                default:
+                    content = `
+                        <div style="padding: 2rem;">
+                            <h1 style="color: #C8A968; margin-bottom: 2rem;">${contentType}</h1>
+                            <div style="background: white; padding: 4rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">🚧</div>
+                                <p style="color: #666;">이 페이지는 현재 개발 중입니다.</p>
+                                <button onclick="handleMenuClick('dashboard', null)" 
+                                        style="margin-top: 2rem; padding: 0.75rem 1.5rem; background: #C8A968; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                    대시보드로 돌아가기
+                                </button>
+                            </div>
+                        </div>
+                    `;
+            }
+            
+            // 콘텐츠 직접 삽입
+            mainContent.innerHTML = content;
+            console.log(`✅ ${contentType} 콘텐츠 표시 완료`);
+        }
+        
+        // 사이드바 이벤트 리스너 설정
+        function setupSidebarEventListeners() {
+            console.log('🔧 사이드바 이벤트 리스너 설정 시작...');
+            
+            const sidebarItems = document.querySelectorAll('.sidebar-item[data-content]');
+            console.log(`🔍 발견된 사이드바 메뉴 요소: ${sidebarItems.length}개`);
+            
+            if (sidebarItems.length === 0) {
+                console.error('❌ 사이드바 메뉴 요소를 찾을 수 없습니다!');
+                return;
+            }
+            
+            sidebarItems.forEach((item, index) => {
+                const contentType = item.getAttribute('data-content');
+                console.log(`📝 메뉴 ${index + 1}: ${contentType}`);
+                
+                item.addEventListener('click', async function(event) {
+                    console.log(`🖱️ 메뉴 클릭됨: ${contentType} (요소:`, this, ')');
+                    
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // 로그인 상태 확인 (더 상세한 디버깅)
+                    console.log('🔍 현재 사용자 정보:', window.currentUser);
+                    if (!window.currentUser) {
+                        console.error('❌ 로그인되지 않음 - 메뉴 클릭 차단');
+                        
+                        // 실시간으로 사용자 정보 재확인 시도
+                        try {
+                            console.log('🔄 사용자 정보 재확인 시도...');
+                            const userCheckResponse = await window.ahpApi.getCurrentUser();
+                            if (userCheckResponse && userCheckResponse.success && userCheckResponse.user) {
+                                console.log('✅ 사용자 정보 재확인 성공:', userCheckResponse.user);
+                                window.currentUser = userCheckResponse.user;
+                            } else {
+                                alert('로그인이 필요합니다.');
+                                window.location.href = './login.html';
+                                return;
+                            }
+                        } catch (error) {
+                            console.error('❌ 사용자 정보 재확인 실패:', error);
+                            alert('로그인이 필요합니다.');
+                            window.location.href = './login.html';
+                            return;
+                        }
+                    }
+                    
+                    // 관리자 권한 확인 (더 유연한 체크)
+                    const hasAdminAccess = window.currentUser.role === 'admin' || 
+                                         window.currentUser.is_superuser || 
+                                         window.currentUser.role === 'superuser';
+                    
+                    if (!hasAdminAccess) {
+                        console.error('❌ 관리자 권한 없음 - 메뉴 클릭 차단');
+                        console.log('👤 현재 사용자 역할:', window.currentUser.role, 'is_superuser:', window.currentUser.is_superuser);
+                        alert('관리자 권한이 필요합니다.');
+                        window.location.href = './personal-service-enhanced.html';
+                        return;
+                    }
+                    
+                    // 시각적 피드백
+                    this.style.backgroundColor = '#e3f2fd';
+                    setTimeout(() => {
+                        this.style.backgroundColor = '';
+                    }, 200);
+                    
+                    // 모든 메뉴에서 active 클래스 제거
+                    sidebarItems.forEach(el => el.classList.remove('active'));
+                    
+                    // 클릭된 메뉴에 active 클래스 추가
+                    this.classList.add('active');
+                    console.log(`✅ Active 클래스 추가됨: ${contentType}`);
+                    
+                    // 콘텐츠 로드
+                    try {
+                        console.log(`🚀 loadContent 호출: ${contentType}`);
+                        await loadContent(contentType, this);
+                    } catch (error) {
+                        console.error('❌ loadContent 호출 오류:', error);
+                    }
+                });
+                
+                // 호버 효과 추가
+                item.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#f5f5f5';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.backgroundColor = '';
+                    }
+                });
+            });
+            
+            console.log(`✅ ${sidebarItems.length}개 사이드바 메뉴 이벤트 리스너 설정 완료`);
+            
+            // 테스트용 글로벌 함수 추가
+            window.testSidebarMenu = function(contentType) {
+                console.log(`🧪 테스트: ${contentType} 메뉴 클릭 시뮬레이션`);
+                const item = document.querySelector(`[data-content="${contentType}"]`);
+                if (item) {
+                    item.click();
+                } else {
+                    console.error(`❌ ${contentType} 메뉴를 찾을 수 없습니다`);
+                }
+            };
+            
+            // 강제로 메뉴 작동 테스트 함수
+            window.forceMenuClick = function(contentType) {
+                console.log(`🚀 강제 메뉴 실행: ${contentType}`);
+                try {
+                    loadContent(contentType);
+                } catch (error) {
+                    console.error('강제 메뉴 실행 실패:', error);
+                }
+            };
+            
+            // 디버깅용: 모든 이벤트 리스너 확인
+            window.checkMenuListeners = function() {
+                const items = document.querySelectorAll('.sidebar-item[data-content]');
+                console.log(`🔍 총 메뉴 아이템: ${items.length}개`);
+                items.forEach((item, index) => {
+                    const listeners = getEventListeners ? getEventListeners(item) : 'DevTools 필요';
+                    console.log(`메뉴 ${index + 1} (${item.getAttribute('data-content')}):`, listeners);
+                });
+            };
+        }
+
+        // 관리자 권한 확인 (Django API 기반)
+        async function checkAdminPermission() {
+            try {
+                const response = await window.ahpApi.getCurrentUser();
+                if (response.success && response.user) {
+                    return response.user.role === 'admin' || response.user.is_superuser;
+                }
+                return false;
+            } catch (error) {
+                console.error('권한 확인 오류:', error);
+                return false;
+            }
+        }
+
+        // 로그인 상태 확인 (엄격한 보안 체크)
+        async function checkLoginStatus() {
+            console.log('🔍 로그인 상태 확인 시작');
+            
+            // 캐시된 정보가 있어도 첫 로드시엔 반드시 서버 확인
+            if (!window.sessionChecked) {
+                console.log('⚠️ 첫 로드 - 서버 인증 필수 확인');
+                window.currentUser = null; // 캐시 초기화
+            } else if (window.currentUser) {
+                console.log('✅ 세션 이미 확인됨');
+                return true;
+            }
+            
+            // 최대 재시도 횟수 설정
+            let retryCount = 0;
+            const maxRetries = 1;
+            
+            while (retryCount < maxRetries) {
+                try {
+                    // API 서비스 존재 여부 확인
+                    if (typeof window.ahpApi === 'undefined') {
+                        console.error('❌ API 서비스가 로드되지 않았습니다.');
+                        await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기 후 재시도
+                        if (typeof window.ahpApi === 'undefined') {
+                            console.warn('API 서비스 로드 실패 - 페이지 새로고침 필요할 수 있음');
+                            return false;
+                        }
+                    }
+                    
+                    const response = await window.ahpApi.getCurrentUser();
+                    
+                    if (!response || !response.success || !response.user) {
+                        console.error('❌ 인증 실패 - 세션 없음');
+                        // 즉시 로그인 페이지로 리다이렉트 (재시도 없음)
+                        return false;
+                    }
+                    
+                    // 관리자 권한 확인
+                    if (response.user.role !== 'admin' && !response.user.is_superuser) {
+                        console.warn('❌ 관리자 권한 부족');
+                        alert('관리자 권한이 필요합니다.');
+                        window.location.href = 'personal-service-enhanced.html';
+                        return false;
+                    }
+                    
+                    // 사용자 정보 캐싱
+                    window.currentUser = response.user;
+                    
+                    // 사용자 인터페이스 업데이트
+                    updateUserInfo(response.user);
+                    
+                    console.log('✅ 사용자 정보 및 인터페이스 업데이트 완료');
+                    
+                    // 사용자 이름 표시 (기존 호환성)
+                    const userNameElement = document.querySelector('.header-user .user-name');
+                    if (userNameElement && response.user.name) {
+                        userNameElement.textContent = response.user.name;
+                    }
+                    
+                    console.log('✅ 로그인 상태 확인 완료:', response.user.email || response.user.username);
+                    return true;
+                    
+                } catch (error) {
+                    console.error('❌ 인증 확인 오류:', error);
+                    // 에러 발생 시 즉시 차단 (보안 우선)
+                    return false;
+                }
+            }
+            
+            return false;
+        }
+
+        // 사이드바 토글
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        // 대시보드 데이터 로딩
+        async function loadDashboardData() {
+            try {
+                // 병렬로 데이터 로딩
+                await Promise.all([
+                    loadSystemStats(),
+                    loadRecentActivity()
+                ]);
+            } catch (error) {
+                console.error('대시보드 데이터 로딩 오류:', error);
+            }
+        }
+
+        // 시스템 통계 데이터 로딩 (강화된 retry 로직)
+        async function loadSystemStats() {
+            const maxRetries = 3;
+            let currentTry = 0;
+            
+            while (currentTry < maxRetries) {
+                try {
+                    console.log(`🔄 Django API 호출 시도 ${currentTry + 1}/${maxRetries}`);
+                    
+                    const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/dashboard/stats/?_t=${Date.now()}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        cache: 'no-cache'
+                    });
+
+                    if (response.ok) {
+                        const stats = await response.json();
+                        console.log('✅ Django PostgreSQL 데이터 로드 성공:', stats);
+                        updateSystemStats(stats);
+                        return; // 성공시 종료
+                    } else if (response.status === 403) {
+                        console.warn(`⚠️ 403 Forbidden - Render 업데이트 중... (시도 ${currentTry + 1})`);
+                        if (currentTry < maxRetries - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 2000 * (currentTry + 1))); // 점진적 지연
+                        }
+                    } else {
+                        console.error('API 오류:', response.status, response.statusText);
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error(`시도 ${currentTry + 1} 실패:`, error);
+                    if (currentTry < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1000 * (currentTry + 1)));
+                    }
+                }
+                currentTry++;
+            }
+            
+            // 모든 시도 실패시 fallback 데이터
+            console.warn('🔄 모든 API 시도 실패 - Render 업데이트 대기 중');
+            updateSystemStats({
+                total_users: 'Render 업데이트 중...',
+                active_projects: 'Django 재시작 중...', 
+                system_performance: '백엔드 로딩 중...',
+                storage_usage: '데이터 준비 중...'
+            });
+        }
+
+        // 시스템 통계 업데이트
+        function updateSystemStats(stats) {
+            console.log('📊 실제 Django 백엔드 데이터:', stats);
+            
+            // 실제 PostgreSQL 데이터 표시
+            document.getElementById('totalUsers').textContent = stats.total_users || '0';
+            document.getElementById('activeProjects').textContent = stats.active_projects || '0';
+            document.getElementById('systemPerformance').textContent = stats.system_performance ? `${stats.system_performance}%` : '정상';
+            document.getElementById('storageUsage').textContent = stats.storage_usage ? `${stats.storage_usage}%` : '정상';
+
+            // Django 계산된 실제 증가율 표시
+            document.getElementById('userChange').textContent = stats.user_growth ? `↑ +${stats.user_growth}% (이번 달)` : '실시간 PostgreSQL 데이터';
+            document.getElementById('projectChange').textContent = stats.project_growth ? `↑ +${stats.project_growth}% (이번 주)` : '실시간 Django 통계';
+            document.getElementById('performanceStatus').textContent = stats.performance_status || '시스템 정상 작동';
+            document.getElementById('storageStatus').textContent = stats.storage_status || '여유 공간 충분';
+            
+            // Django 백엔드 성공 표시
+            const statusEl = document.querySelector('.admin-card-value');
+            if (statusEl) {
+                statusEl.style.color = '#10b981'; // 녹색으로 성공 표시
+            }
+        }
+
+        // 최근 활동 데이터 로딩
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/audit/logs/?limit=5&_t=${Date.now()}`, {
+                    credentials: 'include',
+                    cache: 'no-cache'
+                });
+
+                if (response.ok) {
+                    const activities = await response.json();
+                    updateRecentActivity(activities.results || activities);
+                } else {
+                    updateRecentActivity([]);
+                }
+            } catch (error) {
+                console.error('최근 활동 로딩 실패:', error);
+                updateRecentActivity([]);
+            }
+        }
+
+        // 최근 활동 업데이트
+        function updateRecentActivity(activities) {
+            const activityList = document.getElementById('activityList');
+            
+            if (!activities || activities.length === 0) {
+                activityList.innerHTML = `
+                    <li class="activity-item">
+                        <div class="activity-icon system">📊</div>
+                        <div class="activity-content">
+                            <div class="activity-title">아직 활동 기록이 없습니다</div>
+                            <div class="activity-time">서비스 사용이 시작되면 활동 내역이 표시됩니다</div>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+
+            const activityHtml = activities.map(activity => {
+                const iconMap = {
+                    'user_created': { icon: '👤', class: 'user' },
+                    'project_created': { icon: '📊', class: 'project' },
+                    'system_backup': { icon: '💾', class: 'system' },
+                    'login_success': { icon: '🔓', class: 'user' },
+                    'admin_action': { icon: '⚙️', class: 'system' },
+                    'security_alert': { icon: '🚨', class: 'alert' }
+                };
+
+                const iconData = iconMap[activity.action_type] || { icon: '📋', class: 'system' };
+
+                return `
+                    <li class="activity-item">
+                        <div class="activity-icon ${iconData.class}">${iconData.icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-title">${activity.description || activity.action}</div>
+                            <div class="activity-time">${formatTimeAgo(activity.timestamp || activity.created_at)}</div>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+
+            activityList.innerHTML = activityHtml;
+        }
+
+        // 시간 차이 계산 
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '시간 불명';
+            
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diffMs = now - time;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return '방금 전';
+            if (diffMins < 60) return `${diffMins}분 전`;
+            if (diffHours < 24) return `${diffHours}시간 전`;
+            return `${diffDays}일 전`;
+        }
+
+        // 실시간 사용자 데이터 로딩 - Django PostgreSQL 직접 연동
+        async function loadRealUserData() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/api/users/list/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    showUserDataModal(userData);
+                } else {
+                    alert('사용자 데이터 로딩 실패. 로그인 상태를 확인하세요.');
+                }
+            } catch (error) {
+                console.error('사용자 데이터 로딩 오류:', error);
+                alert('서버 연결 오류가 발생했습니다.');
+            }
+        }
+
+        // 사용자 데이터 모달 표시
+        function showUserDataModal(data) {
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="
+                    position: fixed; 
+                    top: 0; left: 0; 
+                    width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.8); 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center;
+                    z-index: 10000;
+                " onclick="this.remove()">
+                    <div style="
+                        background: white; 
+                        padding: 2rem; 
+                        border-radius: 12px; 
+                        max-width: 800px; 
+                        max-height: 80vh; 
+                        overflow-y: auto;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    " onclick="event.stopPropagation()">
+                        <h2>🔥 실시간 PostgreSQL 사용자 데이터</h2>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>총 사용자:</strong> ${data.total || 0}명<br>
+                            <strong>활성 사용자:</strong> ${data.stats?.active_users || 0}명<br>
+                            <strong>관리자:</strong> ${data.stats?.staff_users || 0}명<br>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            ${data.users ? data.users.map(user => `
+                                <div style="
+                                    border: 1px solid #eee; 
+                                    padding: 1rem; 
+                                    margin: 0.5rem 0; 
+                                    border-radius: 8px;
+                                    background: #f9f9f9;
+                                ">
+                                    <strong>${user.email}</strong> (${user.username})<br>
+                                    <small>
+                                        타입: ${user.user_type} | 
+                                        구독: ${user.subscription_tier} | 
+                                        가입일: ${new Date(user.date_joined).toLocaleDateString('ko-KR')}
+                                        ${user.last_login ? ` | 최종로그인: ${new Date(user.last_login).toLocaleDateString('ko-KR')}` : ''}
+                                    </small>
+                                </div>
+                            `).join('') : '데이터 없음'}
+                        </div>
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <button onclick="window.open('https://ahp-django-backend.onrender.com/admin/', '_blank')" 
+                                style="
+                                    background: #C8A968; 
+                                    color: white; 
+                                    border: none; 
+                                    padding: 0.7rem 1.5rem; 
+                                    border-radius: 6px; 
+                                    cursor: pointer;
+                                    margin-right: 1rem;
+                                ">Django 관리자 패널</button>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                                style="
+                                    background: #6b7280; 
+                                    color: white; 
+                                    border: none; 
+                                    padding: 0.7rem 1.5rem; 
+                                    border-radius: 6px; 
+                                    cursor: pointer;
+                                ">닫기</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // SPA 콘텐츠 로딩 함수 (세션 체크 강화)
+        async function loadContent(contentType, clickedElement = null) {
+            console.log(`🔄 콘텐츠 로딩 시작: ${contentType}`);
+            console.log(`📍 클릭된 요소:`, clickedElement);
+            
+            // 이벤트 기본 동작 방지
+            if (typeof event !== 'undefined' && event) {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('🛡️ 이벤트 기본 동작 방지됨');
+            }
+            
+            // 중복 실행 방지
+            if (window.loadContentInProgress) {
+                console.log('⏸️ 이미 콘텐츠 로딩 중 - 건너뜀');
+                return;
+            }
+            window.loadContentInProgress = true;
+            console.log('🚀 콘텐츠 로딩 플래그 설정됨');
+            
+            // 로그인 상태 확인 (매번 체크)
+            if (!window.currentUser) {
+                console.error('❌ 로그인되지 않음 - 로그인 페이지로 이동');
+                alert('로그인이 필요합니다.');
+                window.location.href = 'login.html';
+                window.loadContentInProgress = false;
+                return;
+            }
+            
+            // 관리자 권한 확인
+            if (window.currentUser.role !== 'admin' && !window.currentUser.is_superuser) {
+                console.error('❌ 권한 없음 - 관리자만 접근 가능');
+                alert('관리자 권한이 필요합니다.');
+                window.location.href = 'personal-service-enhanced.html';
+                window.loadContentInProgress = false;
+                return;
+            }
+            
+            // 헤더와 사이드바 가시성 보장
+            const header = document.querySelector('.header');
+            const sidebar = document.querySelector('.sidebar');
+            if (header) {
+                header.style.display = 'flex';
+                header.style.position = 'fixed';
+                header.style.top = '0';
+                header.style.left = '0';
+                header.style.right = '0';
+                header.style.zIndex = '1000';
+                console.log('🔝 헤더 표시 보장됨');
+            }
+            if (sidebar) {
+                sidebar.style.display = 'flex';
+                sidebar.style.position = 'fixed';
+                sidebar.style.left = '0';
+                sidebar.style.top = 'var(--header-height)';
+                sidebar.style.zIndex = '999';
+                console.log('📋 사이드바 표시 보장됨');
+            }
+
+            const mainContent = document.querySelector('.main-content');
+            console.log('🎯 메인 콘텐츠 영역 찾기:', mainContent);
+            
+            if (!mainContent) {
+                console.error('❌ 메인 콘텐츠 영역(.main-content)을 찾을 수 없습니다!');
+                window.loadContentInProgress = false;
+                return;
+            }
+            
+            // 메인 콘텐츠 위치 보장 (헤더/사이드바 고려)
+            mainContent.style.marginLeft = 'var(--sidebar-width)';
+            mainContent.style.marginTop = 'var(--header-height)';
+            mainContent.style.position = 'relative';
+            console.log('📍 메인 콘텐츠 위치 조정됨');
+            
+            // 로딩 표시
+            console.log('⏳ 로딩 화면 표시 중...');
+            mainContent.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; height: 50vh;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">🔄</div>
+                        <div>콘텐츠를 로드하고 있습니다...</div>
+                        <div style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">타입: ${contentType}</div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                console.log(`📝 콘텐츠 타입별 생성 시작: ${contentType}`);
+                
+                // 각 콘텐츠 타입에 따른 내용 생성
+                let content = '';
+                
+                switch(contentType) {
+                    case 'dashboard':
+                        console.log('🏠 대시보드 콘텐츠 생성 중...');
+                        content = await generateDashboardContent();
+                        break;
+                    case 'user-management':
+                        console.log('👥 사용자 관리 콘텐츠 생성 중...');
+                        content = await generateUserManagementContent();
+                        break;
+                    case 'project-overview':
+                        console.log('📊 프로젝트 현황 콘텐츠 생성 중...');
+                        content = await generateProjectOverviewContent();
+                        break;
+                    case 'system-settings':
+                        console.log('⚙️ 시스템 설정 콘텐츠 생성 중...');
+                        content = await generateSystemSettingsContent();
+                        break;
+                    case 'audit-log':
+                        console.log('📋 감사 로그 콘텐츠 생성 중...');
+                        content = await generateAuditLogContent();
+                        break;
+                    case 'backup-restore':
+                        console.log('💾 백업 및 복원 콘텐츠 생성 중...');
+                        content = await generateBackupRestoreContent();
+                        break;
+                    case 'database-management':
+                        console.log('🗄️ 데이터베이스 관리 콘텐츠 생성 중...');
+                        content = await generateDatabaseManagementContent();
+                        break;
+                    case 'data-migration':
+                        console.log('📤 데이터 마이그레이션 콘텐츠 생성 중...');
+                        content = await generateDataMigrationContent();
+                        break;
+                    case 'security-settings':
+                        console.log('🔒 보안 설정 콘텐츠 생성 중...');
+                        content = await generateSecuritySettingsContent();
+                        break;
+                    case 'access-control':
+                        console.log('🛡️ 접근 제어 콘텐츠 생성 중...');
+                        content = await generateAccessControlContent();
+                        break;
+                    case 'security-log':
+                        console.log('🚨 보안 로그 콘텐츠 생성 중...');
+                        content = await generateSecurityLogContent();
+                        break;
+                    default:
+                        console.log('❓ 알 수 없는 콘텐츠 타입 - 기본 대시보드로 fallback');
+                        content = await generateDashboardContent();
+                }
+                
+                console.log(`📄 콘텐츠 생성 완료, HTML 길이: ${content.length} 문자`);
+                console.log(`🎨 콘텐츠 미리보기: ${content.substring(0, 200)}...`);
+                
+                if (!content || content.trim().length === 0) {
+                    console.error('❌ 빈 콘텐츠가 생성됨!');
+                    content = `
+                        <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px; margin: 1rem;">
+                            <h2 style="color: #dc2626; margin-bottom: 1rem;">⚠️ 콘텐츠 로딩 오류</h2>
+                            <p style="color: #666; margin-bottom: 2rem;">${contentType} 콘텐츠를 불러올 수 없습니다.</p>
+                            <button onclick="window.location.reload()" style="background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer;">페이지 새로고침</button>
+                        </div>
+                    `;
+                }
+                
+                console.log('🖼️ 메인 콘텐츠 영역에 HTML 삽입 중...');
+                mainContent.innerHTML = content;
+                
+                console.log('✅ 콘텐츠 삽입 완료');
+                console.log('📍 현재 메인 콘텐츠 innerHTML:', mainContent.innerHTML.substring(0, 100) + '...');
+                
+                // 대시보드인 경우 데이터 로딩
+                if (contentType === 'dashboard') {
+                    console.log('📊 대시보드 데이터 로딩 시작...');
+                    await loadDashboardData();
+                    console.log('📊 대시보드 데이터 로딩 완료');
+                }
+                
+                console.log(`✅ 콘텐츠 로딩 완료: ${contentType}`);
+                
+            } catch (error) {
+                console.error('❌ 콘텐츠 로딩 중 오류 발생:', error);
+                console.error('❌ 오류 상세 정보:', error.stack);
+                
+                const errorContent = `
+                    <div style="text-align: center; color: #ef4444; padding: 2rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">❌</div>
+                        <div>콘텐츠 로딩에 실패했습니다.</div>
+                        <div style="font-size: 0.9rem; color: #666; margin: 1rem 0;">오류: ${error.message}</div>
+                        <button onclick="loadContent('dashboard', null)" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                `;
+                
+                console.log('🔄 오류 콘텐츠 표시 중...');
+                mainContent.innerHTML = errorContent;
+                
+            } finally {
+                // 로딩 상태 해제
+                console.log('🏁 콘텐츠 로딩 플래그 해제');
+                window.loadContentInProgress = false;
+            }
+        }
+
+        // 대시보드 콘텐츠 생성
+        async function generateDashboardContent() {
+            return `
+                ${generatePageHeader('대시보드', '🏠', ['AHP 시스템', '슈퍼 관리자', '대시보드'])}
+                
+                <!-- 대시보드 통계 -->
+                <div class="dashboard-grid">
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">
+                                <span class="admin-card-icon">👥</span>
+                                총 사용자
+                            </div>
+                        </div>
+                        <div class="admin-card-value" id="totalUsers">로딩...</div>
+                        <div class="admin-card-change change-positive" id="userChange">
+                            데이터 로딩 중...
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">
+                                <span class="admin-card-icon">📊</span>
+                                활성 프로젝트
+                            </div>
+                        </div>
+                        <div class="admin-card-value" id="activeProjects">로딩...</div>
+                        <div class="admin-card-change change-positive" id="projectChange">
+                            데이터 로딩 중...
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">
+                                <span class="admin-card-icon">⚡</span>
+                                시스템 성능
+                            </div>
+                        </div>
+                        <div class="admin-card-value" id="systemPerformance">로딩...</div>
+                        <div class="admin-card-change change-positive" id="performanceStatus">
+                            시스템 상태 확인 중...
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title">
+                                <span class="admin-card-icon">💾</span>
+                                저장소 사용률
+                            </div>
+                        </div>
+                        <div class="admin-card-value" id="storageUsage">로딩...</div>
+                        <div class="admin-card-change change-positive" id="storageStatus">
+                            저장소 상태 확인 중...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 관리 섹션 -->
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">핵심 관리 기능</h2>
+                    </div>
+                    <div class="management-grid">
+                        <div class="management-card" onclick="window.open('https://ahp-django-backend.onrender.com/admin/', '_blank')">
+                            <div class="management-card-icon">👥</div>
+                            <div class="management-card-title">Django 슈퍼 관리자</div>
+                            <div class="management-card-desc">
+                                🔥 실제 PostgreSQL 사용자 관리, 결제 관리, 프로젝트 관리 - 완전 관리 시스템
+                            </div>
+                        </div>
+
+                        <div class="management-card" onclick="loadRealUserData()">
+                            <div class="management-card-icon">📊</div>
+                            <div class="management-card-title">실시간 사용자 현황</div>
+                            <div class="management-card-desc">
+                                🔥 PostgreSQL 실시간 사용자 데이터, 가입 현황, 활동 통계
+                            </div>
+                        </div>
+
+                        <div class="management-card" onclick="loadContent('system-settings', null)">
+                            <div class="management-card-icon">📈</div>
+                            <div class="management-card-title">시스템 모니터링</div>
+                            <div class="management-card-desc">
+                                서버 성능, 데이터베이스, API 상태 실시간 모니터링
+                            </div>
+                        </div>
+
+                        <div class="management-card" onclick="loadContent('backup-restore', null)">
+                            <div class="management-card-icon">💾</div>
+                            <div class="management-card-title">백업 관리</div>
+                            <div class="management-card-desc">
+                                데이터 백업, 복원 및 재해 복구 관리
+                            </div>
+                        </div>
+
+                        <div class="management-card" onclick="loadContent('security-settings', null)">
+                            <div class="management-card-icon">🔒</div>
+                            <div class="management-card-title">보안 설정</div>
+                            <div class="management-card-desc">
+                                시스템 보안 정책, 인증 및 암호화 설정
+                            </div>
+                        </div>
+
+                        <div class="management-card" onclick="loadContent('audit-log', null)">
+                            <div class="management-card-icon">📋</div>
+                            <div class="management-card-title">분석 리포트</div>
+                            <div class="management-card-desc">
+                                사용자 활동, 시스템 사용률 및 성능 분석
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 최근 활동 -->
+                <div class="recent-activity">
+                    <div class="section-header">
+                        <h2 class="section-title">최근 시스템 활동</h2>
+                    </div>
+                    <ul class="activity-list" id="activityList">
+                        <li class="activity-item">
+                            <div class="activity-icon system">📡</div>
+                            <div class="activity-content">
+                                <div class="activity-title">최근 활동 데이터를 로딩하고 있습니다...</div>
+                                <div class="activity-time">잠시만 기다려주세요</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // 공통 페이지 헤더 생성
+        function generatePageHeader(title, icon, breadcrumb = []) {
+            const breadcrumbHtml = breadcrumb.length > 0 
+                ? `<div class="breadcrumb" style="margin-bottom: 1rem; color: #666;">
+                     ${breadcrumb.map(item => `<span>${item}</span>`).join(' > ')}
+                   </div>`
+                : '';
+                
+            return `
+                <div class="page-header" style="background: white; padding: 1.5rem 2rem; margin: -2rem -2rem 2rem -2rem; border-bottom: 1px solid #e5e7eb;">
+                    ${breadcrumbHtml}
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <h1 style="font-size: 1.75rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 2rem;">${icon}</span>
+                            ${title}
+                        </h1>
+                        <div class="page-actions">
+                            <!-- 페이지별 액션 버튼 영역 -->
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 사용자 관리 콘텐츠 생성
+        async function generateUserManagementContent() {
+            return `
+                ${generatePageHeader('사용자 관리', '👥', ['대시보드', '시스템 관리', '사용자 관리'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">사용자 현황</h2>
+                        <button class="btn btn-primary" onclick="loadRealUserData()">실시간 사용자 조회</button>
+                    </div>
+                    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                            <div style="text-align: center; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                                <div style="font-size: 2rem; color: #2563eb; margin-bottom: 0.5rem;" id="userStatsTotal">-</div>
+                                <div style="color: #666;">총 사용자</div>
+                            </div>
+                            <div style="text-align: center; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                                <div style="font-size: 2rem; color: #10b981; margin-bottom: 0.5rem;" id="userStatsActive">-</div>
+                                <div style="color: #666;">활성 사용자</div>
+                            </div>
+                            <div style="text-align: center; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                                <div style="font-size: 2rem; color: #f59e0b; margin-bottom: 0.5rem;" id="userStatsAdmin">-</div>
+                                <div style="color: #666;">관리자</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; color: #666; margin: 2rem 0;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🔧</div>
+                            <p>사용자 관리는 Django 관리자 패널에서 수행됩니다</p>
+                            <button onclick="window.open('https://ahp-django-backend.onrender.com/admin/', '_blank')" 
+                                    style="margin-top: 1rem; padding: 0.75rem 1.5rem; background: #C8A968; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                Django 관리자 패널 열기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 다른 콘텐츠 생성 함수들 (페이지 헤더 적용)
+        async function generateProjectOverviewContent() {
+            return `
+                ${generatePageHeader('프로젝트 현황', '📊', ['대시보드', '시스템 관리', '프로젝트 현황'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">활성 프로젝트 통계</h2>
+                    </div>
+                    <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🚧</div>
+                        <h3>프로젝트 현황 관리</h3>
+                        <p style="color: #666; margin: 1rem 0;">프로젝트 통계 및 관리 기능을 개발 중입니다.</p>
+                        <button onclick="loadContent('dashboard', null)" style="padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function generateSystemSettingsContent() {
+            return `
+                ${generatePageHeader('시스템 설정', '⚙️', ['대시보드', '시스템 관리', '시스템 설정'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">서버 모니터링</h2>
+                    </div>
+                    <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⚙️</div>
+                        <h3>시스템 설정 관리</h3>
+                        <p style="color: #666; margin: 1rem 0;">시스템 설정 및 모니터링 기능을 개발 중입니다.</p>
+                        <button onclick="loadContent('dashboard', null)" style="padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function generateAuditLogContent() {
+            return `
+                ${generatePageHeader('감사 로그', '📋', ['대시보드', '시스템 관리', '감사 로그'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">시스템 활동 기록</h2>
+                    </div>
+                    <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                        <h3>감사 로그 관리</h3>
+                        <p style="color: #666; margin: 1rem 0;">시스템 감사 로그 및 활동 추적 기능을 개발 중입니다.</p>
+                        <button onclick="loadContent('dashboard', null)" style="padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function generateBackupRestoreContent() {
+            return `
+                ${generatePageHeader('백업 및 복원', '💾', ['대시보드', '데이터 관리', '백업 및 복원'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">데이터 백업 관리</h2>
+                    </div>
+                    <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">💾</div>
+                        <h3>백업 및 복원 관리</h3>
+                        <p style="color: #666; margin: 1rem 0;">데이터 백업 및 복원 기능을 개발 중입니다.</p>
+                        <button onclick="loadContent('dashboard', null)" style="padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function generateDatabaseManagementContent() {
+            return `
+                ${generatePageHeader('데이터베이스 관리', '🗄️', ['대시보드', '데이터 관리', '데이터베이스 관리'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">PostgreSQL 관리</h2>
+                    </div>
+                    <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🗄️</div>
+                        <h3>데이터베이스 관리</h3>
+                        <p style="color: #666; margin: 1rem 0;">PostgreSQL 데이터베이스 관리 기능을 개발 중입니다.</p>
+                        <button onclick="loadContent('dashboard', null)" style="padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function generateDataMigrationContent() {
+            return `
+                ${generatePageHeader('데이터 마이그레이션', '📤', ['대시보드', '데이터 관리', '데이터 마이그레이션'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">데이터 이전 및 전송</h2>
+                    </div>
+                    <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📤</div>
+                        <h3>데이터 마이그레이션</h3>
+                        <p style="color: #666; margin: 1rem 0;">데이터 마이그레이션 및 전송 기능을 개발 중입니다.</p>
+                        <button onclick="loadContent('dashboard', null)" style="padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function generateSecuritySettingsContent() {
+            return `
+                ${generatePageHeader('보안 설정', '🔒', ['대시보드', '보안 관리', '보안 설정'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">시스템 보안 정책</h2>
+                    </div>
+                    <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                        <h3>보안 설정 관리</h3>
+                        <p style="color: #666; margin: 1rem 0;">시스템 보안 설정 및 정책 관리 기능을 개발 중입니다.</p>
+                        <button onclick="loadContent('dashboard', null)" style="padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function generateAccessControlContent() {
+            return `
+                ${generatePageHeader('접근 제어', '🛡️', ['대시보드', '보안 관리', '접근 제어'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">사용자 권한 관리</h2>
+                    </div>
+                    <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🛡️</div>
+                        <h3>접근 제어 관리</h3>
+                        <p style="color: #666; margin: 1rem 0;">사용자 권한 및 접근 제어 기능을 개발 중입니다.</p>
+                        <button onclick="loadContent('dashboard', null)" style="padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function generateSecurityLogContent() {
+            return `
+                ${generatePageHeader('보안 로그', '🚨', ['대시보드', '보안 관리', '보안 로그'])}
+                
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2 class="section-title">보안 이벤트 추적</h2>
+                    </div>
+                    <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🚨</div>
+                        <h3>보안 로그 관리</h3>
+                        <p style="color: #666; margin: 1rem 0;">보안 이벤트 로그 및 알림 기능을 개발 중입니다.</p>
+                        <button onclick="loadContent('dashboard', null)" style="padding: 0.5rem 1rem; background: #C8A968; color: white; border: none; border-radius: 4px;">
+                            대시보드로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 개인 서비스 모드로 전환
+        function switchToPersonalService() {
+            if (!window.currentUser || !window.currentUser.is_superuser) {
+                alert('슈퍼 관리자 권한이 필요합니다.');
+                return;
+            }
+            
+            if (confirm('개인 서비스 모드로 전환하시겠습니까?')) {
+                console.log('👤 개인 서비스 모드로 전환 중...');
+                window.location.href = './personal-service-enhanced.html';
+            }
+        }
+
+        // 사용자 정보 업데이트 (슈퍼 관리자 대시보드 전용)
+        function updateUserInfo(user) {
+            const userName = document.getElementById('userName');
+            const userRoleText = document.getElementById('userRoleText');
+            const adminBadge = document.getElementById('adminBadge');
+            const userAvatar = document.getElementById('userAvatar');
+
+            if (userName) {
+                userName.textContent = user.name || user.username || '관리자';
+            }
+
+            if (userRoleText) {
+                let roleText = 'System Admin';
+                if (user.is_superuser) {
+                    roleText = 'Super Admin';
+                } else if (user.is_staff) {
+                    roleText = 'Staff Admin';
+                } else if (user.role === 'admin') {
+                    roleText = 'Admin';
+                }
+                userRoleText.textContent = roleText;
+            }
+
+            // 관리자 배지 표시
+            if (adminBadge) {
+                if (user.is_superuser) {
+                    adminBadge.textContent = '🛡️ 슈퍼 관리자';
+                    adminBadge.style.display = 'inline-block';
+                } else if (user.is_staff || user.role === 'admin') {
+                    adminBadge.textContent = '🛡️ 관리자';
+                    adminBadge.style.display = 'inline-block';
+                } else {
+                    adminBadge.style.display = 'none';
+                }
+            }
+
+            if (userAvatar) {
+                const name = user.name || user.username || '관리자';
+                userAvatar.textContent = name.charAt(0).toUpperCase();
+                
+                // 슈퍼 관리자는 레드 배경, 일반 관리자는 골드 배경
+                if (user.is_superuser) {
+                    userAvatar.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
+                } else if (user.is_staff || user.role === 'admin') {
+                    userAvatar.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
+                } else {
+                    userAvatar.style.background = '#6b7280';
+                }
+            }
+
+            // 개인 서비스 토글 버튼 표시 여부 결정 (슈퍼 관리자만)
+            const personalServiceToggle = document.getElementById('personalServiceToggle');
+            if (personalServiceToggle && user.is_superuser) {
+                personalServiceToggle.style.display = 'block';
+                console.log('✅ 슈퍼 관리자 - 개인 서비스 토글 버튼 표시');
+            } else if (personalServiceToggle) {
+                personalServiceToggle.style.display = 'none';
+                console.log('❌ 일반 관리자 - 개인 서비스 토글 버튼 숨김');
+            }
+        }
+
+        // 로그인 상태 확인 후 사용자 정보 업데이트 호출
+        async function initializeUserInterface() {
+            try {
+                const user = window.currentUser;
+                if (user) {
+                    updateUserInfo(user);
+                    console.log('🎨 사용자 인터페이스 초기화 완료');
+                }
+            } catch (error) {
+                console.error('❌ 사용자 인터페이스 초기화 오류:', error);
+            }
+        }
+
+        // 로그아웃 (Django API 기반)
+        async function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                try {
+                    // 캐시된 사용자 정보 제거
+                    window.currentUser = null;
+                    window.sessionChecked = false;
+                    
+                    await window.ahpApi.logout();
+                    window.location.href = 'login.html?message=logout';
+                } catch (error) {
+                    console.error('로그아웃 오류:', error);
+                    // 오류가 발생해도 로그인 페이지로 이동
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
