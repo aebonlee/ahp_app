@@ -3,7 +3,7 @@
 // =============================================================================
 
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 // Stores
@@ -11,7 +11,7 @@ import useAuthStore from './store/authStore';
 import { initializeTheme } from './store/uiStore';
 
 // Pages
-import HomePage from './pages/HomePage';
+import SimpleHomePage from './pages/SimpleHomePage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 // import ProjectPage from './pages/ProjectPage';
@@ -90,7 +90,7 @@ function App() {
               path="/" 
               element={
                 <PublicRoute>
-                  <HomePage />
+                  <SimpleHomePage />
                 </PublicRoute>
               } 
             />
