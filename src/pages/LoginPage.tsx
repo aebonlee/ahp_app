@@ -34,11 +34,16 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    try {
-      await login({ email, password });
+    const success = await login({ email, password });
+    
+    if (success) {
       showToast('로그인되었습니다.', 'success');
-      navigate('/dashboard');
-    } catch (error) {
+      // 강제 리다이렉트 (HashRouter 환경에서)
+      setTimeout(() => {
+        window.location.hash = '#/dashboard';
+        window.location.reload();
+      }, 1000);
+    } else {
       showToast('로그인에 실패했습니다. 정보를 확인해주세요.', 'error');
     }
   };
@@ -50,11 +55,17 @@ const LoginPage: React.FC = () => {
   const handleDemoLogin = async (demoEmail: string, demoPassword: string) => {
     setEmail(demoEmail);
     setPassword(demoPassword);
-    try {
-      await login({ email: demoEmail, password: demoPassword });
+    
+    const success = await login({ email: demoEmail, password: demoPassword });
+    
+    if (success) {
       showToast('데모 계정으로 로그인되었습니다.', 'success');
-      navigate('/dashboard');
-    } catch (error) {
+      // 강제 리다이렉트 (HashRouter 환경에서)
+      setTimeout(() => {
+        window.location.hash = '#/dashboard';
+        window.location.reload();
+      }, 1000);
+    } else {
       showToast('데모 로그인에 실패했습니다.', 'error');
     }
   };
