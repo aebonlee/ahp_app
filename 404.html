@@ -34,11 +34,11 @@
           id: surveyId
         }));
         // Redirect to main app with survey indicator
-        const newUrl = window.location.origin + '/ahp-platform/?survey=' + surveyId + hash;
+        const newUrl = window.location.origin + '/?survey=' + surveyId + hash;
         window.location.replace(newUrl);
-      } else if (!currentUrl.includes('/ahp-platform/')) {
-        // Normal redirect to the correct base path while preserving query parameters and hash
-        const newUrl = window.location.origin + '/ahp-platform/' + searchParams + hash;
+      } else {
+        // Normal redirect to the root while preserving query parameters and hash
+        const newUrl = window.location.origin + '/' + searchParams + hash;
         window.location.replace(newUrl);
       }
       // If we're already on the correct path, let React handle routing
