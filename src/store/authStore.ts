@@ -47,6 +47,53 @@ const useAuthStore = create<AuthState>()(
         login: async (credentials: LoginCredentials): Promise<boolean> => {
           set({ isLoading: true, error: null });
           
+          // Demo 계정 체크 (Mock Authentication)
+          const demoAccounts = [
+            { email: 'admin@ahp-system.com', password: 'password123', role: 'admin' as const, firstName: '관리자', lastName: '시스템' },
+            { email: 'admin@ahp-platform.com', password: 'password123', role: 'admin' as const, firstName: '플랫폼', lastName: '관리자' },
+            { email: 'user@test.com', password: 'password123', role: 'evaluator' as const, firstName: '테스트', lastName: '사용자' },
+            { email: 'demo@demo.com', password: 'demo123', role: 'viewer' as const, firstName: '데모', lastName: '사용자' },
+          ];
+          
+          const demoAccount = demoAccounts.find(
+            account => account.email === credentials.email && account.password === credentials.password
+          );
+          
+          if (demoAccount) {
+            // Mock 로그인 성공
+            const mockUser: User = {
+              id: demoAccount.email,
+              email: demoAccount.email,
+              firstName: demoAccount.firstName,
+              lastName: demoAccount.lastName,
+              name: `${demoAccount.firstName} ${demoAccount.lastName}`,
+              role: demoAccount.role,
+              isActive: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            
+            const mockToken: AuthToken = {
+              access: `mock_token_${Date.now()}`,
+              refresh: `mock_refresh_${Date.now()}`,
+              expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
+            };
+            
+            localStorage.setItem('authToken', mockToken.access);
+            localStorage.setItem('refreshToken', mockToken.refresh);
+            
+            set({
+              user: mockUser,
+              token: mockToken,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+            
+            return true;
+          }
+          
+          // 실제 API 호출
           try {
             const response = await axios.post(`${API_BASE}/accounts/web/login/`, credentials);
             
@@ -77,7 +124,7 @@ const useAuthStore = create<AuthState>()(
             throw new Error(response.data.message || '로그인에 실패했습니다.');
             
           } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || '로그인에 실패했습니다.';
+            const errorMessage = error.response?.data?.message || error.message || '사용자 정보를 확인해주세요.';
             set({
               error: errorMessage,
               isLoading: false,
