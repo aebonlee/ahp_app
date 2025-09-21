@@ -23,6 +23,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'ahp-app-vuzk.onrender.com',
+    'ahp-django-backend.onrender.com',
     '.onrender.com'
 ]
 
