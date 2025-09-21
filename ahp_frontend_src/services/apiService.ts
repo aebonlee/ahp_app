@@ -238,17 +238,17 @@ export const projectAPI = {
 };
 
 export const criteriaAPI = {
-  fetch: (projectId: string) => apiClient.get(`/api/v1/projects/criteria/?project=${projectId}`),
-  create: (data: any) => apiClient.post('/api/v1/projects/criteria/', data),
-  update: (id: string, data: any) => apiClient.patch(`/api/v1/projects/criteria/${id}/`, data),
-  delete: (id: string) => apiClient.delete(`/api/v1/projects/criteria/${id}/`),
+  fetch: (projectId: string) => apiClient.get(`/api/service/criteria/?project=${projectId}`),
+  create: (data: any) => apiClient.post('/api/service/criteria/', data),
+  update: (id: string, data: any) => apiClient.patch(`/api/service/criteria/${id}/`, data),
+  delete: (id: string) => apiClient.delete(`/api/service/criteria/${id}/`),
 };
 
 export const alternativesAPI = {
-  fetch: (projectId: string) => apiClient.get(`/api/v1/projects/criteria/?project=${projectId}&type=alternative`),
-  create: (data: any) => apiClient.post('/api/v1/projects/criteria/', { ...data, type: 'alternative' }),
-  update: (id: string, data: any) => apiClient.patch(`/api/v1/projects/criteria/${id}/`, data),
-  delete: (id: string) => apiClient.delete(`/api/v1/projects/criteria/${id}/`),
+  fetch: (projectId: string) => apiClient.get(`/api/service/criteria/?project=${projectId}&type=alternative`),
+  create: (data: any) => apiClient.post('/api/service/criteria/', { ...data, type: 'alternative' }),
+  update: (id: string, data: any) => apiClient.patch(`/api/service/criteria/${id}/`, data),
+  delete: (id: string) => apiClient.delete(`/api/service/criteria/${id}/`),
 };
 
 // 통합 헬퍼 함수들

@@ -19,81 +19,78 @@ export const RETRY_config = {
   backoffMultiplier: 2
 };
 
-// API 엔드포인트 - Django REST API 구조
+// API 엔드포인트 - 실제 Django 백엔드 구조에 맞춰 수정
 export const API_ENDPOINTS = {
-  // Auth - Django JWT
+  // Auth - 실제 Django 엔드포인트
   AUTH: {
-    LOGIN: '/api/v1/auth/token/',
-    REGISTER: '/api/v1/accounts/register/',
-    LOGOUT: '/api/v1/auth/logout/',
-    VERIFY: '/api/v1/auth/token/verify/',
-    REFRESH: '/api/v1/auth/token/refresh/'
+    LOGIN: '/api/login/',
+    REGISTER: '/api/register/',
+    LOGOUT: '/api/logout/',
+    VERIFY: '/api/user/',
+    REFRESH: '/api/refresh/'
   },
-  // Projects - Django ViewSet
+  // Projects - 실제 Django Service API
   PROJECTS: {
-    LIST: '/api/v1/projects/projects/',
-    CREATE: '/api/v1/projects/projects/',
-    GET: (id: string) => `/api/v1/projects/projects/${id}/`,
-    UPDATE: (id: string) => `/api/v1/projects/projects/${id}/`,
-    DELETE: (id: string) => `/api/v1/projects/projects/${id}/`
+    LIST: '/api/service/projects/',
+    CREATE: '/api/service/projects/',
+    GET: (id: string) => `/api/service/projects/${id}/`,
+    UPDATE: (id: string) => `/api/service/projects/${id}/`,
+    DELETE: (id: string) => `/api/service/projects/${id}/`
   },
-  // Criteria - Django ViewSet
+  // Criteria - 실제 Django Service API
   CRITERIA: {
-    LIST: (projectId: string) => `/api/v1/projects/criteria/?project=${projectId}`,
-    CREATE: '/api/v1/projects/criteria/',
-    UPDATE: (id: string) => `/api/v1/projects/criteria/${id}/`,
-    DELETE: (id: string) => `/api/v1/projects/criteria/${id}/`
+    LIST: (projectId: string) => `/api/service/criteria/?project=${projectId}`,
+    CREATE: '/api/service/criteria/',
+    UPDATE: (id: string) => `/api/service/criteria/${id}/`,
+    DELETE: (id: string) => `/api/service/criteria/${id}/`
   },
-  // Alternatives (같은 Criteria 모델 사용, type=alternative)
+  // Alternatives
   ALTERNATIVES: {
-    LIST: (projectId: string) => `/api/v1/projects/criteria/?project=${projectId}&type=alternative`,
-    CREATE: '/api/v1/projects/criteria/',
-    UPDATE: (id: string) => `/api/v1/projects/criteria/${id}/`,
-    DELETE: (id: string) => `/api/v1/projects/criteria/${id}/`
+    LIST: (projectId: string) => `/api/service/criteria/?project=${projectId}&type=alternative`,
+    CREATE: '/api/service/criteria/',
+    UPDATE: (id: string) => `/api/service/criteria/${id}/`,
+    DELETE: (id: string) => `/api/service/criteria/${id}/`
   },
-  // Evaluations - Django ViewSet
+  // Evaluations
   EVALUATIONS: {
-    SUBMIT: '/api/v1/evaluations/evaluations/',
-    GET_MATRIX: (projectId: string) => `/api/v1/evaluations/evaluations/?project=${projectId}`,
-    COMPUTE: '/api/v1/analysis/calculate/',
-    RESULTS: (projectId: string) => `/api/v1/analysis/results/?project=${projectId}`
+    SUBMIT: '/api/service/comparisons/',
+    GET_MATRIX: (projectId: string) => `/api/service/comparisons/?project=${projectId}`,
+    COMPUTE: '/api/service/results/',
+    RESULTS: (projectId: string) => `/api/service/results/?project=${projectId}`
   },
-  // Evaluators - Django ViewSet
+  // Evaluators
   EVALUATORS: {
-    LIST: (projectId: string) => `/api/v1/evaluations/invitations/?project=${projectId}`,
-    ADD: '/api/v1/evaluations/invitations/',
-    UPDATE: (id: string) => `/api/v1/evaluations/invitations/${id}/`,
-    REMOVE: (id: string) => `/api/v1/evaluations/invitations/${id}/`,
-    SEND_INVITATIONS: (projectId: string) => `/api/v1/evaluations/invitations/send/`
+    LIST: (projectId: string) => `/api/service/evaluators/?project=${projectId}`,
+    ADD: '/api/service/evaluators/',
+    UPDATE: (id: string) => `/api/service/evaluators/${id}/`,
+    REMOVE: (id: string) => `/api/service/evaluators/${id}/`,
+    SEND_INVITATIONS: (projectId: string) => `/api/service/evaluators/invite/`
   },
-  // Comparisons - Django ViewSet
+  // Comparisons
   COMPARISONS: {
-    SAVE: '/api/v1/evaluations/comparisons/',
+    SAVE: '/api/service/comparisons/',
     GET: (projectId: string, evaluatorId?: string) => 
-      `/api/v1/evaluations/comparisons/?evaluation__project=${projectId}${evaluatorId ? `&evaluation__evaluator=${evaluatorId}` : ''}`,
+      `/api/service/comparisons/?project=${projectId}${evaluatorId ? `&evaluator=${evaluatorId}` : ''}`,
     UPDATE_SESSION: (projectId: string, evaluatorId: string) =>
-      `/api/v1/evaluations/evaluations/${evaluatorId}/update_progress/`
+      `/api/service/comparisons/${evaluatorId}/progress/`
   },
-  // Results - Django ViewSet
+  // Results
   RESULTS: {
-    GET: (projectId: string) => `/api/v1/analysis/results/${projectId}/`,
+    GET: (projectId: string) => `/api/service/results/${projectId}/`,
     INDIVIDUAL: (projectId: string, evaluatorId: string) =>
-      `/api/v1/analysis/results/individual/?project=${projectId}&evaluator=${evaluatorId}`,
-    CALCULATE_GROUP: (projectId: string) => `/api/v1/analysis/results/group/`,
-    SENSITIVITY: (projectId: string) => `/api/v1/analysis/sensitivity/?project=${projectId}`
+      `/api/service/results/individual/?project=${projectId}&evaluator=${evaluatorId}`,
+    CALCULATE_GROUP: (projectId: string) => `/api/service/results/group/`,
+    SENSITIVITY: (projectId: string) => `/api/service/results/sensitivity/?project=${projectId}`
   },
-  // Export - Django ViewSet
+  // Export
   EXPORT: {
-    EXCEL: (projectId: string) => `/api/v1/analysis/export/excel/?project=${projectId}`,
-    PDF: (projectId: string) => `/api/v1/analysis/export/pdf/?project=${projectId}`,
-    REPORT: (projectId: string) => `/api/v1/analysis/export/report/?project=${projectId}`
+    EXCEL: (projectId: string) => `/api/service/export/excel/?project=${projectId}`,
+    PDF: (projectId: string) => `/api/service/export/pdf/?project=${projectId}`,
+    REPORT: (projectId: string) => `/api/service/export/report/?project=${projectId}`
   },
-  // Sync (for offline mode)
-  SYNC: {
-    UPLOAD: '/api/v1/sync/upload/',
-    DOWNLOAD: '/api/v1/sync/download/',
-    STATUS: '/api/v1/sync/status/'
-  }
+  // Service Status
+  STATUS: '/api/service/status/',
+  DATA: '/api/service/data/'
 };
 
 // HTTP 상태 코드
