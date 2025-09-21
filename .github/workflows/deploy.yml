@@ -3,8 +3,16 @@ name: Build and Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
+    paths: 
+      - 'ahp_frontend_public/**'
+      - 'ahp_frontend_src/**'
+      - '.github/workflows/deploy.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'ahp_frontend_public/**'
+      - 'ahp_frontend_src/**'
+      - '.github/workflows/deploy.yml'
 
 permissions:
   contents: read
@@ -29,6 +37,18 @@ jobs:
         node-version: '18'
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
+        
+    - name: Check frontend source
+      run: |
+        echo "Checking for frontend files..."
+        ls -la
+        if [ -d "ahp_frontend_public" ]; then
+          echo "Found ahp_frontend_public directory"
+          ls -la ahp_frontend_public/
+        else
+          echo "ahp_frontend_public directory not found"
+          exit 1
+        fi
         
     - name: Prepare deployment files
       run: |
