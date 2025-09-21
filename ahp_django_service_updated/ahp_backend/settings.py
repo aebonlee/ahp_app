@@ -92,33 +92,33 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-if config('DATABASE_URL', default=None):
-    DATABASES = {
-        'default': dj_database_url.parse(config('DATABASE_URL'))
+# Default SQLite database as fallback
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    # Development database
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'ahp_db',
-            'USER': 'postgres',
-            'PASSWORD': 'password',
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
-    }
+}
 
-# Ensure proper PostgreSQL connection for production
-if not DEBUG:
-    # Production database connection for Render.com PostgreSQL
-    postgres_db = config('POSTGRES_DB', default='')
-    postgres_user = config('POSTGRES_USER', default='')
-    postgres_password = config('POSTGRES_PASSWORD', default='')
-    postgres_host = config('POSTGRES_HOST', default='dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com')
-    postgres_port = config('POSTGRES_PORT', default='5432')
-    
-    if postgres_db and postgres_user and postgres_password:
+# Try PostgreSQL configuration if available
+database_url = config('DATABASE_URL', default=None)
+postgres_db = config('POSTGRES_DB', default='')
+postgres_user = config('POSTGRES_USER', default='')
+postgres_password = config('POSTGRES_PASSWORD', default='')
+postgres_host = config('POSTGRES_HOST', default='dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com')
+postgres_port = config('POSTGRES_PORT', default='5432')
+
+# Use DATABASE_URL if provided
+if database_url:
+    try:
+        DATABASES['default'] = dj_database_url.parse(database_url)
+        print("✓ Using DATABASE_URL for database connection")
+    except Exception as e:
+        print(f"⚠️ DATABASE_URL parsing failed: {e}, falling back to SQLite")
+
+# Use individual PostgreSQL credentials if available
+elif postgres_db and postgres_user and postgres_password:
+    try:
         DATABASES['default'] = {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': postgres_db,
@@ -130,6 +130,33 @@ if not DEBUG:
                 'sslmode': 'require',
             },
         }
+        print("✓ Using PostgreSQL credentials for database connection")
+    except Exception as e:
+        print(f"⚠️ PostgreSQL connection failed: {e}, falling back to SQLite")
+
+# For development, try local PostgreSQL
+elif DEBUG:
+    try:
+        DATABASES['default'] = {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'ahp_db',
+            'USER': 'postgres',
+            'PASSWORD': 'password',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+        # Test connection
+        from django.db import connection
+        connection.ensure_connection()
+        print("✓ Using local PostgreSQL for development")
+    except Exception as e:
+        print(f"⚠️ Local PostgreSQL not available: {e}, using SQLite")
+        DATABASES['default'] = {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+
+print(f"📊 Database engine: {DATABASES['default']['ENGINE']}")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
