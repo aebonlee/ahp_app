@@ -88,7 +88,7 @@ export const API_ENDPOINTS = {
     PDF: (projectId: string) => `/api/v1/analysis/export/pdf/?project=${projectId}`,
     REPORT: (projectId: string) => `/api/v1/analysis/export/report/?project=${projectId}`
   },
-  // Sync (for offline mode) - Django 미지원, 향후 구현
+  // Sync (for offline mode)
   SYNC: {
     UPLOAD: '/api/v1/sync/upload/',
     DOWNLOAD: '/api/v1/sync/download/',

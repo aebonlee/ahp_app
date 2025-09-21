@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: ahp-django-backend
+    runtime: python
+    buildCommand: "./render-build.sh"
+    startCommand: "gunicorn ahp_backend.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ahp-database
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      
+databases:
+  - name: ahp-database
+    databaseName: ahp_app_vuzk
+    user: ahp_app_vuzk_user
+    region: oregon
