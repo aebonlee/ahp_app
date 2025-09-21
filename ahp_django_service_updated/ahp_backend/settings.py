@@ -97,6 +97,7 @@ if config('DATABASE_URL', default=None):
         'default': dj_database_url.parse(config('DATABASE_URL'))
     }
 else:
+    # Development database
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -107,6 +108,28 @@ else:
             'PORT': '5432',
         }
     }
+
+# Ensure proper PostgreSQL connection for production
+if not DEBUG:
+    # Production database connection for Render.com PostgreSQL
+    postgres_db = config('POSTGRES_DB', default='')
+    postgres_user = config('POSTGRES_USER', default='')
+    postgres_password = config('POSTGRES_PASSWORD', default='')
+    postgres_host = config('POSTGRES_HOST', default='dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com')
+    postgres_port = config('POSTGRES_PORT', default='5432')
+    
+    if postgres_db and postgres_user and postgres_password:
+        DATABASES['default'] = {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': postgres_db,
+            'USER': postgres_user,
+            'PASSWORD': postgres_password,
+            'HOST': postgres_host,
+            'PORT': postgres_port,
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
