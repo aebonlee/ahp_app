@@ -14,6 +14,35 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+import os
+
+
+def check_database_status():
+    """Check database connection and table status"""
+    try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            
+            # Check if tables exist
+            cursor.execute("""
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = 'public'
+            """)
+            tables = [row[0] for row in cursor.fetchall()]
+            
+            return {
+                'connection': 'OK',
+                'tables_count': len(tables),
+                'tables': tables[:10],  # First 10 tables
+                'has_migrations': 'django_migrations' in tables
+            }
+    except Exception as e:
+        return {
+            'connection': 'FAILED',
+            'error': str(e)
+        }
 
 # API URL patterns
 api_patterns = [
@@ -41,6 +70,18 @@ urlpatterns = [
     
     # Health check for Render.com
     path('health/', lambda request: JsonResponse({'status': 'healthy'})),
+    
+    # Database status check
+    path('db-status/', lambda request: JsonResponse({
+        'database': check_database_status(),
+        'env_vars': {
+            'DEBUG': os.environ.get('DEBUG', 'Not set'),
+            'DATABASE_URL': 'Set' if os.environ.get('DATABASE_URL') else 'Not set',
+            'POSTGRES_DB': 'Set' if os.environ.get('POSTGRES_DB') else 'Not set',
+            'POSTGRES_USER': 'Set' if os.environ.get('POSTGRES_USER') else 'Not set',
+            'POSTGRES_PASSWORD': 'Set' if os.environ.get('POSTGRES_PASSWORD') else 'Not set',
+        }
+    })),
 ]
 
 # Serve media files in development
