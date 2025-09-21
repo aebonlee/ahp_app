@@ -1,0 +1,13 @@
+-- 사용자 프로필 추가 필드
+ALTER TABLE users 
+ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
+ADD COLUMN IF NOT EXISTS organization VARCHAR(255),
+ADD COLUMN IF NOT EXISTS department VARCHAR(255),
+ADD COLUMN IF NOT EXISTS profile_image TEXT,
+ADD COLUMN IF NOT EXISTS theme VARCHAR(50) DEFAULT 'default',
+ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'ko',
+ADD COLUMN IF NOT EXISTS notifications JSONB DEFAULT '{}';
+
+-- 인덱스 추가
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
