@@ -56,7 +56,7 @@ class Project(models.Model):
     settings = models.JSONField(default=dict, blank=True)
     
     class Meta:
-        db_table = 'projects'
+        db_table = 'simple_projects'
         ordering = ['-created_at']
         
     def __str__(self):
