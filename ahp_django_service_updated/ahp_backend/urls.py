@@ -33,8 +33,11 @@ urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     
-    # API
+    # API v1 (legacy compatibility)
     path('api/v1/', include(api_patterns)),
+    
+    # API service (new frontend endpoints)
+    path('api/service/', include(api_patterns)),
     
     # Health check for Render.com
     path('health/', lambda request: JsonResponse({'status': 'healthy'})),
