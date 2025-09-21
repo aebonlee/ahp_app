@@ -114,6 +114,60 @@ def force_database_setup():
             'results': results if 'results' in locals() else []
         }
 
+
+def test_projects_access():
+    """Test direct access to projects without authentication"""
+    try:
+        from apps.projects.models import Project
+        from django.db import connection
+        
+        # Test database connection first
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        
+        # Try to count projects
+        try:
+            project_count = Project.objects.count()
+            return {
+                'status': 'SUCCESS',
+                'project_count': project_count,
+                'database_engine': connection.vendor,
+                'message': 'Projects table accessible'
+            }
+        except Exception as db_error:
+            # Try to see what tables actually exist
+            with connection.cursor() as cursor:
+                if connection.vendor == 'postgresql':
+                    cursor.execute("""
+                        SELECT table_name 
+                        FROM information_schema.tables 
+                        WHERE table_schema = 'public'
+                        ORDER BY table_name
+                    """)
+                else:  # SQLite
+                    cursor.execute("""
+                        SELECT name FROM sqlite_master 
+                        WHERE type='table' AND name NOT LIKE 'sqlite_%'
+                        ORDER BY name
+                    """)
+                
+                tables = [row[0] for row in cursor.fetchall()]
+                
+                return {
+                    'status': 'DB_ERROR',
+                    'error': str(db_error),
+                    'database_engine': connection.vendor,
+                    'existing_tables': tables,
+                    'looking_for': 'simple_projects'
+                }
+        
+    except Exception as e:
+        return {
+            'status': 'FAILED',
+            'error': str(e),
+            'connection_failed': True
+        }
+
 # API URL patterns
 api_patterns = [
     # Authentication
@@ -146,6 +200,9 @@ urlpatterns = [
     
     # Force database setup
     path('setup-db/', lambda request: JsonResponse(force_database_setup())),
+    
+    # Test projects without authentication
+    path('test-projects/', lambda request: JsonResponse(test_projects_access())),
 ]
 
 # Serve media files in development
