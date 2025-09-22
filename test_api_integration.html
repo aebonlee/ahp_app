@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP Platform - API 통합 테스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+        }
+        
+        .btn-warning {
+            background: #ed8936;
+        }
+        
+        .result-box {
+            background: white;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .status.pending {
+            background: #feebc8;
+            color: #744210;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .config-section {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .config-section h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 AHP Platform API 통합 테스트</h1>
+        
+        <!-- 설정 섹션 -->
+        <div class="config-section">
+            <h3>⚙️ API 설정</h3>
+            <div class="input-group">
+                <input type="text" id="apiUrl" value="https://ahp-django-backend.onrender.com" placeholder="API URL">
+                <input type="text" id="authToken" placeholder="JWT Token (로그인 후 자동 설정)">
+                <button class="btn" onclick="saveConfig()">설정 저장</button>
+            </div>
+        </div>
+
+        <!-- 통계 대시보드 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalTests">0</div>
+                <div class="stat-label">전체 테스트</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="passedTests">0</div>
+                <div class="stat-label">성공</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="failedTests">0</div>
+                <div class="stat-label">실패</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-label">성공률</div>
+            </div>
+        </div>
+
+        <!-- 1. 인증 테스트 -->
+        <div class="test-section">
+            <h2>1️⃣ 인증 API 테스트</h2>
+            <div class="test-controls">
+                <button class="btn" onclick="testRegister()">회원가입 테스트</button>
+                <button class="btn btn-success" onclick="testLogin()">로그인 테스트</button>
+                <button class="btn btn-warning" onclick="testUserInfo()">사용자 정보 조회</button>
+                <button class="btn btn-danger" onclick="testLogout()">로그아웃 테스트</button>
+            </div>
+            <div id="authResult" class="result-box">인증 테스트 결과가 여기에 표시됩니다...</div>
+        </div>
+
+        <!-- 2. 프로젝트 CRUD 테스트 -->
+        <div class="test-section">
+            <h2>2️⃣ 프로젝트 CRUD 테스트</h2>
+            <div class="test-controls">
+                <button class="btn" onclick="testProjectList()">프로젝트 목록</button>
+                <button class="btn btn-success" onclick="testProjectCreate()">프로젝트 생성</button>
+                <button class="btn btn-warning" onclick="testProjectUpdate()">프로젝트 수정</button>
+                <button class="btn btn-danger" onclick="testProjectDelete()">프로젝트 삭제</button>
+            </div>
+            <div id="projectResult" class="result-box">프로젝트 테스트 결과가 여기에 표시됩니다...</div>
+        </div>
+
+        <!-- 3. 기준/대안 관리 테스트 -->
+        <div class="test-section">
+            <h2>3️⃣ 기준(Criteria) & 대안(Alternatives) 테스트</h2>
+            <div class="test-controls">
+                <button class="btn" onclick="testCriteriaCreate()">기준 생성</button>
+                <button class="btn" onclick="testCriteriaList()">기준 목록</button>
+                <button class="btn btn-success" onclick="testAlternativeCreate()">대안 생성</button>
+                <button class="btn btn-warning" onclick="testAlternativeList()">대안 목록</button>
+            </div>
+            <div id="criteriaResult" class="result-box">기준/대안 테스트 결과가 여기에 표시됩니다...</div>
+        </div>
+
+        <!-- 4. 평가자 관리 테스트 -->
+        <div class="test-section">
+            <h2>4️⃣ 평가자 관리 테스트</h2>
+            <div class="test-controls">
+                <button class="btn" onclick="testEvaluatorAdd()">평가자 추가</button>
+                <button class="btn" onclick="testEvaluatorList()">평가자 목록</button>
+                <button class="btn btn-success" onclick="testSendInvitation()">초대 발송</button>
+                <button class="btn btn-danger" onclick="testEvaluatorRemove()">평가자 제거</button>
+            </div>
+            <div id="evaluatorResult" class="result-box">평가자 테스트 결과가 여기에 표시됩니다...</div>
+        </div>
+
+        <!-- 5. 쌍대비교 & 결과 테스트 -->
+        <div class="test-section">
+            <h2>5️⃣ 쌍대비교 & 결과 계산 테스트</h2>
+            <div class="test-controls">
+                <button class="btn" onclick="testComparisonSave()">쌍대비교 저장</button>
+                <button class="btn" onclick="testComparisonGet()">비교 데이터 조회</button>
+                <button class="btn btn-success" onclick="testResultCalculate()">결과 계산</button>
+                <button class="btn btn-warning" onclick="testSensitivityAnalysis()">민감도 분석</button>
+            </div>
+            <div id="comparisonResult" class="result-box">쌍대비교 테스트 결과가 여기에 표시됩니다...</div>
+        </div>
+
+        <!-- 6. 전체 시나리오 테스트 -->
+        <div class="test-section">
+            <h2>🚀 전체 시나리오 테스트</h2>
+            <div class="test-controls">
+                <button class="btn btn-success" onclick="runFullScenario()">전체 플로우 실행</button>
+                <button class="btn btn-warning" onclick="clearAllData()">테스트 데이터 초기화</button>
+            </div>
+            <div id="scenarioResult" class="result-box">전체 시나리오 실행 결과가 여기에 표시됩니다...</div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let apiBase = 'https://ahp-django-backend.onrender.com';
+        let authToken = '';
+        let testProjectId = '';
+        let testUserId = '';
+        
+        // 테스트 통계
+        let stats = {
+            total: 0,
+            passed: 0,
+            failed: 0
+        };
+
+        // 유틸리티 함수
+        function updateStats() {
+            document.getElementById('totalTests').textContent = stats.total;
+            document.getElementById('passedTests').textContent = stats.passed;
+            document.getElementById('failedTests').textContent = stats.failed;
+            const rate = stats.total > 0 ? Math.round((stats.passed / stats.total) * 100) : 0;
+            document.getElementById('successRate').textContent = rate + '%';
+        }
+
+        function logResult(elementId, message, status = 'pending') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const statusBadge = `<span class="status ${status}">${status.toUpperCase()}</span>`;
+            element.innerHTML = `${statusBadge}[${timestamp}] ${message}\n` + element.innerHTML;
+            
+            if (status === 'success') stats.passed++;
+            else if (status === 'error') stats.failed++;
+            stats.total++;
+            updateStats();
+        }
+
+        async function apiCall(method, endpoint, data = null) {
+            const url = `${apiBase}${endpoint}`;
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            };
+
+            if (authToken) {
+                options.headers['Authorization'] = `Bearer ${authToken}`;
+            }
+
+            if (data && method !== 'GET') {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${JSON.stringify(result)}`);
+                }
+                
+                return { success: true, data: result };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // 설정 관리
+        function saveConfig() {
+            apiBase = document.getElementById('apiUrl').value;
+            authToken = document.getElementById('authToken').value;
+            alert('설정이 저장되었습니다!');
+        }
+
+        // 1. 인증 테스트 함수들
+        async function testRegister() {
+            const testUser = {
+                username: `test_${Date.now()}`,
+                email: `test_${Date.now()}@example.com`,
+                password: 'Test1234!@#$'
+            };
+
+            const result = await apiCall('POST', '/api/register/', testUser);
+            
+            if (result.success) {
+                logResult('authResult', `회원가입 성공: ${JSON.stringify(result.data)}`, 'success');
+            } else {
+                logResult('authResult', `회원가입 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            const credentials = {
+                username: 'admin',
+                password: 'ahp2025admin'
+            };
+
+            const result = await apiCall('POST', '/api/login/', credentials);
+            
+            if (result.success) {
+                authToken = result.data.access || result.data.token;
+                document.getElementById('authToken').value = authToken;
+                logResult('authResult', `로그인 성공! Token: ${authToken.substring(0, 20)}...`, 'success');
+            } else {
+                logResult('authResult', `로그인 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testUserInfo() {
+            const result = await apiCall('GET', '/api/user/');
+            
+            if (result.success) {
+                testUserId = result.data.id;
+                logResult('authResult', `사용자 정보: ${JSON.stringify(result.data)}`, 'success');
+            } else {
+                logResult('authResult', `사용자 정보 조회 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testLogout() {
+            const result = await apiCall('POST', '/api/logout/');
+            
+            if (result.success) {
+                authToken = '';
+                document.getElementById('authToken').value = '';
+                logResult('authResult', '로그아웃 성공', 'success');
+            } else {
+                logResult('authResult', `로그아웃 실패: ${result.error}`, 'error');
+            }
+        }
+
+        // 2. 프로젝트 테스트 함수들
+        async function testProjectList() {
+            const result = await apiCall('GET', '/api/service/projects/');
+            
+            if (result.success) {
+                const projects = result.data.results || result.data;
+                logResult('projectResult', `프로젝트 목록 (${projects.length}개): ${JSON.stringify(projects)}`, 'success');
+                if (projects.length > 0) {
+                    testProjectId = projects[0].id;
+                }
+            } else {
+                logResult('projectResult', `프로젝트 목록 조회 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testProjectCreate() {
+            const newProject = {
+                title: `테스트 프로젝트 ${Date.now()}`,
+                description: 'API 테스트용 프로젝트',
+                objective: 'API 통합 테스트'
+            };
+
+            const result = await apiCall('POST', '/api/service/projects/', newProject);
+            
+            if (result.success) {
+                testProjectId = result.data.id;
+                logResult('projectResult', `프로젝트 생성 성공! ID: ${testProjectId}`, 'success');
+            } else {
+                logResult('projectResult', `프로젝트 생성 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testProjectUpdate() {
+            if (!testProjectId) {
+                logResult('projectResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const updateData = {
+                title: `수정된 프로젝트 ${Date.now()}`,
+                status: 'active'
+            };
+
+            const result = await apiCall('PATCH', `/api/service/projects/${testProjectId}/`, updateData);
+            
+            if (result.success) {
+                logResult('projectResult', `프로젝트 수정 성공: ${JSON.stringify(result.data)}`, 'success');
+            } else {
+                logResult('projectResult', `프로젝트 수정 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testProjectDelete() {
+            if (!testProjectId) {
+                logResult('projectResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const result = await apiCall('DELETE', `/api/service/projects/${testProjectId}/`);
+            
+            if (result.success) {
+                logResult('projectResult', `프로젝트 삭제 성공!`, 'success');
+                testProjectId = '';
+            } else {
+                logResult('projectResult', `프로젝트 삭제 실패: ${result.error}`, 'error');
+            }
+        }
+
+        // 3. 기준/대안 테스트 함수들
+        async function testCriteriaCreate() {
+            if (!testProjectId) {
+                await testProjectCreate();
+            }
+
+            const criteria = [
+                { name: '비용', description: '프로젝트 비용' },
+                { name: '품질', description: '결과물 품질' },
+                { name: '시간', description: '소요 시간' }
+            ];
+
+            for (const criterion of criteria) {
+                const data = {
+                    project: testProjectId,
+                    ...criterion,
+                    is_alternative: false
+                };
+
+                const result = await apiCall('POST', '/api/service/criteria/', data);
+                
+                if (result.success) {
+                    logResult('criteriaResult', `기준 생성 성공: ${criterion.name}`, 'success');
+                } else {
+                    logResult('criteriaResult', `기준 생성 실패 (${criterion.name}): ${result.error}`, 'error');
+                }
+            }
+        }
+
+        async function testCriteriaList() {
+            if (!testProjectId) {
+                logResult('criteriaResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const result = await apiCall('GET', `/api/service/criteria/?project=${testProjectId}`);
+            
+            if (result.success) {
+                const criteria = result.data.results || result.data;
+                logResult('criteriaResult', `기준 목록 (${criteria.length}개): ${JSON.stringify(criteria)}`, 'success');
+            } else {
+                logResult('criteriaResult', `기준 목록 조회 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testAlternativeCreate() {
+            if (!testProjectId) {
+                await testProjectCreate();
+            }
+
+            const alternatives = [
+                { name: '대안 A', description: '첫 번째 대안' },
+                { name: '대안 B', description: '두 번째 대안' },
+                { name: '대안 C', description: '세 번째 대안' }
+            ];
+
+            for (const alternative of alternatives) {
+                const data = {
+                    project: testProjectId,
+                    ...alternative,
+                    is_alternative: true
+                };
+
+                const result = await apiCall('POST', '/api/service/criteria/', data);
+                
+                if (result.success) {
+                    logResult('criteriaResult', `대안 생성 성공: ${alternative.name}`, 'success');
+                } else {
+                    logResult('criteriaResult', `대안 생성 실패 (${alternative.name}): ${result.error}`, 'error');
+                }
+            }
+        }
+
+        async function testAlternativeList() {
+            if (!testProjectId) {
+                logResult('criteriaResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const result = await apiCall('GET', `/api/service/criteria/?project=${testProjectId}&type=alternative`);
+            
+            if (result.success) {
+                const alternatives = result.data.results || result.data;
+                logResult('criteriaResult', `대안 목록 (${alternatives.length}개): ${JSON.stringify(alternatives)}`, 'success');
+            } else {
+                logResult('criteriaResult', `대안 목록 조회 실패: ${result.error}`, 'error');
+            }
+        }
+
+        // 4. 평가자 관리 테스트
+        async function testEvaluatorAdd() {
+            if (!testProjectId) {
+                logResult('evaluatorResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const evaluatorData = {
+                project: testProjectId,
+                email: 'evaluator@example.com',
+                name: '평가자1'
+            };
+
+            const result = await apiCall('POST', '/api/service/evaluators/', evaluatorData);
+            
+            if (result.success) {
+                logResult('evaluatorResult', `평가자 추가 성공: ${JSON.stringify(result.data)}`, 'success');
+            } else {
+                logResult('evaluatorResult', `평가자 추가 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testEvaluatorList() {
+            if (!testProjectId) {
+                logResult('evaluatorResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const result = await apiCall('GET', `/api/service/evaluators/?project=${testProjectId}`);
+            
+            if (result.success) {
+                const evaluators = result.data.results || result.data;
+                logResult('evaluatorResult', `평가자 목록 (${evaluators.length}명): ${JSON.stringify(evaluators)}`, 'success');
+            } else {
+                logResult('evaluatorResult', `평가자 목록 조회 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testSendInvitation() {
+            if (!testProjectId) {
+                logResult('evaluatorResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const invitationData = {
+                project: testProjectId,
+                emails: ['evaluator1@example.com', 'evaluator2@example.com']
+            };
+
+            const result = await apiCall('POST', `/api/service/evaluators/invite/`, invitationData);
+            
+            if (result.success) {
+                logResult('evaluatorResult', `초대 발송 성공: ${JSON.stringify(result.data)}`, 'success');
+            } else {
+                logResult('evaluatorResult', `초대 발송 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testEvaluatorRemove() {
+            logResult('evaluatorResult', '평가자 제거 기능은 구현 예정입니다.', 'pending');
+        }
+
+        // 5. 쌍대비교 & 결과 테스트
+        async function testComparisonSave() {
+            if (!testProjectId) {
+                logResult('comparisonResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const comparisonData = {
+                project: testProjectId,
+                comparisons: [
+                    { criteria_1: 'cost', criteria_2: 'quality', value: 3 },
+                    { criteria_1: 'cost', criteria_2: 'time', value: 5 },
+                    { criteria_1: 'quality', criteria_2: 'time', value: 2 }
+                ]
+            };
+
+            const result = await apiCall('POST', '/api/service/comparisons/', comparisonData);
+            
+            if (result.success) {
+                logResult('comparisonResult', `쌍대비교 저장 성공: ${JSON.stringify(result.data)}`, 'success');
+            } else {
+                logResult('comparisonResult', `쌍대비교 저장 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testComparisonGet() {
+            if (!testProjectId) {
+                logResult('comparisonResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const result = await apiCall('GET', `/api/service/comparisons/?project=${testProjectId}`);
+            
+            if (result.success) {
+                const comparisons = result.data.results || result.data;
+                logResult('comparisonResult', `비교 데이터 (${comparisons.length}개): ${JSON.stringify(comparisons)}`, 'success');
+            } else {
+                logResult('comparisonResult', `비교 데이터 조회 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testResultCalculate() {
+            if (!testProjectId) {
+                logResult('comparisonResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const result = await apiCall('POST', '/api/service/results/group/', { project: testProjectId });
+            
+            if (result.success) {
+                logResult('comparisonResult', `결과 계산 성공: ${JSON.stringify(result.data)}`, 'success');
+            } else {
+                logResult('comparisonResult', `결과 계산 실패: ${result.error}`, 'error');
+            }
+        }
+
+        async function testSensitivityAnalysis() {
+            if (!testProjectId) {
+                logResult('comparisonResult', '프로젝트 ID가 없습니다. 먼저 프로젝트를 생성하세요.', 'error');
+                return;
+            }
+
+            const result = await apiCall('GET', `/api/service/results/sensitivity/?project=${testProjectId}`);
+            
+            if (result.success) {
+                logResult('comparisonResult', `민감도 분석 성공: ${JSON.stringify(result.data)}`, 'success');
+            } else {
+                logResult('comparisonResult', `민감도 분석 실패: ${result.error}`, 'error');
+            }
+        }
+
+        // 6. 전체 시나리오 테스트
+        async function runFullScenario() {
+            logResult('scenarioResult', '========== 전체 시나리오 시작 ==========', 'pending');
+            
+            // 1. 로그인
+            logResult('scenarioResult', '1. 로그인 시도...', 'pending');
+            await testLogin();
+            await new Promise(r => setTimeout(r, 1000));
+            
+            // 2. 프로젝트 생성
+            logResult('scenarioResult', '2. 프로젝트 생성...', 'pending');
+            await testProjectCreate();
+            await new Promise(r => setTimeout(r, 1000));
+            
+            // 3. 기준 추가
+            logResult('scenarioResult', '3. 기준 추가...', 'pending');
+            await testCriteriaCreate();
+            await new Promise(r => setTimeout(r, 1000));
+            
+            // 4. 대안 추가
+            logResult('scenarioResult', '4. 대안 추가...', 'pending');
+            await testAlternativeCreate();
+            await new Promise(r => setTimeout(r, 1000));
+            
+            // 5. 평가자 추가
+            logResult('scenarioResult', '5. 평가자 추가...', 'pending');
+            await testEvaluatorAdd();
+            await new Promise(r => setTimeout(r, 1000));
+            
+            // 6. 쌍대비교 저장
+            logResult('scenarioResult', '6. 쌍대비교 저장...', 'pending');
+            await testComparisonSave();
+            await new Promise(r => setTimeout(r, 1000));
+            
+            // 7. 결과 계산
+            logResult('scenarioResult', '7. 결과 계산...', 'pending');
+            await testResultCalculate();
+            
+            logResult('scenarioResult', '========== 전체 시나리오 완료 ==========', 'success');
+        }
+
+        async function clearAllData() {
+            if (confirm('정말로 모든 테스트 데이터를 삭제하시겠습니까?')) {
+                logResult('scenarioResult', '테스트 데이터 초기화 중...', 'pending');
+                
+                // 프로젝트 삭제 (연관 데이터도 함께 삭제됨)
+                if (testProjectId) {
+                    await testProjectDelete();
+                }
+                
+                logResult('scenarioResult', '테스트 데이터 초기화 완료', 'success');
+                
+                // 통계 초기화
+                stats = { total: 0, passed: 0, failed: 0 };
+                updateStats();
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            document.getElementById('apiUrl').value = apiBase;
+        });
+    </script>
+</body>
+</html>

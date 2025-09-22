@@ -3,12 +3,8 @@
  * AHP 플랫폼용 Django REST Framework API 연동
  */
 
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:8000' 
-  : 'https://ahp-django-backend.onrender.com'; // Django REST API 백엔드
-
-// 인증 토큰 관리 (로컬 금지에 따라 세션 스토리지 사용)
-let authToken: string | null = sessionStorage.getItem('authToken');
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import authService from './authService';
 
 // API 응답 타입 정의
 export interface APIResponse<T = any> {
@@ -36,8 +32,9 @@ class APIClient {
       };
       
       // JWT 인증 토큰 추가
-      if (authToken) {
-        headers.Authorization = `Bearer ${authToken}`;
+      const token = authService.getAccessToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
       }
 
       const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -49,7 +46,32 @@ class APIClient {
       const data = await response.json();
 
       if (!response.ok) {
-        return { error: data.error || 'Request failed' };
+        // 401 오류 시 인증 서비스를 통한 자동 토큰 새로고침
+        if (response.status === 401) {
+          const refreshResult = await authService.refreshAccessToken();
+          if (refreshResult.success) {
+            // 새 토큰으로 재시도
+            const newToken = authService.getAccessToken();
+            if (newToken) {
+              headers.Authorization = `Bearer ${newToken}`;
+              const retryResponse = await fetch(`${this.baseURL}${endpoint}`, {
+                credentials: 'include',
+                ...options,
+                headers,
+              });
+              
+              if (retryResponse.ok) {
+                const retryData = await retryResponse.json();
+                return { data: retryData };
+              }
+            }
+          } else {
+            // 토큰 새로고침 실패 시 로그아웃 이벤트 발생
+            window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
+          }
+        }
+        
+        return { error: data.error || data.detail || 'Request failed' };
       }
 
       return { data };
@@ -91,42 +113,50 @@ class APIClient {
 
 const apiClient = new APIClient(API_BASE_URL);
 
-// 인증 API
+// 인증 API (authService로 대체되었지만 호환성 유지)
 export const authAPI = {
   login: async (credentials: { username: string; password: string }) => {
-    const response = await apiClient.post('/api/v1/auth/token/', credentials);
-    if (response.data && (response.data as any).access) {
-      authToken = (response.data as any).access;
-      sessionStorage.setItem('authToken', authToken!);
-      sessionStorage.setItem('refreshToken', (response.data as any).refresh);
-    }
-    return response;
+    const result = await authService.login(credentials.username, credentials.password);
+    return {
+      data: result.success ? { user: result.user } : null,
+      error: result.success ? null : result.error
+    };
   },
   
-  logout: () => {
-    authToken = null;
-    sessionStorage.removeItem('authToken');
-    sessionStorage.removeItem('refreshToken');
+  logout: async () => {
+    const result = await authService.logout();
+    return {
+      data: result.success ? { message: 'Logout successful' } : null,
+      error: result.success ? null : result.error
+    };
   },
   
   refreshToken: async () => {
-    const refreshToken = sessionStorage.getItem('refreshToken');
-    if (!refreshToken) return { error: 'No refresh token' };
-    
-    const response = await apiClient.post('/api/v1/auth/token/refresh/', { 
-      refresh: refreshToken 
-    });
-    
-    if (response.data && (response.data as any).access) {
-      authToken = (response.data as any).access;
-      sessionStorage.setItem('authToken', authToken!);
-    }
-    return response;
+    const result = await authService.refreshAccessToken();
+    return {
+      data: result.success ? { message: 'Token refreshed' } : null,
+      error: result.success ? null : result.error
+    };
   },
   
-  verifyToken: () => {
-    if (!authToken) return Promise.resolve({ error: 'No token' });
-    return apiClient.post('/api/v1/auth/token/verify/', { token: authToken });
+  verifyToken: async () => {
+    const result = await authService.getCurrentUser();
+    return {
+      data: result.success ? result.user : null,
+      error: result.success ? null : result.error
+    };
+  },
+
+  // 인증 상태 확인
+  isAuthenticated: () => authService.isAuthenticated(),
+  
+  // 현재 사용자 정보
+  getCurrentUser: async () => {
+    const result = await authService.getCurrentUser();
+    return {
+      data: result.success ? result.user : null,
+      error: result.success ? null : result.error
+    };
   }
 };
 
