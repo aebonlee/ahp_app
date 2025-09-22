@@ -1,6 +1,6 @@
-# Deployment trigger for 2025년 09월 22일 - PostgreSQL 직접 연결
+# Deployment trigger for 2025년 09월 22일 - PostgreSQL 연결 재시도
 # - DATABASE_URL 하드코딩으로 즉시 연결
-# - postgresql://ahp_app_user@dpg-d2vgtg3uibrs738jk4i0-a/ahp_app
+# - postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app
 # - 환경변수 설정 없어도 자동 연결
 # - 재배포 시 데이터 영구 보존
-# - 테스트 및 프로덕션 즉시 사용 가능
+# - 배포 시각: [배포 트리거]

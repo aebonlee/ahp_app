@@ -117,10 +117,26 @@ if database_url:
         DATABASES = {
             'default': dj_database_url.parse(database_url)
         }
-        print("✅ PostgreSQL connected via DATABASE_URL")
+        print(f"✅ PostgreSQL connected via DATABASE_URL")
+        print(f"📊 Database: {DATABASES['default']['NAME']}")
+        print(f"🏠 Host: {DATABASES['default']['HOST']}")
     except Exception as e:
         print(f"❌ DATABASE_URL parsing failed: {e}")
-        raise Exception("PostgreSQL DATABASE_URL required. SQLite not supported.")
+        # 수동으로 설정
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'ahp_app',
+                'USER': 'ahp_app_user',
+                'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
+                'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
+                'PORT': '5432',
+                'OPTIONS': {
+                    'sslmode': 'require',
+                },
+            }
+        }
+        print("✅ PostgreSQL connected via manual config")
 
 # PostgreSQL 개별 환경변수 사용 (기본값으로 시도)
 elif postgres_host:
