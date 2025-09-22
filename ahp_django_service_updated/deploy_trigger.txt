@@ -1,1 +1,4 @@
-# Deployment trigger for 2025년 09월 21일 일 오후  5:10:59
+# Deployment trigger for 2025년 09월 22일 - CORS 정책 수정
+# - null origin 허용 (로컬 HTML 파일 테스트용)
+# - file:// 프로토콜 정규식 허용
+# - 환경변수 기반 CORS_ALLOW_ALL_ORIGINS 설정

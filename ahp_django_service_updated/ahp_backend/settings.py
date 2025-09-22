@@ -242,12 +242,18 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "https://aebonlee.github.io",  # GitHub Pages root
     "https://aebonlee.github.io/ahp_app",  # GitHub Pages app
+    "null",  # Local HTML file testing
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 # Additional CORS settings for production
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
+
+# Allow null origin for local file testing in development
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^file://.*$",  # Allow file:// protocol for local testing
+]
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
