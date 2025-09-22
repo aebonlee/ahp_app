@@ -21,13 +21,13 @@ export const RETRY_config = {
 
 // API 엔드포인트 - 실제 Django 백엔드 구조에 맞춰 수정
 export const API_ENDPOINTS = {
-  // Auth - 실제 Django 엔드포인트
+  // Auth - JWT 토큰 기반 인증
   AUTH: {
-    LOGIN: '/api/login/',
-    REGISTER: '/api/register/',
-    LOGOUT: '/api/logout/',
-    VERIFY: '/api/user/',
-    REFRESH: '/api/refresh/'
+    LOGIN: '/api/service/auth/token/',
+    REGISTER: '/api/service/accounts/register/',
+    LOGOUT: '/api/service/accounts/logout/',
+    VERIFY: '/api/service/auth/token/verify/',
+    REFRESH: '/api/service/auth/token/refresh/'
   },
   // Projects - 실제 Django Service API
   PROJECTS: {
