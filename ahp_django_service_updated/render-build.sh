@@ -18,16 +18,32 @@ mkdir -p logs
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
-# Create database tables
+# Database setup with error handling
+echo "Setting up database..."
+
+# Check database connection first
+echo "Checking database connection..."
+python manage.py check --database default
+
+# Run migrations with verbose output
 echo "Running migrations..."
-python manage.py makemigrations accounts
-python manage.py makemigrations projects  
-python manage.py makemigrations evaluations
-python manage.py makemigrations analysis
-python manage.py makemigrations common
-python manage.py makemigrations workshops
-python manage.py makemigrations exports
-python manage.py migrate
+python manage.py makemigrations --verbosity=2
+python manage.py showmigrations
+python manage.py migrate --verbosity=2
+
+# Verify table creation
+echo "Verifying database setup..."
+python manage.py shell -c "
+from django.db import connection
+with connection.cursor() as cursor:
+    cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table';\") if 'sqlite' in connection.vendor else cursor.execute(\"SELECT table_name FROM information_schema.tables WHERE table_schema='public';\")
+    tables = [row[0] for row in cursor.fetchall()]
+    print(f'Created tables: {tables}')
+    if 'simple_projects' in tables:
+        print('✓ simple_projects table exists')
+    else:
+        print('❌ simple_projects table missing')
+"
 
 # Create superuser if it doesn't exist
 echo "Creating superuser..."

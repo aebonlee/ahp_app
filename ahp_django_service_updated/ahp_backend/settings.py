@@ -248,7 +248,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Additional CORS settings for production
-CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=True, cast=bool)  # 임시 해결: 모든 origin 허용
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
 
 # Allow null origin for local file testing in development
 CORS_ALLOWED_ORIGIN_REGEXES = [

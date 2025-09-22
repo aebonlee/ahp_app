@@ -1,4 +1,5 @@
-# Deployment trigger for 2025년 09월 22일 - 긴급 CORS 수정
-# - CORS_ALLOW_ALL_ORIGINS=True (임시 해결책)
-# - 모든 origin 허용으로 즉시 해결
-# - null origin, file:// 프로토콜 모두 허용
+# Deployment trigger for 2025년 09월 22일 - 근본 문제 해결
+# - PostgreSQL 연결 없어서 SQLite 사용 중 (테이블 누락)
+# - 빌드 스크립트에 데이터베이스 검증 로직 추가
+# - CORS 설정 정상화 (보안 강화)
+# - 환경변수 설정 가이드 작성
