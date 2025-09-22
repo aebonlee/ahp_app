@@ -92,15 +92,10 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# Default SQLite database as fallback
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# PostgreSQL 전용 데이터베이스 설정 (SQLite 완전 제거)
+# 로컬 DB 설치 없이 Render.com PostgreSQL만 사용
 
-# Try PostgreSQL configuration if available
+# Render.com PostgreSQL 연결 설정
 database_url = config('DATABASE_URL', default=None)
 postgres_db = config('POSTGRES_DB', default='')
 postgres_user = config('POSTGRES_USER', default='')
@@ -108,53 +103,60 @@ postgres_password = config('POSTGRES_PASSWORD', default='')
 postgres_host = config('POSTGRES_HOST', default='dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com')
 postgres_port = config('POSTGRES_PORT', default='5432')
 
-# Use DATABASE_URL if provided
+# PostgreSQL 연결 (DATABASE_URL 우선)
 if database_url:
     try:
-        DATABASES['default'] = dj_database_url.parse(database_url)
-        print("✓ Using DATABASE_URL for database connection")
+        DATABASES = {
+            'default': dj_database_url.parse(database_url)
+        }
+        print("✅ PostgreSQL connected via DATABASE_URL")
     except Exception as e:
-        print(f"⚠️ DATABASE_URL parsing failed: {e}, falling back to SQLite")
+        print(f"❌ DATABASE_URL parsing failed: {e}")
+        raise Exception("PostgreSQL DATABASE_URL required. SQLite not supported.")
 
-# Use individual PostgreSQL credentials if available
+# PostgreSQL 개별 환경변수 사용
 elif postgres_db and postgres_user and postgres_password:
     try:
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': postgres_db,
-            'USER': postgres_user,
-            'PASSWORD': postgres_password,
-            'HOST': postgres_host,
-            'PORT': postgres_port,
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': postgres_db,
+                'USER': postgres_user,
+                'PASSWORD': postgres_password,
+                'HOST': postgres_host,
+                'PORT': postgres_port,
+                'OPTIONS': {
+                    'sslmode': 'require',
+                    'connect_timeout': 60,
+                },
+                'CONN_MAX_AGE': 600,
+            }
         }
-        print("✓ Using PostgreSQL credentials for database connection")
+        print(f"✅ PostgreSQL connected: {postgres_host}/{postgres_db}")
     except Exception as e:
-        print(f"⚠️ PostgreSQL connection failed: {e}, falling back to SQLite")
+        print(f"❌ PostgreSQL connection failed: {e}")
+        raise Exception("PostgreSQL connection required. Check environment variables.")
 
-# For development, try local PostgreSQL
-elif DEBUG:
-    try:
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'ahp_db',
-            'USER': 'postgres',
-            'PASSWORD': 'password',
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
-        # Test connection
-        from django.db import connection
-        connection.ensure_connection()
-        print("✓ Using local PostgreSQL for development")
-    except Exception as e:
-        print(f"⚠️ Local PostgreSQL not available: {e}, using SQLite")
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+# PostgreSQL 환경변수 없으면 에러 발생 (SQLite 사용 안함)
+else:
+    error_msg = """
+    ❌ PostgreSQL 환경변수가 설정되지 않았습니다.
+    
+    Render.com 서비스 설정에서 다음 중 하나를 설정하세요:
+    
+    방법 1 (권장): DATABASE_URL
+    DATABASE_URL=postgresql://user:password@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com:5432/database
+    
+    방법 2: 개별 환경변수
+    POSTGRES_DB=your_database_name
+    POSTGRES_USER=your_username  
+    POSTGRES_PASSWORD=your_password
+    
+    SQLite는 재배포 시 데이터 삭제로 인해 사용하지 않습니다.
+    로컬 DB 설치 없이 클라우드 전용으로 운영합니다.
+    """
+    print(error_msg)
+    raise Exception("PostgreSQL 환경변수 설정 필요. 로컬 DB 설치 없이 클라우드 전용 사용.")
 
 print(f"📊 Database engine: {DATABASES['default']['ENGINE']}")
 
@@ -193,9 +195,13 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-# Media files
+# Media files with persistent storage
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = '/opt/render/project/src/persistent_data/media'
+
+# Ensure media directory exists
+import os
+os.makedirs(MEDIA_ROOT, exist_ok=True)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

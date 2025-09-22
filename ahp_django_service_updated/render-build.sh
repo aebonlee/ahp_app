@@ -18,31 +18,40 @@ mkdir -p logs
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
-# Database setup with error handling
-echo "Setting up database..."
+# PostgreSQL 전용 데이터베이스 설정
+echo "🐘 Setting up PostgreSQL database system..."
 
-# Check database connection first
-echo "Checking database connection..."
+# PostgreSQL 연결 확인
+echo "🔍 Checking PostgreSQL connection..."
 python manage.py check --database default
 
-# Run migrations with verbose output
-echo "Running migrations..."
+# Django 마이그레이션 실행  
+echo "📋 Running PostgreSQL migrations..."
 python manage.py makemigrations --verbosity=2
 python manage.py showmigrations
 python manage.py migrate --verbosity=2
 
-# Verify table creation
-echo "Verifying database setup..."
+# PostgreSQL 데이터베이스 검증
+echo "✅ PostgreSQL database verification..."
 python manage.py shell -c "
 from django.db import connection
+from apps.projects.models import Project
+print(f'🐘 Database: {connection.vendor} ({connection.settings_dict[\"NAME\"]})')
+print(f'🏠 Host: {connection.settings_dict[\"HOST\"]}')
+
 with connection.cursor() as cursor:
-    cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table';\") if 'sqlite' in connection.vendor else cursor.execute(\"SELECT table_name FROM information_schema.tables WHERE table_schema='public';\")
+    cursor.execute('SELECT table_name FROM information_schema.tables WHERE table_schema=\"public\";')
     tables = [row[0] for row in cursor.fetchall()]
-    print(f'Created tables: {tables}')
-    if 'simple_projects' in tables:
-        print('✓ simple_projects table exists')
-    else:
-        print('❌ simple_projects table missing')
+    print(f'📊 PostgreSQL tables: {len(tables)}')
+    
+    key_tables = ['simple_projects', 'auth_user', 'django_migrations']
+    for table in key_tables:
+        if table in tables:
+            cursor.execute(f'SELECT COUNT(*) FROM {table};')
+            count = cursor.fetchone()[0]
+            print(f'✅ {table}: {count} records')
+        else:
+            print(f'❌ {table}: missing')
 "
 
 # Create superuser if it doesn't exist

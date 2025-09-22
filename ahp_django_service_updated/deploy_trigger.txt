@@ -1,5 +1,5 @@
-# Deployment trigger for 2025년 09월 22일 - 근본 문제 해결
-# - PostgreSQL 연결 없어서 SQLite 사용 중 (테이블 누락)
-# - 빌드 스크립트에 데이터베이스 검증 로직 추가
-# - CORS 설정 정상화 (보안 강화)
-# - 환경변수 설정 가이드 작성
+# Deployment trigger for 2025년 09월 22일 - PostgreSQL 전용 전환
+# - SQLite 완전 제거, PostgreSQL만 사용
+# - 로컬 DB 설치 없이 클라우드 전용 운영
+# - 재배포 시 데이터 보존 위해 PostgreSQL 강제 사용
+# - 환경변수 없으면 에러 발생으로 설정 강제
