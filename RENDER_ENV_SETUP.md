@@ -1,17 +1,39 @@
 # Render.com PostgreSQL 환경변수 설정 가이드
 
+## 🎯 목표
+PostgreSQL 환경변수를 설정하여 데이터베이스를 연결하고 재배포 시 데이터가 삭제되지 않도록 합니다.
+
+## 📍 환경변수 설정 정확한 위치
+
+### 1단계: Render.com 로그인
+```
+https://dashboard.render.com
+→ GitHub 계정 또는 이메일로 로그인
+```
+
+### 2단계: 서비스 찾기
+```
+Dashboard → Services 탭
+→ "ahp-django-backend" 서비스 클릭
+```
+
+### 3단계: 환경변수 페이지
+```
+ahp-django-backend 서비스 페이지
+→ Settings 탭 클릭
+→ Environment Variables 섹션
+→ "Add Environment Variable" 버튼 클릭
+```
+
 ## 📋 필수 환경변수 목록
 
-Render.com 대시보드에서 다음 환경변수를 설정해야 합니다:
-
-### 1. PostgreSQL 데이터베이스 연결 정보
+### 1. PostgreSQL 데이터베이스 연결 정보 (dpg-d2vgtg3uibrs738jk4i0-a)
 
 ```bash
 # 옵션 1: DATABASE_URL 사용 (권장)
-DATABASE_URL=postgresql://[USER]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]
+DATABASE_URL=postgresql://[USER]:[PASSWORD]@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com:5432/[DATABASE]
 
-# 예시:
-DATABASE_URL=postgresql://ahp_user:your_secure_password@dpg-xxxxx.oregon-postgres.render.com:5432/ahp_db
+# 데이터베이스 페이지에서 External Database URL 복사하여 입력
 ```
 
 ### 2. 개별 환경변수 설정 (DATABASE_URL 대신 사용 가능)

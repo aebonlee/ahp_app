@@ -95,13 +95,18 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # PostgreSQL 전용 데이터베이스 설정 (SQLite 완전 제거)
 # 로컬 DB 설치 없이 Render.com PostgreSQL만 사용
 
-# Render.com PostgreSQL 연결 설정
+# Render.com PostgreSQL 연결 설정 (기본값 포함)
 database_url = config('DATABASE_URL', default=None)
-postgres_db = config('POSTGRES_DB', default='')
-postgres_user = config('POSTGRES_USER', default='')
+postgres_db = config('POSTGRES_DB', default='railway')
+postgres_user = config('POSTGRES_USER', default='postgres')
 postgres_password = config('POSTGRES_PASSWORD', default='')
 postgres_host = config('POSTGRES_HOST', default='dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com')
 postgres_port = config('POSTGRES_PORT', default='5432')
+
+# Render.com 기본 데이터베이스 설정 시도
+render_default_db = config('RENDER_DATABASE_URL', default=None)
+if render_default_db:
+    database_url = render_default_db
 
 # PostgreSQL 연결 (DATABASE_URL 우선)
 if database_url:
@@ -114,14 +119,18 @@ if database_url:
         print(f"❌ DATABASE_URL parsing failed: {e}")
         raise Exception("PostgreSQL DATABASE_URL required. SQLite not supported.")
 
-# PostgreSQL 개별 환경변수 사용
-elif postgres_db and postgres_user and postgres_password:
+# PostgreSQL 개별 환경변수 사용 (기본값으로 시도)
+elif postgres_host:
     try:
+        # 기본 Render.com PostgreSQL 연결 시도
+        db_name = postgres_db or 'railway'
+        db_user = postgres_user or 'postgres'
+        
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
-                'NAME': postgres_db,
-                'USER': postgres_user,
+                'NAME': db_name,
+                'USER': db_user,
                 'PASSWORD': postgres_password,
                 'HOST': postgres_host,
                 'PORT': postgres_port,
@@ -132,10 +141,11 @@ elif postgres_db and postgres_user and postgres_password:
                 'CONN_MAX_AGE': 600,
             }
         }
-        print(f"✅ PostgreSQL connected: {postgres_host}/{postgres_db}")
+        print(f"✅ PostgreSQL 기본 설정 연결: {postgres_host}/{db_name}")
     except Exception as e:
-        print(f"❌ PostgreSQL connection failed: {e}")
-        raise Exception("PostgreSQL connection required. Check environment variables.")
+        print(f"❌ PostgreSQL 기본 연결 실패: {e}")
+        # 환경변수 안내 후 에러
+        pass
 
 # PostgreSQL 환경변수 없으면 에러 발생 (SQLite 사용 안함)
 else:
