@@ -95,18 +95,21 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # PostgreSQL 전용 데이터베이스 설정 (SQLite 완전 제거)
 # 로컬 DB 설치 없이 Render.com PostgreSQL만 사용
 
-# Render.com PostgreSQL 연결 설정 (기본값 포함)
+# Render.com PostgreSQL 연결 설정
 database_url = config('DATABASE_URL', default=None)
-postgres_db = config('POSTGRES_DB', default='railway')
-postgres_user = config('POSTGRES_USER', default='postgres')
-postgres_password = config('POSTGRES_PASSWORD', default='')
+
+# 환경변수가 없을 경우 기본값으로 직접 연결 시도
+if not database_url:
+    # Render.com PostgreSQL 직접 연결 정보
+    database_url = 'postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app'
+    print("⚠️ Using default DATABASE_URL - Please set environment variable for production")
+
+# 개별 환경변수 (선택사항)
+postgres_db = config('POSTGRES_DB', default='ahp_app')
+postgres_user = config('POSTGRES_USER', default='ahp_app_user')
+postgres_password = config('POSTGRES_PASSWORD', default='xEcCdn2WB32sxLYIPAncc9cHARXf1t6d')
 postgres_host = config('POSTGRES_HOST', default='dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com')
 postgres_port = config('POSTGRES_PORT', default='5432')
-
-# Render.com 기본 데이터베이스 설정 시도
-render_default_db = config('RENDER_DATABASE_URL', default=None)
-if render_default_db:
-    database_url = render_default_db
 
 # PostgreSQL 연결 (DATABASE_URL 우선)
 if database_url:

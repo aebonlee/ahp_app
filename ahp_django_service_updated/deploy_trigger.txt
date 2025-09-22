@@ -1,6 +1,6 @@
-# Deployment trigger for 2025년 09월 22일 - 최종 PostgreSQL 연동
-# - SQLite 완전 제거, PostgreSQL만 사용
-# - 로컬 DB 설치 없이 클라우드 전용 운영
-# - 재배포 시 데이터 보존 위해 PostgreSQL 강제 사용
-# - 환경변수 없으면 에러 발생으로 설정 강제
-# - dpg-d2vgtg3uibrs738jk4i0-a 데이터베이스 연결 완료
+# Deployment trigger for 2025년 09월 22일 - PostgreSQL 직접 연결
+# - DATABASE_URL 하드코딩으로 즉시 연결
+# - postgresql://ahp_app_user@dpg-d2vgtg3uibrs738jk4i0-a/ahp_app
+# - 환경변수 설정 없어도 자동 연결
+# - 재배포 시 데이터 영구 보존
+# - 테스트 및 프로덕션 즉시 사용 가능
