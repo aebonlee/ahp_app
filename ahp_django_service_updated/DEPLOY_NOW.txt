@@ -1,0 +1,15 @@
+URGENT DEPLOYMENT REQUIRED
+=========================
+
+DATE: 2025-09-23 12:15
+ISSUE: PostgreSQL expiring + GitHub auto-deploy failure
+LAST DEPLOY: September 16, 2025 (a63b478)
+CURRENT COMMIT: c4b9a59
+
+CRITICAL FIXES NEEDED:
+- PostgreSQL table creation
+- Migration execution
+- Database expiry handling
+
+FORCE DEPLOY: YES
+PRIORITY: CRITICAL

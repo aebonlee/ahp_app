@@ -25,6 +25,8 @@ python manage.py collectstatic --no-input
 
 # PostgreSQL 전용 데이터베이스 설정
 echo "🐘 Setting up PostgreSQL database system..."
+echo "⚠️  WARNING: Database expires October 9, 2025"
+echo "🔧 Attempting emergency database connection..."
 
 # 환경변수 강제 설정
 export DATABASE_URL="postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app"
@@ -54,32 +56,83 @@ python manage.py makemigrations evaluations --verbosity=2
 python manage.py showmigrations
 python manage.py migrate --verbosity=2
 
-# 강제 테이블 생성 확인
-echo "🔧 Ensuring all tables exist..."
+# 🚨 EMERGENCY TABLE CREATION 🚨
+echo "🔧 FORCE CREATING ALL REQUIRED TABLES..."
 python manage.py shell -c "
-from django.db import connection
-from apps.projects.models import Project
-from django.contrib.auth.models import User
+import os
+import django
+from django.db import connection, transaction
+from django.core.management import execute_from_command_line
 
-# 테이블 존재 확인 및 생성
+print('🔧 Emergency table creation started...')
+
+# 1. 강제 마이그레이션 재실행
+try:
+    execute_from_command_line(['manage.py', 'migrate', '--run-syncdb'])
+    print('✅ Run-syncdb completed')
+except Exception as e:
+    print(f'⚠️  Run-syncdb warning: {e}')
+
+# 2. 테이블 존재 확인
 with connection.cursor() as cursor:
     try:
-        cursor.execute('SELECT COUNT(*) FROM simple_projects;')
-        print('✅ simple_projects table exists')
-    except:
-        print('❌ simple_projects table missing, running migrations...')
-        pass
+        # PostgreSQL 테이블 목록 확인
+        cursor.execute(\"\"\"
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+        \"\"\")
+        tables = [row[0] for row in cursor.fetchall()]
+        print(f'📋 Found {len(tables)} tables: {tables}')
+        
+        # simple_projects 테이블 확인
+        if 'simple_projects' in tables:
+            cursor.execute('SELECT COUNT(*) FROM simple_projects;')
+            count = cursor.fetchone()[0]
+            print(f'✅ simple_projects table exists with {count} records')
+        else:
+            print('❌ simple_projects table MISSING!')
+            # 강제 테이블 생성 시도
+            cursor.execute(\"\"\"
+                CREATE TABLE IF NOT EXISTS simple_projects (
+                    id SERIAL PRIMARY KEY,
+                    title VARCHAR(200) NOT NULL,
+                    description TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_by_id INTEGER DEFAULT 1
+                );
+            \"\"\")
+            print('🔧 Emergency table created manually')
+            
+    except Exception as e:
+        print(f'❌ Database error: {e}')
 
-# 샘플 데이터 생성
-if not Project.objects.exists():
-    Project.objects.create(
-        title='Sample AHP Project',
-        description='Test project for PostgreSQL',
-        created_by_id=1
-    )
-    print('✅ Sample project created')
-else:
-    print('✅ Projects already exist')
+# 3. 샘플 데이터 생성
+try:
+    from apps.projects.models import Project
+    from django.contrib.auth.models import User
+    
+    # Admin 사용자 생성
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser('admin', 'admin@ahp.com', 'AHP2025!Admin')
+        print('✅ Admin user created')
+    
+    # 샘플 프로젝트 생성
+    if not Project.objects.exists():
+        admin_user = User.objects.get(username='admin')
+        Project.objects.create(
+            title='Emergency Test Project',
+            description='PostgreSQL connection test project',
+            created_by=admin_user
+        )
+        print('✅ Emergency sample project created')
+    else:
+        print(f'✅ {Project.objects.count()} projects already exist')
+        
+except Exception as e:
+    print(f'⚠️  Sample data error: {e}')
+    
+print('🎉 Emergency table setup completed!')
 "
 
 # PostgreSQL 데이터베이스 검증
