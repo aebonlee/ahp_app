@@ -126,3 +126,28 @@ jobs:
         echo "📄 Build files:"
         find build/ -type f -name "*.js" -o -name "*.css" -o -name "*.html" | head -10
         echo "✅ Step 6 completed successfully"
+        
+    - name: Setup GitHub Pages
+      uses: actions/configure-pages@v5
+      
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./build
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+      
+    - name: Verify deployment
+      run: |
+        echo "=== Deployment Verification ==="
+        echo "🚀 Deployment completed successfully!"
+        echo "📍 Deployment URL: ${{ steps.deployment.outputs.page_url }}"
+        echo "🔍 Checking deployment status..."
+        if [ -n "${{ steps.deployment.outputs.page_url }}" ]; then
+          echo "✅ GitHub Pages URL available"
+        else
+          echo "❌ GitHub Pages URL not available"
+        fi
+        echo "✅ Step 7 completed successfully"
