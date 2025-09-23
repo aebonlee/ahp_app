@@ -79,3 +79,37 @@ jobs:
         echo "🔍 Checking npm cache:"
         npm config get cache
         echo "✅ Step 3 completed successfully"
+        
+    - name: Prepare project structure
+      run: |
+        echo "=== Project Structure Preparation ==="
+        echo "🔧 Creating proper package.json..."
+        if [ -f "ahp_package.json" ]; then
+          cp ahp_package.json package.json
+          echo "✅ package.json created from ahp_package.json"
+        else
+          echo "❌ ahp_package.json not found"
+          exit 1
+        fi
+        
+        echo "🔧 Setting up source directories..."
+        if [ -d "ahp_frontend_src" ] && [ -d "ahp_frontend_public" ]; then
+          mkdir -p src
+          cp -r ahp_frontend_src/* src/ 2>/dev/null || echo "No source files to copy"
+          mkdir -p public
+          cp -r ahp_frontend_public/* public/ 2>/dev/null || echo "No public files to copy"
+          echo "✅ Source and public directories prepared"
+        else
+          echo "❌ Required directories not found"
+          exit 1
+        fi
+        echo "✅ Step 4 completed successfully"
+        
+    - name: Install dependencies
+      run: |
+        echo "=== Dependencies Installation ==="
+        echo "📦 Installing npm dependencies..."
+        npm ci --verbose
+        echo "📋 Installed packages:"
+        npm list --depth=0
+        echo "✅ Step 5 completed successfully"
