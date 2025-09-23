@@ -95,12 +95,18 @@ jobs:
         echo "🔧 Setting up source directories..."
         if [ -d "ahp_frontend_src" ] && [ -d "ahp_frontend_public" ]; then
           mkdir -p src
-          cp -r ahp_frontend_src/* src/ 2>/dev/null || echo "No source files to copy"
-          mkdir -p public
-          cp -r ahp_frontend_public/* public/ 2>/dev/null || echo "No public files to copy"
+          cp -r ahp_frontend_src/* src/
+          mkdir -p public  
+          cp -r ahp_frontend_public/* public/
           echo "✅ Source and public directories prepared"
+          echo "📁 Source files copied:"
+          ls -la src/ | head -5
+          echo "📁 Public files copied:"
+          ls -la public/ | head -5
         else
           echo "❌ Required directories not found"
+          echo "Available directories:"
+          ls -la
           exit 1
         fi
         echo "✅ Step 4 completed successfully"
@@ -115,16 +121,23 @@ jobs:
         echo "✅ Step 5 completed successfully"
         
     - name: Build frontend
+      env:
+        GENERATE_SOURCEMAP: false
+        PUBLIC_URL: .
+        CI: false
       run: |
         echo "=== Frontend Build Process ==="
         echo "🏗️ Building React application..."
-        export GENERATE_SOURCEMAP=false
-        export PUBLIC_URL=.
+        echo "Environment variables:"
+        echo "GENERATE_SOURCEMAP=$GENERATE_SOURCEMAP"
+        echo "PUBLIC_URL=$PUBLIC_URL"
         npm run build:frontend
         echo "📁 Build output:"
         ls -la build/
         echo "📄 Build files:"
         find build/ -type f -name "*.js" -o -name "*.css" -o -name "*.html" | head -10
+        echo "📊 Build size:"
+        du -sh build/
         echo "✅ Step 6 completed successfully"
         
     - name: Setup GitHub Pages
