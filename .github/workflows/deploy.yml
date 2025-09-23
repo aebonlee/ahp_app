@@ -61,3 +61,21 @@ jobs:
           echo "❌ Public directory not found"
         fi
         echo "✅ Step 2 completed successfully"
+        
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: ahp_package.json
+        
+    - name: Verify Node.js setup
+      run: |
+        echo "=== Node.js Environment Verification ==="
+        echo "📦 Node.js version:"
+        node --version
+        echo "📦 npm version:"
+        npm --version
+        echo "🔍 Checking npm cache:"
+        npm config get cache
+        echo "✅ Step 3 completed successfully"
