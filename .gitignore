@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+venv/
+env/
+*.pyc
+__pycache__/
+
+# Build outputs
+build/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Static files
+staticfiles/
+media/
+
+# Backup folders (treat as regular folders, not submodules)
+ahp-platform/
+ahp-platform_0908/
+ahp_app/
+ahp_build/
+backupdata/
+
+# Testing
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*.bak
+*~
