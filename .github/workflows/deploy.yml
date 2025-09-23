@@ -40,19 +40,53 @@ jobs:
       run: |
         echo "Checking for frontend files..."
         ls -la
-        if [ -d "ahp_frontend_public" ]; then
-          echo "Found ahp_frontend_public directory"
+        if [ -d "ahp_frontend_src" ]; then
+          echo "Found ahp_frontend_src directory (React source)"
+          ls -la ahp_frontend_src/
+        elif [ -d "ahp_frontend_public" ]; then
+          echo "Found ahp_frontend_public directory (Static files)"
           ls -la ahp_frontend_public/
         else
-          echo "ahp_frontend_public directory not found"
+          echo "No frontend directory found"
           exit 1
+        fi
+        
+    - name: Build React App
+      run: |
+        if [ -f "ahp_package.json" ]; then
+          echo "Building React app from source..."
+          cp ahp_package.json package.json
+          npm install
+          
+          # Create src directory and copy files
+          mkdir -p src
+          cp -r ahp_frontend_src/* src/
+          
+          # Create public directory
+          mkdir -p public
+          if [ -d "ahp_frontend_public" ]; then
+            cp -r ahp_frontend_public/* public/
+          fi
+          
+          # Build the app
+          npm run build
+          echo "React build completed"
+          ls -la build/
+        else
+          echo "No package.json found, using static files"
         fi
         
     - name: Prepare deployment files
       run: |
         mkdir -p deploy
-        cp -r ahp_frontend_public/* deploy/
-        echo "Build completed successfully"
+        if [ -d "build" ]; then
+          echo "Deploying built React app..."
+          cp -r build/* deploy/
+        elif [ -d "ahp_frontend_public" ]; then
+          echo "Deploying static files..."
+          cp -r ahp_frontend_public/* deploy/
+        fi
+        echo "Deployment files prepared"
         ls -la deploy/
         
     - name: Setup Pages
