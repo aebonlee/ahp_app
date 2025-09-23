@@ -33,7 +33,7 @@
     "start": "cd backend && node dist/index.js",
     "start:frontend": "react-scripts start",
     "build": "cd backend && npm install && npm run build",
-    "build:frontend": "react-scripts build",
+    "build:frontend": "GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "cross-env PUBLIC_URL=. npm run build:frontend",
