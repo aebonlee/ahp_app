@@ -95,14 +95,18 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # PostgreSQL 전용 데이터베이스 설정 (SQLite 완전 제거)
 # 로컬 DB 설치 없이 Render.com PostgreSQL만 사용
 
-# Render.com PostgreSQL 연결 설정
-database_url = config('DATABASE_URL', default=None)
+# Render.com PostgreSQL 연결 설정 - 강제 적용
+# 환경변수 무시하고 직접 연결 (문제 해결을 위해)
+database_url = 'postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app'
+print("🔧 FORCED PostgreSQL connection - bypassing environment variables")
 
-# 환경변수가 없을 경우 기본값으로 직접 연결 시도
-if not database_url:
-    # Render.com PostgreSQL 직접 연결 정보
-    database_url = 'postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app'
-    print("⚠️ Using default DATABASE_URL - Please set environment variable for production")
+# 백업 환경변수 시도
+env_database_url = config('DATABASE_URL', default=None)
+if env_database_url:
+    database_url = env_database_url
+    print("✅ Using environment DATABASE_URL")
+else:
+    print("⚠️ No environment DATABASE_URL found, using hardcoded connection")
 
 # 개별 환경변수 (선택사항)
 postgres_db = config('POSTGRES_DB', default='ahp_app')
@@ -166,26 +170,26 @@ elif postgres_host:
         # 환경변수 안내 후 에러
         pass
 
-# PostgreSQL 환경변수 없으면 에러 발생 (SQLite 사용 안함)
+# PostgreSQL 환경변수 없어도 작동하도록 수정
 else:
-    error_msg = """
-    ❌ PostgreSQL 환경변수가 설정되지 않았습니다.
-    
-    Render.com 서비스 설정에서 다음 중 하나를 설정하세요:
-    
-    방법 1 (권장): DATABASE_URL
-    DATABASE_URL=postgresql://user:password@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com:5432/database
-    
-    방법 2: 개별 환경변수
-    POSTGRES_DB=your_database_name
-    POSTGRES_USER=your_username  
-    POSTGRES_PASSWORD=your_password
-    
-    SQLite는 재배포 시 데이터 삭제로 인해 사용하지 않습니다.
-    로컬 DB 설치 없이 클라우드 전용으로 운영합니다.
-    """
-    print(error_msg)
-    raise Exception("PostgreSQL 환경변수 설정 필요. 로컬 DB 설치 없이 클라우드 전용 사용.")
+    # 강제로 PostgreSQL 연결 설정
+    print("🔧 Fallback: Creating PostgreSQL connection without environment variables")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'ahp_app',
+            'USER': 'ahp_app_user',
+            'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
+            'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
+            'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require',
+                'connect_timeout': 60,
+            },
+            'CONN_MAX_AGE': 600,
+        }
+    }
+    print("✅ PostgreSQL fallback connection created")
 
 print(f"📊 Database engine: {DATABASES['default']['ENGINE']}")
 

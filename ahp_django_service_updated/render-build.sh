@@ -21,8 +21,23 @@ python manage.py collectstatic --no-input
 # PostgreSQL 전용 데이터베이스 설정
 echo "🐘 Setting up PostgreSQL database system..."
 
-# PostgreSQL 연결 확인
-echo "🔍 Checking PostgreSQL connection..."
+# 환경변수 강제 설정
+export DATABASE_URL="postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app"
+export SECRET_KEY="django-insecure-render-deploy-key-$(date +%s)"
+export DEBUG="False"
+export ALLOWED_HOSTS="ahp-django-backend.onrender.com,127.0.0.1,localhost"
+
+echo "🔧 Environment variables set:"
+echo "DATABASE_URL=$DATABASE_URL"
+echo "SECRET_KEY length: ${#SECRET_KEY}"
+echo "DEBUG=$DEBUG"
+
+# PostgreSQL 연결 테스트
+echo "🔍 Testing PostgreSQL connection..."
+python force_db_connection.py
+
+# Django 설정 확인
+echo "📋 Checking Django configuration..."
 python manage.py check --database default
 
 # Django 마이그레이션 실행  

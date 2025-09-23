@@ -1,6 +1,6 @@
-# Deployment trigger for 2025년 09월 23일 - 검증된 커밋으로 재배포
-# - DATABASE_URL 하드코딩으로 즉시 연결
-# - postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app
-# - Git 사용자 검증 완료
-# - 재배포 시 데이터 영구 보존
-# - 배포 시각: 오전 11시
+# Deployment trigger for 2025년 09월 23일 - 강제 환경변수 설정
+# - DATABASE_URL 빌드 스크립트에서 강제 설정
+# - 환경변수 설정 없이도 자동 작동
+# - force_db_connection.py 연결 테스트 추가
+# - render-build.sh 환경변수 export 추가
+# - 배포 시각: 오전 11시 30분
