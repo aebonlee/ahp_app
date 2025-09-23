@@ -11,14 +11,14 @@ from django.conf import settings
 # Django 설정 강제 적용
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ahp_backend.settings')
 
-# 강제 PostgreSQL 설정
+# 강제 PostgreSQL 설정 - 유료 인스턴스 사용
 DATABASE_CONFIG = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ahp_app',
-        'USER': 'ahp_app_user',
-        'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
-        'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
+        'NAME': 'ahp_app_db',  # Render.com에서 확인 필요
+        'USER': 'ahp_app_user',  # Render.com에서 확인 필요
+        'PASSWORD': 'YOUR_PASSWORD',  # Render.com에서 확인 필요
+        'HOST': 'dpg-d2q8l5qdbo4c73bt3780-a.oregon-postgres.render.com',
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require',

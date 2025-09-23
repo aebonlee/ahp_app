@@ -33,11 +33,12 @@ python manage.py collectstatic --no-input
 
 # PostgreSQL 전용 데이터베이스 설정
 echo "🐘 Setting up PostgreSQL database system..."
-echo "⚠️  WARNING: Database expires October 9, 2025"
-echo "🔧 Attempting emergency database connection..."
+echo "✅ Using PAID PostgreSQL Instance: dpg-d2q8l5qdbo4c73bt3780-a"
+echo "💳 Already subscribed - No expiry issues!"
 
-# 환경변수 강제 설정
-export DATABASE_URL="postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app"
+# 환경변수 강제 설정 - 유료 PostgreSQL 사용
+# 주의: 실제 연결 정보는 Render.com에서 확인 필요
+export DATABASE_URL="${DATABASE_URL:-postgresql://user:pass@dpg-d2q8l5qdbo4c73bt3780-a.oregon-postgres.render.com/dbname}"
 export SECRET_KEY="django-insecure-render-deploy-key-$(date +%s)"
 export DEBUG="False"
 export ALLOWED_HOSTS="ahp-django-backend.onrender.com,127.0.0.1,localhost"
