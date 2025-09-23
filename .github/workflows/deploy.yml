@@ -19,51 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-      
-    - name: Prepare deployment
+    - name: Test basic setup
       run: |
-        echo "=== Preparing static files for deployment ==="
-        
-        # Create deployment directory
-        mkdir -p _site
-        
-        # Copy static files if they exist
-        if [ -d "ahp_frontend_public" ]; then
-          echo "📦 Found pre-built static files"
-          cp -r ahp_frontend_public/* _site/
-          echo "✅ Static files copied"
-        else
-          echo "❌ No static files found"
-          echo "Creating minimal index.html..."
-          cat > _site/index.html << 'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AHP Platform</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-    <h1>AHP Platform</h1>
-    <p>Welcome to AHP Decision Support System</p>
-</body>
-</html>
-EOF
-        fi
-        
-        echo "📊 Deployment ready:"
-        ls -la _site/
-        
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: ./_site
-        
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+        echo "=== Basic Setup Test ==="
+        echo "✅ Repository checked out successfully"
+        echo "📁 Current directory: $(pwd)"
+        echo "📋 Repository contents:"
+        ls -la
+        echo "✅ Step 1 completed successfully"
