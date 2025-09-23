@@ -2,12 +2,12 @@
 # exit on error
 set -o errexit
 
-echo "🚨🚨🚨 CRITICAL DEPLOYMENT - 23 COMMITS PENDING 🚨🚨🚨"
+echo "🎉🎉🎉 RENDER.COM UPGRADED - AUTO DEPLOYMENT ACTIVATED 🎉🎉🎉"
 echo "================================================================"
-echo "📅 Last Deploy: 2025-09-16 21:58 (7 days ago)"
-echo "📊 Current: 2025-09-23 15:25"
-echo "🔄 Commits to Deploy: 23"
-echo "⚡ Latest Commit: a9b3211"
+echo "📅 Upgrade Date: 2025-09-23 16:00"
+echo "💳 Plan: Starter ($7/month)"
+echo "🔄 Commits to Deploy: 27 (ALL PENDING COMMITS)"
+echo "⚡ Latest Commit: $(git rev-parse --short HEAD)"
 echo "================================================================"
 echo "🔧 APPLYING CRITICAL FIXES:"
 echo "  ✓ PostgreSQL table creation logic"
