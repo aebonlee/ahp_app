@@ -38,52 +38,90 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Check frontend source
+    - name: Check repository structure
       run: |
-        echo "Checking for frontend files..."
+        echo "=== Repository Structure Check ==="
         ls -la
+        echo ""
+        echo "=== Frontend directories ==="
+        [ -d "ahp_frontend_src" ] && echo "✅ ahp_frontend_src found" || echo "❌ ahp_frontend_src missing"
+        [ -d "ahp_frontend_public" ] && echo "✅ ahp_frontend_public found" || echo "❌ ahp_frontend_public missing"
+        [ -f "ahp_package.json" ] && echo "✅ ahp_package.json found" || echo "❌ ahp_package.json missing"
+        echo ""
+        
+    - name: Validate source files
+      run: |
+        echo "=== Source File Validation ==="
         if [ -d "ahp_frontend_src" ]; then
-          echo "Found ahp_frontend_src directory (React source)"
-          ls -la ahp_frontend_src/
-        elif [ -d "ahp_frontend_public" ]; then
-          echo "Found ahp_frontend_public directory (Static files)"
-          ls -la ahp_frontend_public/
-        else
-          echo "No frontend directory found"
+          echo "📁 React source files:"
+          ls -la ahp_frontend_src/ | head -10
+          
+          # Check for essential React files
+          [ -f "ahp_frontend_src/index.tsx" ] && echo "✅ index.tsx found" || echo "❌ index.tsx missing"
+          [ -f "ahp_frontend_src/App.tsx" ] && echo "✅ App.tsx found" || echo "❌ App.tsx missing"
+        fi
+        
+        if [ -d "ahp_frontend_public" ]; then
+          echo "📁 Public files:"
+          ls -la ahp_frontend_public/ | head -10
+          
+          # Check for essential public files
+          [ -f "ahp_frontend_public/index.html" ] && echo "✅ index.html found" || echo "❌ index.html missing"
+        fi
+        
+    - name: Setup build environment
+      run: |
+        echo "=== Setting up build environment ==="
+        if [ ! -f "ahp_package.json" ]; then
+          echo "❌ ahp_package.json not found, cannot build React app"
           exit 1
         fi
         
-    - name: Build React App
+        echo "📦 Copying package.json..."
+        cp ahp_package.json package.json
+        echo "✅ Package.json copied"
+        
+        echo "📁 Creating build directories..."
+        mkdir -p src public
+        echo "✅ Directories created"
+        
+    - name: Copy source files
       run: |
-        if [ -f "ahp_package.json" ]; then
-          echo "Building React app from source..."
+        echo "=== Copying source files ==="
+        if [ -d "ahp_frontend_src" ]; then
+          echo "📂 Copying React source files..."
+          cp -r ahp_frontend_src/* src/
+          echo "✅ Source files copied ($(ls src/ | wc -l) items)"
           
-          # Copy package.json
-          cp ahp_package.json package.json
+          # List key files
+          echo "📋 Key source files:"
+          [ -f "src/index.tsx" ] && echo "  ✅ src/index.tsx"
+          [ -f "src/App.tsx" ] && echo "  ✅ src/App.tsx"
+          [ -f "src/index.css" ] && echo "  ✅ src/index.css"
+        else
+          echo "❌ ahp_frontend_src directory not found"
+          exit 1
+        fi
+        
+    - name: Copy public files
+      run: |
+        echo "=== Copying public files ==="
+        if [ -d "ahp_frontend_public" ]; then
+          echo "📂 Copying essential public files..."
           
-          # Create proper React app structure
-          mkdir -p src public
+          # Copy files with error handling
+          cp ahp_frontend_public/index.html public/ 2>/dev/null && echo "  ✅ index.html copied" || echo "  ⚠️ index.html not found"
+          cp ahp_frontend_public/manifest.json public/ 2>/dev/null && echo "  ✅ manifest.json copied" || echo "  ⚠️ manifest.json not found"
+          cp ahp_frontend_public/favicon.ico public/ 2>/dev/null && echo "  ✅ favicon.ico copied" || echo "  ⚠️ favicon.ico not found"
+          cp ahp_frontend_public/robots.txt public/ 2>/dev/null && echo "  ✅ robots.txt copied" || echo "  ⚠️ robots.txt not found"
           
-          # Copy source files
-          if [ -d "ahp_frontend_src" ]; then
-            cp -r ahp_frontend_src/* src/
-            echo "✅ Source files copied"
-          fi
-          
-          # Copy public files (only essential ones for build)
-          if [ -d "ahp_frontend_public" ]; then
-            # Copy only essential public files
-            cp ahp_frontend_public/index.html public/ 2>/dev/null || echo "No index.html found"
-            cp ahp_frontend_public/manifest.json public/ 2>/dev/null || echo "No manifest.json found"
-            cp ahp_frontend_public/favicon.ico public/ 2>/dev/null || echo "No favicon.ico found"
-            cp ahp_frontend_public/robots.txt public/ 2>/dev/null || echo "No robots.txt found"
-            echo "✅ Essential public files copied"
-          fi
-          
-          # Create default public/index.html if missing
-          if [ ! -f "public/index.html" ]; then
-            echo "Creating default index.html..."
-            cat > public/index.html << 'EOF'
+          echo "✅ Public files processed"
+        fi
+        
+        # Create minimal index.html if missing
+        if [ ! -f "public/index.html" ]; then
+          echo "📝 Creating minimal index.html..."
+          cat > public/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -99,35 +137,77 @@ jobs:
   </body>
 </html>
 EOF
-          fi
-          
-          # Install dependencies and build
-          npm install
-          
-          # Fix any TypeScript/build issues
-          export GENERATE_SOURCEMAP=false
-          export CI=false
-          
-          # Build the app
-          npm run build:frontend
-          echo "✅ React build completed"
+          echo "✅ Default index.html created"
+        fi
+        
+    - name: Install dependencies
+      run: |
+        echo "=== Installing dependencies ==="
+        echo "📦 Running npm install..."
+        npm install --no-audit --prefer-offline
+        echo "✅ Dependencies installed"
+        
+        echo "📋 Checking installed packages:"
+        npm list --depth=0 | head -10
+        
+    - name: Build React application
+      run: |
+        echo "=== Building React application ==="
+        
+        # Set build environment variables
+        export GENERATE_SOURCEMAP=false
+        export CI=false
+        export NODE_OPTIONS="--max-old-space-size=4096"
+        
+        echo "🔧 Build environment:"
+        echo "  GENERATE_SOURCEMAP=$GENERATE_SOURCEMAP"
+        echo "  CI=$CI"
+        echo "  NODE_OPTIONS=$NODE_OPTIONS"
+        
+        echo "🏗️ Starting React build..."
+        npm run build:frontend
+        
+        echo "✅ Build completed successfully"
+        
+        if [ -d "build" ]; then
+          echo "📊 Build output:"
           ls -la build/
+          echo "📁 Build size: $(du -sh build/ | cut -f1)"
         else
-          echo "❌ No package.json found, using static files"
+          echo "❌ Build directory not found"
+          exit 1
         fi
         
     - name: Prepare deployment files
       run: |
+        echo "=== Preparing deployment files ==="
         mkdir -p deploy
+        
         if [ -d "build" ]; then
-          echo "Deploying built React app..."
+          echo "📦 Deploying built React app..."
           cp -r build/* deploy/
+          echo "✅ Built files copied to deploy/"
+          
+          # Verify deployment files
+          echo "📋 Deployment contents:"
+          ls -la deploy/ | head -10
+          
+          # Check for essential files
+          [ -f "deploy/index.html" ] && echo "  ✅ index.html ready" || echo "  ❌ index.html missing"
+          [ -d "deploy/static" ] && echo "  ✅ static assets ready" || echo "  ⚠️ static assets missing"
+          
         elif [ -d "ahp_frontend_public" ]; then
-          echo "Deploying static files..."
+          echo "📦 Deploying static files as fallback..."
           cp -r ahp_frontend_public/* deploy/
+          echo "✅ Static files copied to deploy/"
+          
+        else
+          echo "❌ No deployment source found"
+          exit 1
         fi
-        echo "Deployment files prepared"
-        ls -la deploy/
+        
+        echo "📊 Final deployment size: $(du -sh deploy/ | cut -f1)"
+        echo "📁 Total files: $(find deploy/ -type f | wc -l)"
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
