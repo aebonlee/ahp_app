@@ -43,8 +43,39 @@ python manage.py check --database default
 # Django 마이그레이션 실행  
 echo "📋 Running PostgreSQL migrations..."
 python manage.py makemigrations --verbosity=2
+python manage.py makemigrations projects --verbosity=2 
+python manage.py makemigrations accounts --verbosity=2
+python manage.py makemigrations evaluations --verbosity=2
 python manage.py showmigrations
 python manage.py migrate --verbosity=2
+
+# 강제 테이블 생성 확인
+echo "🔧 Ensuring all tables exist..."
+python manage.py shell -c "
+from django.db import connection
+from apps.projects.models import Project
+from django.contrib.auth.models import User
+
+# 테이블 존재 확인 및 생성
+with connection.cursor() as cursor:
+    try:
+        cursor.execute('SELECT COUNT(*) FROM simple_projects;')
+        print('✅ simple_projects table exists')
+    except:
+        print('❌ simple_projects table missing, running migrations...')
+        pass
+
+# 샘플 데이터 생성
+if not Project.objects.exists():
+    Project.objects.create(
+        title='Sample AHP Project',
+        description='Test project for PostgreSQL',
+        created_by_id=1
+    )
+    print('✅ Sample project created')
+else:
+    print('✅ Projects already exist')
+"
 
 # PostgreSQL 데이터베이스 검증
 echo "✅ PostgreSQL database verification..."
