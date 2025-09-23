@@ -113,3 +113,16 @@ jobs:
         echo "📋 Installed packages:"
         npm list --depth=0
         echo "✅ Step 5 completed successfully"
+        
+    - name: Build frontend
+      run: |
+        echo "=== Frontend Build Process ==="
+        echo "🏗️ Building React application..."
+        export GENERATE_SOURCEMAP=false
+        export PUBLIC_URL=.
+        npm run build:frontend
+        echo "📁 Build output:"
+        ls -la build/
+        echo "📄 Build files:"
+        find build/ -type f -name "*.js" -o -name "*.css" -o -name "*.html" | head -10
+        echo "✅ Step 6 completed successfully"
