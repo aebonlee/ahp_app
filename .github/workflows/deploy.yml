@@ -30,3 +30,34 @@ jobs:
         echo "📋 Repository contents:"
         ls -la
         echo "✅ Step 1 completed successfully"
+        
+    - name: Detect project structure
+      run: |
+        echo "=== Project Structure Analysis ==="
+        echo "🔍 Checking for frontend source files..."
+        if [ -d "ahp_frontend_src" ]; then
+          echo "✅ Frontend source directory found"
+          echo "📁 Frontend source contents:"
+          ls -la ahp_frontend_src/ | head -10
+        else
+          echo "❌ Frontend source directory not found"
+        fi
+        
+        echo "🔍 Checking for package.json..."
+        if [ -f "ahp_package.json" ]; then
+          echo "✅ Package configuration found"
+          echo "📋 Package info:"
+          head -10 ahp_package.json
+        else
+          echo "❌ Package configuration not found"
+        fi
+        
+        echo "🔍 Checking for public files..."
+        if [ -d "ahp_frontend_public" ]; then
+          echo "✅ Public directory found"
+          echo "📁 Public contents:"
+          ls -la ahp_frontend_public/
+        else
+          echo "❌ Public directory not found"
+        fi
+        echo "✅ Step 2 completed successfully"
