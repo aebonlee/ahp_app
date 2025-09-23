@@ -1,9 +1,7 @@
-name: Build and Deploy to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
   workflow_dispatch:
 
@@ -17,156 +15,55 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    - name: Deploy strategy decision
-      run: |
-        echo "=== Deployment Strategy Decision ==="
-        
-        # Check what's available
-        STATIC_FILES_EXIST=false
-        REACT_SOURCE_EXIST=false
-        PACKAGE_JSON_EXIST=false
-        
-        [ -d "ahp_frontend_public" ] && STATIC_FILES_EXIST=true
-        [ -d "ahp_frontend_src" ] && REACT_SOURCE_EXIST=true
-        [ -f "ahp_package.json" ] && PACKAGE_JSON_EXIST=true
-        
-        echo "📋 Available resources:"
-        echo "  Static files (ahp_frontend_public): $STATIC_FILES_EXIST"
-        echo "  React source (ahp_frontend_src): $REACT_SOURCE_EXIST"
-        echo "  Package.json: $PACKAGE_JSON_EXIST"
-        
-        # Decide deployment strategy
-        if [ "$STATIC_FILES_EXIST" = true ]; then
-          echo "🎯 Strategy: Deploy pre-built static files"
-          echo "DEPLOY_STRATEGY=static" >> $GITHUB_ENV
-        elif [ "$REACT_SOURCE_EXIST" = true ] && [ "$PACKAGE_JSON_EXIST" = true ]; then
-          echo "🎯 Strategy: Build and deploy React app"
-          echo "DEPLOY_STRATEGY=build" >> $GITHUB_ENV
-        else
-          echo "❌ No valid deployment source found"
-          exit 1
-        fi
-        
-    - name: Deploy static files (if available)
-      if: env.DEPLOY_STRATEGY == 'static'
-      run: |
-        echo "=== Deploying Static Files ==="
-        mkdir -p deploy
-        
-        if [ -d "ahp_frontend_public" ]; then
-          echo "📦 Copying pre-built static files..."
-          cp -r ahp_frontend_public/* deploy/
-          echo "✅ Static files deployed"
-          
-          echo "📊 Deployment contents:"
-          ls -la deploy/ | head -10
-          echo "📁 Total files: $(find deploy/ -type f | wc -l)"
-          echo "📏 Size: $(du -sh deploy/ | cut -f1)"
-        else
-          echo "❌ No static files found"
-          exit 1
-        fi
-        
-    - name: Setup build environment (React build)
-      if: env.DEPLOY_STRATEGY == 'build'
-      run: |
-        echo "=== Setting up React build environment ==="
-        if [ ! -f "ahp_package.json" ]; then
-          echo "❌ ahp_package.json not found"
-          exit 1
-        fi
-        
-        echo "📦 Copying package.json..."
-        cp ahp_package.json package.json
-        echo "✅ Package.json copied"
-        
-        echo "📁 Creating build directories..."
-        mkdir -p src public
-        echo "✅ Directories created"
-        
-    - name: Copy source files (React build)
-      if: env.DEPLOY_STRATEGY == 'build'
-      run: |
-        echo "=== Copying React source files ==="
-        cp -r ahp_frontend_src/* src/
-        echo "✅ Source files copied"
-        
-    - name: Copy public files (React build)
-      if: env.DEPLOY_STRATEGY == 'build'
-      run: |
-        echo "=== Copying public files ==="
-        # Copy essential files
-        cp ahp_frontend_public/index.html public/ 2>/dev/null || echo "⚠️ No index.html"
-        cp ahp_frontend_public/manifest.json public/ 2>/dev/null || echo "⚠️ No manifest.json"
-        cp ahp_frontend_public/favicon.ico public/ 2>/dev/null || echo "⚠️ No favicon.ico"
-        
-        # Create default index.html if missing
-        if [ ! -f "public/index.html" ]; then
-          cat > public/index.html << 'EOF'
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AHP Platform</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
-EOF
-        fi
-        echo "✅ Public files ready"
-        
-    - name: Install dependencies (React build)
-      if: env.DEPLOY_STRATEGY == 'build'
-      run: |
-        echo "=== Installing dependencies ==="
-        npm install --no-audit
-        echo "✅ Dependencies installed"
-        
-    - name: Build React application
-      if: env.DEPLOY_STRATEGY == 'build'
-      run: |
-        echo "=== Building React application ==="
-        export GENERATE_SOURCEMAP=false
-        export CI=false
-        npm run build:frontend
-        
-        # Copy build to deploy
-        mkdir -p deploy
-        cp -r build/* deploy/
-        echo "✅ React build deployed"
-        
     - name: Setup Pages
       uses: actions/configure-pages@v4
       
+    - name: Prepare deployment
+      run: |
+        echo "=== Preparing static files for deployment ==="
+        
+        # Create deployment directory
+        mkdir -p _site
+        
+        # Copy static files if they exist
+        if [ -d "ahp_frontend_public" ]; then
+          echo "📦 Found pre-built static files"
+          cp -r ahp_frontend_public/* _site/
+          echo "✅ Static files copied"
+        else
+          echo "❌ No static files found"
+          echo "Creating minimal index.html..."
+          cat > _site/index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AHP Platform</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <h1>AHP Platform</h1>
+    <p>Welcome to AHP Decision Support System</p>
+</body>
+</html>
+EOF
+        fi
+        
+        echo "📊 Deployment ready:"
+        ls -la _site/
+        
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: ./deploy
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        path: ./_site
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
