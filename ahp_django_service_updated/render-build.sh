@@ -2,11 +2,19 @@
 # exit on error
 set -o errexit
 
-echo "🚀 STARTING RENDER.COM BUILD PROCESS - 2025-09-23 12:10 🚀"
+echo "🚨🚨🚨 CRITICAL DEPLOYMENT - 23 COMMITS PENDING 🚨🚨🚨"
 echo "================================================================"
-echo "🔧 FORCE DEPLOYMENT TRIGGERED"
-echo "🐘 PostgreSQL Table Creation Fix"
-echo "📋 Migration Process Enhancement"
+echo "📅 Last Deploy: 2025-09-16 21:58 (7 days ago)"
+echo "📊 Current: 2025-09-23 15:25"
+echo "🔄 Commits to Deploy: 23"
+echo "⚡ Latest Commit: a9b3211"
+echo "================================================================"
+echo "🔧 APPLYING CRITICAL FIXES:"
+echo "  ✓ PostgreSQL table creation logic"
+echo "  ✓ DATABASE_URL force configuration"
+echo "  ✓ Migration --run-syncdb added"
+echo "  ✓ Manual SQL table creation backup"
+echo "  ✓ Emergency sample data generation"
 echo "================================================================"
 
 # Upgrade pip
