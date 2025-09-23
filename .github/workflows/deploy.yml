@@ -80,87 +80,36 @@ jobs:
         npm config get cache
         echo "✅ Step 3 completed successfully"
         
-    - name: Prepare project structure
+    - name: Step 4 - Diagnose structure only
       run: |
-        echo "=== Project Structure Preparation ==="
-        echo "🔧 Creating proper package.json..."
+        echo "=== Step 4 Diagnostic Test ==="
+        echo "📁 Current directory contents:"
+        ls -la
+        echo ""
+        echo "🔍 Checking ahp_package.json:"
         if [ -f "ahp_package.json" ]; then
-          cp ahp_package.json package.json
-          echo "✅ package.json created from ahp_package.json"
+          echo "✅ ahp_package.json exists"
+          echo "📄 First 10 lines:"
+          head -10 ahp_package.json
         else
-          echo "❌ ahp_package.json not found"
-          exit 1
+          echo "❌ ahp_package.json NOT found"
         fi
-        
-        echo "🔧 Setting up source directories..."
-        if [ -d "ahp_frontend_src" ] && [ -d "ahp_frontend_public" ]; then
-          mkdir -p src
-          cp -r ahp_frontend_src/* src/
-          mkdir -p public  
-          cp -r ahp_frontend_public/* public/
-          echo "✅ Source and public directories prepared"
-          echo "📁 Source files copied:"
-          ls -la src/ | head -5
-          echo "📁 Public files copied:"
-          ls -la public/ | head -5
+        echo ""
+        echo "🔍 Checking ahp_frontend_src:"
+        if [ -d "ahp_frontend_src" ]; then
+          echo "✅ ahp_frontend_src directory exists"
+          echo "📁 Contents (first 10):"
+          ls -la ahp_frontend_src/ | head -10
         else
-          echo "❌ Required directories not found"
-          echo "Available directories:"
-          ls -la
-          exit 1
+          echo "❌ ahp_frontend_src NOT found"
         fi
-        echo "✅ Step 4 completed successfully"
-        
-    - name: Install dependencies
-      run: |
-        echo "=== Dependencies Installation ==="
-        echo "📦 Installing npm dependencies..."
-        npm ci --verbose
-        echo "📋 Installed packages:"
-        npm list --depth=0
-        echo "✅ Step 5 completed successfully"
-        
-    - name: Build frontend
-      env:
-        GENERATE_SOURCEMAP: false
-        PUBLIC_URL: .
-        CI: false
-      run: |
-        echo "=== Frontend Build Process ==="
-        echo "🏗️ Building React application..."
-        echo "Environment variables:"
-        echo "GENERATE_SOURCEMAP=$GENERATE_SOURCEMAP"
-        echo "PUBLIC_URL=$PUBLIC_URL"
-        npm run build:frontend
-        echo "📁 Build output:"
-        ls -la build/
-        echo "📄 Build files:"
-        find build/ -type f -name "*.js" -o -name "*.css" -o -name "*.html" | head -10
-        echo "📊 Build size:"
-        du -sh build/
-        echo "✅ Step 6 completed successfully"
-        
-    - name: Setup GitHub Pages
-      uses: actions/configure-pages@v5
-      
-    - name: Upload to GitHub Pages
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: ./build
-        
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-      
-    - name: Verify deployment
-      run: |
-        echo "=== Deployment Verification ==="
-        echo "🚀 Deployment completed successfully!"
-        echo "📍 Deployment URL: ${{ steps.deployment.outputs.page_url }}"
-        echo "🔍 Checking deployment status..."
-        if [ -n "${{ steps.deployment.outputs.page_url }}" ]; then
-          echo "✅ GitHub Pages URL available"
+        echo ""
+        echo "🔍 Checking ahp_frontend_public:"
+        if [ -d "ahp_frontend_public" ]; then
+          echo "✅ ahp_frontend_public directory exists"
+          echo "📁 Contents:"
+          ls -la ahp_frontend_public/
         else
-          echo "❌ GitHub Pages URL not available"
+          echo "❌ ahp_frontend_public NOT found"
         fi
-        echo "✅ Step 7 completed successfully"
+        echo "✅ Step 4 diagnostic completed"
