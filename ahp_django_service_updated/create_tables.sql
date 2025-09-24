@@ -1,13 +1,40 @@
 -- Force create AHP platform tables
 -- This script ensures all necessary tables exist
 
+-- Create users table first (Custom User Model)
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    password VARCHAR(128) NOT NULL,
+    last_login TIMESTAMP WITH TIME ZONE,
+    is_superuser BOOLEAN NOT NULL DEFAULT FALSE,
+    username VARCHAR(150) UNIQUE NOT NULL,
+    first_name VARCHAR(150) DEFAULT '',
+    last_name VARCHAR(150) DEFAULT '',
+    email VARCHAR(254) DEFAULT '',
+    is_staff BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    date_joined TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    full_name VARCHAR(100) DEFAULT '',
+    organization VARCHAR(200) DEFAULT '',
+    department VARCHAR(100) DEFAULT '',
+    position VARCHAR(100) DEFAULT '',
+    phone VARCHAR(20) DEFAULT '',
+    is_evaluator BOOLEAN DEFAULT FALSE,
+    is_project_manager BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    last_activity TIMESTAMP WITH TIME ZONE,
+    language VARCHAR(10) DEFAULT 'ko',
+    timezone VARCHAR(50) DEFAULT 'Asia/Seoul'
+);
+
 -- Create simple_projects table
 CREATE TABLE IF NOT EXISTS simple_projects (
     id UUID PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     description TEXT NOT NULL,
     objective TEXT NOT NULL,
-    owner_id INTEGER NOT NULL,
+    owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     status VARCHAR(20) DEFAULT 'draft',
     visibility VARCHAR(20) DEFAULT 'private',
     consistency_ratio_threshold FLOAT DEFAULT 0.1,
