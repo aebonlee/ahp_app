@@ -217,7 +217,7 @@ urlpatterns = [
     # Root API (default)
     path('api/', include(api_patterns)),
     
-    # API v1 (legacy compatibility)
+    # API v1 (legacy compatibility)  
     path('api/v1/', include(api_patterns)),
     
     # API service (new frontend endpoints)
@@ -234,6 +234,20 @@ urlpatterns = [
     
     # Test projects without authentication
     path('test-projects/', lambda request: JsonResponse(test_projects_access())),
+    
+    # Debug endpoints 
+    path('debug/urls/', lambda request: JsonResponse({
+        'available_patterns': [
+            '/api/', '/api/v1/', '/api/service/',
+            '/health/', '/db-status/', '/setup-db/', '/test-projects/',
+            '/admin/', '/debug/urls/'
+        ],
+        'current_request': {
+            'path': request.path,
+            'method': request.method,
+            'headers': dict(request.headers)
+        }
+    })),
     
     # Root endpoint with service info
     path('', lambda request: JsonResponse({
