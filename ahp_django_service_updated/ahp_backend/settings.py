@@ -102,15 +102,15 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # Render.com PostgreSQL 연결 설정 - 강제 적용
 # 환경변수 무시하고 직접 연결 (문제 해결을 위해)
 database_url = 'postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app'
-print("🔧 FORCED PostgreSQL connection - bypassing environment variables")
+# PostgreSQL connection configured
 
 # 백업 환경변수 시도
 env_database_url = config('DATABASE_URL', default=None)
 if env_database_url:
     database_url = env_database_url
-    print("✅ Using environment DATABASE_URL")
+    # Using environment DATABASE_URL
 else:
-    print("⚠️ No environment DATABASE_URL found, using hardcoded connection")
+    # No environment DATABASE_URL found, using hardcoded connection
 
 # 개별 환경변수 (선택사항)
 postgres_db = config('POSTGRES_DB', default='ahp_app')
@@ -125,11 +125,9 @@ if database_url:
         DATABASES = {
             'default': dj_database_url.parse(database_url)
         }
-        print(f"✅ PostgreSQL connected via DATABASE_URL")
-        print(f"📊 Database: {DATABASES['default']['NAME']}")
-        print(f"🏠 Host: {DATABASES['default']['HOST']}")
+        # PostgreSQL connected via DATABASE_URL
     except Exception as e:
-        print(f"❌ DATABASE_URL parsing failed: {e}")
+        # DATABASE_URL parsing failed
         # 수동으로 설정
         DATABASES = {
             'default': {
@@ -144,7 +142,7 @@ if database_url:
                 },
             }
         }
-        print("✅ PostgreSQL connected via manual config")
+        # PostgreSQL connected via manual config
 
 # PostgreSQL 개별 환경변수 사용 (기본값으로 시도)
 elif postgres_host:
@@ -168,16 +166,16 @@ elif postgres_host:
                 'CONN_MAX_AGE': 600,
             }
         }
-        print(f"✅ PostgreSQL 기본 설정 연결: {postgres_host}/{db_name}")
+        # PostgreSQL connection configured
     except Exception as e:
-        print(f"❌ PostgreSQL 기본 연결 실패: {e}")
+        # PostgreSQL connection failed
         # 환경변수 안내 후 에러
         pass
 
 # PostgreSQL 환경변수 없어도 작동하도록 수정
 else:
     # 강제로 PostgreSQL 연결 설정
-    print("🔧 Fallback: Creating PostgreSQL connection without environment variables")
+    # Fallback: Creating PostgreSQL connection without environment variables
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -193,9 +191,9 @@ else:
             'CONN_MAX_AGE': 600,
         }
     }
-    print("✅ PostgreSQL fallback connection created")
+    # PostgreSQL fallback connection created
 
-print(f"📊 Database engine: {DATABASES['default']['ENGINE']}")
+# Database engine configured
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
