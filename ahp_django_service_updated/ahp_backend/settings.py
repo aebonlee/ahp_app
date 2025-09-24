@@ -55,8 +55,8 @@ LOCAL_APPS = [
     'apps.evaluations',
     'apps.analysis',
     'apps.common',
-    'apps.workshops',
-    'apps.exports',
+    # 'apps.workshops',  # Temporarily disabled - no urls.py
+    # 'apps.exports',    # Temporarily disabled - no urls.py
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
