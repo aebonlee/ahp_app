@@ -23,13 +23,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'ahp-app-vuzk.onrender.com',
-    'ahp-django-backend.onrender.com',
-    '.onrender.com'
-]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 DJANGO_APPS = [
@@ -50,13 +44,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'apps.accounts',
-    'apps.projects',
-    'apps.evaluations',
-    'apps.analysis',
     'apps.common',
-    # 'apps.workshops',  # Temporarily disabled - no urls.py
-    # 'apps.exports',    # Temporarily disabled - no urls.py
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -73,7 +61,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'ahp_backend.urls'
+ROOT_URLCONF = 'simple_urls'
 
 TEMPLATES = [
     {
