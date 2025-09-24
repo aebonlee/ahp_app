@@ -1,8 +1,8 @@
 services:
   - type: web
     name: ahp-django-backend
-    runtime: python
-    buildCommand: "bash render-build.sh"
+    env: python
+    buildCommand: "./render-build.sh"
     startCommand: "gunicorn ahp_backend.wsgi:application"
     envVars:
       - key: DATABASE_URL
@@ -10,6 +10,4 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: DEBUG
-        value: False
+        value: "3.11.0"
