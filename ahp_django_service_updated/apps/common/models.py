@@ -2,11 +2,9 @@
 Common Models for AHP Platform
 """
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.utils import timezone
 import uuid
-
-User = get_user_model()
 
 
 class TimeStampedModel(models.Model):

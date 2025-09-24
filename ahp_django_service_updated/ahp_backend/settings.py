@@ -144,8 +144,8 @@ os.makedirs(MEDIA_ROOT, exist_ok=True)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model
-AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model - Use default Django User for now
+# AUTH_USER_MODEL = 'accounts.User'
 
 # Django REST Framework
 REST_FRAMEWORK = {
