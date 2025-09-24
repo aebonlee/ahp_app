@@ -13,6 +13,9 @@ mkdir -p persistent_data/media
 echo "🚀 Collecting static files..."
 python manage.py collectstatic --noinput
 
+echo "🚀 Force database setup..."
+python manage.py force_setup || echo "Setup warning: continuing with basic migrations..."
+
 echo "🚀 Running basic migrations..."
 python manage.py migrate --run-syncdb || echo "Migration warning: continuing..."
 

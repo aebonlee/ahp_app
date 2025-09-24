@@ -173,23 +173,37 @@ def api_root(request):
     return JsonResponse({
         'message': 'AHP Platform API',
         'version': '1.0.0',
+        'status': 'operational',
         'endpoints': {
             'auth': {
-                'token': '/api/auth/token/',
-                'refresh': '/api/auth/token/refresh/',
-                'verify': '/api/auth/token/verify/'
+                'token': request.build_absolute_uri('/api/auth/token/'),
+                'refresh': request.build_absolute_uri('/api/auth/token/refresh/'),
+                'verify': request.build_absolute_uri('/api/auth/token/verify/')
             },
             'apps': {
-                'accounts': '/api/accounts/',
-                'projects': '/api/projects/',
-                'evaluations': '/api/evaluations/',
-                'analysis': '/api/analysis/'
+                'accounts': request.build_absolute_uri('/api/accounts/'),
+                'projects': request.build_absolute_uri('/api/projects/'),
+                'evaluations': request.build_absolute_uri('/api/evaluations/'),
+                'analysis': request.build_absolute_uri('/api/analysis/')
+            }
+        },
+        'service_endpoints': {
+            'auth': {
+                'token': request.build_absolute_uri('/api/service/auth/token/'),
+                'refresh': request.build_absolute_uri('/api/service/auth/token/refresh/'),
+                'verify': request.build_absolute_uri('/api/service/auth/token/verify/')
+            },
+            'apps': {
+                'accounts': request.build_absolute_uri('/api/service/accounts/'),
+                'projects': request.build_absolute_uri('/api/service/projects/'),
+                'evaluations': request.build_absolute_uri('/api/service/evaluations/'),
+                'analysis': request.build_absolute_uri('/api/service/analysis/')
             }
         },
         'documentation': {
-            'admin': '/admin/',
-            'health': '/health/',
-            'db_status': '/db-status/'
+            'admin': request.build_absolute_uri('/admin/'),
+            'health': request.build_absolute_uri('/health/'),
+            'db_status': request.build_absolute_uri('/db-status/')
         }
     })
 
