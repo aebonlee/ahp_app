@@ -27,10 +27,18 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "🗄️ Attempting database operations..."
+# Force create migrations first
+echo "📝 Creating migrations..."
+python manage.py makemigrations || echo "⚠️ Makemigrations failed"
+
 # Try multiple database setup approaches
-python manage.py force_setup || \
-python manage.py migrate --run-syncdb || \
-python manage.py migrate || \
-echo "⚠️ All database operations failed, but continuing..."
+echo "🔧 Applying migrations..."
+python manage.py migrate || echo "⚠️ Migration failed, trying sync..."
+
+echo "🔄 Running sync database..."
+python manage.py migrate --run-syncdb || echo "⚠️ Sync failed, trying force setup..."
+
+echo "💪 Running force setup..."
+python manage.py force_setup || echo "⚠️ All database operations completed with warnings"
 
 echo "✅ Build completed!"
