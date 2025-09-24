@@ -111,6 +111,7 @@ if env_database_url:
     # Using environment DATABASE_URL
 else:
     # No environment DATABASE_URL found, using hardcoded connection
+    pass
 
 # 개별 환경변수 (선택사항)
 postgres_db = config('POSTGRES_DB', default='ahp_app')
