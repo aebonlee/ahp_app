@@ -20,6 +20,18 @@ class Command(BaseCommand):
                 cursor.execute("SELECT 1")
             self.stdout.write(self.style.SUCCESS("✅ Database connection successful"))
             
+            # Force create tables with SQL
+            self.stdout.write("🔧 Creating tables with SQL...")
+            sql_file_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'create_tables.sql')
+            if os.path.exists(sql_file_path):
+                with open(sql_file_path, 'r') as f:
+                    sql_content = f.read()
+                with connection.cursor() as cursor:
+                    cursor.execute(sql_content)
+                self.stdout.write(self.style.SUCCESS("✅ Tables created with SQL"))
+            else:
+                self.stdout.write(self.style.WARNING("⚠️ SQL file not found, continuing..."))
+            
             # Create migrations
             self.stdout.write("📝 Creating migrations...")
             call_command('makemigrations', verbosity=1)
