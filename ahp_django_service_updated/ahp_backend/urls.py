@@ -168,8 +168,36 @@ def test_projects_access():
             'connection_failed': True
         }
 
+# API root view
+def api_root(request):
+    return JsonResponse({
+        'message': 'AHP Platform API',
+        'version': '1.0.0',
+        'endpoints': {
+            'auth': {
+                'token': '/api/auth/token/',
+                'refresh': '/api/auth/token/refresh/',
+                'verify': '/api/auth/token/verify/'
+            },
+            'apps': {
+                'accounts': '/api/accounts/',
+                'projects': '/api/projects/',
+                'evaluations': '/api/evaluations/',
+                'analysis': '/api/analysis/'
+            }
+        },
+        'documentation': {
+            'admin': '/admin/',
+            'health': '/health/',
+            'db_status': '/db-status/'
+        }
+    })
+
 # API URL patterns
 api_patterns = [
+    # API root
+    path('', api_root, name='api_root'),
+    
     # Authentication
     path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
