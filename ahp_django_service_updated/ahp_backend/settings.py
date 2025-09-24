@@ -96,105 +96,13 @@ WSGI_APPLICATION = 'ahp_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# PostgreSQL 전용 데이터베이스 설정 (SQLite 완전 제거)
-# 로컬 DB 설치 없이 Render.com PostgreSQL만 사용
+# Database configuration - SIMPLE AND CLEAN
+database_url = config('DATABASE_URL', 
+    default='postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app')
 
-# Render.com PostgreSQL 연결 설정 - 강제 적용
-# 환경변수 무시하고 직접 연결 (문제 해결을 위해)
-database_url = 'postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app'
-# PostgreSQL connection configured
-
-# 백업 환경변수 시도
-env_database_url = config('DATABASE_URL', default=None)
-if env_database_url:
-    database_url = env_database_url
-    # Using environment DATABASE_URL
-else:
-    # No environment DATABASE_URL found, using hardcoded connection
-    pass
-
-# 개별 환경변수 (선택사항)
-postgres_db = config('POSTGRES_DB', default='ahp_app')
-postgres_user = config('POSTGRES_USER', default='ahp_app_user')
-postgres_password = config('POSTGRES_PASSWORD', default='xEcCdn2WB32sxLYIPAncc9cHARXf1t6d')
-postgres_host = config('POSTGRES_HOST', default='dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com')
-postgres_port = config('POSTGRES_PORT', default='5432')
-
-# PostgreSQL 연결 (DATABASE_URL 우선)
-if database_url:
-    try:
-        DATABASES = {
-            'default': dj_database_url.parse(database_url)
-        }
-        # PostgreSQL connected via DATABASE_URL
-    except Exception as e:
-        # DATABASE_URL parsing failed
-        # 수동으로 설정
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': 'ahp_app',
-                'USER': 'ahp_app_user',
-                'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
-                'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
-                'PORT': '5432',
-                'OPTIONS': {
-                    'sslmode': 'require',
-                },
-            }
-        }
-        # PostgreSQL connected via manual config
-
-# PostgreSQL 개별 환경변수 사용 (기본값으로 시도)
-elif postgres_host:
-    try:
-        # 기본 Render.com PostgreSQL 연결 시도
-        db_name = postgres_db or 'railway'
-        db_user = postgres_user or 'postgres'
-        
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': db_name,
-                'USER': db_user,
-                'PASSWORD': postgres_password,
-                'HOST': postgres_host,
-                'PORT': postgres_port,
-                'OPTIONS': {
-                    'sslmode': 'require',
-                    'connect_timeout': 60,
-                },
-                'CONN_MAX_AGE': 600,
-            }
-        }
-        # PostgreSQL connection configured
-    except Exception as e:
-        # PostgreSQL connection failed
-        # 환경변수 안내 후 에러
-        pass
-
-# PostgreSQL 환경변수 없어도 작동하도록 수정
-else:
-    # 강제로 PostgreSQL 연결 설정
-    # Fallback: Creating PostgreSQL connection without environment variables
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'ahp_app',
-            'USER': 'ahp_app_user',
-            'PASSWORD': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
-            'HOST': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
-            'PORT': '5432',
-            'OPTIONS': {
-                'sslmode': 'require',
-                'connect_timeout': 60,
-            },
-            'CONN_MAX_AGE': 600,
-        }
-    }
-    # PostgreSQL fallback connection created
-
-# Database engine configured
+DATABASES = {
+    'default': dj_database_url.parse(database_url)
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
