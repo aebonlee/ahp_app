@@ -15,6 +15,18 @@ class Command(BaseCommand):
         self.stdout.write("🚀 Starting forced database setup...")
         
         try:
+            # Skip if already in production with working DB
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM django_migrations")
+                count = cursor.fetchone()[0]
+                if count > 0:
+                    self.stdout.write(self.style.SUCCESS("✅ Database already initialized"))
+                    return
+        except:
+            pass  # Continue with setup if check fails
+        
+        try:
             # Test database connection
             with connection.cursor() as cursor:
                 cursor.execute("SELECT 1")
