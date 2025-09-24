@@ -186,6 +186,9 @@ urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     
+    # Root API (default)
+    path('api/', include(api_patterns)),
+    
     # API v1 (legacy compatibility)
     path('api/v1/', include(api_patterns)),
     
@@ -203,6 +206,32 @@ urlpatterns = [
     
     # Test projects without authentication
     path('test-projects/', lambda request: JsonResponse(test_projects_access())),
+    
+    # Root endpoint with service info
+    path('', lambda request: JsonResponse({
+        'service': 'AHP Django Backend',
+        'status': 'running',
+        'deployment': 'SUCCESSFUL',
+        'version': '1.0.0',
+        'endpoints': {
+            'health': '/health/',
+            'admin': '/admin/',
+            'api_v1': '/api/v1/',
+            'api_service': '/api/service/',
+            'api_default': '/api/',
+            'database_status': '/db-status/',
+            'setup_database': '/setup-db/',
+            'test_projects': '/test-projects/'
+        },
+        'features': [
+            'User Authentication (JWT)',
+            'Project Management',
+            'AHP Evaluations',
+            'Results Analysis',
+            'Workshop Management',
+            'Data Export'
+        ]
+    })),
 ]
 
 # Serve media files in development
