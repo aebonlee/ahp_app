@@ -22,15 +22,28 @@ class Command(BaseCommand):
             
             # Force create tables with SQL
             self.stdout.write("🔧 Creating tables with SQL...")
-            sql_file_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'create_tables.sql')
+            from django.conf import settings
+            base_dir = settings.BASE_DIR
+            sql_file_path = os.path.join(base_dir, 'create_tables.sql')
+            
             if os.path.exists(sql_file_path):
-                with open(sql_file_path, 'r') as f:
-                    sql_content = f.read()
-                with connection.cursor() as cursor:
-                    cursor.execute(sql_content)
-                self.stdout.write(self.style.SUCCESS("✅ Tables created with SQL"))
+                try:
+                    with open(sql_file_path, 'r', encoding='utf-8') as f:
+                        sql_content = f.read()
+                    
+                    # Split SQL commands and execute separately
+                    sql_commands = [cmd.strip() for cmd in sql_content.split(';') if cmd.strip()]
+                    
+                    with connection.cursor() as cursor:
+                        for sql_cmd in sql_commands:
+                            if sql_cmd:
+                                cursor.execute(sql_cmd)
+                    
+                    self.stdout.write(self.style.SUCCESS("✅ Tables created with SQL"))
+                except Exception as e:
+                    self.stdout.write(self.style.WARNING(f"⚠️ SQL execution failed: {e}"))
             else:
-                self.stdout.write(self.style.WARNING("⚠️ SQL file not found, continuing..."))
+                self.stdout.write(self.style.WARNING(f"⚠️ SQL file not found at: {sql_file_path}"))
             
             # Create migrations
             self.stdout.write("📝 Creating migrations...")
