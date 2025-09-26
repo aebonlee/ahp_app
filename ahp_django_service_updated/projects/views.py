@@ -1,7 +1,8 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
 from .models import Project, Criteria, Alternative, Comparison
 from .serializers import ProjectSerializer, CriteriaSerializer, AlternativeSerializer, ComparisonSerializer
 
@@ -85,3 +86,21 @@ class ComparisonViewSet(viewsets.ModelViewSet):
     queryset = Comparison.objects.all()
     serializer_class = ComparisonSerializer
     permission_classes = [AllowAny]
+
+
+class ProjectCriteriaView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request, project_pk):
+        criteria = Criteria.objects.filter(project_id=project_pk)
+        serializer = CriteriaSerializer(criteria, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, project_pk):
+        data = request.data.copy()
+        data['project'] = project_pk
+        serializer = CriteriaSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
