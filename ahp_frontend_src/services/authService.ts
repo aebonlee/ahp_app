@@ -3,18 +3,7 @@
  */
 
 import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
-
-interface AuthTokens {
-  access: string;
-  refresh: string;
-}
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  is_staff?: boolean;
-}
+import type { User, AuthTokens, LoginResponse } from '../types';
 
 class AuthService {
   private accessToken: string | null = null;
@@ -160,8 +149,8 @@ class AuthService {
   /**
    * 로그인
    */
-  async login(username: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
-    const result = await this.apiRequest<{ access: string; refresh: string; user: User }>(
+  async login(username: string, password: string): Promise<LoginResponse> {
+    const result = await this.apiRequest<{ tokens: AuthTokens; user: User }>(
       API_ENDPOINTS.AUTH.LOGIN,
       {
         method: 'POST',
@@ -170,13 +159,13 @@ class AuthService {
     );
 
     if (result.success && result.data) {
-      const { access, refresh, user } = result.data;
-      this.saveTokens({ access, refresh });
+      const { tokens, user } = result.data;
+      this.saveTokens(tokens);
       this.initTokenRefresh();
-      return { success: true, user };
+      return { user, tokens };
     }
 
-    return { success: false, error: result.error };
+    throw new Error(result.error || 'Login failed');
   }
 
   /**
@@ -186,8 +175,14 @@ class AuthService {
     username: string;
     email: string;
     password: string;
-  }): Promise<{ success: boolean; user?: User; error?: string }> {
-    const result = await this.apiRequest<{ access: string; refresh: string; user: User }>(
+    password2: string;
+    first_name: string;
+    last_name: string;
+    phone?: string;
+    organization?: string;
+    role?: string;
+  }): Promise<LoginResponse> {
+    const result = await this.apiRequest<{ tokens: AuthTokens; user: User }>(
       API_ENDPOINTS.AUTH.REGISTER,
       {
         method: 'POST',
@@ -196,13 +191,13 @@ class AuthService {
     );
 
     if (result.success && result.data) {
-      const { access, refresh, user } = result.data;
-      this.saveTokens({ access, refresh });
+      const { tokens, user } = result.data;
+      this.saveTokens(tokens);
       this.initTokenRefresh();
-      return { success: true, user };
+      return { user, tokens };
     }
 
-    return { success: false, error: result.error };
+    throw new Error(result.error || 'Registration failed');
   }
 
   /**
@@ -223,18 +218,18 @@ class AuthService {
   /**
    * 현재 사용자 정보 조회
    */
-  async getCurrentUser(): Promise<{ success: boolean; user?: User; error?: string }> {
+  async getCurrentUser(): Promise<User> {
     if (!this.accessToken) {
-      return { success: false, error: 'No access token' };
+      throw new Error('No access token');
     }
 
-    const result = await this.apiRequest<User>(API_ENDPOINTS.AUTH.VERIFY);
+    const result = await this.apiRequest<User>(API_ENDPOINTS.AUTH.ME);
     
-    if (result.success) {
-      return { success: true, user: result.data };
+    if (result.success && result.data) {
+      return result.data;
     }
 
-    return { success: false, error: result.error };
+    throw new Error(result.error || 'Failed to fetch user info');
   }
 
   /**
