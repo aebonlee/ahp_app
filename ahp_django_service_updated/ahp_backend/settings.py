@@ -43,6 +43,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    'accounts.apps.AccountsConfig',
     'apps.common',
     'projects',
 ]
@@ -145,8 +146,8 @@ os.makedirs(MEDIA_ROOT, exist_ok=True)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model - Use default Django User for now
-# AUTH_USER_MODEL = 'accounts.User'
+# Custom User Model
+AUTH_USER_MODEL = 'accounts.User'
 
 # Django REST Framework
 REST_FRAMEWORK = {
@@ -173,10 +174,15 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
 }
 
 # CORS Settings - Updated for GitHub Pages deployment

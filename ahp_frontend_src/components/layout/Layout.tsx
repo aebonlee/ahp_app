@@ -2,26 +2,22 @@ import React, { useState } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
+import type { User } from '../../types';
+
 interface LayoutProps {
   children: React.ReactNode;
-  user?: {
-    id: string | number;  // 백엔드는 number로 보냄
-    first_name: string;
-    last_name: string;
-    email: string;
-    role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
-    admin_type?: 'super' | 'personal';
-    canSwitchModes?: boolean;
-  } | null;
+  user?: User | null;
+  viewMode?: 'service' | 'evaluator';
   activeTab: string;
   onTabChange: (tab: string) => void;
   onLogout?: () => void;
-  onModeSwitch?: (mode: 'super' | 'personal') => void;
+  onModeSwitch?: (mode: 'service' | 'evaluator') => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
   children, 
   user, 
+  viewMode,
   activeTab, 
   onTabChange, 
   onLogout,
@@ -30,15 +26,10 @@ const Layout: React.FC<LayoutProps> = ({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleLogoClick = () => {
-    // 사용자 상태에 따라 적절한 메인 페이지로 이동
     if (user) {
       if (user.role === 'super_admin') {
         onTabChange('super-admin');
-      } else if (user.role === 'admin' && user.admin_type === 'personal') {
-        onTabChange('personal-service');
-      } else if (user.role === 'admin') {
-        onTabChange('admin-type-selection');
-      } else if (user.role === 'service_tester') {
+      } else if (user.role === 'service_admin' || user.role === 'service_user') {
         onTabChange('personal-service');
       } else if (user.role === 'evaluator') {
         onTabChange('evaluator-dashboard');
@@ -66,10 +57,10 @@ const Layout: React.FC<LayoutProps> = ({
             <Sidebar
               isCollapsed={sidebarCollapsed}
               userRole={user.role}
-              adminType={user.admin_type}
+              viewMode={viewMode}
               activeTab={activeTab}
               onTabChange={onTabChange}
-              canSwitchModes={user.canSwitchModes}
+              canSwitchModes={user.role === 'service_admin' || user.role === 'service_user'}
               onModeSwitch={onModeSwitch}
             />
             

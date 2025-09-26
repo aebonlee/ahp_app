@@ -1,9 +1,10 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
-from django.contrib.auth.models import User
+from django.conf import settings
+from accounts.permissions import IsProjectOwner, CanCreateProject, IsServiceUser
 from .models import (
     Project, Criteria, Alternative, Evaluator,
     Comparison, ComparisonMatrix, Result, SensitivityAnalysis
@@ -18,14 +19,17 @@ from .serializers import (
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, CanCreateProject]
+    
+    def get_queryset(self):
+        """사용자가 소유하거나 참여한 프로젝트만 조회"""
+        user = self.request.user
+        if user.role in ['super_admin', 'service_admin']:
+            return Project.objects.all()
+        return Project.objects.filter(owner=user) | Project.objects.filter(evaluators__user=user).distinct()
     
     def perform_create(self, serializer):
-        if self.request.user.is_authenticated:
-            serializer.save(owner=self.request.user)
-        else:
-            anon_user, created = User.objects.get_or_create(username='anonymous')
-            serializer.save(owner=anon_user)
+        serializer.save(owner=self.request.user)
     
     @action(detail=True, methods=['get'])
     def evaluators(self, request, pk=None):
@@ -60,11 +64,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class CriteriaViewSet(viewsets.ModelViewSet):
     queryset = Criteria.objects.all()
     serializer_class = CriteriaSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, IsProjectOwner]
     
     def get_queryset(self):
-        queryset = Criteria.objects.all()
+        user = self.request.user
         project_id = self.request.query_params.get('project', None)
+        
+        # 관리자는 모든 기준 조회 가능
+        if user.role in ['super_admin', 'service_admin']:
+            queryset = Criteria.objects.all()
+        else:
+            # 일반 사용자는 자신의 프로젝트 기준만 조회
+            queryset = Criteria.objects.filter(project__owner=user)
+        
         if project_id is not None:
             queryset = queryset.filter(project_id=project_id)
         return queryset
@@ -79,11 +91,17 @@ class CriteriaViewSet(viewsets.ModelViewSet):
 class AlternativeViewSet(viewsets.ModelViewSet):
     queryset = Alternative.objects.all()
     serializer_class = AlternativeSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, IsProjectOwner]
     
     def get_queryset(self):
-        queryset = Alternative.objects.all()
+        user = self.request.user
         project_id = self.request.query_params.get('project', None)
+        
+        if user.role in ['super_admin', 'service_admin']:
+            queryset = Alternative.objects.all()
+        else:
+            queryset = Alternative.objects.filter(project__owner=user)
+        
         if project_id is not None:
             queryset = queryset.filter(project_id=project_id)
         return queryset
@@ -92,11 +110,17 @@ class AlternativeViewSet(viewsets.ModelViewSet):
 class EvaluatorViewSet(viewsets.ModelViewSet):
     queryset = Evaluator.objects.all()
     serializer_class = EvaluatorSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, IsProjectOwner]
     
     def get_queryset(self):
-        queryset = Evaluator.objects.all()
+        user = self.request.user
         project_id = self.request.query_params.get('project', None)
+        
+        if user.role in ['super_admin', 'service_admin']:
+            queryset = Evaluator.objects.all()
+        else:
+            queryset = Evaluator.objects.filter(project__owner=user)
+        
         if project_id is not None:
             queryset = queryset.filter(project_id=project_id)
         return queryset
@@ -115,7 +139,7 @@ class EvaluatorViewSet(viewsets.ModelViewSet):
 class ComparisonViewSet(viewsets.ModelViewSet):
     queryset = Comparison.objects.all()
     serializer_class = ComparisonSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = Comparison.objects.all()
@@ -141,7 +165,7 @@ class ComparisonViewSet(viewsets.ModelViewSet):
 class ComparisonMatrixViewSet(viewsets.ModelViewSet):
     queryset = ComparisonMatrix.objects.all()
     serializer_class = ComparisonMatrixSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = ComparisonMatrix.objects.all()
@@ -159,7 +183,7 @@ class ComparisonMatrixViewSet(viewsets.ModelViewSet):
 class ResultViewSet(viewsets.ModelViewSet):
     queryset = Result.objects.all()
     serializer_class = ResultSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = Result.objects.all()
@@ -180,7 +204,7 @@ class ResultViewSet(viewsets.ModelViewSet):
 class SensitivityAnalysisViewSet(viewsets.ModelViewSet):
     queryset = SensitivityAnalysis.objects.all()
     serializer_class = SensitivityAnalysisSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = SensitivityAnalysis.objects.all()

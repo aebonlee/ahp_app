@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-// dataService 제거 - 각 컴포넌트에서 직접 사용
 import sessionService from './services/sessionService';
+import authService from './services/authService';
+import type { User } from './types';
 import Layout from './components/layout/Layout';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
@@ -39,15 +40,8 @@ function App() {
 
   // GitHub Pages 하위 경로 처리 - 현재는 루트에 배포되므로 빈 문자열
   const basePath = '';
-  const [user, setUser] = useState<{
-    id: string | number;  // 백엔드는 number로 보냄
-    first_name: string;
-    last_name: string;
-    email: string;
-    role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
-    admin_type?: 'super' | 'personal'; // 관리자 유형 구분
-    canSwitchModes?: boolean; // 모드 전환 가능 여부
-  } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [viewMode, setViewMode] = useState<'service' | 'evaluator'>('service');
   const [activeTab, setActiveTab] = useState(() => {
     // URL 파라미터에서 초기 탭 결정
     const urlParams = new URLSearchParams(window.location.search);
@@ -208,29 +202,25 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, selectedProjectId, selectedProjectTitle, user, isNavigationReady]);
   
-  // 페이지 로드 시 자동 로그인 (데모 모드)
+  // 페이지 로드 시 토큰 기반 자동 로그인
   useEffect(() => {
     const autoLogin = async () => {
-      // 이미 로그인되어 있으면 스킵
       if (user) return;
       
-      // 자동으로 데모 사용자로 로그인
-      console.log('🎯 자동 로그인 시작...');
-      const demoUser = {
-        id: 'demo-user-1',
-        first_name: 'Admin',
-        last_name: 'User',
-        email: 'admin@ahp-system.com',
-        role: 'admin' as const,
-        admin_type: 'personal' as const
-      };
-      
-      setUser(demoUser);
-      sessionService.startSession();
-      console.log('✅ 자동 로그인 완료:', demoUser.email);
+      if (authService.isAuthenticated()) {
+        try {
+          console.log('🎯 토큰 기반 자동 로그인 시도...');
+          const currentUser = await authService.getCurrentUser();
+          setUser(currentUser);
+          sessionService.startSession();
+          console.log('✅ 자동 로그인 완료:', currentUser.email);
+        } catch (error) {
+          console.error('자동 로그인 실패:', error);
+          authService.clearTokens();
+        }
+      }
     };
 
-    // 백엔드 초기화가 완료된 후에 자동 로그인 실행
     if (isNavigationReady) {
       autoLogin();
     }
@@ -352,33 +342,29 @@ function App() {
   };
 
   const handleRegister = async (data: {
+    username: string;
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
-    role: string;
+    password2: string;
+    first_name: string;
+    last_name: string;
+    phone?: string;
+    organization?: string;
+    role?: string;
   }) => {
     setLoginLoading(true);
     setLoginError('');
 
     try {
-      // 백엔드 회원가입 처리
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error('회원가입에 실패했습니다.');
-      }
-
-      await response.json();
+      const result = await authService.register(data);
       
-      // 회원가입 성공 후 자동 로그인
-      await handleLogin(data.email, data.password, data.role);
+      setUser(result.user);
+      sessionService.startSession();
+      
+      const targetTab = result.user.role === 'evaluator' ? 'evaluator-dashboard' : 'personal-service';
+      setActiveTab(targetTab);
+      
+      await fetchProjects();
       
     } catch (error: any) {
       console.error('Registration failed:', error);
@@ -388,64 +374,37 @@ function App() {
     }
   };
 
-  const handleLogin = async (email: string, password: string, role?: string) => {
+  const handleLogin = async (username: string, password: string, role?: string) => {
     setLoginLoading(true);
     setLoginError('');
 
     try {
-      console.log('🔍 백엔드 로그인 시도:', { email });
+      console.log('🔍 백엔드 로그인 시도:', { username });
       
-      // 백엔드 로그인
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
+      const result = await authService.login(username, password);
       
-      if (response.ok) {
-        // admin 역할일 때 admin_type을 'personal'로 설정
-        const userWithAdminType = {
-          ...data.user,
-          admin_type: data.user.role === 'admin' ? 'personal' : data.user.admin_type
-        };
-        
-        // 로그인 시간 저장 (sessionService에서 관리)
-        // localStorage 제거됨 - JWT 토큰 기반 인증으로 변경
-        
-        // 세션 타이머 시작
-        sessionService.startSession();
-        
-        setUser(userWithAdminType);
-        
-        // URL 파라미터가 있으면 우선, 없으면 기본 탭 설정
-        const urlParams = new URLSearchParams(window.location.search);
-        const tabParam = urlParams.get('tab');
-        
-        let targetTab = '';
-        if (tabParam && ['personal-service', 'my-projects', 'model-builder', 'evaluator-management', 'results-analysis'].includes(tabParam)) {
-          targetTab = tabParam;
-        } else if (data.user.role === 'evaluator') {
-          targetTab = 'evaluator-dashboard';
-        } else if (data.user.role === 'super_admin') {
-          targetTab = 'super-admin';
-        } else {
-          targetTab = 'personal-service';
-        }
-        
-        console.log('🎯 로그인 후 타겟 탭:', targetTab, '(URL 파라미터:', tabParam, ')');
-        setActiveTab(targetTab);
-        
-        console.log('✅ 백엔드 로그인 성공');
-        // 프로젝트 목록 로드
-        await fetchProjects();
+      setUser(result.user);
+      sessionService.startSession();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      
+      let targetTab = '';
+      if (tabParam && ['personal-service', 'my-projects', 'model-builder', 'evaluator-management', 'results-analysis'].includes(tabParam)) {
+        targetTab = tabParam;
+      } else if (result.user.role === 'evaluator') {
+        targetTab = 'evaluator-dashboard';
+      } else if (result.user.role === 'super_admin') {
+        targetTab = 'super-admin';
       } else {
-        throw new Error(data.message || '로그인에 실패했습니다.');
+        targetTab = 'personal-service';
       }
+      
+      console.log('🎯 로그인 후 타겟 탭:', targetTab, '(URL 파라미터:', tabParam, ')');
+      setActiveTab(targetTab);
+      
+      console.log('✅ 백엔드 로그인 성공');
+      await fetchProjects();
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : 'Login failed');
     } finally {
@@ -454,21 +413,10 @@ function App() {
   };
 
   const handleLogout = async () => {
-    // 세션 서비스 로그아웃 처리
     await sessionService.logout();
     
-    // 세션 정보 삭제 (sessionService에서 처리)
-    // localStorage 제거됨
-    
     try {
-      // 백엔드 로그아웃 API 호출
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      await authService.logout();
     } catch (error) {
       console.error('Logout API call failed:', error);
     }
@@ -561,19 +509,21 @@ function App() {
   //   }
   // };
 
-  // 시스템 관리자 모드 전환 핸들러
-  const handleModeSwitch = (targetMode: 'super' | 'personal') => {
-    if (user && user.canSwitchModes) {
-      setUser({
-        ...user,
-        admin_type: targetMode
-      });
+  // 모드 전환 핸들러 (서비스 사용자 <-> 평가자)
+  const handleModeSwitch = (targetMode: 'service' | 'evaluator') => {
+    if (!user) return;
+    
+    // service_admin과 service_user는 모드 전환 가능
+    if (user.role === 'service_admin' || user.role === 'service_user') {
+      setViewMode(targetMode);
       
-      if (targetMode === 'super') {
-        setActiveTab('super-admin');
+      if (targetMode === 'evaluator') {
+        setActiveTab('evaluator-mode');
       } else {
         setActiveTab('personal-service');
       }
+      
+      console.log(`🔄 모드 전환: ${targetMode}`);
     }
   };
 
@@ -1738,6 +1688,7 @@ function App() {
       <div className="min-h-screen bg-gray-50">
         <Layout
           user={user}
+          viewMode={viewMode}
           activeTab={activeTab}
           onTabChange={changeTab}
           onLogout={handleLogout}

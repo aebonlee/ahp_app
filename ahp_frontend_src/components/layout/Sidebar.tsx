@@ -1,16 +1,18 @@
 import React from 'react';
 
+import type { UserRole } from '../../types';
+
 interface SidebarProps {
   isCollapsed: boolean;
-  userRole: 'super_admin' | 'admin' | 'service_tester' | 'evaluator' | null;
-  adminType?: 'super' | 'personal';
+  userRole: UserRole | null;
+  viewMode?: 'service' | 'evaluator';
   activeTab: string;
   onTabChange: (tab: string) => void;
   canSwitchModes?: boolean;
-  onModeSwitch?: (mode: 'super' | 'personal') => void;
+  onModeSwitch?: (mode: 'service' | 'evaluator') => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, activeTab, onTabChange, canSwitchModes, onModeSwitch }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, activeTab, onTabChange, canSwitchModes, onModeSwitch }) => {
   const superAdminMenuItems = [
     { id: 'dashboard', label: '시스템 대시보드', icon: '📊' },
     { id: 'users', label: '사용자 관리', icon: '👥' },
@@ -20,11 +22,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, act
     { id: 'audit', label: '감사 로그', icon: '📝' },
     { id: 'settings', label: '시스템 설정', icon: '⚙️' },
     { id: 'backup', label: '백업/복원', icon: '💾' },
-    { id: 'system', label: '시스템 정보', icon: '🖥️' },
-    ...(canSwitchModes ? [{ id: 'mode-switch-to-personal', label: '고객 서비스로 전환', icon: '👤' }] : [])
+    { id: 'system', label: '시스템 정보', icon: '🖥️' }
   ];
 
-  const personalServiceMenuItems = [
+  const serviceAdminMenuItems = [
     { id: 'personal-service', label: '내 대시보드', icon: '🏠' },
     { id: 'user-guide', label: '사용자 가이드', icon: '📚' },
     { id: 'demographic-survey', label: '인구통계학적 설문조사', icon: '📊' },
@@ -39,7 +40,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, act
     { id: 'export-reports', label: '보고서 내보내기', icon: '📤' },
     { id: 'workshop-management', label: '워크숍 관리', icon: '🎯' },
     { id: 'decision-support-system', label: '의사결정 지원', icon: '🧠' },
-    { id: 'personal-settings', label: '개인 설정', icon: '⚙️' }
+    { id: 'personal-settings', label: '개인 설정', icon: '⚙️' },
+    ...(canSwitchModes ? [{ id: 'mode-switch-to-evaluator', label: '평가자 모드로 전환', icon: '⚖️' }] : [])
   ];
 
   const evaluatorMenuItems = [
@@ -51,7 +53,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, act
     { id: 'evaluation-history', label: '평가 이력', icon: '📜' },
     { id: 'consistency-check', label: '일관성 검증', icon: '✅' },
     { id: 'evaluation-guide', label: '평가 가이드', icon: '📖' },
-    { id: 'evaluator-settings', label: '평가자 설정', icon: '⚙️' }
+    { id: 'evaluator-settings', label: '평가자 설정', icon: '⚙️' },
+    ...(canSwitchModes ? [{ id: 'mode-switch-to-service', label: '서비스 모드로 전환', icon: '🏠' }] : [])
   ];
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -67,18 +70,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, act
   const getMenuItems = () => {
     if (userRole === 'super_admin') {
       return superAdminMenuItems;
-    } else if (userRole === 'admin') {
-      if (adminType === 'super') {
-        return superAdminMenuItems;
-      } else if (adminType === 'personal') {
-        return personalServiceMenuItems;
-      } else {
-        return [{ id: 'admin-type-selection', label: '모드 선택', icon: '🔄' }];
+    } else if (userRole === 'service_admin' || userRole === 'service_user') {
+      // 서비스 사용자는 viewMode에 따라 메뉴 전환
+      if (viewMode === 'evaluator') {
+        return evaluatorMenuItems;
       }
-    } else if (userRole === 'service_tester') {
-      return personalServiceMenuItems; // Service tester gets same menu as personal admin
+      return serviceAdminMenuItems;
+    } else if (userRole === 'evaluator') {
+      return evaluatorMenuItems;
     }
-    return evaluatorMenuItems;
+    return serviceAdminMenuItems;
   };
 
   const menuItems = getMenuItems();
@@ -116,8 +117,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, act
                 paddingBottom: 'var(--space-3)',
                 marginBottom: 'var(--space-6)'
               }}>
-            {userRole === 'admin' 
-              ? (adminType === 'super' ? '총괄 관리자' : adminType === 'personal' ? '개인 서비스' : '관리자')
+            {userRole === 'super_admin' 
+              ? '시스템 관리자'
+              : userRole === 'service_admin'
+              ? (viewMode === 'evaluator' ? '평가자 모드' : '서비스 관리자')
+              : userRole === 'service_user'
+              ? (viewMode === 'evaluator' ? '평가자 모드' : '서비스 사용자')
               : '평가자'
             }
           </h2>
@@ -129,10 +134,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, adminType, act
             const isActive = activeTab === item.id;
             const handleClick = () => {
               if (isModeSwitch && onModeSwitch) {
-                if (item.id === 'mode-switch-to-personal') {
-                  onModeSwitch('personal');
-                } else if (item.id === 'mode-switch-to-super') {
-                  onModeSwitch('super');
+                if (item.id === 'mode-switch-to-evaluator') {
+                  onModeSwitch('evaluator');
+                } else if (item.id === 'mode-switch-to-service') {
+                  onModeSwitch('service');
                 }
               } else {
                 onTabChange(item.id);

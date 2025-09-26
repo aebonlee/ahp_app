@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
@@ -16,7 +16,7 @@ class Project(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     objective = models.TextField(blank=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_projects')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_projects')
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='setup')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -73,7 +73,7 @@ class Evaluator(models.Model):
     ]
     
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='evaluators')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='evaluations')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='evaluations')
     name = models.CharField(max_length=100)
     email = models.EmailField()
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='evaluator')
