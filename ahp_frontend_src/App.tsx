@@ -327,7 +327,7 @@ function App() {
         // admin 역할일 때 admin_type을 'personal'로 설정
         const userWithAdminType = {
           ...data.user,
-          admin_type: data.user.role === 'admin' ? 'personal' : data.user.admin_type
+          admin_type: undefined // admin_type은 더 이상 사용하지 않음
         };
         setUser(userWithAdminType);
         console.log('✅ 세션 복구 성공:', data.user.email);
@@ -1059,7 +1059,7 @@ function App() {
     if (user && (activeTab === 'personal-projects' || activeTab === 'personal-service' || activeTab === 'welcome' || activeTab === 'my-projects')) {
       console.log('🔄 사용자 로그인 확인됨 - 프로젝트 로드 시작');
       fetchProjects();
-    } else if (user && activeTab === 'personal-users' && user.role === 'admin') {
+    } else if (user && activeTab === 'personal-users' && (user.role === 'super_admin' || user.role === 'service_admin')) {
       fetchUsers();
     } else if (!user) {
       console.log('⚠️ 로그인하지 않은 상태 - 프로젝트 초기화');

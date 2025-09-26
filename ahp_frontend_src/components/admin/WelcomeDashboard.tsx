@@ -142,7 +142,8 @@ const WelcomeDashboard: React.FC<WelcomeDashboardProps> = ({
           </h1>
           <p className="page-subtitle">
             {user.role === 'super_admin' ? '시스템 관리자' : 
-             user.role === 'admin' ? '관리자' : '평가자'} 권한으로 로그인하셨습니다.
+             user.role === 'service_admin' ? '서비스 관리자' :
+             user.role === 'service_user' ? '서비스 사용자' : '평가자'} 권한으로 로그인하셨습니다.
           </p>
         </div>
 
@@ -172,7 +173,7 @@ const WelcomeDashboard: React.FC<WelcomeDashboardProps> = ({
               빠른 접근
             </h3>
             <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-              {user.role === 'admin' && user.admin_type === 'personal' && (
+              {(user.role === 'service_admin' || user.role === 'service_user') && (
                 <>
                   <div className="card-enhanced cursor-pointer" onClick={() => onNavigate('project-creation')}>
                     <div className="text-center space-y-2">

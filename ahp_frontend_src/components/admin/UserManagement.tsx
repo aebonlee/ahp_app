@@ -313,11 +313,13 @@ const UserManagement: React.FC<UserManagementProps> = ({
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         user.role === 'super_admin' 
                           ? 'bg-purple-100 text-purple-800'
-                          : user.role === 'admin' 
-                          ? 'bg-red-100 text-red-800' 
+                          : user.role === 'service_admin' 
+                          ? 'bg-red-100 text-red-800'
+                          : user.role === 'service_user'
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-blue-100 text-blue-800'
                       }`}>
-                        {user.role === 'super_admin' ? '총괄 관리자' : user.role === 'admin' ? '관리자' : '평가자'}
+                        {user.role === 'super_admin' ? '시스템 관리자' : user.role === 'service_admin' ? '서비스 관리자' : user.role === 'service_user' ? '서비스 사용자' : '평가자'}
                       </span>
                     </td>
                     <td className="px-6 py-4">

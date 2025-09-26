@@ -5,13 +5,10 @@ import ColorThemeSelector from '../common/ColorThemeSelector';
 import sessionService from '../../services/sessionService';
 import { useTheme } from '../../hooks/useTheme';
 
+import type { User } from '../../types';
+
 interface HeaderProps {
-  user?: {
-    first_name: string;
-    last_name: string;
-    role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
-    admin_type?: 'super' | 'personal';
-  } | null;
+  user?: User | null;
   onLogout?: () => void;
   onLogoClick?: () => void;
   activeTab?: string;
@@ -458,7 +455,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                     <span className="text-sm font-medium"
                           style={{ color: 'var(--text-secondary)' }}>
                       {user.role === 'super_admin' ? '시스템 관리자' : 
-                       user.role === 'admin' ? '관리자' : '평가자'}
+                       user.role === 'service_admin' ? '서비스 관리자' : user.role === 'service_user' ? '서비스 사용자' : '평가자'}
                     </span>
                     {user.admin_type && (
                       <span className="text-xs px-3 py-1 rounded-full font-semibold transition-luxury"
