@@ -31,9 +31,38 @@ jobs:
       run: |
         echo "Setting up build environment..."
         cp ahp_package.json package.json
-        mkdir -p src public
-        cp -r ahp_frontend_src/* src/
-        cp -r ahp_frontend_public/* public/
+        
+        echo "Copying source files..."
+        cp -r ahp_frontend_src src
+        cp -r ahp_frontend_public public
+        
+        echo "Creating tsconfig.json..."
+        cat > tsconfig.json << 'EOF'
+        {
+          "compilerOptions": {
+            "target": "es5",
+            "lib": ["dom", "dom.iterable", "esnext"],
+            "allowJs": true,
+            "skipLibCheck": true,
+            "esModuleInterop": true,
+            "allowSyntheticDefaultImports": true,
+            "strict": true,
+            "forceConsistentCasingInFileNames": true,
+            "noFallthroughCasesInSwitch": true,
+            "module": "esnext",
+            "moduleResolution": "node",
+            "resolveJsonModule": true,
+            "isolatedModules": true,
+            "noEmit": true,
+            "jsx": "react-jsx"
+          },
+          "include": ["src"]
+        }
+        EOF
+        
+        echo "Verifying files..."
+        ls -la src/ | head -5
+        ls -la public/ | head -5
         
     - name: Install dependencies
       run: npm install
