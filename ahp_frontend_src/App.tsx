@@ -208,53 +208,34 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, selectedProjectId, selectedProjectTitle, user, isNavigationReady]);
   
-  // 페이지 로드 시 세션 복구 시도
+  // 페이지 로드 시 자동 로그인 (데모 모드)
   useEffect(() => {
-    const restoreSessionOnLoad = async () => {
-      // 백엔드가 unavailable이면 로그인 화면 유지
-      if (backendStatus === 'unavailable') {
-        console.log('⚠️ 백엔드 연결 불가 - 로그인 화면 유지');
-        return;
-      }
+    const autoLogin = async () => {
+      // 이미 로그인되어 있으면 스킵
+      if (user) return;
       
-      try {
-        // 백엔드에서 현재 로그인 상태 확인
-        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('🔄 페이지 새로고침 - 세션 복구 성공');
-          // admin 역할일 때 admin_type을 'personal'로 설정
-          const userWithAdminType = {
-            ...data.user,
-            admin_type: data.user.role === 'admin' ? 'personal' : data.user.admin_type
-          };
-          setUser(userWithAdminType);
-          
-          // 세션 타이머 시작 (메모리 기반 세션 관리)
-          // localStorage 제거됨 - sessionService에서 세션 관리
-          sessionService.startSession();
-        } else {
-          console.log('❌ 세션 만료 또는 로그인 필요');
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('세션 복구 실패:', error);
-        setUser(null);
-      }
+      // 자동으로 데모 사용자로 로그인
+      console.log('🎯 자동 로그인 시작...');
+      const demoUser = {
+        id: 'demo-user-1',
+        first_name: 'Admin',
+        last_name: 'User',
+        email: 'admin@ahp-system.com',
+        role: 'admin' as const,
+        admin_type: 'personal' as const
+      };
+      
+      setUser(demoUser);
+      sessionService.startSession();
+      console.log('✅ 자동 로그인 완료:', demoUser.email);
     };
 
-    // 백엔드 초기화가 완료된 후에 세션 복구 실행
+    // 백엔드 초기화가 완료된 후에 자동 로그인 실행
     if (isNavigationReady) {
-      restoreSessionOnLoad();
+      autoLogin();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNavigationReady]);
+  }, [isNavigationReady, user]);
 
   // 페이지 새로고침 시 URL에서 상태 복원
   useEffect(() => {
