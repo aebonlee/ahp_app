@@ -49,7 +49,7 @@ class AuthService {
   /**
    * 토큰 정리
    */
-  private clearTokens(): void {
+  clearTokens(): void {
     this.accessToken = null;
     this.refreshToken = null;
     sessionStorage.removeItem('ahp_access_token');
