@@ -70,7 +70,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
       // 프로젝트 정보 조회
       const projectResponse = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
-        credentials: 'include',
+        
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -79,7 +79,6 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
       // 기준 조회
       const criteriaResponse = await fetch(`${API_BASE_URL}/api/v1/criteria/?project=${projectId}`, {
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -91,7 +90,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
       // 대안 조회
       const alternativesResponse = await fetch(`${API_BASE_URL}/api/v1/alternatives/?project=${projectId}`, {
-        credentials: 'include',
+        
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -152,7 +151,6 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       
       const response = await fetch(`${API_BASE_URL}/api/v1/criteria/`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -187,7 +185,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       
       const response = await fetch(`${API_BASE_URL}/api/v1/alternatives/`, {
         method: 'POST',
-        credentials: 'include',
+        
         headers: {
           'Content-Type': 'application/json',
         },
@@ -216,7 +214,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/criteria/${id}/`, {
         method: 'DELETE',
-        credentials: 'include',
+        
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -231,7 +229,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/alternatives/${id}/`, {
         method: 'DELETE',
-        credentials: 'include',
+        
         headers: { 'Content-Type': 'application/json' },
       });
 
