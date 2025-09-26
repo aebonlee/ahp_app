@@ -60,6 +60,19 @@ class CriteriaViewSet(viewsets.ModelViewSet):
     queryset = Criteria.objects.all()
     serializer_class = CriteriaSerializer
     permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = Criteria.objects.all()
+        project_id = self.request.query_params.get('project', None)
+        if project_id is not None:
+            queryset = queryset.filter(project_id=project_id)
+        return queryset
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class AlternativeViewSet(viewsets.ModelViewSet):

@@ -5,7 +5,7 @@ from .models import Project, Criteria, Alternative, Comparison
 class CriteriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Criteria
-        fields = ['id', 'name', 'description', 'weight', 'parent', 'created_at']
+        fields = ['id', 'project', 'name', 'description', 'weight', 'parent', 'created_at']
         read_only_fields = ['created_at']
 
 
