@@ -183,8 +183,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React dev server
     "http://127.0.0.1:3000",
     "https://aebonlee.github.io",  # GitHub Pages root
-    "https://aebonlee.github.io/ahp_app",  # GitHub Pages app
-    "null",  # Local HTML file testing
 ]
 
 CORS_ALLOW_CREDENTIALS = True
