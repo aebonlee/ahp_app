@@ -1,60 +1,60 @@
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
-from .models import Project, Criteria, Alternative, Comparison
-from .serializers import ProjectSerializer, CriteriaSerializer, AlternativeSerializer, ComparisonSerializer
+from django.contrib.auth.models import User
+from .models import (
+    Project, Criteria, Alternative, Evaluator,
+    Comparison, ComparisonMatrix, Result, SensitivityAnalysis
+)
+from .serializers import (
+    ProjectSerializer, CriteriaSerializer, AlternativeSerializer,
+    EvaluatorSerializer, ComparisonSerializer, ComparisonMatrixSerializer,
+    ResultSerializer, SensitivityAnalysisSerializer
+)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [AllowAny]  # Allow any for now
+    permission_classes = [AllowAny]
     
     def perform_create(self, serializer):
-        # For anonymous users, create without owner
         if self.request.user.is_authenticated:
             serializer.save(owner=self.request.user)
         else:
-            # Create a dummy user for anonymous projects
-            from django.contrib.auth.models import User
             anon_user, created = User.objects.get_or_create(username='anonymous')
             serializer.save(owner=anon_user)
     
-    @action(detail=True, methods=['post'])
-    def criteria(self, request, pk=None):
+    @action(detail=True, methods=['get'])
+    def evaluators(self, request, pk=None):
         project = self.get_object()
-        serializer = CriteriaSerializer(data=request.data)
+        evaluators = project.evaluators.all()
+        serializer = EvaluatorSerializer(evaluators, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def add_evaluator(self, request, pk=None):
+        project = self.get_object()
+        serializer = EvaluatorSerializer(data={**request.data, 'project': project.id})
         if serializer.is_valid():
-            serializer.save(project=project)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=True, methods=['get'])
-    def get_criteria(self, request, pk=None):
+    def results(self, request, pk=None):
         project = self.get_object()
-        criteria = project.criteria.all()
-        serializer = CriteriaSerializer(criteria, many=True)
+        results = project.results.all()
+        serializer = ResultSerializer(results, many=True)
         return Response(serializer.data)
     
     @action(detail=True, methods=['post'])
-    def alternatives(self, request, pk=None):
+    def calculate_results(self, request, pk=None):
         project = self.get_object()
-        serializer = AlternativeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(project=project)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    @action(detail=True, methods=['post'])
-    def comparisons(self, request, pk=None):
-        project = self.get_object()
-        serializer = ComparisonSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(project=project)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # TODO: Implement AHP calculation logic
+        return Response({'message': 'Results calculated'}, status=status.HTTP_200_OK)
 
 
 class CriteriaViewSet(viewsets.ModelViewSet):
@@ -80,14 +80,119 @@ class AlternativeViewSet(viewsets.ModelViewSet):
     queryset = Alternative.objects.all()
     serializer_class = AlternativeSerializer
     permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = Alternative.objects.all()
+        project_id = self.request.query_params.get('project', None)
+        if project_id is not None:
+            queryset = queryset.filter(project_id=project_id)
+        return queryset
+
+
+class EvaluatorViewSet(viewsets.ModelViewSet):
+    queryset = Evaluator.objects.all()
+    serializer_class = EvaluatorSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = Evaluator.objects.all()
+        project_id = self.request.query_params.get('project', None)
+        if project_id is not None:
+            queryset = queryset.filter(project_id=project_id)
+        return queryset
+    
+    @action(detail=False, methods=['post'])
+    def verify_access_key(self, request):
+        access_key = request.data.get('access_key')
+        try:
+            evaluator = Evaluator.objects.get(access_key=access_key)
+            serializer = self.get_serializer(evaluator)
+            return Response(serializer.data)
+        except Evaluator.DoesNotExist:
+            return Response({'error': 'Invalid access key'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ComparisonViewSet(viewsets.ModelViewSet):
     queryset = Comparison.objects.all()
     serializer_class = ComparisonSerializer
     permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = Comparison.objects.all()
+        project_id = self.request.query_params.get('project', None)
+        evaluator_id = self.request.query_params.get('evaluator', None)
+        
+        if project_id is not None:
+            queryset = queryset.filter(project_id=project_id)
+        if evaluator_id is not None:
+            queryset = queryset.filter(evaluator_id=evaluator_id)
+        
+        return queryset
+    
+    @action(detail=False, methods=['post'])
+    def bulk_create(self, request):
+        comparisons_data = request.data.get('comparisons', [])
+        serializer = self.get_serializer(data=comparisons_data, many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class ComparisonMatrixViewSet(viewsets.ModelViewSet):
+    queryset = ComparisonMatrix.objects.all()
+    serializer_class = ComparisonMatrixSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = ComparisonMatrix.objects.all()
+        project_id = self.request.query_params.get('project', None)
+        evaluator_id = self.request.query_params.get('evaluator', None)
+        
+        if project_id is not None:
+            queryset = queryset.filter(project_id=project_id)
+        if evaluator_id is not None:
+            queryset = queryset.filter(evaluator_id=evaluator_id)
+        
+        return queryset
+
+
+class ResultViewSet(viewsets.ModelViewSet):
+    queryset = Result.objects.all()
+    serializer_class = ResultSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = Result.objects.all()
+        project_id = self.request.query_params.get('project', None)
+        evaluator_id = self.request.query_params.get('evaluator', None)
+        is_group = self.request.query_params.get('is_group', None)
+        
+        if project_id is not None:
+            queryset = queryset.filter(project_id=project_id)
+        if evaluator_id is not None:
+            queryset = queryset.filter(evaluator_id=evaluator_id)
+        if is_group is not None:
+            queryset = queryset.filter(is_group_result=(is_group.lower() == 'true'))
+        
+        return queryset
+
+
+class SensitivityAnalysisViewSet(viewsets.ModelViewSet):
+    queryset = SensitivityAnalysis.objects.all()
+    serializer_class = SensitivityAnalysisSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = SensitivityAnalysis.objects.all()
+        project_id = self.request.query_params.get('project', None)
+        
+        if project_id is not None:
+            queryset = queryset.filter(project_id=project_id)
+        
+        return queryset
+
+
+# Legacy support views for frontend compatibility
 class ProjectCriteriaView(APIView):
     permission_classes = [AllowAny]
     
@@ -101,24 +206,14 @@ class ProjectCriteriaView(APIView):
     
     def post(self, request, project_pk):
         try:
-            # Log incoming data for debugging
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.info(f"Received data: {request.data}")
-            logger.info(f"Project PK: {project_pk}")
-            
             data = request.data.copy()
             data['project'] = project_pk
-            
-            logger.info(f"Modified data: {data}")
             
             serializer = CriteriaSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             
-            logger.error(f"Validation errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error(f"Exception: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
