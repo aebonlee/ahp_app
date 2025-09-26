@@ -31,32 +31,32 @@ export const API_ENDPOINTS = {
   },
   // Projects - 실제 Django Service API
   PROJECTS: {
-    LIST: '/api/service/projects/',
-    CREATE: '/api/service/projects/',
-    GET: (id: string) => `/api/service/projects/${id}/`,
-    UPDATE: (id: string) => `/api/service/projects/${id}/`,
-    DELETE: (id: string) => `/api/service/projects/${id}/`
+    LIST: '/api/v1/projects/',
+    CREATE: '/api/v1/projects/',
+    GET: (id: string) => `/api/v1/projects/${id}/`,
+    UPDATE: (id: string) => `/api/v1/projects/${id}/`,
+    DELETE: (id: string) => `/api/v1/projects/${id}/`
   },
   // Criteria - 실제 Django Service API
   CRITERIA: {
-    LIST: (projectId: string) => `/api/service/criteria/?project=${projectId}`,
-    CREATE: '/api/service/criteria/',
-    UPDATE: (id: string) => `/api/service/criteria/${id}/`,
-    DELETE: (id: string) => `/api/service/criteria/${id}/`
+    LIST: (projectId: string) => `/api/v1/criteria/?project=${projectId}`,
+    CREATE: '/api/v1/criteria/',
+    UPDATE: (id: string) => `/api/v1/criteria/${id}/`,
+    DELETE: (id: string) => `/api/v1/criteria/${id}/`
   },
   // Alternatives
   ALTERNATIVES: {
-    LIST: (projectId: string) => `/api/service/criteria/?project=${projectId}&type=alternative`,
-    CREATE: '/api/service/criteria/',
-    UPDATE: (id: string) => `/api/service/criteria/${id}/`,
-    DELETE: (id: string) => `/api/service/criteria/${id}/`
+    LIST: (projectId: string) => `/api/v1/alternatives/?project=${projectId}`,
+    CREATE: '/api/v1/alternatives/',
+    UPDATE: (id: string) => `/api/v1/alternatives/${id}/`,
+    DELETE: (id: string) => `/api/v1/alternatives/${id}/`
   },
   // Evaluations
   EVALUATIONS: {
-    SUBMIT: '/api/service/comparisons/',
-    GET_MATRIX: (projectId: string) => `/api/service/comparisons/?project=${projectId}`,
-    COMPUTE: '/api/service/results/',
-    RESULTS: (projectId: string) => `/api/service/results/?project=${projectId}`
+    SUBMIT: '/api/v1/comparisons/',
+    GET_MATRIX: (projectId: string) => `/api/v1/comparisons/?project=${projectId}`,
+    COMPUTE: '/api/v1/results/',
+    RESULTS: (projectId: string) => `/api/v1/results/?project=${projectId}`
   },
   // Evaluators
   EVALUATORS: {
@@ -68,19 +68,19 @@ export const API_ENDPOINTS = {
   },
   // Comparisons
   COMPARISONS: {
-    SAVE: '/api/service/comparisons/',
+    SAVE: '/api/v1/comparisons/',
     GET: (projectId: string, evaluatorId?: string) => 
-      `/api/service/comparisons/?project=${projectId}${evaluatorId ? `&evaluator=${evaluatorId}` : ''}`,
+      `/api/v1/comparisons/?project=${projectId}${evaluatorId ? `&evaluator=${evaluatorId}` : ''}`,
     UPDATE_SESSION: (projectId: string, evaluatorId: string) =>
-      `/api/service/comparisons/${evaluatorId}/progress/`
+      `/api/v1/comparisons/${evaluatorId}/progress/`
   },
   // Results
   RESULTS: {
-    GET: (projectId: string) => `/api/service/results/${projectId}/`,
+    GET: (projectId: string) => `/api/v1/results/${projectId}/`,
     INDIVIDUAL: (projectId: string, evaluatorId: string) =>
-      `/api/service/results/individual/?project=${projectId}&evaluator=${evaluatorId}`,
-    CALCULATE_GROUP: (projectId: string) => `/api/service/results/group/`,
-    SENSITIVITY: (projectId: string) => `/api/service/results/sensitivity/?project=${projectId}`
+      `/api/v1/results/individual/?project=${projectId}&evaluator=${evaluatorId}`,
+    CALCULATE_GROUP: (projectId: string) => `/api/v1/results/group/`,
+    SENSITIVITY: (projectId: string) => `/api/v1/results/sensitivity/?project=${projectId}`
   },
   // Export
   EXPORT: {
