@@ -48,8 +48,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
   const [activeTab, setActiveTab] = useState<'criteria' | 'alternatives' | 'evaluators' | 'settings'>('criteria');
 
   const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:5000' 
-    : 'https://ahp-platform.onrender.com';
+    ? 'http://localhost:8000' 
+    : 'https://ahp-django-backend.onrender.com';
 
   const fetchProject = useCallback(async () => {
     try {
@@ -78,7 +78,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       const projectData = await projectResponse.json();
 
       // 기준 조회
-      const criteriaResponse = await fetch(`${API_BASE_URL}/api/criteria/${projectId}`, {
+      const criteriaResponse = await fetch(`${API_BASE_URL}/api/v1/criteria/?project=${projectId}`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -90,7 +90,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       }
 
       // 대안 조회
-      const alternativesResponse = await fetch(`${API_BASE_URL}/api/alternatives/${projectId}`, {
+      const alternativesResponse = await fetch(`${API_BASE_URL}/api/v1/alternatives/?project=${projectId}`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -150,7 +150,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       setSaving(true);
       const level = parentId ? getLevel(parentId) + 1 : 1;
       
-      const response = await fetch(`${API_BASE_URL}/api/criteria`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/criteria/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -185,7 +185,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     try {
       setSaving(true);
       
-      const response = await fetch(`${API_BASE_URL}/api/alternatives`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/alternatives/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -214,7 +214,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
   const deleteCriterion = async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/criteria/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/criteria/${id}/`, {
         method: 'DELETE',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -229,7 +229,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
   const deleteAlternative = async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/alternatives/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/alternatives/${id}/`, {
         method: 'DELETE',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
