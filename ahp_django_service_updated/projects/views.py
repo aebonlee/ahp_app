@@ -92,15 +92,33 @@ class ProjectCriteriaView(APIView):
     permission_classes = [AllowAny]
     
     def get(self, request, project_pk):
-        criteria = Criteria.objects.filter(project_id=project_pk)
-        serializer = CriteriaSerializer(criteria, many=True)
-        return Response(serializer.data)
+        try:
+            criteria = Criteria.objects.filter(project_id=project_pk)
+            serializer = CriteriaSerializer(criteria, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def post(self, request, project_pk):
-        data = request.data.copy()
-        data['project'] = project_pk
-        serializer = CriteriaSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            # Log incoming data for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Received data: {request.data}")
+            logger.info(f"Project PK: {project_pk}")
+            
+            data = request.data.copy()
+            data['project'] = project_pk
+            
+            logger.info(f"Modified data: {data}")
+            
+            serializer = CriteriaSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+            logger.error(f"Validation errors: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Exception: {str(e)}")
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
