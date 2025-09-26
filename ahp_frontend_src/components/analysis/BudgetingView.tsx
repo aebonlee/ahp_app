@@ -705,7 +705,7 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
                   cx="50%"
                   cy="50%"
                   outerRadius={120}
-                  label={({ name, percent }) => `${name} (${percent ? (percent * 100).toFixed(1) : '0'}%)`}
+                  label={({ name, percent }) => `${name} (${percent ? ((percent as number) * 100).toFixed(1) : '0'}%)`}
                 >
                   {prepareAllocationChartData().map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
