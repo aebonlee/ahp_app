@@ -119,9 +119,9 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
       onLogoClick();
     } else if (user) {
       if (onTabChange) {
-        if (user.role === 'super_admin' && user.admin_type === 'super') {
+        if (user.role === 'super_admin' && (user as any).admin_type === 'super') {
           onTabChange('super-admin');
-        } else if (user.admin_type === 'personal') {
+        } else if ((user as any).admin_type === 'personal') {
           onTabChange('personal-service');
         } else {
           onTabChange('welcome');
@@ -142,13 +142,13 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
     
     if (!user) return items;
     
-    if (user.role === 'super_admin' && user.admin_type === 'super') {
+    if (user.role === 'super_admin' && (user as any).admin_type === 'super') {
       items.push(
         { label: '관리 대시보드', tab: 'super-admin', icon: '📊' },
         { label: '사용자 관리', tab: 'users', icon: '👥' },
         { label: '시스템 모니터링', tab: 'monitoring', icon: '📈' }
       );
-    } else if (user.admin_type === 'personal') {
+    } else if ((user as any).admin_type === 'personal') {
       items.push(
         { label: '연구 대시보드', tab: 'personal-service', icon: '🏗️' },
         { label: '내 프로젝트', tab: 'my-projects', icon: '📋' },
@@ -457,7 +457,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                       {user.role === 'super_admin' ? '시스템 관리자' : 
                        user.role === 'service_admin' ? '서비스 관리자' : user.role === 'service_user' ? '서비스 사용자' : '평가자'}
                     </span>
-                    {user.admin_type && (
+                    {(user as any).admin_type && (
                       <span className="text-xs px-3 py-1 rounded-full font-semibold transition-luxury"
                             style={{
                               backgroundColor: 'var(--accent-light)',
@@ -465,7 +465,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                               border: '1px solid var(--accent-primary)',
                               borderRadius: 'var(--radius-md)'
                             }}>
-                        {user.admin_type === 'super' ? '시스템' : '개인서비스'}
+                        {(user as any).admin_type === 'super' ? '시스템' : '개인서비스'}
                       </span>
                     )}
                   </div>
