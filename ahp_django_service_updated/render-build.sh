@@ -4,7 +4,10 @@ set -o errexit
 echo "Installing dependencies..."
 pip install -r requirements.txt
 
+echo "========================================="
 echo "Handling migrations..."
+echo "FLUSH_DB environment variable: ${FLUSH_DB:-not set}"
+echo "========================================="
 
 # OPTION 1: Try to fix migration history (default)
 # OPTION 2: If this fails, set FLUSH_DB=true in Render environment variables for complete reset
@@ -28,7 +31,10 @@ if [ "$FLUSH_DB" = "true" ]; then
     fi
 else
     # Standard migration fix (tries to preserve data)
-    echo "Attempting to fix migration history..."
+    echo "========================================="
+    echo "FLUSH_DB not set - Attempting to fix migration history without data loss..."
+    echo "========================================="
+    
     python manage.py shell <<EOF
 from django.db import connection
 try:
