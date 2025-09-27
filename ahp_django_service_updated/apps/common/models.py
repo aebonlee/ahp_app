@@ -2,7 +2,7 @@
 Common Models for AHP Platform
 """
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.utils import timezone
 import uuid
 
@@ -38,7 +38,7 @@ class ActivityLog(models.Model):
     ]
     
     # Activity details
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='info')
     
@@ -108,7 +108,7 @@ class SystemSettings(models.Model):
     
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     
     class Meta:
         db_table = 'system_settings'
@@ -154,7 +154,7 @@ class FileUpload(models.Model):
     mime_type = models.CharField(max_length=100)
     
     # Upload context
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     upload_type = models.CharField(max_length=50, choices=TYPE_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='uploading')
     
@@ -199,7 +199,7 @@ class Notification(models.Model):
     ]
     
     # Notification details
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     title = models.CharField(max_length=200)
     message = models.TextField()
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='info')
@@ -249,7 +249,7 @@ class APIKey(models.Model):
     key = models.CharField(max_length=64, unique=True)
     
     # Ownership
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_keys')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='api_keys')
     
     # Permissions
     permissions = models.JSONField(default=list)
