@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
 import Button from '../common/Button';
 import ExampleGuide from '../home/ExampleGuide';
+import type { User } from '../../types';
 
 interface LandingPageProps {
-  user: {
-    first_name: string;
-    last_name: string;
-    role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
-    admin_type?: 'super' | 'personal';
-  };
+  user: User;
   onGetStarted: () => void;
 }
 

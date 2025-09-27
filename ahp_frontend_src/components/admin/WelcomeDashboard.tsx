@@ -1,13 +1,9 @@
 import React from 'react';
 import UnifiedButton from '../common/UnifiedButton';
+import type { User } from '../../types';
 
 interface WelcomeDashboardProps {
-  user: {
-    first_name: string;
-    last_name: string;
-    role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
-    admin_type?: 'super' | 'personal';
-  };
+  user: User;
   onGetStarted: () => void;
   onAdminTypeSelect: (type: 'super' | 'personal') => void;
   onNavigate?: (tab: string) => void;
@@ -21,7 +17,7 @@ const WelcomeDashboard: React.FC<WelcomeDashboardProps> = ({
 }) => {
   // 시스템 관리자는 모드 선택, 일반 사용자는 바로 서비스 시작
   const isSystemAdmin = user.role === 'super_admin';
-  const needsModeSelection = isSystemAdmin && !user.admin_type;
+  const needsModeSelection = isSystemAdmin && !(user as any).admin_type;
   
   if (needsModeSelection) {
     return (

@@ -5,6 +5,7 @@ import ResultsAnalysis from '../analysis/ResultsAnalysis';
 import InteractiveTreeModel from '../visualization/InteractiveTreeModel';
 import ExportManager from '../export/ExportManager';
 import HelpSystem from '../help/HelpSystem';
+import type { UserRole } from '../../types';
 
 // 구독 서비스 관련 인터페이스
 interface SubscriptionPlan {
@@ -34,7 +35,7 @@ interface AdminUser {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
+  role: UserRole;
   status: 'active' | 'inactive' | 'suspended';
   createdAt: string;
   lastLogin?: string;
@@ -151,7 +152,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
         firstName: '김',
         lastName: '대표',
         email: 'john@company.com',
-        role: 'admin',
+        role: 'service_admin',
         status: 'active',
         createdAt: '2024-01-15',
         lastLogin: '2024-03-10T09:30:00Z',
@@ -171,7 +172,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
         firstName: '이',
         lastName: '팀장',
         email: 'sarah@startup.com',
-        role: 'admin',
+        role: 'service_admin',
         status: 'active',
         createdAt: '2024-02-01',
         lastLogin: '2024-03-09T14:20:00Z',

@@ -3,13 +3,14 @@ import React, { useState } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import type { UserRole } from '../../types';
 
 interface User {
   id: string;
   email: string;
   first_name: string;
   last_name: string;
-  role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
+  role: UserRole;
   created_at: string;
   last_login?: string;
   status: 'active' | 'inactive';
@@ -35,13 +36,13 @@ const UserManagement: React.FC<UserManagementProps> = ({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'super_admin' | 'admin' | 'service_tester' | 'evaluator'>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
   const [createLoading, setCreateLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     first_name: '',
     last_name: '',
-    role: 'evaluator' as 'super_admin' | 'admin' | 'service_tester' | 'evaluator',
+    role: 'evaluator' as UserRole,
     password: '',
     confirmPassword: '',
     status: 'active' as 'active' | 'inactive'
@@ -218,7 +219,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
             
             <select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value as 'all' | 'super_admin' | 'admin' | 'evaluator')}
+              onChange={(e) => setRoleFilter(e.target.value as 'all' | UserRole)}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">모든 역할</option>
@@ -259,7 +260,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="text-2xl font-bold text-red-900">
-              {users.filter(u => u.role === 'admin').length}
+              {users.filter(u => u.role === 'service_admin').length}
             </div>
             <div className="text-sm text-red-700">관리자</div>
           </div>

@@ -3,25 +3,12 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import { useColorTheme, ColorTheme } from '../../hooks/useColorTheme';
 import { API_BASE_URL } from '../../config/api';
+import type { User } from '../../types';
 
 interface PersonalSettingsProps {
-  user: {
-    id: string | number;  // 백엔드는 number로 보냄
-    first_name: string;
-    last_name: string;
-    email: string;
-    role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
-    admin_type?: 'super' | 'personal';
-  };
+  user: User;
   onBack?: () => void;
-  onUserUpdate?: (updatedUser: {
-    id: string | number;  // 백엔드는 number로 보냄
-    first_name: string;
-    last_name: string;
-    email: string;
-    role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
-    admin_type?: 'super' | 'personal';
-  }) => void;
+  onUserUpdate?: (updatedUser: User) => void;
 }
 
 interface UserSettings {

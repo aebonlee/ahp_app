@@ -21,27 +21,14 @@ import ValidityCheck from '../validity/ValidityCheck';
 import TrashBin from './TrashBin';
 import dataService from '../../services/dataService_clean';
 import type { ProjectData } from '../../services/api';
+import type { User } from '../../types';
 // DEMO 데이터 제거 - 실제 DB만 사용
 
 interface PersonalServiceProps {
-  user: {
-    id: string | number;  // 백엔드는 number로 보냄
-    first_name: string;
-    last_name: string;
-    email: string;
-    role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
-    admin_type?: 'super' | 'personal';
-  };
+  user: User;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
-  onUserUpdate?: (updatedUser: {
-    id: string | number;  // 백엔드는 number로 보냄
-    first_name: string;
-    last_name: string;
-    email: string;
-    role: 'super_admin' | 'admin' | 'service_tester' | 'evaluator';
-    admin_type?: 'super' | 'personal';
-  }) => void;
+  onUserUpdate?: (updatedUser: User) => void;
   projects?: any[];
   onCreateProject?: (projectData: any) => Promise<any>;
   onDeleteProject?: (projectId: string) => Promise<any>;
