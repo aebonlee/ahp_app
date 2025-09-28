@@ -1,0 +1,68 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle with Gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E40AF;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="4" dy="4" stdDeviation="8" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)" stroke="#1E40AF" stroke-width="8" filter="url(#shadow)"/>
+  
+  <!-- AHP Text -->
+  <text x="256" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="96" font-weight="bold" fill="white">AHP</text>
+  <text x="256" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="white" opacity="0.9">for Paper</text>
+  
+  <!-- Hierarchy Symbol -->
+  <g fill="white" opacity="0.8">
+    <!-- Top node (Goal) -->
+    <circle cx="256" cy="290" r="20"/>
+    <text x="256" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#3B82F6" font-weight="bold">G</text>
+    
+    <!-- Second level nodes (Criteria) -->
+    <circle cx="180" cy="350" r="16"/>
+    <text x="180" y="358" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#3B82F6" font-weight="bold">C1</text>
+    <circle cx="256" cy="350" r="16"/>
+    <text x="256" y="358" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#3B82F6" font-weight="bold">C2</text>
+    <circle cx="332" cy="350" r="16"/>
+    <text x="332" y="358" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#3B82F6" font-weight="bold">C3</text>
+    
+    <!-- Third level nodes (Alternatives) -->
+    <circle cx="130" cy="410" r="12"/>
+    <text x="130" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#3B82F6" font-weight="bold">A1</text>
+    <circle cx="170" cy="410" r="12"/>
+    <text x="170" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#3B82F6" font-weight="bold">A2</text>
+    <circle cx="210" cy="410" r="12"/>
+    <text x="210" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#3B82F6" font-weight="bold">A3</text>
+    <circle cx="256" cy="410" r="12"/>
+    <text x="256" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#3B82F6" font-weight="bold">A4</text>
+    <circle cx="302" cy="410" r="12"/>
+    <text x="302" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#3B82F6" font-weight="bold">A5</text>
+    <circle cx="342" cy="410" r="12"/>
+    <text x="342" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#3B82F6" font-weight="bold">A6</text>
+    <circle cx="382" cy="410" r="12"/>
+    <text x="382" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#3B82F6" font-weight="bold">A7</text>
+    
+    <!-- Connecting lines -->
+    <line x1="256" y1="310" x2="180" y2="334" stroke="white" stroke-width="4" opacity="0.7"/>
+    <line x1="256" y1="310" x2="256" y2="334" stroke="white" stroke-width="4" opacity="0.7"/>
+    <line x1="256" y1="310" x2="332" y2="334" stroke="white" stroke-width="4" opacity="0.7"/>
+    
+    <line x1="180" y1="366" x2="130" y2="398" stroke="white" stroke-width="3" opacity="0.6"/>
+    <line x1="180" y1="366" x2="170" y2="398" stroke="white" stroke-width="3" opacity="0.6"/>
+    <line x1="180" y1="366" x2="210" y2="398" stroke="white" stroke-width="3" opacity="0.6"/>
+    <line x1="256" y1="366" x2="256" y2="398" stroke="white" stroke-width="3" opacity="0.6"/>
+    <line x1="332" y1="366" x2="302" y2="398" stroke="white" stroke-width="3" opacity="0.6"/>
+    <line x1="332" y1="366" x2="342" y2="398" stroke="white" stroke-width="3" opacity="0.6"/>
+    <line x1="332" y1="366" x2="382" y2="398" stroke="white" stroke-width="3" opacity="0.6"/>
+  </g>
+  
+  <!-- Decorative elements -->
+  <circle cx="100" cy="100" r="4" fill="white" opacity="0.3"/>
+  <circle cx="412" cy="120" r="3" fill="white" opacity="0.3"/>
+  <circle cx="80" cy="400" r="5" fill="white" opacity="0.2"/>
+  <circle cx="420" cy="380" r="4" fill="white" opacity="0.2"/>
+</svg>
