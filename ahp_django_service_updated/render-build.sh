@@ -33,41 +33,59 @@ if [ "$FLUSH_DB" = "true" ]; then
     python manage.py makemigrations projects
     python manage.py makemigrations
     
-    # Step 4: Clean existing database tables before applying new migrations
-    echo "🧹 Cleaning existing database tables..."
+    # Step 4: Complete database cleanup (all tables and sequences)
+    echo "🧹 Performing complete database cleanup..."
     python manage.py shell <<EOF
 from django.db import connection
 try:
     with connection.cursor() as cursor:
-        # Drop specific tables that might conflict
-        tables_to_drop = [
-            'ahp_users', 'accounts_user', 'auth_user',
-            'ahp_projects', 'simple_projects', 'projects_project',
-            'project_members', 'criteria', 'project_templates',
-            'django_migrations'
-        ]
+        # Get ALL tables in the public schema
+        cursor.execute("""
+            SELECT table_name FROM information_schema.tables 
+            WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+        """)
+        all_tables = [row[0] for row in cursor.fetchall()]
+        print(f"Found {len(all_tables)} tables to drop")
         
-        for table in tables_to_drop:
+        # Drop ALL tables with CASCADE (including Django system tables)
+        for table in all_tables:
             try:
                 cursor.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE;')
                 print(f"✅ Dropped table: {table}")
             except Exception as e:
-                print(f"⚠️  Table {table} not found or already dropped")
+                print(f"⚠️  Could not drop {table}: {e}")
         
-        # Drop any remaining sequences
+        # Drop ALL sequences
         cursor.execute("""
             SELECT sequence_name FROM information_schema.sequences 
             WHERE sequence_schema = 'public'
         """)
-        sequences = [row[0] for row in cursor.fetchall()]
-        for seq in sequences:
+        all_sequences = [row[0] for row in cursor.fetchall()]
+        print(f"Found {len(all_sequences)} sequences to drop")
+        
+        for seq in all_sequences:
             try:
                 cursor.execute(f'DROP SEQUENCE IF EXISTS "{seq}" CASCADE;')
                 print(f"✅ Dropped sequence: {seq}")
-            except:
-                pass
+            except Exception as e:
+                print(f"⚠️  Could not drop sequence {seq}: {e}")
+        
+        # Drop ALL indexes
+        cursor.execute("""
+            SELECT indexname FROM pg_indexes 
+            WHERE schemaname = 'public'
+        """)
+        all_indexes = [row[0] for row in cursor.fetchall()]
+        print(f"Found {len(all_indexes)} indexes to drop")
+        
+        for idx in all_indexes:
+            try:
+                cursor.execute(f'DROP INDEX IF EXISTS "{idx}" CASCADE;')
+                print(f"✅ Dropped index: {idx}")
+            except Exception as e:
+                print(f"⚠️  Could not drop index {idx}: {e}")
                 
-    print("✅ Database cleanup completed")
+    print("✅ Complete database cleanup finished")
 except Exception as e:
     print(f"⚠️  Database cleanup error: {e}")
     print("Proceeding with migrations anyway...")
