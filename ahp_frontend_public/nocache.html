@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Cache Cleared - Redirecting...</title>
+    <script>
+        // Clear all caches and redirect
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => caches.delete(name));
+            });
+        }
+        
+        // Clear service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(r => r.unregister());
+            });
+        }
+        
+        // Redirect with cache buster
+        setTimeout(() => {
+            const timestamp = new Date().getTime();
+            window.location.href = './?v=' + timestamp;
+        }, 1000);
+    </script>
+</head>
+<body>
+    <h2>캐시 제거 중...</h2>
+    <p>잠시 후 메인 페이지로 이동합니다.</p>
+</body>
+</html>
