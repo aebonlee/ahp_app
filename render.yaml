@@ -8,7 +8,7 @@ services:
     
     # Build settings
     buildCommand: "./ahp_django_service_updated/render-build.sh"
-    startCommand: "cd ahp_django_service_updated && gunicorn ahp_platform.wsgi:application --bind 0.0.0.0:$PORT"
+    startCommand: "cd ahp_django_service_updated && gunicorn ahp_backend.wsgi:application --bind 0.0.0.0:$PORT"
     
     # Environment
     envVars:
@@ -23,7 +23,7 @@ services:
       - key: DEBUG
         value: False
       - key: DJANGO_SETTINGS_MODULE
-        value: ahp_platform.settings
+        value: ahp_backend.settings
     
     # Auto-deploy
     autoDeploy: true
