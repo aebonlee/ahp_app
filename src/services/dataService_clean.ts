@@ -45,6 +45,14 @@ class CleanDataService {
       return [];
     } catch (error) {
       console.error('❌ 프로젝트 조회 중 오류:', error);
+      
+      // 개발 환경에서 백엔드 연결 실패 시 Mock 데이터 반환
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 개발 모드: 임시 Mock 프로젝트 목록 반환');
+        const mockProjects = JSON.parse(localStorage.getItem('mock_projects') || '[]');
+        return mockProjects;
+      }
+      
       return [];
     }
   }
@@ -77,6 +85,32 @@ class CleanDataService {
       return null;
     } catch (error) {
       console.error('❌ 프로젝트 생성 중 오류:', error);
+      
+      // 개발 환경에서 백엔드 연결 실패 시 임시 Mock 데이터 반환
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 개발 모드: 임시 Mock 프로젝트 생성');
+        const mockProject: ProjectData = {
+          id: `mock_${Date.now()}`,
+          title: data.title,
+          description: data.description,
+          objective: data.objective,
+          status: data.status || 'draft',
+          evaluation_mode: data.evaluation_mode || 'practical',
+          workflow_stage: data.workflow_stage || 'creating',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          criteria_count: 0,
+          alternatives_count: 0
+        };
+        
+        // Mock 데이터를 localStorage에 저장 (임시)
+        const existingProjects = JSON.parse(localStorage.getItem('mock_projects') || '[]');
+        existingProjects.push(mockProject);
+        localStorage.setItem('mock_projects', JSON.stringify(existingProjects));
+        
+        return mockProject;
+      }
+      
       throw error;
     }
   }

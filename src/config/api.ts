@@ -1,6 +1,5 @@
 // API 설정 - Django 백엔드 서버 URL (Render.com 백엔드)
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : 'https://ahp-django-backend.onrender.com');
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-django-backend.onrender.com';
 
 // 데이터 저장 모드 설정
 export const DATA_STORAGE_MODE = process.env.REACT_APP_DATA_MODE || 

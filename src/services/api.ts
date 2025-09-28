@@ -91,6 +91,14 @@ const makeRequest = async <T>(
       }
     });
 
+    // 응답이 JSON이 아닌 경우 (HTML 오류 페이지 등) 처리
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error(`API Error [${endpoint}]: Expected JSON, got ${contentType}`, text.substring(0, 200));
+      throw new Error(`서버가 올바른 응답을 반환하지 않았습니다. (${response.status})`);
+    }
+
     const data = await response.json();
 
     if (!response.ok) {
