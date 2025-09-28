@@ -80,18 +80,26 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         
     def create(self, validated_data):
         """Create project and add owner as member"""
-        validated_data['owner'] = self.context['request'].user
+        user = self.context['request'].user
+        
+        # 익명 사용자의 경우 owner를 None으로 설정 (개발/테스트용)
+        if user.is_authenticated:
+            validated_data['owner'] = user
+        else:
+            validated_data['owner'] = None
+            
         project = super().create(validated_data)
         
-        # Add owner as project member with full permissions
-        ProjectMember.objects.create(
-            project=project,
-            user=project.owner,
-            role='owner',
-            can_edit_structure=True,
-            can_manage_evaluators=True,
-            can_view_results=True
-        )
+        # Add owner as project member with full permissions (인증된 사용자만)
+        if user.is_authenticated:
+            ProjectMember.objects.create(
+                project=project,
+                user=project.owner,
+                role='owner',
+                can_edit_structure=True,
+                can_manage_evaluators=True,
+                can_view_results=True
+            )
         
         return project
 

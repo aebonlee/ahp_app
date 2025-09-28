@@ -49,7 +49,7 @@ class Project(models.Model):
     objective = models.TextField(help_text="프로젝트의 목적과 목표")
     
     # Owner and collaborators
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_projects')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_projects', null=True, blank=True)
     collaborators = models.ManyToManyField(User, through='ProjectMember', related_name='collaborated_projects')
     
     # Status and settings

@@ -19,7 +19,7 @@ from apps.common.permissions import IsOwnerOrReadOnly
 class ProjectViewSet(viewsets.ModelViewSet):
     """ViewSet for managing projects"""
     
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    permission_classes = [permissions.AllowAny]  # 익명 사용자 접근 허용
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'visibility', 'owner']
     search_fields = ['title', 'description']
@@ -32,6 +32,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
         
         # Exclude deleted projects by default
         base_queryset = Project.objects.filter(deleted_at__isnull=True)
+        
+        # 익명 사용자는 모든 프로젝트 조회 가능 (개발/테스트용)
+        if not user.is_authenticated:
+            return base_queryset.select_related('owner').prefetch_related('collaborators')
         
         if user.is_superuser:
             return base_queryset
