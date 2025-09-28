@@ -264,8 +264,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const projectTemplates = {
     blank: { name: '빈 프로젝트', desc: '처음부터 설정' },
     business: { name: '비즈니스 결정', desc: '경영 의사결정 템플릿' },
-    technical: { name: '기술 선택', desc: '기술 대안 비교 템플맿' },
-    academic: { name: '연구 분석', desc: '학술 연구용 템플맿' }
+    technical: { name: '기술 선택', desc: '기술 대안 비교 템플릿' },
+    academic: { name: '연구 분석', desc: '학술 연구용 템플릿' }
   };
 
   // 외부에서 activeTab이 변경되면 내부 activeMenu도 업데이트
@@ -1643,14 +1643,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">새 프로젝트 생성</h3>
       
-      {/* 템플맿 선택 */}
-      <Card title="프로젝트 템플맿 선택">
+      {/* 템플릿 선택 */}
+      <Card title="프로젝트 템플릿 선택">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(projectTemplates).map(([key, template]) => (
             <button
               key={key}
               onClick={() => setProjectTemplate(key as any)}
-              aria-label={`${template.name} 템플맿 선택 - ${template.desc}`}
+              aria-label={`${template.name} 템플릿 선택 - ${template.desc}`}
               aria-pressed={projectTemplate === key}
               className={`p-4 text-center border-2 rounded-lg transition-all ${
                 projectTemplate === key
