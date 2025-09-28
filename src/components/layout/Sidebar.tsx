@@ -39,14 +39,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
     { id: 'paper-management', label: '논문 작성 관리', icon: '📝' },
     
     // AI 논문 지원 시스템 메뉴
-    { id: 'ai-paper-assistant', label: '🤖 AI 논문 지원', icon: '🤖', isAiMenu: true },
-    { id: 'ai-ahp-methodology', label: '    AHP 방법론 설명', icon: '1️⃣', isAiSubmenu: true },
-    { id: 'ai-fuzzy-methodology', label: '    퍼지 AHP 방법론', icon: '2️⃣', isAiSubmenu: true },
-    { id: 'ai-paper-generation', label: '    내 프로젝트 논문 작성', icon: '3️⃣', isAiSubmenu: true },
-    { id: 'ai-results-interpretation', label: '    AI 결과 분석 & 해석', icon: '4️⃣', isAiSubmenu: true },
-    { id: 'ai-quality-validation', label: '    논문 품질 검증', icon: '5️⃣', isAiSubmenu: true },
-    { id: 'ai-materials-generation', label: '    학술 자료 생성', icon: '6️⃣', isAiSubmenu: true },
-    { id: 'ai-chatbot-assistant', label: '    AI 챗봇 도우미', icon: '7️⃣', isAiSubmenu: true },
+    { id: 'ai-paper-assistant', label: 'AI 논문 지원', icon: '🤖', isAiMenu: true },
+    { id: 'ai-ahp-methodology', label: 'AHP 방법론 설명', icon: '📖', isAiSubmenu: true },
+    { id: 'ai-fuzzy-methodology', label: '퍼지 AHP 방법론', icon: '📖', isAiSubmenu: true },
+    { id: 'ai-paper-generation', label: '내 프로젝트 논문 작성', icon: '✍️', isAiSubmenu: true },
+    { id: 'ai-results-interpretation', label: 'AI 결과 분석 & 해석', icon: '🔍', isAiSubmenu: true },
+    { id: 'ai-quality-validation', label: '논문 품질 검증', icon: '✓', isAiSubmenu: true },
+    { id: 'ai-materials-generation', label: '학술 자료 생성', icon: '📄', isAiSubmenu: true },
+    { id: 'ai-chatbot-assistant', label: 'AI 챗봇 도우미', icon: '💬', isAiSubmenu: true },
     
     { id: 'export-reports', label: '보고서 내보내기', icon: '📤' },
     { id: 'workshop-management', label: '워크숍 관리', icon: '🎯' },
@@ -165,90 +165,58 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
                 className="w-full flex items-center text-left transition-luxury group hover:scale-105"
                 style={{
                   padding: isAiSubmenu 
-                    ? 'var(--space-2) var(--space-6)' 
+                    ? 'var(--space-2) var(--space-4)' 
                     : 'var(--space-3) var(--space-4)',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: isActive 
                     ? 'var(--gold-primary)' 
-                    : isAiMenu
-                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                    : isAiSubmenu
-                    ? 'var(--bg-elevated)'
                     : isModeSwitch 
                     ? 'var(--bg-elevated)' 
                     : 'transparent',
                   color: isActive 
                     ? 'white' 
-                    : isAiMenu
-                    ? 'white'
-                    : isAiSubmenu
-                    ? 'var(--accent-primary)'
                     : isModeSwitch 
                     ? 'var(--color-warning)' 
                     : 'var(--text-secondary)',
                   border: '1px solid',
                   borderColor: isActive 
                     ? 'var(--gold-primary)' 
-                    : isAiMenu
-                    ? '#667eea'
-                    : isAiSubmenu
-                    ? 'var(--accent-light)'
                     : isModeSwitch 
                     ? 'var(--color-warning)' 
                     : 'transparent',
-                  fontWeight: isAiMenu 
-                    ? 'var(--font-weight-bold)' 
-                    : 'var(--font-weight-medium)',
+                  fontWeight: 'var(--font-weight-medium)',
                   boxShadow: isActive 
                     ? 'var(--shadow-gold)' 
-                    : isAiMenu 
-                    ? '0 4px 12px rgba(102, 126, 234, 0.3)' 
                     : 'var(--shadow-xs)',
-                  marginLeft: isAiSubmenu ? 'var(--space-4)' : '0',
-                  fontSize: isAiSubmenu ? 'var(--font-size-xs)' : 'var(--font-size-sm)'
+                  paddingLeft: isAiSubmenu ? 'var(--space-8)' : 'var(--space-4)',
+                  fontSize: 'var(--font-size-sm)'
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.backgroundColor = isAiMenu
-                      ? 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
-                      : isAiSubmenu
-                      ? 'var(--accent-light)'
-                      : isModeSwitch 
+                    e.currentTarget.style.backgroundColor = isModeSwitch 
                       ? 'var(--color-warning)' 
                       : 'var(--bg-elevated)';
-                    e.currentTarget.style.color = isAiMenu || isAiSubmenu || isModeSwitch 
+                    e.currentTarget.style.color = isModeSwitch 
                       ? 'white' 
                       : 'var(--text-primary)';
-                    e.currentTarget.style.boxShadow = isAiMenu 
-                      ? '0 6px 16px rgba(102, 126, 234, 0.4)' 
-                      : 'var(--shadow-sm)';
+                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.backgroundColor = isAiMenu
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                      : isAiSubmenu
-                      ? 'var(--bg-elevated)'
-                      : isModeSwitch 
+                    e.currentTarget.style.backgroundColor = isModeSwitch 
                       ? 'var(--bg-elevated)' 
                       : 'transparent';
-                    e.currentTarget.style.color = isAiMenu
-                      ? 'white'
-                      : isAiSubmenu
-                      ? 'var(--accent-primary)'
-                      : isModeSwitch 
+                    e.currentTarget.style.color = isModeSwitch 
                       ? 'var(--color-warning)' 
                       : 'var(--text-secondary)';
-                    e.currentTarget.style.boxShadow = isAiMenu 
-                      ? '0 4px 12px rgba(102, 126, 234, 0.3)' 
-                      : 'var(--shadow-xs)';
+                    e.currentTarget.style.boxShadow = 'var(--shadow-xs)';
                   }
                 }}
               >
                 <span className="text-xl mr-3" style={{ 
-                  fontSize: isAiSubmenu ? 'var(--font-size-base)' : 'var(--font-size-lg)',
-                  minWidth: isAiSubmenu ? '1.5rem' : '2rem'
+                  fontSize: 'var(--font-size-lg)',
+                  minWidth: '2rem'
                 }}>
                   {item.icon}
                 </span>
@@ -256,10 +224,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
                   <span className="font-semibold" 
                         style={{ 
                           fontFamily: 'Inter, system-ui, sans-serif',
-                          fontSize: isAiSubmenu ? 'var(--font-size-xs)' : 'var(--font-size-sm)',
-                          fontWeight: isAiMenu 
-                            ? 'var(--font-weight-bold)' 
-                            : 'var(--font-weight-semibold)'
+                          fontSize: 'var(--font-size-sm)',
+                          fontWeight: 'var(--font-weight-semibold)'
                         }}>
                     {item.label}
                   </span>
