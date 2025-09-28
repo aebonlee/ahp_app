@@ -9,6 +9,7 @@ interface MyProjectsProps {
   onDeleteProject?: (projectId: string) => void;
   onModelBuilder?: (project: ProjectData) => void;
   onAnalysis?: (project: ProjectData) => void;
+  refreshTrigger?: number; // 이 값이 변경되면 프로젝트 새로고침
 }
 
 const MyProjects: React.FC<MyProjectsProps> = ({ 
@@ -17,21 +18,41 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   onEditProject, 
   onDeleteProject, 
   onModelBuilder, 
-  onAnalysis 
+  onAnalysis,
+  refreshTrigger
 }) => {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft' | 'trash'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchProjects();
   }, []);
 
+  // refreshTrigger가 변경되면 프로젝트 목록 새로고침
+  useEffect(() => {
+    if (refreshTrigger !== undefined) {
+      fetchProjects();
+    }
+  }, [refreshTrigger]);
+
+  // filter가 변경되면 프로젝트 목록 새로고침
+  useEffect(() => {
+    fetchProjects();
+  }, [filter]);
+
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const data = await dataService.getProjects();
+      let data;
+      if (filter === 'trash') {
+        // 휴지통 프로젝트 조회
+        data = await dataService.getTrashedProjects();
+      } else {
+        // 일반 프로젝트 조회
+        data = await dataService.getProjects();
+      }
       setProjects(data || []);
     } catch (error) {
       console.error('프로젝트 로딩 실패:', error);
@@ -42,6 +63,10 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   };
 
   const filteredProjects = projects.filter(project => {
+    // 휴지통 필터의 경우 별도 처리 (이미 fetchProjects에서 필터링됨)
+    if (filter === 'trash') return true;
+    
+    // 일반 필터
     if (filter !== 'all' && project.status !== filter) return false;
     if (searchTerm && !project.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     return true;
@@ -62,6 +87,46 @@ const MyProjects: React.FC<MyProjectsProps> = ({
       case 'completed': return '완료';
       case 'draft': return '초안';
       default: return status;
+    }
+  };
+
+  // 휴지통 프로젝트 복원
+  const handleRestoreProject = async (projectId: string, projectTitle: string) => {
+    if (!window.confirm(`"${projectTitle}" 프로젝트를 복원하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      const success = await dataService.restoreProject(projectId);
+      if (success) {
+        alert('프로젝트가 성공적으로 복원되었습니다.');
+        fetchProjects(); // 목록 새로고침
+      } else {
+        alert('프로젝트 복원에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Failed to restore project:', error);
+      alert('프로젝트 복원 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 프로젝트 영구 삭제 (추후 백엔드 API 추가 필요)
+  const handlePermanentDelete = async (projectId: string, projectTitle: string) => {
+    if (!window.confirm(`"${projectTitle}" 프로젝트를 영구 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다!`)) {
+      return;
+    }
+
+    // 한 번 더 확인
+    if (!window.confirm(`정말로 "${projectTitle}"를 영구 삭제하시겠습니까?\n\n마지막 확인입니다.`)) {
+      return;
+    }
+
+    try {
+      // TODO: 영구 삭제 API 구현 필요
+      alert('영구 삭제 기능은 아직 구현되지 않았습니다.');
+    } catch (error) {
+      console.error('Failed to permanently delete project:', error);
+      alert('영구 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -122,7 +187,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
           />
         </div>
         <div className="flex space-x-2">
-          {(['all', 'active', 'completed', 'draft'] as const).map(status => (
+          {(['all', 'active', 'completed', 'draft', 'trash'] as const).map(status => (
             <button
               key={status}
               onClick={() => setFilter(status)}
@@ -142,7 +207,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                 }
               }}
             >
-              {status === 'all' ? '전체' : getStatusText(status)}
+              {status === 'all' ? '전체' : status === 'trash' ? '🗑️ 휴지통' : getStatusText(status)}
             </button>
           ))}
         </div>
@@ -265,68 +330,105 @@ const MyProjects: React.FC<MyProjectsProps> = ({
               {/* 날짜 정보 */}
               <div className="mt-4 pt-4 flex justify-between text-xs" style={{ borderTop: '1px solid var(--border-light)', color: 'var(--text-muted)' }}>
                 <span>생성: {new Date(project.created_at || Date.now()).toLocaleDateString('ko-KR')}</span>
-                <span>수정: {new Date(project.updated_at || Date.now()).toLocaleDateString('ko-KR')}</span>
+                {filter === 'trash' && project.deleted_at ? (
+                  <span style={{ color: 'var(--text-danger)' }}>삭제: {new Date(project.deleted_at).toLocaleDateString('ko-KR')}</span>
+                ) : (
+                  <span>수정: {new Date(project.updated_at || Date.now()).toLocaleDateString('ko-KR')}</span>
+                )}
               </div>
 
               {/* 액션 버튼 */}
               <div className="mt-4 pt-4 flex justify-end space-x-2" style={{ borderTop: '1px solid var(--border-light)' }}>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onEditProject?.(project);
-                  }}
-                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  title="편집"
-                  type="button"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onModelBuilder?.(project);
-                  }}
-                  className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                  title="모델 구축"
-                  type="button"
-                >
-                  🏗️
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onAnalysis?.(project);
-                  }}
-                  className="p-2 rounded-lg transition-colors"
-                  style={{ color: 'var(--text-muted)' }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--accent-primary)';
-                    e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'var(--text-muted)';
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                  title="결과 분석"
-                  type="button"
-                >
-                  📊
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onDeleteProject?.(project.id || '');
-                  }}
-                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="삭제"
-                  type="button"
-                >
-                  🗑️
-                </button>
+                {filter === 'trash' ? (
+                  // 휴지통 버튼들
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleRestoreProject(project.id || '', project.title);
+                      }}
+                      className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      title="복원"
+                      type="button"
+                    >
+                      ↩️
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handlePermanentDelete(project.id || '', project.title);
+                      }}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="영구삭제"
+                      type="button"
+                    >
+                      🗑️
+                    </button>
+                  </>
+                ) : (
+                  // 일반 버튼들
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onEditProject?.(project);
+                      }}
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="편집"
+                      type="button"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onModelBuilder?.(project);
+                      }}
+                      className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      title="모델 구축"
+                      type="button"
+                    >
+                      🏗️
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onAnalysis?.(project);
+                      }}
+                      className="p-2 rounded-lg transition-colors"
+                      style={{ color: 'var(--text-muted)' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = 'var(--accent-primary)';
+                        e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = 'var(--text-muted)';
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                      title="결과 분석"
+                      type="button"
+                    >
+                      📊
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onDeleteProject?.(project.id || '');
+                      }}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="삭제"
+                      type="button"
+                    >
+                      🗑️
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

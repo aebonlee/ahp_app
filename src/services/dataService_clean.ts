@@ -113,6 +113,60 @@ class CleanDataService {
     }
   }
 
+  async getTrashedProjects(): Promise<ProjectData[]> {
+    try {
+      console.log('🔍 실제 DB에서 휴지통 프로젝트 조회 시작...');
+      const response = await projectApi.getTrashedProjects();
+      
+      console.log('📡 휴지통 DB 응답 상세:', {
+        success: response.success,
+        data: response.data,
+        error: response.error
+      });
+      
+      if (response.success && response.data) {
+        const rawData = response.data;
+        const projects = Array.isArray(rawData) ? rawData : [];
+        
+        const validProjects = projects.filter(project => {
+          const isValid = project && 
+                         typeof project.id !== 'undefined' && 
+                         typeof project.title === 'string' &&
+                         project.deleted_at; // 삭제된 프로젝트만
+          
+          if (!isValid) {
+            console.warn('⚠️ 잘못된 휴지통 프로젝트 데이터 발견:', project);
+          }
+          return isValid;
+        });
+        
+        console.log('✅ 유효한 휴지통 프로젝트 조회 성공:', validProjects.length, '개');
+        return validProjects;
+      }
+      console.error('❌ 휴지통 프로젝트 조회 실패');
+      return [];
+    } catch (error) {
+      console.error('❌ 휴지통 프로젝트 조회 중 오류:', error);
+      return [];
+    }
+  }
+
+  async restoreProject(id: string): Promise<boolean> {
+    try {
+      console.log('♻️ 실제 DB에서 프로젝트 복원 시작:', id);
+      const response = await projectApi.restoreProject(id);
+      if (response.success) {
+        console.log('✅ 프로젝트 복원 성공');
+        return true;
+      }
+      console.error('❌ 프로젝트 복원 실패');
+      return false;
+    } catch (error) {
+      console.error('❌ 프로젝트 복원 중 오류:', error);
+      throw error;
+    }
+  }
+
   // === 기준 관리 ===
   async getCriteria(projectId: string): Promise<CriteriaData[]> {
     try {
