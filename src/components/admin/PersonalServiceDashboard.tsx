@@ -3392,12 +3392,13 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         {/* 요금제 관리 버튼 */}
         <div className="mt-6 flex justify-center space-x-4">
           <button 
-            onClick={() => handleTabChange('payment')}
+            onClick={() => window.open('#/personal-service?menu=payment', '_blank')}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
           >
             결제 관리
           </button>
           <button 
+            onClick={() => window.open('#/personal-service?menu=payment', '_blank')}
             className="px-6 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-all duration-200"
           >
             플랜 변경
@@ -3846,14 +3847,16 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         </div>
         
         <div className="space-y-4">
-          {/* First Row - Core Functions (7 items) */}
-          <div className="grid grid-cols-3 lg:grid-cols-7 gap-4">
+          {/* First Row - Core Functions (9 items - added Fuzzy AHP & AI Paper) */}
+          <div className="grid grid-cols-3 lg:grid-cols-9 gap-4">
             {[
               { id: 'dashboard', label: '대시보드', icon: '🏠', tooltip: '프로젝트 현황과 통계를 한눈에 확인', priority: 'high' },
               { id: 'projects', label: '내 프로젝트', icon: '📂', tooltip: '생성한 모든 프로젝트 관리 및 편집', priority: 'high' },
               { id: 'trash', label: '휴지통', icon: '🗑️', tooltip: '삭제된 프로젝트 복원 및 영구 삭제', priority: 'high' },
               { id: 'creation', label: '새 프로젝트', icon: '➕', tooltip: '새로운 AHP 분석 프로젝트 생성', priority: 'high' },
               { id: 'model-builder', label: '모델 구축', icon: '🏗️', tooltip: '기준과 대안을 설정하여 모델 구성', priority: 'high' },
+              { id: 'fuzzy-ahp', label: '퍼지 AHP', icon: '🔮', tooltip: '불확실성을 반영한 퍼지 AHP 분석', priority: 'high' },
+              { id: 'ai-paper', label: 'AI 논문', icon: '📝', tooltip: 'AI 기반 논문 작성 지원', priority: 'high' },
               { id: 'evaluators', label: '평가자 관리', icon: '👥', tooltip: '평가 참여자 초대 및 권한 관리' },
               { id: 'monitoring', label: '진행률 확인', icon: '📈', tooltip: '평가 진행 상황 실시간 모니터링' }
             ].map((item) => (
