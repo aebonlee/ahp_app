@@ -31,7 +31,7 @@ urlpatterns = [
     path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
     # Projects endpoints
-    path('api/v1/', include('projects.urls')),
+    path('api/v1/', include('apps.projects.urls')),
     
     # Health check endpoints
     path('health/', health_check),
