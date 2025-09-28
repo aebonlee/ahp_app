@@ -51,9 +51,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'title', 'description', 'objective', 'owner', 'owner_name',
-            'status', 'visibility', 'consistency_ratio_threshold', 'created_at',
-            'updated_at', 'deadline', 'tags', 'settings', 'criteria', 'members',
-            'member_count', 'evaluation_count', 'is_active'
+            'status', 'visibility', 'evaluation_mode', 'workflow_stage',
+            'consistency_ratio_threshold', 'created_at', 'updated_at', 'deleted_at',
+            'deadline', 'tags', 'settings', 'criteria', 'members',
+            'member_count', 'evaluation_count', 'is_active', 'criteria_count',
+            'alternatives_count'
         ]
         read_only_fields = ['created_at', 'updated_at', 'is_active']
         
@@ -72,8 +74,8 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
-            'title', 'description', 'objective', 'visibility',
-            'consistency_ratio_threshold', 'deadline', 'tags', 'settings'
+            'title', 'description', 'objective', 'visibility', 'evaluation_mode',
+            'workflow_stage', 'consistency_ratio_threshold', 'deadline', 'tags', 'settings'
         ]
         
     def create(self, validated_data):
@@ -115,5 +117,6 @@ class ProjectSummarySerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'title', 'description', 'owner', 'owner_name', 'status',
-            'created_at', 'updated_at', 'deadline', 'tags'
+            'evaluation_mode', 'workflow_stage', 'created_at', 'updated_at', 
+            'deleted_at', 'deadline', 'tags', 'criteria_count', 'alternatives_count'
         ]

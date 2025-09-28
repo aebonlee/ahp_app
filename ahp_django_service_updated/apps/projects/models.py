@@ -19,6 +19,21 @@ class Project(models.Model):
         ('evaluation', '평가중'),
         ('completed', '완료'),
         ('archived', '보관'),
+        ('deleted', '삭제됨'),
+    ]
+    
+    EVALUATION_MODE_CHOICES = [
+        ('practical', '실용적'),
+        ('theoretical', '이론적'),
+        ('direct_input', '직접입력'),
+        ('fuzzy_ahp', '퍼지 AHP'),
+    ]
+    
+    WORKFLOW_STAGE_CHOICES = [
+        ('creating', '생성중'),
+        ('waiting', '대기중'),
+        ('evaluating', '평가중'),
+        ('completed', '완료'),
     ]
     
     VISIBILITY_CHOICES = [
@@ -40,6 +55,8 @@ class Project(models.Model):
     # Status and settings
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='private')
+    evaluation_mode = models.CharField(max_length=20, choices=EVALUATION_MODE_CHOICES, default='practical')
+    workflow_stage = models.CharField(max_length=20, choices=WORKFLOW_STAGE_CHOICES, default='creating')
     
     # AHP specific settings
     consistency_ratio_threshold = models.FloatField(default=0.1, validators=[
@@ -49,7 +66,12 @@ class Project(models.Model):
     # Dates
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     deadline = models.DateTimeField(null=True, blank=True)
+    
+    # Counts for frontend
+    criteria_count = models.PositiveIntegerField(default=0)
+    alternatives_count = models.PositiveIntegerField(default=0)
     
     # Metadata
     tags = models.JSONField(default=list, blank=True)

@@ -29,11 +29,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter projects based on user permissions and visibility"""
         user = self.request.user
+        
+        # Exclude deleted projects by default
+        base_queryset = Project.objects.filter(deleted_at__isnull=True)
+        
         if user.is_superuser:
-            return Project.objects.all()
+            return base_queryset
             
         # Users can see projects they own, collaborate on, or are public
-        return Project.objects.filter(
+        return base_queryset.filter(
             models.Q(owner=user) |
             models.Q(collaborators=user) |
             models.Q(visibility='public')
@@ -197,6 +201,103 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return Response(
             CriteriaSerializer(criteria).data,
             status=status.HTTP_201_CREATED
+        )
+    
+    @action(detail=True, methods=['delete'])
+    def soft_delete(self, request, pk=None):
+        """소프트 삭제 (휴지통으로 이동)"""
+        project = self.get_object()
+        
+        # Check permission - only owner can delete
+        if project.owner != request.user and not request.user.is_superuser:
+            return Response(
+                {'error': 'Permission denied. Only project owner can delete.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        project.status = 'deleted'
+        project.deleted_at = timezone.now()
+        project.save(update_fields=['status', 'deleted_at'])
+        
+        return Response(
+            {'message': 'Project moved to trash successfully'},
+            status=status.HTTP_200_OK
+        )
+    
+    @action(detail=True, methods=['post'])
+    def restore(self, request, pk=None):
+        """휴지통에서 복원"""
+        # Get project including deleted ones
+        try:
+            project = Project.objects.get(pk=pk)
+        except Project.DoesNotExist:
+            return Response(
+                {'error': 'Project not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check permission
+        if project.owner != request.user and not request.user.is_superuser:
+            return Response(
+                {'error': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        project.status = 'draft'
+        project.deleted_at = None
+        project.save(update_fields=['status', 'deleted_at'])
+        
+        return Response(
+            ProjectSerializer(project, context={'request': request}).data,
+            status=status.HTTP_200_OK
+        )
+    
+    @action(detail=False, methods=['get'])
+    def trash(self, request):
+        """휴지통 목록 조회"""
+        user = request.user
+        
+        # Get deleted projects
+        trashed_projects = Project.objects.filter(
+            owner=user,
+            deleted_at__isnull=False
+        ).order_by('-deleted_at')
+        
+        serializer = ProjectSerializer(trashed_projects, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['delete'])
+    def permanent_delete(self, request, pk=None):
+        """영구 삭제"""
+        # Get project including deleted ones
+        try:
+            project = Project.objects.get(pk=pk)
+        except Project.DoesNotExist:
+            return Response(
+                {'error': 'Project not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check permission - only owner or superuser can permanently delete
+        if project.owner != request.user and not request.user.is_superuser:
+            return Response(
+                {'error': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Only allow permanent deletion of already deleted projects
+        if not project.deleted_at:
+            return Response(
+                {'error': 'Project must be moved to trash first'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        project_title = project.title
+        project.delete()
+        
+        return Response(
+            {'message': f'Project "{project_title}" permanently deleted'},
+            status=status.HTTP_200_OK
         )
     
     @action(detail=True, methods=['post'])
