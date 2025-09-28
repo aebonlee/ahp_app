@@ -19,9 +19,26 @@ if [ "$FLUSH_DB" = "true" ]; then
     echo "⚠️  FLUSH_DB=true detected - Performing complete database reset..."
     echo "This will DELETE ALL DATA in the database!"
     
-    # Complete database flush
-    python manage.py flush --noinput
-    echo "✅ Database flushed successfully"
+    # Drop all tables using raw SQL (bypass Django migration system)
+    echo "Dropping all tables via SQL..."
+    python manage.py shell <<EOF
+from django.db import connection
+with connection.cursor() as cursor:
+    # Get all table names
+    cursor.execute("""
+        SELECT tablename FROM pg_tables 
+        WHERE schemaname = 'public';
+    """)
+    tables = cursor.fetchall()
+    
+    # Drop all tables
+    for table in tables:
+        table_name = table[0]
+        print(f"Dropping table: {table_name}")
+        cursor.execute(f'DROP TABLE IF EXISTS "{table_name}" CASCADE;')
+    
+    print("✅ All tables dropped successfully")
+EOF
     
     # Fresh migrations from scratch
     echo "Applying all migrations from scratch..."
