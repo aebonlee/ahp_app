@@ -438,7 +438,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
                   <span className="text-sm font-bold text-white">
-                    {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                    {(user.first_name || '').charAt(0)}{(user.last_name || '').charAt(0)}
                   </span>
                 </div>
                 <div className="hidden md:flex flex-col">
@@ -449,7 +449,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                           fontSize: 'var(--font-size-base)',
                           fontWeight: 'var(--font-weight-bold)'
                         }}>
-                    {user.first_name} {user.last_name}
+                    {user.first_name || ''} {user.last_name || ''}
                   </span>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium"
