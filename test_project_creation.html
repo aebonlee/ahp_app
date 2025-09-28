@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>프로젝트 생성 테스트</title>
+</head>
+<body>
+    <h1>프로젝트 생성 테스트</h1>
+    <button onclick="testCreate()">프로젝트 생성 테스트</button>
+    <button onclick="viewStorage()">localStorage 확인</button>
+    <button onclick="clearStorage()">localStorage 초기화</button>
+    <pre id="output"></pre>
+
+    <script>
+        function log(msg) {
+            const output = document.getElementById('output');
+            output.textContent += msg + '\n';
+            console.log(msg);
+        }
+
+        function testCreate() {
+            document.getElementById('output').textContent = '';
+            log('=== 프로젝트 생성 테스트 시작 ===');
+            
+            try {
+                // Mock 프로젝트 생성
+                const mockProject = {
+                    id: `mock_${Date.now()}`,
+                    title: 'Test Project ' + new Date().toLocaleTimeString(),
+                    description: 'Test Description',
+                    objective: 'Test Objective',
+                    status: 'draft',
+                    evaluation_mode: 'practical',
+                    workflow_stage: 'creating',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    criteria_count: 0,
+                    alternatives_count: 0
+                };
+                
+                log('생성할 프로젝트: ' + JSON.stringify(mockProject, null, 2));
+                
+                // localStorage에 저장
+                const existingProjects = JSON.parse(localStorage.getItem('mock_projects') || '[]');
+                log('기존 프로젝트 수: ' + existingProjects.length);
+                
+                existingProjects.push(mockProject);
+                localStorage.setItem('mock_projects', JSON.stringify(existingProjects));
+                
+                log('✅ 프로젝트 저장 완료!');
+                log('현재 프로젝트 수: ' + existingProjects.length);
+                
+                viewStorage();
+            } catch (error) {
+                log('❌ 에러: ' + error.message);
+                log(error.stack);
+            }
+        }
+
+        function viewStorage() {
+            log('\n=== localStorage 내용 ===');
+            const projects = JSON.parse(localStorage.getItem('mock_projects') || '[]');
+            log('저장된 프로젝트 수: ' + projects.length);
+            projects.forEach((p, i) => {
+                log(`\n프로젝트 #${i + 1}:`);
+                log(`  ID: ${p.id}`);
+                log(`  제목: ${p.title}`);
+                log(`  설명: ${p.description}`);
+                log(`  상태: ${p.status}`);
+            });
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('mock_projects');
+            log('✅ localStorage 초기화 완료');
+        }
+    </script>
+</body>
+</html>

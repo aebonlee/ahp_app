@@ -1,1 +1,0 @@
-# Projects app for AHP platform
