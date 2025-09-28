@@ -33,7 +33,47 @@ if [ "$FLUSH_DB" = "true" ]; then
     python manage.py makemigrations projects
     python manage.py makemigrations
     
-    # Step 4: Apply all migrations fresh
+    # Step 4: Clean existing database tables before applying new migrations
+    echo "🧹 Cleaning existing database tables..."
+    python manage.py shell <<EOF
+from django.db import connection
+try:
+    with connection.cursor() as cursor:
+        # Drop specific tables that might conflict
+        tables_to_drop = [
+            'ahp_users', 'accounts_user', 'auth_user',
+            'ahp_projects', 'simple_projects', 'projects_project',
+            'project_members', 'criteria', 'project_templates',
+            'django_migrations'
+        ]
+        
+        for table in tables_to_drop:
+            try:
+                cursor.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE;')
+                print(f"✅ Dropped table: {table}")
+            except Exception as e:
+                print(f"⚠️  Table {table} not found or already dropped")
+        
+        # Drop any remaining sequences
+        cursor.execute("""
+            SELECT sequence_name FROM information_schema.sequences 
+            WHERE sequence_schema = 'public'
+        """)
+        sequences = [row[0] for row in cursor.fetchall()]
+        for seq in sequences:
+            try:
+                cursor.execute(f'DROP SEQUENCE IF EXISTS "{seq}" CASCADE;')
+                print(f"✅ Dropped sequence: {seq}")
+            except:
+                pass
+                
+    print("✅ Database cleanup completed")
+except Exception as e:
+    print(f"⚠️  Database cleanup error: {e}")
+    print("Proceeding with migrations anyway...")
+EOF
+    
+    # Step 5: Apply all migrations fresh
     echo "🚀 Applying all migrations from scratch..."
     python manage.py migrate
     
