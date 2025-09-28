@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -o errexit
 
+# Change to the Django app directory
+cd "$(dirname "$0")"
+
 echo "Installing dependencies..."
 pip install -r requirements.txt
 
