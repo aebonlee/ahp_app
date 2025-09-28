@@ -271,7 +271,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       }
     }
     
-    // 기본 AHP 템플릿 구조
+    // 논문 작성 권장: 3개 기준 템플릿 구조
     const templateCriteria = [
       {
         project_id: Number(projectId),
@@ -296,6 +296,14 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         parent_id: null,
         level: 2,
         order_index: 2
+      },
+      {
+        project_id: Number(projectId),
+        name: '기준 3',
+        description: '세 번째 평가 기준 (논문 권장 구조)',
+        parent_id: null,
+        level: 2,
+        order_index: 3
       }
     ];
     
@@ -319,7 +327,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       
       setNewCriterion({ name: '', description: '', parentId: '' });
       setErrors({});
-      alert('✅ 기본 템플릿이 PostgreSQL에 저장되었습니다.');
+      alert('✅ 논문 권장 템플릿(3개 기준)이 저장되었습니다.\n필요시 추가 기준을 입력할 수 있습니다.');
     } catch (error) {
       console.error('Failed to load template data:', error);
       alert('❌ 템플릿 로드 중 오류가 발생했습니다.');
@@ -389,7 +397,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
               <h4 className="font-semibold mb-2" style={{ color: 'var(--status-success-text)' }}>📊 AHP 5단계 계층구조</h4>
               <ul className="list-disc list-inside space-y-1" style={{ color: 'var(--text-secondary)' }}>
                 <li><strong>🎯 Level 1 (목표):</strong> 최종 의사결정 목표</li>
-                <li><strong>📋 Level 2 (기준):</strong> 주요 평가 영역 (3-7개 권장)</li>
+                <li><strong>📋 Level 2 (기준):</strong> 주요 평가 영역 (<span className="text-yellow-700 font-semibold">3개 권장</span>, 최대 7개)</li>
                 <li><strong>🎪 Level 3 (대안):</strong> 선택 가능한 대안들 (표준 AHP)</li>
                 <li><strong>📝 Level 4 (하위기준):</strong> 세분화된 평가 기준</li>
                 <li><strong>🔹 Level 5 (세부기준):</strong> 최상세 수준 기준</li>
@@ -415,7 +423,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
               <ul className="list-disc list-inside space-y-1" style={{ color: 'var(--text-secondary)' }}>
                 <li>기준명은 중복될 수 없습니다</li>
                 <li>기존 데이터를 삭제하면 복구할 수 없습니다</li>
-                <li>너무 많은 기준(9개 이상)은 평가의 일관성을 떨어뜨릴 수 있습니다</li>
+                <li><strong>논문 작성 시 3-5개 기준 권장</strong> (7개 초과 시 일관성 저하)</li>
                 <li>평가방법(쌍대비교/직접입력)은 신중히 선택하세요</li>
               </ul>
             </div>
@@ -447,6 +455,28 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       {renderHelpModal()}
       <Card title="2-1단계 — 기준추가">
         <div className="space-y-6">
+          {/* 논문 작성 권장 구조 안내 */}
+          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mb-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-semibold text-yellow-800">📄 논문 작성 권장: 기본 3개 기준</h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p className="mb-2">학술 논문을 위해 <strong>3개 기준</strong>으로 시작하는 것을 권장합니다. (필요시 최대 7개까지 추가 가능)</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>쌍대비교 횟수: 3개 기준 = 3회, 5개 기준 = 10회, 7개 기준 = 21회</li>
+                    <li>일관성 검증(CR ≤ 0.1) 통과 확률이 높아집니다</li>
+                    <li>기준이 많을수록 평가자의 피로도 증가 및 응답률 저하</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between rounded-lg p-4" style={{ backgroundColor: 'var(--status-info-bg)', border: '1px solid var(--status-info-border)' }}>
             <div>
               <h4 className="font-medium mb-2" style={{ color: 'var(--status-info-text)' }}>📋 프로젝트 기준 설정 가이드</h4>

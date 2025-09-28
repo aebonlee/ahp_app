@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(git commit:*)",
-      "Bash(npm run build:frontend:*)"
+      "Bash(npm run build:frontend:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

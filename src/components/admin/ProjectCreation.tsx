@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import EvaluationModeSelector, { EvaluationMode } from '../evaluation/EvaluationModeSelector';
+import PaperWorkflowGuide from '../guide/PaperWorkflowGuide';
 
 interface ProjectCreationProps {
   onProjectCreated: () => void;
@@ -24,6 +25,7 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
     evaluationMode: 'practical' as EvaluationMode
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showWorkflowGuide, setShowWorkflowGuide] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -98,7 +100,16 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <>
+      {showWorkflowGuide && (
+        <PaperWorkflowGuide
+          currentStep={1}
+          criteriaCount={3}
+          alternativesCount={3}
+          onClose={() => setShowWorkflowGuide(false)}
+        />
+      )}
+      <div className="max-w-2xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           단계 1 — 프로젝트 추가
@@ -106,6 +117,38 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
         <p className="text-gray-600">
           새로운 AHP 의사결정 분석 프로젝트를 생성합니다.
         </p>
+        
+        {/* 논문 작성 권장 구조 안내 */}
+        <div className="mt-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-semibold text-yellow-800">📄 논문 작성 권장 구조</h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p className="mb-2">학술 논문 작성 시 <strong>3개 기준 × 3개 대안</strong> 구조를 권장합니다.</p>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                  <li>명확한 연구 설계와 결과 해석이 용이</li>
+                  <li>일관성 검증(CR ≤ 0.1) 충족 확률 향상</li>
+                  <li>쌍대비교 횟수 최소화 (기준 3회, 대안 9회)</li>
+                  <li>추가 기준/대안은 다음 단계에서 선택 가능</li>
+                </ul>
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowWorkflowGuide(true)}
+                    className="text-xs font-semibold text-yellow-700 hover:text-yellow-900 underline"
+                  >
+                    📚 전체 워크플로우 가이드 보기 →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <Card>
@@ -166,11 +209,17 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-2">📋 프로젝트 생성 후 진행 단계</h4>
             <ol className="text-sm text-blue-700 space-y-1">
-              <li>1. 기준 계층구조 설계 (평가 기준 설정)</li>
-              <li>2. 대안 정의 및 관리 (선택 대안 설정)</li>
-              <li>3. 모델 구축 완료 (프로젝트 완성)</li>
-              <li>4. 평가자 배정 (평가자 초대 및 관리)</li>
+              <li>1️⃣ <strong>평가 기준 설정</strong> (기본 3개, 필요시 추가 가능)</li>
+              <li>2️⃣ <strong>대안 설정</strong> (기본 3개, 필요시 추가 가능)</li>
+              <li>3️⃣ <strong>쌍대비교 평가</strong> (일반 AHP 완료)</li>
+              <li>4️⃣ <strong>결과 분석 및 검증</strong> (CR, 가중치 확인)</li>
+              <li>5️⃣ <strong>퍼지 AHP 분석</strong> (선택사항, 강건성 검증)</li>
             </ol>
+            <div className="mt-3 pt-3 border-t border-blue-200">
+              <p className="text-xs text-blue-600">
+                💡 <strong>TIP:</strong> 일반 AHP 완료 후 동일 구조로 퍼지 AHP를 수행하면 논문의 분석 깊이가 향상됩니다.
+              </p>
+            </div>
           </div>
 
           <div className="flex justify-end space-x-4">
@@ -200,6 +249,7 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
         </p>
       </div>
     </div>
+    </>
   );
 };
 

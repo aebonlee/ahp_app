@@ -233,6 +233,28 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
     <div className="space-y-6">
       <Card title="2-2단계 — 대안추가">
         <div className="space-y-6">
+          {/* 논문 작성 권장 구조 안내 */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 p-4 rounded-r-lg mb-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-semibold text-green-800">🎯 논문 작성 권장: 기본 3개 대안</h3>
+                <div className="mt-2 text-sm text-green-700">
+                  <p className="mb-2">학술 논문을 위해 <strong>3개 대안</strong>으로 시작하는 것을 권장합니다. (필요시 최대 5개까지 추가 가능)</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>쌍대비교 횟수: 3개 대안 = 3회, 4개 대안 = 6회, 5개 대안 = 10회</li>
+                    <li>3개 기준 × 3개 대안 = 총 12회 쌍대만으로 완료 가능</li>
+                    <li>명확한 순위 결정 및 해석이 용이합니다</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <h4 className="font-medium text-green-900 mb-2">📝 프로젝트 대안 설정 가이드</h4>
             <ul className="text-sm text-green-700 space-y-1">
@@ -398,15 +420,22 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
             </div>
           </div>
 
-          {/* Summary */}
+          {/* Summary with Paper Recommendation */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <div className="flex justify-between items-center">
               <div>
                 <h5 className="font-medium text-gray-900">대안 요약</h5>
-                <p className="text-sm text-gray-600">총 {alternatives.length}개 대안 등록됨</p>
+                <p className="text-sm text-gray-600">
+                  총 {alternatives.length}개 대안 등록됨
+                  {alternatives.length === 3 && <span className="ml-2 text-green-600 font-semibold">✅ 논문 권장 구조</span>}
+                  {alternatives.length > 0 && alternatives.length < 3 && <span className="ml-2 text-yellow-600">⚠️ 3개 권장</span>}
+                  {alternatives.length > 5 && <span className="ml-2 text-orange-600">⚠️ 평가 횟수 증가</span>}
+                </p>
               </div>
               <div className="text-sm text-gray-600">
-                평가 순서: {alternatives.map(alt => alt.name).join(' → ')}
+                {alternatives.length > 0 && (
+                  <span>평가 순서: {alternatives.map(alt => alt.name).join(' → ')}</span>
+                )}
               </div>
             </div>
           </div>
