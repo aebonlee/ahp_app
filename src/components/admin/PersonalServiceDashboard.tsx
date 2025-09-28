@@ -1,3 +1,7 @@
+/**
+ * PersonalServiceDashboard - AHP 플랫폼 개인 서비스 대시보드
+ * 프로젝트 생성 워크플로우: 기본정보 → 기준설정 → 대안설정 → 평가자배정
+ */
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
@@ -264,8 +268,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const projectTemplates = {
     blank: { name: '빈 프로젝트', desc: '처음부터 설정' },
     business: { name: '비즈니스 결정', desc: '경영 의사결정 템플릿' },
-    technical: { name: '기술 선택', desc: '기술 대안 비교 템플맿' },
-    academic: { name: '연구 분석', desc: '학술 연구용 템플맿' }
+    technical: { name: '기술 선택', desc: '기술 대안 비교 템플릿' },
+    academic: { name: '연구 분석', desc: '학술 연구용 템플릿' }
   };
 
   // 외부에서 activeTab이 변경되면 내부 activeMenu도 업데이트
@@ -1643,14 +1647,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">새 프로젝트 생성</h3>
       
-      {/* 템플맿 선택 */}
-      <Card title="프로젝트 템플맿 선택">
+      {/* 템플릿 선택 */}
+      <Card title="프로젝트 템플릿 선택">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(projectTemplates).map(([key, template]) => (
             <button
               key={key}
               onClick={() => setProjectTemplate(key as any)}
-              aria-label={`${template.name} 템플맿 선택 - ${template.desc}`}
+              aria-label={`${template.name} 템플릿 선택 - ${template.desc}`}
               aria-pressed={projectTemplate === key}
               className={`p-4 text-center border-2 rounded-lg transition-all ${
                 projectTemplate === key
@@ -1679,19 +1683,19 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               <p className="text-xs text-gray-600">프로젝트명, 설명, 목적</p>
             </div>
             <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 2 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
-              <div className="text-2xl mb-2">👥</div>
-              <h4 className="font-medium text-gray-900 mb-1">2. 평가자 배정</h4>
-              <p className="text-xs text-gray-600">2-3명 평가자 추가</p>
-            </div>
-            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 3 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
               <div className="text-2xl mb-2">🎯</div>
-              <h4 className="font-medium text-gray-900 mb-1">3. 기준 설정</h4>
+              <h4 className="font-medium text-gray-900 mb-1">2. 기준 설정</h4>
               <p className="text-xs text-gray-600">평가 기준 정의</p>
             </div>
+            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 3 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
+              <div className="text-2xl mb-2">📊</div>
+              <h4 className="font-medium text-gray-900 mb-1">3. 대안 설정</h4>
+              <p className="text-xs text-gray-600">선택 대안 정의</p>
+            </div>
             <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 4 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
-              <div className="text-2xl mb-2">✅</div>
-              <h4 className="font-medium text-gray-900 mb-1">4. 완료</h4>
-              <p className="text-xs text-gray-600">프로젝트 생성 완료</p>
+              <div className="text-2xl mb-2">👥</div>
+              <h4 className="font-medium text-gray-900 mb-1">4. 평가자 배정</h4>
+              <p className="text-xs text-gray-600">평가자 초대 및 관리</p>
             </div>
           </div>
 
@@ -1749,49 +1753,73 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                   취소
                 </Button>
                 <Button variant="primary" type="submit" disabled={loading}>
-                  {loading ? '생성 중...' : '다음: 평가자 배정'}
+                  {loading ? '생성 중...' : '다음: 기준 설정'}
                 </Button>
               </div>
             </form>
           )}
 
-          {/* Step 2: 평가자 배정 */}
+          {/* Step 2: 기준 설정 */}
           {newProjectStep === 2 && newProjectId && (
             <div className="space-y-4">
-              <EvaluatorAssignment 
-                projectId={newProjectId} 
-                onComplete={() => setNewProjectStep(3)} 
-              />
+              <div className="text-center py-8">
+                <h3 className="text-lg font-semibold mb-4">평가 기준 설정</h3>
+                <p className="text-gray-600 mb-6">프로젝트에서 사용할 평가 기준을 설정하세요.</p>
+              </div>
               <div className="flex justify-between">
                 <Button variant="secondary" onClick={() => setNewProjectStep(1)}>
                   이전
                 </Button>
-                <Button variant="primary" onClick={() => {
-                  if (projectEvaluators.length > 0) {
-                    setNewProjectStep(3);
-                  } else {
-                    alert('최소 1명 이상의 평가자를 추가해주세요.');
-                  }
-                }}>
-                  다음: 기준 설정
+                <Button variant="primary" onClick={() => setNewProjectStep(3)}>
+                  다음: 대안 설정
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 3: 기준 설정 */}
-          {newProjectStep === 3 && (
+          {/* Step 3: 대안 설정 */}
+          {newProjectStep === 3 && newProjectId && (
             <div className="space-y-4">
               <div className="text-center py-8">
-                <h3 className="text-lg font-semibold mb-4">평가 기준 설정</h3>
-                <p className="text-gray-600 mb-6">프로젝트 생성이 완료되었습니다. 모델 구축에서 기준을 설정하세요.</p>
-                <Button variant="primary" onClick={() => {
-                  setCurrentStep('criteria');
+                <h3 className="text-lg font-semibold mb-4">대안 설정</h3>
+                <p className="text-gray-600 mb-6">비교할 대안들을 설정하세요.</p>
+              </div>
+              <div className="flex justify-between">
+                <Button variant="secondary" onClick={() => setNewProjectStep(2)}>
+                  이전
+                </Button>
+                <Button variant="primary" onClick={() => setNewProjectStep(4)}>
+                  다음: 평가자 배정
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: 평가자 배정 */}
+          {newProjectStep === 4 && newProjectId && (
+            <div className="space-y-4">
+              <EvaluatorAssignment 
+                projectId={newProjectId} 
+                onComplete={() => {
                   handleTabChange('model-builder');
                   setNewProjectStep(1);
                   setNewProjectId(null);
+                }} 
+              />
+              <div className="flex justify-between">
+                <Button variant="secondary" onClick={() => setNewProjectStep(3)}>
+                  이전
+                </Button>
+                <Button variant="primary" onClick={() => {
+                  if (projectEvaluators.length > 0) {
+                    handleTabChange('model-builder');
+                    setNewProjectStep(1);
+                    setNewProjectId(null);
+                  } else {
+                    alert('최소 1명 이상의 평가자를 추가하거나 건너뛰기를 선택하세요.');
+                  }
                 }}>
-                  모델 구축으로 이동
+                  완료 및 모델 구축으로 이동
                 </Button>
               </div>
             </div>

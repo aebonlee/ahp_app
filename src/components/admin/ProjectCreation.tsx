@@ -166,10 +166,10 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-2">📋 프로젝트 생성 후 진행 단계</h4>
             <ol className="text-sm text-blue-700 space-y-1">
-              <li>1. 기준 계층구조 설계 (2-1단계)</li>
-              <li>2. 대안 정의 및 관리 (2-2단계)</li>
-              <li>3. 평가자 배정 (2-3단계)</li>
-              <li>4. 모델 구축 완료 (2-4단계)</li>
+              <li>1. 기준 계층구조 설계 (평가 기준 설정)</li>
+              <li>2. 대안 정의 및 관리 (선택 대안 설정)</li>
+              <li>3. 모델 구축 완료 (프로젝트 완성)</li>
+              <li>4. 평가자 배정 (평가자 초대 및 관리)</li>
             </ol>
           </div>
 

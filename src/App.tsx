@@ -315,10 +315,17 @@ function App() {
 
   const validateSession = async () => {
     try {
+      const token = authService.getAccessToken();
+      if (!token) {
+        console.log('⚠️ 토큰이 없어 세션 검증 건너뜀');
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
       });
       
@@ -335,6 +342,9 @@ function App() {
         // 세션 타이머 시작 (세션 검증 후 세션 관리)
         // localStorage 제거됨 - sessionService에서 세션 관리
         sessionService.startSession();
+      } else if (response.status === 401) {
+        console.log('⚠️ 토큰 만료 - 자동 로그아웃');
+        authService.clearTokens();
       }
     } catch (error) {
       console.error('Session validation failed:', error);

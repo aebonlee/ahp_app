@@ -122,28 +122,42 @@ export const authAPI = {
         data: { user: result.user },
         error: null
       };
-    } catch (error: any) {
+    } catch (error) {
       return {
         data: null,
-        error: error.message || 'Login failed'
+        error: error instanceof Error ? error.message : 'Login failed'
       };
     }
   },
   
   logout: async () => {
-    const result = await authService.logout();
-    return {
-      data: result.success ? { message: 'Logout successful' } : null,
-      error: result.success ? null : result.error
-    };
+    try {
+      const result = await authService.logout();
+      return {
+        data: result.success ? { message: 'Logout successful' } : null,
+        error: result.success ? null : result.error
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Logout failed'
+      };
+    }
   },
   
   refreshToken: async () => {
-    const result = await authService.refreshAccessToken();
-    return {
-      data: result.success ? { message: 'Token refreshed' } : null,
-      error: result.success ? null : result.error
-    };
+    try {
+      const result = await authService.refreshAccessToken();
+      return {
+        data: result.success ? { message: 'Token refreshed' } : null,
+        error: result.success ? null : result.error
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Token refresh failed'
+      };
+    }
   },
   
   verifyToken: async () => {
@@ -153,10 +167,10 @@ export const authAPI = {
         data: user,
         error: null
       };
-    } catch (error: any) {
+    } catch (error) {
       return {
         data: null,
-        error: error.message || 'Token verification failed'
+        error: error instanceof Error ? error.message : 'Token verification failed'
       };
     }
   },
@@ -172,10 +186,10 @@ export const authAPI = {
         data: user,
         error: null
       };
-    } catch (error: any) {
+    } catch (error) {
       return {
         data: null,
-        error: error.message || 'Failed to get user info'
+        error: error instanceof Error ? error.message : 'Failed to get user info'
       };
     }
   }

@@ -27,6 +27,7 @@ export const API_ENDPOINTS = {
     REGISTER: '/api/auth/register/',
     LOGOUT: '/api/auth/logout/',
     ME: '/api/auth/users/me/',
+    PROFILE: '/api/auth/profile/',
     REFRESH: '/api/auth/token/refresh/'
   },
   // Projects - 실제 Django Service API
