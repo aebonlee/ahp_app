@@ -1,3 +1,7 @@
+/**
+ * PersonalServiceDashboard - AHP 플랫폼 개인 서비스 대시보드
+ * 프로젝트 생성 워크플로우: 기본정보 → 기준설정 → 대안설정 → 평가자배정
+ */
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
