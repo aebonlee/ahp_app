@@ -28,6 +28,15 @@ class User(AbstractUser):
     can_create_projects = models.BooleanField(default=False, verbose_name='프로젝트 생성 권한')
     max_projects = models.IntegerField(default=5, verbose_name='최대 프로젝트 수')
     
+    # 소셜 로그인 지원 (향후 확장용)
+    provider = models.CharField(max_length=20, blank=True, default='email', choices=[
+        ('email', '이메일'),
+        ('google', '구글'),
+        ('naver', '네이버'),
+        ('kakao', '카카오'),
+    ])
+    social_id = models.CharField(max_length=100, blank=True, verbose_name='소셜 로그인 ID')
+    
     # 프로필
     profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
     bio = models.TextField(blank=True, verbose_name='자기소개')

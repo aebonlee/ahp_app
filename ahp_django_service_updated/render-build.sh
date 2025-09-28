@@ -103,11 +103,11 @@ EOF
     python manage.py shell <<EOF
 from accounts.models import User
 try:
-    # 슈퍼 관리자 생성
-    if not User.objects.filter(username='admin').exists():
+    # 슈퍼 관리자 생성 (이메일 기반)
+    if not User.objects.filter(email='admin@ahp.com').exists():
         admin_user = User.objects.create_user(
-            username='admin',
-            email='admin@ahp.com',
+            username='admin_ahp',  # username은 고유값으로만 사용
+            email='admin@ahp.com',  # 실제 로그인 ID
             password='admin123!',
             role='super_admin',
             can_create_projects=True,
@@ -115,19 +115,39 @@ try:
             is_staff=True,
             is_superuser=True
         )
-        print(f"✅ 슈퍼 관리자 생성됨: {admin_user.username}")
+        print(f"✅ 슈퍼 관리자 생성됨: {admin_user.email}")
     
-    # 결제 회원 테스트 계정 생성  
-    if not User.objects.filter(username='testuser').exists():
-        test_user = User.objects.create_user(
-            username='testuser',
-            email='test@test.com',
-            password='test123!',
-            role='service_admin',
-            can_create_projects=True,
-            max_projects=10
+    # 결제 회원 테스트 계정들 생성 (다양한 이메일 도메인)
+    test_accounts = [
+        ('test@gmail.com', 'gmail_user', '구글 이메일 테스트'),
+        ('test@naver.com', 'naver_user', '네이버 이메일 테스트'), 
+        ('test@kakao.com', 'kakao_user', '카카오 이메일 테스트'),
+        ('test@test.com', 'basic_user', '기본 테스트')
+    ]
+    
+    for email, username, description in test_accounts:
+        if not User.objects.filter(email=email).exists():
+            test_user = User.objects.create_user(
+                username=username,
+                email=email,  # 실제 로그인 ID
+                password='test123!',
+                role='service_admin',
+                can_create_projects=True,
+                max_projects=10
+            )
+            print(f"✅ {description} 계정 생성됨: {test_user.email}")
+    
+    # 일반 회원 테스트 계정
+    if not User.objects.filter(email='evaluator@test.com').exists():
+        eval_user = User.objects.create_user(
+            username='evaluator_user',
+            email='evaluator@test.com',
+            password='eval123!',
+            role='evaluator',
+            can_create_projects=False,
+            max_projects=0
         )
-        print(f"✅ 결제 회원 테스트 계정 생성됨: {test_user.username}")
+        print(f"✅ 일반 회원 계정 생성됨: {eval_user.email}")
         
     print("✅ 계정 생성 완료")
 except Exception as e:
