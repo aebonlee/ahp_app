@@ -1,12 +1,15 @@
 {
   "files": {
-    "main.css": "./static/css/main.efaaf5bd.css",
-    "main.js": "./static/js/main.a1cac37a.js",
-    "static/js/206.c8c95004.chunk.js": "./static/js/206.c8c95004.chunk.js",
-    "index.html": "./index.html"
+    "main.css": "/ahp_app/static/css/main.53f2a159.css",
+    "main.js": "/ahp_app/static/js/main.bab42700.js",
+    "static/js/453.8ffde8ac.chunk.js": "/ahp_app/static/js/453.8ffde8ac.chunk.js",
+    "index.html": "/ahp_app/index.html",
+    "main.53f2a159.css.map": "/ahp_app/static/css/main.53f2a159.css.map",
+    "main.bab42700.js.map": "/ahp_app/static/js/main.bab42700.js.map",
+    "453.8ffde8ac.chunk.js.map": "/ahp_app/static/js/453.8ffde8ac.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.efaaf5bd.css",
-    "static/js/main.a1cac37a.js"
+    "static/css/main.53f2a159.css",
+    "static/js/main.bab42700.js"
   ]
 }
