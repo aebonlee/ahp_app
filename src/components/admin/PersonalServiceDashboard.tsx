@@ -5,6 +5,8 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import MyProjects from './MyProjects';
+import ProjectCreation from './ProjectCreation';
 import CriteriaManagement from './CriteriaManagement';
 import AlternativeManagement from './AlternativeManagement';
 import EvaluatorAssignment from './EvaluatorAssignment';
@@ -183,6 +185,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   } | null>(null);
   // 진행률 모니터링 페이지네이션 상태
   const [currentMonitoringPage, setCurrentMonitoringPage] = useState(1);
+  
+  // 프로젝트 목록 새로고침을 위한 트리거
+  const [projectRefreshTrigger, setProjectRefreshTrigger] = useState(0);
   
   const [activeMenu, setActiveMenu] = useState<'dashboard' | 'projects' | 'creation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash'>(() => {
     // URL 파라미터에서 직접 demographic-survey 확인
@@ -432,6 +437,10 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           // 새 프로젝트 생성 완료 - App.tsx에서 관리됨
           setSelectedProjectId(newProject.id || '');
           console.log('✅ 새 프로젝트 생성 완료:', newProject.title);
+          
+          // 프로젝트 목록 새로고침 트리거
+          setProjectRefreshTrigger(prev => prev + 1);
+          console.log('🔄 프로젝트 목록 새로고침 트리거 발동');
         } else {
           throw new Error('프로젝트 생성에 실패했습니다.');
         }
@@ -981,7 +990,48 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {renderMyProjects()}
+        <MyProjects
+          refreshTrigger={projectRefreshTrigger}
+          onCreateNew={() => handleTabChange('creation')}
+          onProjectSelect={(project) => {
+            setSelectedProjectId(project.id || '');
+            console.log('프로젝트 선택:', project.title);
+          }}
+          onEditProject={(project) => {
+            setEditingProject({
+              id: project.id || '',
+              title: project.title,
+              description: project.description || '',
+              status: project.status || 'draft',
+              evaluation_mode: project.evaluation_mode || 'practical',
+              workflow_stage: project.workflow_stage || 'creating',
+              evaluator_count: 0,
+              completion_rate: 0,
+              criteria_count: 0,
+              alternatives_count: 0,
+              last_modified: new Date().toISOString().split('T')[0],
+              evaluation_method: 'pairwise'
+            });
+            setProjectForm({
+              title: project.title,
+              description: project.description || '',
+              objective: project.objective || '',
+              evaluation_method: 'pairwise',
+              evaluation_mode: project.evaluation_mode || 'practical',
+              workflow_stage: project.workflow_stage || 'creating'
+            });
+            setIsProjectFormOpen(true);
+          }}
+          onDeleteProject={handleDeleteProject}
+          onModelBuilder={(project) => {
+            setSelectedProjectId(project.id || '');
+            handleTabChange('model-builder');
+          }}
+          onAnalysis={(project) => {
+            setSelectedProjectId(project.id || '');
+            handleTabChange('analysis');
+          }}
+        />
       </div>
     </div>
   );
@@ -2975,7 +3025,50 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       case 'dashboard':
         return renderOverview();
       case 'projects':
-        return renderMyProjects();
+        return (
+          <MyProjects
+            refreshTrigger={projectRefreshTrigger}
+            onCreateNew={() => setActiveMenu('creation')}
+            onProjectSelect={(project) => {
+              setSelectedProjectId(project.id || '');
+              console.log('프로젝트 선택:', project.title);
+            }}
+            onEditProject={(project) => {
+              setEditingProject({
+                id: project.id || '',
+                title: project.title,
+                description: project.description || '',
+                status: project.status || 'draft',
+                evaluation_mode: project.evaluation_mode || 'practical',
+                workflow_stage: project.workflow_stage || 'creating',
+                evaluator_count: 0,
+                completion_rate: 0,
+                criteria_count: 0,
+                alternatives_count: 0,
+                last_modified: new Date().toISOString().split('T')[0],
+                evaluation_method: 'pairwise'
+              });
+              setProjectForm({
+                title: project.title,
+                description: project.description || '',
+                objective: project.objective || '',
+                evaluation_method: 'pairwise',
+                evaluation_mode: project.evaluation_mode || 'practical',
+                workflow_stage: project.workflow_stage || 'creating'
+              });
+              setIsProjectFormOpen(true);
+            }}
+            onDeleteProject={handleDeleteProject}
+            onModelBuilder={(project) => {
+              setSelectedProjectId(project.id || '');
+              setActiveMenu('model-builder');
+            }}
+            onAnalysis={(project) => {
+              setSelectedProjectId(project.id || '');
+              setActiveMenu('analysis');
+            }}
+          />
+        );
       case 'creation':
         return renderProjectCreation();
       case 'model-builder':
