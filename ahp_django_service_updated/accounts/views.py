@@ -97,51 +97,49 @@ def register(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
-    """로그인 - username 또는 email 지원"""
-    serializer = UserLoginSerializer(data=request.data)
-    if serializer.is_valid():
-        username_or_email = serializer.validated_data['username']
-        password = serializer.validated_data['password']
+    """로그인 - 간단 버전"""
+    try:
+        data = request.data
+        username_or_email = data.get('username', '')
+        password = data.get('password', '')
+        
+        if not username_or_email or not password:
+            return Response(
+                {'error': '사용자명과 비밀번호를 입력해주세요.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         # username으로 먼저 시도
-        user = authenticate(
-            username=username_or_email,
-            password=password
-        )
+        user = authenticate(username=username_or_email, password=password)
         
-        # username 실패 시 email로 시도
+        # 실패 시 email로 시도
         if not user and '@' in username_or_email:
             try:
                 user_obj = User.objects.get(email=username_or_email)
-                user = authenticate(
-                    username=user_obj.username,
-                    password=password
-                )
+                user = authenticate(username=user_obj.username, password=password)
             except User.DoesNotExist:
-                user = None
+                pass
         
-        if user:
+        if user and user.is_active:
             # JWT 토큰 생성
             refresh = RefreshToken.for_user(user)
             
-            # 활동 로그 기록 (테이블이 없으면 스킵)
+            # 마지막 로그인 IP 업데이트 (간단히)
             try:
-                UserActivityLog.objects.create(
-                    user=user,
-                    action='login',
-                    description='로그인',
-                    ip_address=get_client_ip(request),
-                    user_agent=request.META.get('HTTP_USER_AGENT', '')
-                )
+                user.last_login_ip = get_client_ip(request)
+                user.save(update_fields=['last_login_ip'])
             except Exception as e:
-                print(f"활동 로그 저장 실패: {e}")
-            
-            # 마지막 로그인 IP 업데이트
-            user.last_login_ip = get_client_ip(request)
-            user.save()
+                print(f"IP 업데이트 실패: {e}")
             
             return Response({
-                'user': UserSerializer(user).data,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'role': user.role,
+                    'is_admin': user.is_admin,
+                    'can_create_projects': user.can_create_projects
+                },
                 'tokens': {
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
@@ -152,8 +150,13 @@ def login(request):
             {'error': '아이디 또는 비밀번호가 올바르지 않습니다.'},
             status=status.HTTP_401_UNAUTHORIZED
         )
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    except Exception as e:
+        print(f"로그인 오류: {e}")
+        return Response(
+            {'error': '로그인 처리 중 오류가 발생했습니다.'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['POST'])

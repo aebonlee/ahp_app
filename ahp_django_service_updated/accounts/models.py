@@ -12,13 +12,12 @@ class User(AbstractUser):
     """
     
     ROLE_CHOICES = [
-        ('super_admin', '슈퍼 관리자'),
-        ('service_admin', '서비스 관리자'),
-        ('service_user', '서비스 사용자'),
-        ('evaluator', '평가자'),
+        ('super_admin', '슈퍼 관리자'),  # 시스템 전체 관리
+        ('service_admin', '결제 회원'),  # 개인 서비스 이용, 프로젝트 생성 권한
+        ('evaluator', '일반 회원'),      # 평가하여 포인트 획득
     ]
     
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='service_user')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='evaluator')
     phone = models.CharField(max_length=20, blank=True)
     organization = models.CharField(max_length=200, blank=True, verbose_name='소속')
     department = models.CharField(max_length=100, blank=True, verbose_name='부서')
@@ -68,9 +67,9 @@ class User(AbstractUser):
         """새 프로젝트 생성 가능 여부"""
         if self.role == 'super_admin':
             return True
-        if not self.can_create_projects:
-            return False
-        return self.get_project_count() < self.max_projects
+        if self.role == 'service_admin':  # 결제 회원
+            return self.get_project_count() < self.max_projects
+        return False  # 일반 회원(evaluator)은 프로젝트 생성 불가
 
 
 class UserProfile(models.Model):

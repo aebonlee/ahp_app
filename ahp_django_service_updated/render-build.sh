@@ -98,11 +98,41 @@ EOF
     echo "🚀 Applying all migrations from scratch..."
     python manage.py migrate
     
-    # Create superuser (only if credentials are set)
-    if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ] && [ -n "$DJANGO_SUPERUSER_EMAIL" ]; then
-        echo "Creating superuser..."
-        python manage.py createsuperuser --noinput --username "$DJANGO_SUPERUSER_USERNAME" --email "$DJANGO_SUPERUSER_EMAIL" || true
-    fi
+    # Create superuser with custom role
+    echo "Creating superuser and test accounts..."
+    python manage.py shell <<EOF
+from accounts.models import User
+try:
+    # 슈퍼 관리자 생성
+    if not User.objects.filter(username='admin').exists():
+        admin_user = User.objects.create_user(
+            username='admin',
+            email='admin@ahp.com',
+            password='admin123!',
+            role='super_admin',
+            can_create_projects=True,
+            max_projects=999,
+            is_staff=True,
+            is_superuser=True
+        )
+        print(f"✅ 슈퍼 관리자 생성됨: {admin_user.username}")
+    
+    # 결제 회원 테스트 계정 생성  
+    if not User.objects.filter(username='testuser').exists():
+        test_user = User.objects.create_user(
+            username='testuser',
+            email='test@test.com',
+            password='test123!',
+            role='service_admin',
+            can_create_projects=True,
+            max_projects=10
+        )
+        print(f"✅ 결제 회원 테스트 계정 생성됨: {test_user.username}")
+        
+    print("✅ 계정 생성 완료")
+except Exception as e:
+    print(f"⚠️  계정 생성 오류: {e}")
+EOF
 else
     # Standard migration fix (tries to preserve data)
     echo "========================================="
