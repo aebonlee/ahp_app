@@ -78,6 +78,7 @@ class Project(models.Model):
     settings = models.JSONField(default=dict, blank=True)
     
     class Meta:
+        app_label = 'projects'
         db_table = 'simple_projects'
         ordering = ['-created_at']
         
@@ -116,6 +117,7 @@ class ProjectMember(models.Model):
     invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='invited_members')
     
     class Meta:
+        app_label = 'projects'
         db_table = 'project_members'
         unique_together = ['project', 'user']
         
@@ -150,6 +152,7 @@ class Criteria(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        app_label = 'projects'
         db_table = 'criteria'
         ordering = ['level', 'order']
         unique_together = ['project', 'name']
@@ -184,6 +187,7 @@ class ProjectTemplate(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     
     class Meta:
+        app_label = 'projects'
         db_table = 'project_templates'
         
     def __str__(self):
