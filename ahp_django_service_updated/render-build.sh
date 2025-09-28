@@ -29,9 +29,12 @@ if [ "$FLUSH_DB" = "true" ]; then
     
     # Step 3: Create fresh migration files
     echo "📝 Creating fresh migration files..."
-    python manage.py makemigrations accounts
-    python manage.py makemigrations projects
+    python manage.py makemigrations accounts --name "initial_user_models"
+    python manage.py makemigrations projects --name "initial_project_models" 
     python manage.py makemigrations
+    
+    echo "📋 Generated migrations:"
+    find . -name "*.py" -path "*/migrations/*" -not -name "__init__.py" | head -10
     
     # Step 4: Complete database cleanup (all tables and sequences)
     echo "🧹 Performing complete database cleanup..."
