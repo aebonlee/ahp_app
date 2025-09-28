@@ -1,3 +1,6 @@
+import authService from './authService';
+import { API_BASE_URL } from '../config/api';
+
 // 세션 관리 서비스 (JWT 기반 - localStorage 제거됨)
 class SessionService {
   private static instance: SessionService;
@@ -289,9 +292,19 @@ class SessionService {
   // 세션 새로고침
   private async refreshSession(): Promise<void> {
     try {
-      await fetch('/api/auth/profile', {
+      const token = authService.getAccessToken();
+      if (!token) {
+        console.log('⚠️ 토큰 없음 - 세션 새로고침 건너뜀');
+        return;
+      }
+
+      await fetch(`${API_BASE_URL}/api/auth/profile`, {
         credentials: 'include',
-        method: 'POST'
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
     } catch (error) {
       console.error('세션 새로고침 실패:', error);
