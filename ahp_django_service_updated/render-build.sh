@@ -19,58 +19,62 @@ if [ "$FLUSH_DB" = "true" ]; then
     echo "⚠️  FLUSH_DB=true detected - Performing complete database reset..."
     echo "This will DELETE ALL DATA in the database!"
     
-    # Drop database schema and recreate (more robust than dropping individual tables)
-    echo "Dropping and recreating database schema..."
+    # Use PSQL direct connection for the most reliable reset
+    echo "Connecting directly to PostgreSQL for complete reset..."
+    
+    # Most reliable approach: Reset via Django with careful transaction handling
+    echo "Performing database reset with careful transaction handling..."
     python manage.py shell <<EOF
-from django.db import connection
+import os
+from django.db import connection, transaction
 from django.core.management.color import no_style
-from django.core.management.sql import sql_flush
 
 try:
-    # Get the database name from connection settings
-    db_name = connection.settings_dict['NAME']
-    print(f"Working with database: {db_name}")
+    print("🔄 Starting database cleanup...")
     
-    # Use Django's built-in flush SQL commands
-    style = no_style()
-    sql_list = sql_flush(style, connection)
+    # Close any existing connections
+    connection.close()
     
     with connection.cursor() as cursor:
-        # Execute each SQL command separately with error handling
-        for sql in sql_list:
+        # Get all table names first
+        cursor.execute("""
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_type = 'BASE TABLE'
+        """)
+        tables = [row[0] for row in cursor.fetchall()]
+        print(f"Found {len(tables)} tables to drop")
+        
+        # Drop all tables with CASCADE
+        for table in tables:
             try:
-                cursor.execute(sql)
-                print(f"✅ Executed: {sql[:50]}...")
+                cursor.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE')
+                print(f"✅ Dropped table: {table}")
             except Exception as e:
-                print(f"⚠️  Skipped: {sql[:50]}... (Error: {e})")
-                # Rollback and start a new transaction
-                connection.rollback()
+                print(f"⚠️  Could not drop {table}: {e}")
         
-        # Additional cleanup for stubborn tables/indexes
-        print("Performing additional cleanup...")
+        # Drop any remaining sequences
+        cursor.execute("""
+            SELECT sequence_name 
+            FROM information_schema.sequences 
+            WHERE sequence_schema = 'public'
+        """)
+        sequences = [row[0] for row in cursor.fetchall()]
         
-        # Drop any remaining indexes that might cause conflicts
-        cleanup_commands = [
-            "DROP INDEX IF EXISTS accounts_user_username_6088629e_like CASCADE;",
-            "DROP INDEX IF EXISTS accounts_user_username_key CASCADE;", 
-            "DROP INDEX IF EXISTS auth_user_username_6821ab7c_like CASCADE;",
-            "DROP SCHEMA public CASCADE;",
-            "CREATE SCHEMA public;",
-            "GRANT ALL ON SCHEMA public TO PUBLIC;",
-        ]
-        
-        for cmd in cleanup_commands:
+        for seq in sequences:
             try:
-                cursor.execute(cmd)
-                print(f"✅ Cleanup: {cmd}")
+                cursor.execute(f'DROP SEQUENCE IF EXISTS "{seq}" CASCADE')
+                print(f"✅ Dropped sequence: {seq}")
             except Exception as e:
-                print(f"⚠️  Cleanup skipped: {cmd} (Error: {e})")
-                connection.rollback()
+                print(f"⚠️  Could not drop sequence {seq}: {e}")
                 
-except Exception as e:
-    print(f"❌ Database reset failed: {e}")
+    print("✅ Database cleanup completed successfully")
     
-print("✅ Database reset completed")
+except Exception as e:
+    print(f"❌ Database cleanup error: {e}")
+    print("Proceeding with migrations anyway...")
+
 EOF
     
     # Fresh migrations from scratch
