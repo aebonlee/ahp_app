@@ -25,7 +25,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         """현재 로그인한 사용자 정보"""
         serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
+        # 프론트엔드 호환성을 위해 user 키로 감싸서 반환
+        return Response({'user': serializer.data})
     
     @action(detail=False, methods=['put'])
     def update_profile(self, request):
@@ -176,8 +177,9 @@ def logout(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_profile(request):
-    """현재 사용자 프로필 조회"""
+    """현재 사용자 프로필 조회 (호환성용)"""
     serializer = UserSerializer(request.user)
+    # App.tsx validateSession과 호환되도록 user 키로 감싸서 반환
     return Response({'user': serializer.data})
 
 
