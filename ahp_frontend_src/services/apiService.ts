@@ -116,11 +116,18 @@ const apiClient = new APIClient(API_BASE_URL);
 // 인증 API (authService로 대체되었지만 호환성 유지)
 export const authAPI = {
   login: async (credentials: { username: string; password: string }) => {
-    const result = await authService.login(credentials.username, credentials.password);
-    return {
-      data: result.success ? { user: result.user } : null,
-      error: result.success ? null : result.error
-    };
+    try {
+      const result = await authService.login(credentials.username, credentials.password);
+      return {
+        data: { user: result.user },
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Login failed'
+      };
+    }
   },
   
   logout: async () => {
