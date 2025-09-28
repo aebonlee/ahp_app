@@ -37,6 +37,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
     { id: 'progress-monitoring', label: '진행률 모니터링', icon: '📈' },
     { id: 'results-analysis', label: '결과 분석', icon: '📊' },
     { id: 'paper-management', label: '논문 작성 관리', icon: '📝' },
+    
+    // AI 논문 지원 시스템 메뉴
+    { id: 'ai-paper-assistant', label: '🤖 AI 논문 지원', icon: '🤖', isAiMenu: true },
+    { id: 'ai-ahp-methodology', label: '    AHP 방법론 설명', icon: '1️⃣', isAiSubmenu: true },
+    { id: 'ai-fuzzy-methodology', label: '    퍼지 AHP 방법론', icon: '2️⃣', isAiSubmenu: true },
+    { id: 'ai-paper-generation', label: '    내 프로젝트 논문 작성', icon: '3️⃣', isAiSubmenu: true },
+    { id: 'ai-results-interpretation', label: '    AI 결과 분석 & 해석', icon: '4️⃣', isAiSubmenu: true },
+    { id: 'ai-quality-validation', label: '    논문 품질 검증', icon: '5️⃣', isAiSubmenu: true },
+    { id: 'ai-materials-generation', label: '    학술 자료 생성', icon: '6️⃣', isAiSubmenu: true },
+    { id: 'ai-chatbot-assistant', label: '    AI 챗봇 도우미', icon: '7️⃣', isAiSubmenu: true },
+    
     { id: 'export-reports', label: '보고서 내보내기', icon: '📤' },
     { id: 'workshop-management', label: '워크숍 관리', icon: '🎯' },
     { id: 'decision-support-system', label: '의사결정 지원', icon: '🧠' },
@@ -129,9 +140,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
         )}
         
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          {menuItems.map((item) => {
+          {menuItems.map((item: any) => {
             const isModeSwitch = item.id.startsWith('mode-switch-');
+            const isAiMenu = item.isAiMenu;
+            const isAiSubmenu = item.isAiSubmenu;
             const isActive = activeTab === item.id;
+            
             const handleClick = () => {
               if (isModeSwitch && onModeSwitch) {
                 if (item.id === 'mode-switch-to-evaluator') {
@@ -150,65 +164,102 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
                 onClick={handleClick}
                 className="w-full flex items-center text-left transition-luxury group hover:scale-105"
                 style={{
-                  padding: 'var(--space-3) var(--space-4)',
+                  padding: isAiSubmenu 
+                    ? 'var(--space-2) var(--space-6)' 
+                    : 'var(--space-3) var(--space-4)',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: isActive 
                     ? 'var(--gold-primary)' 
+                    : isAiMenu
+                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    : isAiSubmenu
+                    ? 'var(--bg-elevated)'
                     : isModeSwitch 
                     ? 'var(--bg-elevated)' 
                     : 'transparent',
                   color: isActive 
                     ? 'white' 
+                    : isAiMenu
+                    ? 'white'
+                    : isAiSubmenu
+                    ? 'var(--accent-primary)'
                     : isModeSwitch 
                     ? 'var(--color-warning)' 
                     : 'var(--text-secondary)',
                   border: '1px solid',
                   borderColor: isActive 
                     ? 'var(--gold-primary)' 
+                    : isAiMenu
+                    ? '#667eea'
+                    : isAiSubmenu
+                    ? 'var(--accent-light)'
                     : isModeSwitch 
                     ? 'var(--color-warning)' 
                     : 'transparent',
-                  fontWeight: 'var(--font-weight-medium)',
-                  boxShadow: isActive ? 'var(--shadow-gold)' : 'var(--shadow-xs)'
+                  fontWeight: isAiMenu 
+                    ? 'var(--font-weight-bold)' 
+                    : 'var(--font-weight-medium)',
+                  boxShadow: isActive 
+                    ? 'var(--shadow-gold)' 
+                    : isAiMenu 
+                    ? '0 4px 12px rgba(102, 126, 234, 0.3)' 
+                    : 'var(--shadow-xs)',
+                  marginLeft: isAiSubmenu ? 'var(--space-4)' : '0',
+                  fontSize: isAiSubmenu ? 'var(--font-size-xs)' : 'var(--font-size-sm)'
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.backgroundColor = isModeSwitch 
+                    e.currentTarget.style.backgroundColor = isAiMenu
+                      ? 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
+                      : isAiSubmenu
+                      ? 'var(--accent-light)'
+                      : isModeSwitch 
                       ? 'var(--color-warning)' 
                       : 'var(--bg-elevated)';
-                    e.currentTarget.style.color = isModeSwitch 
+                    e.currentTarget.style.color = isAiMenu || isAiSubmenu || isModeSwitch 
                       ? 'white' 
                       : 'var(--text-primary)';
-                    e.currentTarget.style.borderColor = isModeSwitch 
-                      ? 'var(--color-warning)' 
-                      : 'var(--border-medium)';
-                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                    e.currentTarget.style.boxShadow = isAiMenu 
+                      ? '0 6px 16px rgba(102, 126, 234, 0.4)' 
+                      : 'var(--shadow-sm)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.backgroundColor = isModeSwitch 
+                    e.currentTarget.style.backgroundColor = isAiMenu
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      : isAiSubmenu
+                      ? 'var(--bg-elevated)'
+                      : isModeSwitch 
                       ? 'var(--bg-elevated)' 
                       : 'transparent';
-                    e.currentTarget.style.color = isModeSwitch 
+                    e.currentTarget.style.color = isAiMenu
+                      ? 'white'
+                      : isAiSubmenu
+                      ? 'var(--accent-primary)'
+                      : isModeSwitch 
                       ? 'var(--color-warning)' 
                       : 'var(--text-secondary)';
-                    e.currentTarget.style.borderColor = isModeSwitch 
-                      ? 'var(--color-warning)' 
-                      : 'transparent';
-                    e.currentTarget.style.boxShadow = 'var(--shadow-xs)';
+                    e.currentTarget.style.boxShadow = isAiMenu 
+                      ? '0 4px 12px rgba(102, 126, 234, 0.3)' 
+                      : 'var(--shadow-xs)';
                   }
                 }}
               >
-                <span className="text-xl mr-3" style={{ fontSize: 'var(--font-size-lg)' }}>
+                <span className="text-xl mr-3" style={{ 
+                  fontSize: isAiSubmenu ? 'var(--font-size-base)' : 'var(--font-size-lg)',
+                  minWidth: isAiSubmenu ? '1.5rem' : '2rem'
+                }}>
                   {item.icon}
                 </span>
                 {!isCollapsed && (
                   <span className="font-semibold" 
                         style={{ 
                           fontFamily: 'Inter, system-ui, sans-serif',
-                          fontSize: 'var(--font-size-sm)',
-                          fontWeight: 'var(--font-weight-semibold)'
+                          fontSize: isAiSubmenu ? 'var(--font-size-xs)' : 'var(--font-size-sm)',
+                          fontWeight: isAiMenu 
+                            ? 'var(--font-weight-bold)' 
+                            : 'var(--font-weight-semibold)'
                         }}>
                     {item.label}
                   </span>
