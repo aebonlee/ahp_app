@@ -207,6 +207,26 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                 </p>
               )}
 
+              {/* 평가 모드 표시 */}
+              <div className="mb-3 px-3 py-2 rounded-lg" style={{ 
+                backgroundColor: project.evaluation_mode === 'fuzzy_ahp' ? 'var(--color-purple-pastel-1)' : 'var(--color-gold-pastel-1)',
+                border: `1px solid ${project.evaluation_mode === 'fuzzy_ahp' ? 'var(--color-purple-pastel-3)' : 'var(--color-gold-pastel-3)'}`
+              }}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    평가 방식
+                  </span>
+                  <span className="text-sm font-semibold" style={{ 
+                    color: project.evaluation_mode === 'fuzzy_ahp' ? 'var(--color-purple-dark-1)' : 'var(--color-gold-dark-1)'
+                  }}>
+                    {project.evaluation_mode === 'fuzzy_ahp' ? '🔮 퍼지 AHP' : 
+                     project.evaluation_mode === 'direct_input' ? '⌨️ 직접입력' :
+                     project.evaluation_mode === 'theoretical' ? '📚 이론적' :
+                     '⚖️ 쌍대비교(권장)'}
+                  </span>
+                </div>
+              </div>
+
               {/* 프로젝트 통계 */}
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="text-center p-2 rounded" style={{ backgroundColor: 'var(--bg-subtle)' }}>
