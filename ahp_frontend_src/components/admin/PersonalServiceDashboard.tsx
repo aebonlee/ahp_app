@@ -1679,19 +1679,19 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               <p className="text-xs text-gray-600">프로젝트명, 설명, 목적</p>
             </div>
             <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 2 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
-              <div className="text-2xl mb-2">👥</div>
-              <h4 className="font-medium text-gray-900 mb-1">2. 평가자 배정</h4>
-              <p className="text-xs text-gray-600">2-3명 평가자 추가</p>
-            </div>
-            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 3 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
               <div className="text-2xl mb-2">🎯</div>
-              <h4 className="font-medium text-gray-900 mb-1">3. 기준 설정</h4>
+              <h4 className="font-medium text-gray-900 mb-1">2. 기준 설정</h4>
               <p className="text-xs text-gray-600">평가 기준 정의</p>
             </div>
+            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 3 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
+              <div className="text-2xl mb-2">📊</div>
+              <h4 className="font-medium text-gray-900 mb-1">3. 대안 설정</h4>
+              <p className="text-xs text-gray-600">선택 대안 정의</p>
+            </div>
             <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 4 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
-              <div className="text-2xl mb-2">✅</div>
-              <h4 className="font-medium text-gray-900 mb-1">4. 완료</h4>
-              <p className="text-xs text-gray-600">프로젝트 생성 완료</p>
+              <div className="text-2xl mb-2">👥</div>
+              <h4 className="font-medium text-gray-900 mb-1">4. 평가자 배정</h4>
+              <p className="text-xs text-gray-600">평가자 초대 및 관리</p>
             </div>
           </div>
 
