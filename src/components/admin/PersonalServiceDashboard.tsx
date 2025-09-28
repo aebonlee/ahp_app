@@ -3939,127 +3939,209 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           </p>
         </div>
         
-        <div className="space-y-4">
-          {/* First Row - Core Functions (9 items - added Fuzzy AHP & AI Paper) */}
-          <div className="grid grid-cols-3 lg:grid-cols-9 gap-4">
-            {[
-              { id: 'dashboard', label: '대시보드', icon: '🏠', tooltip: '프로젝트 현황과 통계를 한눈에 확인', priority: 'high' },
-              { id: 'projects', label: '내 프로젝트', icon: '📂', tooltip: '생성한 모든 프로젝트 관리 및 편집', priority: 'high' },
-              { id: 'trash', label: '휴지통', icon: '🗑️', tooltip: '삭제된 프로젝트 복원 및 영구 삭제', priority: 'high' },
-              { id: 'creation', label: '새 프로젝트', icon: '➕', tooltip: '새로운 AHP 분석 프로젝트 생성', priority: 'high' },
-              { id: 'model-builder', label: '모델 구축', icon: '🏗️', tooltip: '기준과 대안을 설정하여 모델 구성', priority: 'high' },
-              { id: 'fuzzy-ahp', label: '퍼지 AHP', icon: '🔮', tooltip: '불확실성을 반영한 퍼지 AHP 분석', priority: 'high' },
-              { id: 'ai-paper', label: 'AI 논문', icon: '📝', tooltip: 'AI 기반 논문 작성 지원', priority: 'high' },
-              { id: 'evaluators', label: '평가자 관리', icon: '👥', tooltip: '평가 참여자 초대 및 권한 관리' },
-              { id: 'monitoring', label: '진행률 확인', icon: '📈', tooltip: '평가 진행 상황 실시간 모니터링' }
-            ].map((item) => (
-              <div key={item.id} className="relative group">
-                <button
-                  onClick={() => handleTabChange(item.id)}
-                  aria-label={item.label}
-                  className="w-full p-4 lg:p-5 rounded-xl border-2 transition-all duration-300 text-center hover:scale-[1.02] hover:shadow-xl transform"
-                  style={{
-                    backgroundColor: activeMenu === item.id ? 'var(--color-gold-pastel-2)' : 'var(--neutral-50)',
-                    borderColor: activeMenu === item.id ? 'var(--color-gold-dark-1)' : 'var(--color-gold-pastel-3)',
-                    color: activeMenu === item.id ? 'var(--color-gold-dark-2)' : 'var(--text-primary)',
-                    transform: activeMenu === item.id ? 'scale(1.02)' : 'scale(1)',
-                    boxShadow: activeMenu === item.id ? 'var(--shadow-xl)' : 'var(--shadow-sm)'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (activeMenu !== item.id) {
-                      e.currentTarget.style.backgroundColor = 'var(--color-gold-pastel-1)';
-                      e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
-                      e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (activeMenu !== item.id) {
-                      e.currentTarget.style.backgroundColor = 'var(--neutral-50)';
-                      e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
-                      e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-                    }
-                  }}
-                >
-                  <div className="text-2xl lg:text-3xl mb-2">{item.icon}</div>
-                  <div className="font-bold text-sm lg:text-base leading-tight">{item.label}</div>
-                  {item.priority === 'high' && (
-                    <div 
-                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
-                      style={{ backgroundColor: 'var(--status-danger-bg)' }}
-                    ></div>
-                  )}
-                </button>
-                {/* Enhanced Tooltip */}
-                <div 
-                  className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-30 shadow-xl"
-                  style={{ backgroundColor: 'var(--text-primary)' }}
-                >
-                  {item.tooltip}
-                  <div 
-                    className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent"
-                    style={{ borderTopColor: 'var(--text-primary)' }}
-                  ></div>
-                </div>
+        <div className="space-y-8">
+          {/* 핵심 기능 - Primary Functions */}
+          <div>
+            <div className="flex items-center mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
+                <h3 className="text-lg font-bold text-gray-800">핵심 기능</h3>
               </div>
-            ))}
+              <div className="ml-4 px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
+                자주 사용하는 기능
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              {[
+                { id: 'dashboard', label: '대시보드', icon: '🏠', tooltip: '프로젝트 현황과 통계를 한눈에 확인', color: 'blue' },
+                { id: 'projects', label: '내 프로젝트', icon: '📂', tooltip: '생성한 모든 프로젝트 관리 및 편집', color: 'green' },
+                { id: 'creation', label: '새 프로젝트', icon: '➕', tooltip: '새로운 AHP 분석 프로젝트 생성', color: 'purple' },
+                { id: 'model-builder', label: '모델 구축', icon: '🏗️', tooltip: '기준과 대안을 설정하여 모델 구성', color: 'orange' },
+                { id: 'analysis', label: '결과 분석', icon: '📊', tooltip: 'AHP 분석 결과와 순위 확인', color: 'cyan' }
+              ].map((item) => (
+                <div key={item.id} className="relative group">
+                  <button
+                    onClick={() => handleTabChange(item.id)}
+                    aria-label={item.label}
+                    className="w-full p-6 rounded-2xl border-2 transition-all duration-300 text-center hover:scale-[1.03] transform relative"
+                    style={{
+                      backgroundColor: activeMenu === item.id ? 'var(--color-gold-pastel-2)' : 'var(--neutral-50)',
+                      borderColor: activeMenu === item.id ? 'var(--color-gold-dark-1)' : 'var(--color-gold-pastel-3)',
+                      color: activeMenu === item.id ? 'var(--color-gold-dark-2)' : 'var(--text-primary)',
+                      transform: activeMenu === item.id ? 'scale(1.03)' : 'scale(1)',
+                      boxShadow: activeMenu === item.id ? 'var(--shadow-xl)' : 'var(--shadow-md)'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (activeMenu !== item.id) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-gold-pastel-1)';
+                        e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (activeMenu !== item.id) {
+                        e.currentTarget.style.backgroundColor = 'var(--neutral-50)';
+                        e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                        e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                      }
+                    }}
+                  >
+                    <div className="text-3xl lg:text-4xl mb-3">{item.icon}</div>
+                    <div className="font-bold text-base lg:text-lg leading-tight">{item.label}</div>
+                    {activeMenu === item.id && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                    )}
+                  </button>
+                  <div 
+                    className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-4 px-4 py-2 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-30 shadow-xl"
+                    style={{ backgroundColor: 'var(--text-primary)' }}
+                  >
+                    {item.tooltip}
+                    <div 
+                      className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent"
+                      style={{ borderTopColor: 'var(--text-primary)' }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Second Row - Advanced Functions (8 items) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            {[
-              { id: 'analysis', label: '결과 분석', icon: '📊', tooltip: 'AHP 분석 결과와 순위 확인' },
-              { id: 'demographic-survey', label: '인구통계학적 설문조사', icon: '📋', tooltip: 'Google Forms 스타일 설문 생성 및 관리' },
-              { id: 'export', label: '보고서', icon: '📤', tooltip: 'Excel, PDF, PPT 형식으로 내보내기' },
-              { id: 'survey-links', label: '설문 링크', icon: '🔗', tooltip: '평가자별 설문 링크 생성 및 관리' },
-              { id: 'evaluation-test', label: '평가 테스트', icon: '🧪', tooltip: '실제 평가 환경에서 테스트 진행' },
-              { id: 'workshop', label: '워크숍', icon: '🎯', tooltip: '협업 의사결정 워크숍 관리' },
-              { id: 'decision-support', label: '의사결정 지원', icon: '🧠', tooltip: '과학적 의사결정 지원 도구' },
-              { id: 'usage-management', label: '사용량 관리', icon: '📊', tooltip: '구독 현황, 할당량 및 데이터 관리' },
-              { id: 'settings', label: '설정', icon: '⚙️', tooltip: '개인 계정 및 환경 설정' }
-            ].map((item) => (
-              <div key={item.id} className="relative group">
-                <button
-                  onClick={() => handleTabChange(item.id)}
-                  aria-label={item.label}
-                  className="w-full p-4 lg:p-5 rounded-xl border-2 transition-all duration-300 text-center hover:scale-[1.02] hover:shadow-xl transform"
-                  style={{
-                    backgroundColor: activeMenu === item.id ? 'var(--color-gold-pastel-2)' : 'var(--neutral-50)',
-                    borderColor: activeMenu === item.id ? 'var(--color-gold-dark-1)' : 'var(--color-gold-pastel-3)',
-                    color: activeMenu === item.id ? 'var(--color-gold-dark-2)' : 'var(--text-primary)',
-                    transform: activeMenu === item.id ? 'scale(1.02)' : 'scale(1)',
-                    boxShadow: activeMenu === item.id ? 'var(--shadow-xl)' : 'var(--shadow-sm)'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (activeMenu !== item.id) {
-                      e.currentTarget.style.backgroundColor = 'var(--color-gold-pastel-1)';
-                      e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
-                      e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (activeMenu !== item.id) {
-                      e.currentTarget.style.backgroundColor = 'var(--neutral-50)';
-                      e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
-                      e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-                    }
-                  }}
-                >
-                  <div className="text-2xl lg:text-3xl mb-2">{item.icon}</div>
-                  <div className="font-bold text-sm lg:text-base leading-tight">{item.label}</div>
-                </button>
-                {/* Enhanced Tooltip */}
-                <div 
-                  className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-30 shadow-xl"
-                  style={{ backgroundColor: 'var(--text-primary)' }}
-                >
-                  {item.tooltip}
-                  <div 
-                    className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent"
-                    style={{ borderTopColor: 'var(--text-primary)' }}
-                  ></div>
-                </div>
+          {/* 고급 기능 - Advanced Functions */}
+          <div>
+            <div className="flex items-center mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full"></div>
+                <h3 className="text-lg font-bold text-gray-800">고급 기능</h3>
               </div>
-            ))}
+              <div className="ml-4 px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full">
+                전문 분석 도구
+              </div>
+            </div>
+            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4">
+              {[
+                { id: 'fuzzy-ahp', label: '퍼지 AHP', icon: '🔮', tooltip: '불확실성을 반영한 퍼지 AHP 분석', color: 'purple' },
+                { id: 'ai-paper', label: 'AI 논문', icon: '📝', tooltip: 'AI 기반 논문 작성 지원', color: 'indigo' },
+                { id: 'demographic-survey', label: '인구통계 설문', icon: '📋', tooltip: 'Google Forms 스타일 설문 생성 및 관리', color: 'teal' },
+                { id: 'export', label: '보고서', icon: '📤', tooltip: 'Excel, PDF, PPT 형식으로 내보내기', color: 'amber' },
+                { id: 'survey-links', label: '설문 링크', icon: '🔗', tooltip: '평가자별 설문 링크 생성 및 관리', color: 'lime' },
+                { id: 'evaluation-test', label: '평가 테스트', icon: '🧪', tooltip: '실제 평가 환경에서 테스트 진행', color: 'rose' },
+                { id: 'workshop', label: '워크숍', icon: '🎯', tooltip: '협업 의사결정 워크숍 관리', color: 'emerald' }
+              ].map((item) => (
+                <div key={item.id} className="relative group">
+                  <button
+                    onClick={() => handleTabChange(item.id)}
+                    aria-label={item.label}
+                    className="w-full p-4 rounded-xl border-2 transition-all duration-300 text-center hover:scale-[1.02] transform"
+                    style={{
+                      backgroundColor: activeMenu === item.id ? 'var(--color-gold-pastel-2)' : 'var(--neutral-50)',
+                      borderColor: activeMenu === item.id ? 'var(--color-gold-dark-1)' : 'var(--color-gold-pastel-3)',
+                      color: activeMenu === item.id ? 'var(--color-gold-dark-2)' : 'var(--text-primary)',
+                      transform: activeMenu === item.id ? 'scale(1.02)' : 'scale(1)',
+                      boxShadow: activeMenu === item.id ? 'var(--shadow-lg)' : 'var(--shadow-sm)'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (activeMenu !== item.id) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-gold-pastel-1)';
+                        e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                        e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (activeMenu !== item.id) {
+                        e.currentTarget.style.backgroundColor = 'var(--neutral-50)';
+                        e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                      }
+                    }}
+                  >
+                    <div className="text-2xl lg:text-3xl mb-2">{item.icon}</div>
+                    <div className="font-bold text-sm lg:text-base leading-tight">{item.label}</div>
+                    {activeMenu === item.id && (
+                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-purple-500 rounded-full animate-pulse"></div>
+                    )}
+                  </button>
+                  <div 
+                    className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-30 shadow-xl"
+                    style={{ backgroundColor: 'var(--text-primary)' }}
+                  >
+                    {item.tooltip}
+                    <div 
+                      className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent"
+                      style={{ borderTopColor: 'var(--text-primary)' }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 유틸리티 - Utility Functions */}
+          <div>
+            <div className="flex items-center mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-1 h-6 bg-gradient-to-b from-gray-500 to-gray-600 rounded-full"></div>
+                <h3 className="text-lg font-bold text-gray-800">유틸리티</h3>
+              </div>
+              <div className="ml-4 px-3 py-1 bg-gray-50 text-gray-700 text-xs font-medium rounded-full">
+                관리 및 설정
+              </div>
+            </div>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {[
+                { id: 'evaluators', label: '평가자 관리', icon: '👥', tooltip: '평가 참여자 초대 및 권한 관리', color: 'slate' },
+                { id: 'monitoring', label: '진행률 확인', icon: '📈', tooltip: '평가 진행 상황 실시간 모니터링', color: 'blue' },
+                { id: 'decision-support', label: '의사결정 지원', icon: '🧠', tooltip: '과학적 의사결정 지원 도구', color: 'violet' },
+                { id: 'usage-management', label: '사용량 관리', icon: '📊', tooltip: '구독 현황, 할당량 및 데이터 관리', color: 'yellow' },
+                { id: 'trash', label: '휴지통', icon: '🗑️', tooltip: '삭제된 프로젝트 복원 및 영구 삭제', color: 'red' },
+                { id: 'settings', label: '설정', icon: '⚙️', tooltip: '개인 계정 및 환경 설정', color: 'gray' }
+              ].map((item) => (
+                <div key={item.id} className="relative group">
+                  <button
+                    onClick={() => handleTabChange(item.id)}
+                    aria-label={item.label}
+                    className="w-full p-3 rounded-lg border-2 transition-all duration-300 text-center hover:scale-[1.01] transform"
+                    style={{
+                      backgroundColor: activeMenu === item.id ? 'var(--color-gold-pastel-2)' : 'var(--neutral-50)',
+                      borderColor: activeMenu === item.id ? 'var(--color-gold-dark-1)' : 'var(--color-gold-pastel-3)',
+                      color: activeMenu === item.id ? 'var(--color-gold-dark-2)' : 'var(--text-primary)',
+                      transform: activeMenu === item.id ? 'scale(1.01)' : 'scale(1)',
+                      boxShadow: activeMenu === item.id ? 'var(--shadow-md)' : 'var(--shadow-sm)'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (activeMenu !== item.id) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-gold-pastel-1)';
+                        e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (activeMenu !== item.id) {
+                        e.currentTarget.style.backgroundColor = 'var(--neutral-50)';
+                        e.currentTarget.style.borderColor = 'var(--color-gold-pastel-3)';
+                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                      }
+                    }}
+                  >
+                    <div className="text-xl lg:text-2xl mb-1.5">{item.icon}</div>
+                    <div className="font-medium text-xs lg:text-sm leading-tight">{item.label}</div>
+                    {activeMenu === item.id && (
+                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
+                    )}
+                  </button>
+                  <div 
+                    className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1.5 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-30 shadow-lg"
+                    style={{ backgroundColor: 'var(--text-primary)' }}
+                  >
+                    {item.tooltip}
+                    <div 
+                      className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-t-3 border-transparent"
+                      style={{ borderTopColor: 'var(--text-primary)' }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
