@@ -3,6 +3,7 @@ Serializers for Evaluation API
 """
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.db import models as db_models
 from .models import Evaluation, PairwiseComparison, EvaluationInvitation, EvaluationSession, DemographicSurvey
 from apps.projects.serializers import ProjectSerializer, CriteriaSerializer
 
@@ -208,7 +209,7 @@ class EvaluatorDashboardSerializer(serializers.Serializer):
             'active_evaluations': active_evals.count(),
             'pending_invitations': pending_invitations.count(),
             'average_consistency': completed_evals.aggregate(
-                avg_consistency=models.Avg('consistency_ratio')
+                avg_consistency=db_models.Avg('consistency_ratio')
             )['avg_consistency'] or 0,
             'total_projects': Evaluation.objects.filter(evaluator=user).values('project').distinct().count()
         }

@@ -5,7 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db import transaction
+from django.db import transaction, models as db_models
 import numpy as np
 from scipy import stats
 
@@ -169,7 +169,7 @@ class AnalysisViewSet(viewsets.ViewSet):
             total_evaluators=evaluations.count(),
             completed_evaluations=evaluations.count(),
             average_consistency=evaluations.aggregate(
-                avg=models.Avg('consistency_ratio')
+                avg=db_models.Avg('consistency_ratio')
             )['avg'],
             high_disagreement_criteria=consensus_data['disagreements'],
             outlier_evaluators=consensus_data['outliers'],
