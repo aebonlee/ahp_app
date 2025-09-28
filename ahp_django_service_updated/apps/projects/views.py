@@ -19,7 +19,8 @@ from apps.common.permissions import IsOwnerOrReadOnly
 class ProjectViewSet(viewsets.ModelViewSet):
     """ViewSet for managing projects"""
     
-    permission_classes = [permissions.AllowAny]  # 익명 사용자 접근 허용
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'visibility', 'owner']
     search_fields = ['title', 'description']
