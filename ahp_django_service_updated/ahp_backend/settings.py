@@ -45,7 +45,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'accounts.apps.AccountsConfig',
     'apps.common',
-    'apps.projects',
+    'projects',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -152,7 +152,6 @@ AUTH_USER_MODEL = 'accounts.User'
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
