@@ -45,12 +45,8 @@ class CleanDataService {
       return [];
     } catch (error) {
       console.error('❌ 프로젝트 조회 중 오류:', error);
-      
-      // 백엔드 연결 실패 시 Mock 데이터 반환 (인증 오류, 네트워크 오류 등)
-      console.log('🔄 백엔드 연결 실패: 임시 Mock 프로젝트 목록 반환');
-      const mockProjects = JSON.parse(localStorage.getItem('mock_projects') || '[]');
-      console.log(`📋 로컬에서 ${mockProjects.length}개의 Mock 프로젝트를 반환합니다.`);
-      return mockProjects;
+      console.error('🚨 백엔드 DB 연결 실패 - 관리자에게 문의하세요');
+      throw error;
     }
   }
 
@@ -78,34 +74,12 @@ class CleanDataService {
         console.log('✅ 프로젝트 생성 성공:', response.data.id);
         return response.data;
       }
-      console.error('❌ 프로젝트 생성 실패');
-      return null;
+      console.error('❌ 프로젝트 생성 실패:', response.error || 'Unknown error');
+      throw new Error(response.error || '프로젝트 생성에 실패했습니다.');
     } catch (error) {
       console.error('❌ 프로젝트 생성 중 오류:', error);
-      
-      // 백엔드 연결 실패 시 임시 Mock 데이터 반환 (인증 오류, 네트워크 오류 등)
-      console.log('🔄 백엔드 연결 실패: 임시 Mock 프로젝트 생성');
-      const mockProject: ProjectData = {
-        id: `mock_${Date.now()}`,
-        title: data.title,
-        description: data.description,
-        objective: data.objective,
-        status: data.status || 'draft',
-        evaluation_mode: data.evaluation_mode || 'practical',
-        workflow_stage: data.workflow_stage || 'creating',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        criteria_count: 0,
-        alternatives_count: 0
-      };
-      
-      // Mock 데이터를 localStorage에 저장 (임시)
-      const existingProjects = JSON.parse(localStorage.getItem('mock_projects') || '[]');
-      existingProjects.push(mockProject);
-      localStorage.setItem('mock_projects', JSON.stringify(existingProjects));
-      
-      console.log('✅ Mock 프로젝트가 로컬에 저장되었습니다:', mockProject.id);
-      return mockProject;
+      console.error('🚨 백엔드 DB 연결 실패 - 관리자에게 문의하세요');
+      throw error;
     }
   }
 
