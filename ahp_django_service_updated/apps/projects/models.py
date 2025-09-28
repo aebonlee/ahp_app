@@ -79,7 +79,7 @@ class Project(models.Model):
     
     class Meta:
         app_label = 'projects'
-        db_table = 'simple_projects'
+        db_table = 'ahp_projects'
         ordering = ['-created_at']
         
     def __str__(self):
