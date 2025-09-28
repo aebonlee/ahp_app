@@ -72,13 +72,16 @@ def register(request):
         # JWT 토큰 생성
         refresh = RefreshToken.for_user(user)
         
-        # 활동 로그 기록
-        UserActivityLog.objects.create(
-            user=user,
-            action='login',
-            description='회원가입 후 자동 로그인',
-            ip_address=get_client_ip(request)
-        )
+        # 활동 로그 기록 (테이블이 없으면 스킵)
+        try:
+            UserActivityLog.objects.create(
+                user=user,
+                action='login',
+                description='회원가입 후 자동 로그인',
+                ip_address=get_client_ip(request)
+            )
+        except Exception as e:
+            print(f"활동 로그 저장 실패: {e}")
         
         return Response({
             'user': UserSerializer(user).data,
@@ -121,14 +124,17 @@ def login(request):
             # JWT 토큰 생성
             refresh = RefreshToken.for_user(user)
             
-            # 활동 로그 기록
-            UserActivityLog.objects.create(
-                user=user,
-                action='login',
-                description='로그인',
-                ip_address=get_client_ip(request),
-                user_agent=request.META.get('HTTP_USER_AGENT', '')
-            )
+            # 활동 로그 기록 (테이블이 없으면 스킵)
+            try:
+                UserActivityLog.objects.create(
+                    user=user,
+                    action='login',
+                    description='로그인',
+                    ip_address=get_client_ip(request),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+            except Exception as e:
+                print(f"활동 로그 저장 실패: {e}")
             
             # 마지막 로그인 IP 업데이트
             user.last_login_ip = get_client_ip(request)
@@ -155,13 +161,16 @@ def login(request):
 def logout(request):
     """로그아웃"""
     try:
-        # 활동 로그 기록
-        UserActivityLog.objects.create(
-            user=request.user,
-            action='logout',
-            description='로그아웃',
-            ip_address=get_client_ip(request)
-        )
+        # 활동 로그 기록 (테이블이 없으면 스킵)
+        try:
+            UserActivityLog.objects.create(
+                user=request.user,
+                action='logout',
+                description='로그아웃',
+                ip_address=get_client_ip(request)
+            )
+        except Exception as e:
+            print(f"활동 로그 저장 실패: {e}")
         
         # Refresh token blacklist (simplejwt 설정 필요)
         refresh_token = request.data.get('refresh')

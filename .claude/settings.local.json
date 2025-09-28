@@ -4,7 +4,8 @@
       "Bash(git commit:*)",
       "Bash(npm run build:frontend:*)",
       "Bash(find:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
