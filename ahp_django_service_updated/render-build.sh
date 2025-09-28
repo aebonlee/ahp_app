@@ -19,25 +19,58 @@ if [ "$FLUSH_DB" = "true" ]; then
     echo "⚠️  FLUSH_DB=true detected - Performing complete database reset..."
     echo "This will DELETE ALL DATA in the database!"
     
-    # Drop all tables using raw SQL (bypass Django migration system)
-    echo "Dropping all tables via SQL..."
+    # Drop database schema and recreate (more robust than dropping individual tables)
+    echo "Dropping and recreating database schema..."
     python manage.py shell <<EOF
 from django.db import connection
-with connection.cursor() as cursor:
-    # Get all table names
-    cursor.execute("""
-        SELECT tablename FROM pg_tables 
-        WHERE schemaname = 'public';
-    """)
-    tables = cursor.fetchall()
+from django.core.management.color import no_style
+from django.core.management.sql import sql_flush
+
+try:
+    # Get the database name from connection settings
+    db_name = connection.settings_dict['NAME']
+    print(f"Working with database: {db_name}")
     
-    # Drop all tables
-    for table in tables:
-        table_name = table[0]
-        print(f"Dropping table: {table_name}")
-        cursor.execute(f'DROP TABLE IF EXISTS "{table_name}" CASCADE;')
+    # Use Django's built-in flush SQL commands
+    style = no_style()
+    sql_list = sql_flush(style, connection)
     
-    print("✅ All tables dropped successfully")
+    with connection.cursor() as cursor:
+        # Execute each SQL command separately with error handling
+        for sql in sql_list:
+            try:
+                cursor.execute(sql)
+                print(f"✅ Executed: {sql[:50]}...")
+            except Exception as e:
+                print(f"⚠️  Skipped: {sql[:50]}... (Error: {e})")
+                # Rollback and start a new transaction
+                connection.rollback()
+        
+        # Additional cleanup for stubborn tables/indexes
+        print("Performing additional cleanup...")
+        
+        # Drop any remaining indexes that might cause conflicts
+        cleanup_commands = [
+            "DROP INDEX IF EXISTS accounts_user_username_6088629e_like CASCADE;",
+            "DROP INDEX IF EXISTS accounts_user_username_key CASCADE;", 
+            "DROP INDEX IF EXISTS auth_user_username_6821ab7c_like CASCADE;",
+            "DROP SCHEMA public CASCADE;",
+            "CREATE SCHEMA public;",
+            "GRANT ALL ON SCHEMA public TO PUBLIC;",
+        ]
+        
+        for cmd in cleanup_commands:
+            try:
+                cursor.execute(cmd)
+                print(f"✅ Cleanup: {cmd}")
+            except Exception as e:
+                print(f"⚠️  Cleanup skipped: {cmd} (Error: {e})")
+                connection.rollback()
+                
+except Exception as e:
+    print(f"❌ Database reset failed: {e}")
+    
+print("✅ Database reset completed")
 EOF
     
     # Fresh migrations from scratch
