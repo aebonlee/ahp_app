@@ -50,7 +50,7 @@ class Project(models.Model):
     
     # Owner and collaborators
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_projects', null=True, blank=True)
-    collaborators = models.ManyToManyField(User, through='ProjectMember', related_name='collaborated_projects')
+    collaborators = models.ManyToManyField(User, through='ProjectMember', through_fields=('project', 'user'), related_name='collaborated_projects')
     
     # Status and settings
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
