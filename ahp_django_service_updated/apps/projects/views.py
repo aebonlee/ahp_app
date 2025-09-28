@@ -27,6 +27,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'updated_at', 'title']
     ordering = ['-created_at']
     
+    def get_permissions(self):
+        """
+        Override to always allow any request
+        """
+        return [permissions.AllowAny()]
+    
     def get_queryset(self):
         """Filter projects based on user permissions and visibility"""
         user = self.request.user
