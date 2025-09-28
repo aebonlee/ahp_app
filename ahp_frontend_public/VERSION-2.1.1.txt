@@ -1,13 +1,5 @@
 Version: 2.1.1
-Build Time: 2025-09-28 18:30 KST
-Git Commit: edf79554
-Main Bundle: main.bab42700.js (328.25 kB)
-
-Updates:
-✅ PersonalServiceDashboard - 회원명, 새창, 9개 메뉴
-✅ 🔮 퍼지 AHP & 📝 AI 논문 버튼 추가
-✅ ⚖️ 쌍대비교(권장) 배지
-✅ Backend - evaluation_mode, workflow_stage
-
-Cache Bypass: Ctrl+Shift+R or https://aebonlee.github.io/ahp_app/?v=1727519400
-Status: PRODUCTION READYBuild: 2025-09-28 19:09:02
+Build Time: $(date)
+Cache Buster: FORCE-REFRESH-BROWSER-CACHE
+Fixed: URL routing and login issues
+Status: PRODUCTION READY
