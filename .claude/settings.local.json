@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git commit:*)",
       "Bash(npm run build:frontend:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

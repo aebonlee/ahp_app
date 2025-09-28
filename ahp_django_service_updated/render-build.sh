@@ -16,69 +16,25 @@ echo "========================================="
 # OPTION 2: If this fails, set FLUSH_DB=true in Render environment variables for complete reset
 
 if [ "$FLUSH_DB" = "true" ]; then
-    echo "⚠️  FLUSH_DB=true detected - Performing complete database reset..."
-    echo "This will DELETE ALL DATA in the database!"
+    echo "⚠️  FLUSH_DB=true detected - Performing complete reset..."
+    echo "This will DELETE ALL DATA and regenerate migrations!"
     
-    # Use PSQL direct connection for the most reliable reset
-    echo "Connecting directly to PostgreSQL for complete reset..."
+    # Step 1: Delete all migration files except __init__.py
+    echo "🗑️  Removing all existing migration files..."
+    find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+    find . -path "*/migrations/*.pyc" -delete
     
-    # Most reliable approach: Reset via Django with careful transaction handling
-    echo "Performing database reset with careful transaction handling..."
-    python manage.py shell <<EOF
-import os
-from django.db import connection, transaction
-from django.core.management.color import no_style
-
-try:
-    print("🔄 Starting database cleanup...")
+    # Step 2: Delete migration cache
+    find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
     
-    # Close any existing connections
-    connection.close()
+    # Step 3: Create fresh migration files
+    echo "📝 Creating fresh migration files..."
+    python manage.py makemigrations accounts
+    python manage.py makemigrations projects
+    python manage.py makemigrations
     
-    with connection.cursor() as cursor:
-        # Get all table names first
-        cursor.execute("""
-            SELECT table_name 
-            FROM information_schema.tables 
-            WHERE table_schema = 'public' 
-            AND table_type = 'BASE TABLE'
-        """)
-        tables = [row[0] for row in cursor.fetchall()]
-        print(f"Found {len(tables)} tables to drop")
-        
-        # Drop all tables with CASCADE
-        for table in tables:
-            try:
-                cursor.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE')
-                print(f"✅ Dropped table: {table}")
-            except Exception as e:
-                print(f"⚠️  Could not drop {table}: {e}")
-        
-        # Drop any remaining sequences
-        cursor.execute("""
-            SELECT sequence_name 
-            FROM information_schema.sequences 
-            WHERE sequence_schema = 'public'
-        """)
-        sequences = [row[0] for row in cursor.fetchall()]
-        
-        for seq in sequences:
-            try:
-                cursor.execute(f'DROP SEQUENCE IF EXISTS "{seq}" CASCADE')
-                print(f"✅ Dropped sequence: {seq}")
-            except Exception as e:
-                print(f"⚠️  Could not drop sequence {seq}: {e}")
-                
-    print("✅ Database cleanup completed successfully")
-    
-except Exception as e:
-    print(f"❌ Database cleanup error: {e}")
-    print("Proceeding with migrations anyway...")
-
-EOF
-    
-    # Fresh migrations from scratch
-    echo "Applying all migrations from scratch..."
+    # Step 4: Apply all migrations fresh
+    echo "🚀 Applying all migrations from scratch..."
     python manage.py migrate
     
     # Create superuser (only if credentials are set)
