@@ -131,27 +131,48 @@ export const authAPI = {
   },
   
   logout: async () => {
-    const result = await authService.logout();
-    return {
-      data: result.success ? { message: 'Logout successful' } : null,
-      error: result.success ? null : result.error
-    };
+    try {
+      const result = await authService.logout();
+      return {
+        data: result.success ? { message: 'Logout successful' } : null,
+        error: result.success ? null : result.error
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Logout failed'
+      };
+    }
   },
   
   refreshToken: async () => {
-    const result = await authService.refreshAccessToken();
-    return {
-      data: result.success ? { message: 'Token refreshed' } : null,
-      error: result.success ? null : result.error
-    };
+    try {
+      const result = await authService.refreshAccessToken();
+      return {
+        data: result.success ? { message: 'Token refreshed' } : null,
+        error: result.success ? null : result.error
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Token refresh failed'
+      };
+    }
   },
   
   verifyToken: async () => {
-    const result = await authService.getCurrentUser();
-    return {
-      data: result.success ? result.user : null,
-      error: result.success ? null : result.error
-    };
+    try {
+      const user = await authService.getCurrentUser();
+      return {
+        data: user,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Token verification failed'
+      };
+    }
   },
 
   // 인증 상태 확인
@@ -159,11 +180,18 @@ export const authAPI = {
   
   // 현재 사용자 정보
   getCurrentUser: async () => {
-    const result = await authService.getCurrentUser();
-    return {
-      data: result.success ? result.user : null,
-      error: result.success ? null : result.error
-    };
+    try {
+      const user = await authService.getCurrentUser();
+      return {
+        data: user,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Failed to get user info'
+      };
+    }
   }
 };
 
