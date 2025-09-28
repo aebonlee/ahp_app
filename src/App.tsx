@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import sessionService from './services/sessionService';
 import authService from './services/authService';
+import cleanDataService from './services/dataService_clean';
 import type { User } from './types';
 import Layout from './components/layout/Layout';
 import LoginForm from './components/auth/LoginForm';
@@ -559,81 +560,51 @@ function App() {
     setLoading(true);
     try {
       console.log('🔍 App.tsx fetchProjects 시작... (사용자:', user.email, ')');
-      const response = await fetch(`${API_BASE_URL}/api/projects`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      
+      // cleanDataService 사용 (자동 fallback 포함)
+      const projectsData = await cleanDataService.getProjects();
+      console.log('📊 fetchProjects 데이터:', projectsData);
+      
+      // 각 프로젝트의 실제 관련 데이터 수를 조회하여 정확한 정보 제공
+      const projectsWithCounts = await Promise.all(
+        projectsData.map(async (project: any) => {
+          try {
+            const [criteriaData, alternativesData, evaluatorsData] = await Promise.all([
+              cleanDataService.getCriteria(project.id || ''),
+              cleanDataService.getAlternatives(project.id || ''),
+              cleanDataService.getEvaluators(project.id || '')
+            ]);
 
-      console.log('📡 fetchProjects 응답:', response.status, response.statusText);
+            const criteriaCount = criteriaData?.length || 0;
+            const alternativesCount = alternativesData?.length || 0;
+            const evaluatorCount = evaluatorsData?.length || 0;
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('📊 fetchProjects 원본 데이터:', data);
-        
-        // API 응답 구조에 따라 안전하게 프로젝트 배열 추출
-        let projects = [];
-        if (Array.isArray(data)) {
-          projects = data;
-        } else if (Array.isArray(data.data)) {
-          projects = data.data;
-        } else if (Array.isArray(data.projects)) {
-          projects = data.projects;
-        } else {
-          console.warn('⚠️ 예상치 못한 API 응답 구조:', data);
-          projects = [];
-        }
-        
-        // 각 프로젝트의 실제 관련 데이터 수를 조회하여 정확한 정보 제공
-        const projectsWithCounts = await Promise.all(
-          projects.map(async (project: any) => {
-            try {
-              const [criteriaResponse, alternativesResponse, evaluatorsResponse] = await Promise.all([
-                fetch(`${API_BASE_URL}/api/projects/${project.id}/criteria`, { credentials: 'include' }),
-                fetch(`${API_BASE_URL}/api/projects/${project.id}/alternatives`, { credentials: 'include' }),
-                fetch(`${API_BASE_URL}/api/projects/${project.id}/evaluators`, { credentials: 'include' })
-              ]);
+            // 진행률 계산: 기준(40%) + 대안(40%) + 평가자(20%)
+            const progress = ((criteriaCount >= 3 ? 40 : 0) + (alternativesCount >= 2 ? 40 : 0) + (evaluatorCount >= 1 ? 20 : 0));
 
-              const criteriaCount = criteriaResponse.ok ? (await criteriaResponse.json()).data?.length || 0 : 0;
-              const alternativesCount = alternativesResponse.ok ? (await alternativesResponse.json()).data?.length || 0 : 0;
-              const evaluatorCount = evaluatorsResponse.ok ? (await evaluatorsResponse.json()).data?.length || 0 : 0;
+            return {
+              ...project,
+              criteria_count: criteriaCount,
+              alternatives_count: alternativesCount,
+              evaluator_count: evaluatorCount,
+              completion_rate: progress
+            };
+          } catch (error) {
+            console.error('❌ 프로젝트 관련 데이터 조회 실패:', project.id, error);
+            return {
+              ...project,
+              criteria_count: 0,
+              alternatives_count: 0,
+              evaluator_count: 0,
+              completion_rate: 0
+            };
+          }
+        })
+      );
 
-              // 진행률 계산: 기준(40%) + 대안(40%) + 평가자(20%)
-              const progress = ((criteriaCount >= 3 ? 40 : 0) + (alternativesCount >= 2 ? 40 : 0) + (evaluatorCount >= 1 ? 20 : 0));
-
-              return {
-                ...project,
-                criteria_count: criteriaCount,
-                alternatives_count: alternativesCount,
-                evaluator_count: evaluatorCount,
-                completion_rate: progress
-              };
-            } catch (error) {
-              console.error('❌ 프로젝트 관련 데이터 조회 실패:', project.id, error);
-              return {
-                ...project,
-                criteria_count: 0,
-                alternatives_count: 0,
-                evaluator_count: 0,
-                completion_rate: 0
-              };
-            }
-          })
-        );
-
-        console.log('✅ 실제 DB 데이터로 보강된 프로젝트 수:', projectsWithCounts.length);
-        console.log('📋 보강된 프로젝트 목록:', projectsWithCounts);
-        setProjects(projectsWithCounts);
-      } else if (response.status === 401 || response.status === 403) {
-        console.warn('🔐 인증 실패 - 로그아웃 처리');
-        setProjects([]);
-        // 인증 실패 시 로그아웃 처리
-        handleLogout();
-      } else {
-        console.error('❌ fetchProjects 실패:', response.status);
-        setProjects([]);
-      }
+      console.log('✅ 프로젝트 수:', projectsWithCounts.length);
+      console.log('📋 프로젝트 목록:', projectsWithCounts);
+      setProjects(projectsWithCounts);
     } catch (error) {
       console.error('❌ fetchProjects 오류:', error);
       setProjects([]);
@@ -642,37 +613,32 @@ function App() {
     }
   }, [user]);
 
-  // 프로젝트 생성 함수 (DB 저장)
+  // 프로젝트 생성 함수 (DB 저장 - dataService_clean 사용)
   const createProject = async (projectData: any) => {
     console.log('🚀 App.tsx createProject 호출됨:', projectData);
-    console.log('🔗 API URL:', `${API_BASE_URL}/api/projects`);
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(projectData),
+      // dataService_clean.ts의 createProject 사용 (자동 fallback 포함)
+      const newProject = await cleanDataService.createProject({
+        title: projectData.title,
+        description: projectData.description || '',
+        objective: projectData.objective || '',
+        status: projectData.status || 'draft',
+        evaluation_mode: projectData.evaluation_mode || 'practical',
+        workflow_stage: projectData.workflow_stage || 'creating'
       });
-
-      console.log('📡 API 응답 상태:', response.status, response.statusText);
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('❌ API 에러 응답:', error);
-        throw new Error(error.message || '프로젝트 생성에 실패했습니다.');
-      }
-
-      const data = await response.json();
-      console.log('✅ API 성공 응답:', data);
       
-      await fetchProjects(); // 목록 새로고침
-      return data.project || data.data || data;
+      if (newProject) {
+        console.log('✅ 프로젝트 생성 성공:', newProject.id);
+        await fetchProjects(); // 목록 새로고침
+        return newProject;
+      } else {
+        throw new Error('프로젝트 생성에 실패했습니다.');
+      }
     } catch (error) {
       console.error('❌ createProject 실패:', error);
-      throw error;
+      // 에러를 다시 throw하지 않고 null 반환 (사용자에게 친화적)
+      return null;
     }
   };
 
