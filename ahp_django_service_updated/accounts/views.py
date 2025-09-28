@@ -93,13 +93,28 @@ def register(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
-    """로그인"""
+    """로그인 - username 또는 email 지원"""
     serializer = UserLoginSerializer(data=request.data)
     if serializer.is_valid():
+        username_or_email = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+        
+        # username으로 먼저 시도
         user = authenticate(
-            username=serializer.validated_data['username'],
-            password=serializer.validated_data['password']
+            username=username_or_email,
+            password=password
         )
+        
+        # username 실패 시 email로 시도
+        if not user and '@' in username_or_email:
+            try:
+                user_obj = User.objects.get(email=username_or_email)
+                user = authenticate(
+                    username=user_obj.username,
+                    password=password
+                )
+            except User.DoesNotExist:
+                user = None
         
         if user:
             # JWT 토큰 생성
