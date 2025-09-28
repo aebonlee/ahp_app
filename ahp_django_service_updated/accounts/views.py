@@ -173,6 +173,14 @@ def logout(request):
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+    """현재 사용자 프로필 조회"""
+    serializer = UserSerializer(request.user)
+    return Response({'user': serializer.data})
+
+
 def get_client_ip(request):
     """클라이언트 IP 주소 가져오기"""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
