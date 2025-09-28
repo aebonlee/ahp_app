@@ -1749,49 +1749,73 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                   취소
                 </Button>
                 <Button variant="primary" type="submit" disabled={loading}>
-                  {loading ? '생성 중...' : '다음: 평가자 배정'}
+                  {loading ? '생성 중...' : '다음: 기준 설정'}
                 </Button>
               </div>
             </form>
           )}
 
-          {/* Step 2: 평가자 배정 */}
+          {/* Step 2: 기준 설정 */}
           {newProjectStep === 2 && newProjectId && (
             <div className="space-y-4">
-              <EvaluatorAssignment 
-                projectId={newProjectId} 
-                onComplete={() => setNewProjectStep(3)} 
-              />
+              <div className="text-center py-8">
+                <h3 className="text-lg font-semibold mb-4">평가 기준 설정</h3>
+                <p className="text-gray-600 mb-6">프로젝트에서 사용할 평가 기준을 설정하세요.</p>
+              </div>
               <div className="flex justify-between">
                 <Button variant="secondary" onClick={() => setNewProjectStep(1)}>
                   이전
                 </Button>
-                <Button variant="primary" onClick={() => {
-                  if (projectEvaluators.length > 0) {
-                    setNewProjectStep(3);
-                  } else {
-                    alert('최소 1명 이상의 평가자를 추가해주세요.');
-                  }
-                }}>
-                  다음: 기준 설정
+                <Button variant="primary" onClick={() => setNewProjectStep(3)}>
+                  다음: 대안 설정
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 3: 기준 설정 */}
-          {newProjectStep === 3 && (
+          {/* Step 3: 대안 설정 */}
+          {newProjectStep === 3 && newProjectId && (
             <div className="space-y-4">
               <div className="text-center py-8">
-                <h3 className="text-lg font-semibold mb-4">평가 기준 설정</h3>
-                <p className="text-gray-600 mb-6">프로젝트 생성이 완료되었습니다. 모델 구축에서 기준을 설정하세요.</p>
-                <Button variant="primary" onClick={() => {
-                  setCurrentStep('criteria');
+                <h3 className="text-lg font-semibold mb-4">대안 설정</h3>
+                <p className="text-gray-600 mb-6">비교할 대안들을 설정하세요.</p>
+              </div>
+              <div className="flex justify-between">
+                <Button variant="secondary" onClick={() => setNewProjectStep(2)}>
+                  이전
+                </Button>
+                <Button variant="primary" onClick={() => setNewProjectStep(4)}>
+                  다음: 평가자 배정
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: 평가자 배정 */}
+          {newProjectStep === 4 && newProjectId && (
+            <div className="space-y-4">
+              <EvaluatorAssignment 
+                projectId={newProjectId} 
+                onComplete={() => {
                   handleTabChange('model-builder');
                   setNewProjectStep(1);
                   setNewProjectId(null);
+                }} 
+              />
+              <div className="flex justify-between">
+                <Button variant="secondary" onClick={() => setNewProjectStep(3)}>
+                  이전
+                </Button>
+                <Button variant="primary" onClick={() => {
+                  if (projectEvaluators.length > 0) {
+                    handleTabChange('model-builder');
+                    setNewProjectStep(1);
+                    setNewProjectId(null);
+                  } else {
+                    alert('최소 1명 이상의 평가자를 추가하거나 건너뛰기를 선택하세요.');
+                  }
                 }}>
-                  모델 구축으로 이동
+                  완료 및 모델 구축으로 이동
                 </Button>
               </div>
             </div>
