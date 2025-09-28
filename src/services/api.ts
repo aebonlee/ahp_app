@@ -15,7 +15,7 @@ export interface ProjectData {
   description: string;
   objective?: string;
   status: 'draft' | 'active' | 'completed' | 'deleted';
-  evaluation_mode: 'practical' | 'theoretical' | 'direct_input';
+  evaluation_mode: 'practical' | 'theoretical' | 'direct_input' | 'fuzzy_ahp';
   workflow_stage: 'creating' | 'waiting' | 'evaluating' | 'completed';
   created_at?: string;
   updated_at?: string;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Card from '../common/Card';
 
-export type EvaluationMode = 'practical' | 'theoretical' | 'direct_input';
+export type EvaluationMode = 'practical' | 'theoretical' | 'direct_input' | 'fuzzy_ahp';
 
 interface EvaluationModeConfig {
   mode: EvaluationMode;
@@ -70,6 +70,25 @@ const EVALUATION_MODES: EvaluationModeConfig[] = [
     ],
     icon: '📊',
     color: 'bg-green-500'
+  },
+  {
+    mode: 'fuzzy_ahp',
+    name: '퍼지 AHP',
+    description: '삼각퍼지수(TFN)를 사용하여 불확실성을 반영한 고급 의사결정 분석을 수행합니다.',
+    features: [
+      '삼각퍼지수(L, M, U) 입력',
+      '불확실성 반영',
+      '언어적 변수 활용',
+      '고급 학술 분석'
+    ],
+    suitable_for: [
+      '학술 논문 및 연구',
+      '불확실한 환경의 의사결정',
+      '전문가 의견 불일치 상황',
+      '퍼지 이론 적용 필요 시'
+    ],
+    icon: '🔮',
+    color: 'bg-indigo-500'
   }
 ];
 
