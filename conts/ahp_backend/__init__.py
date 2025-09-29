@@ -1,1 +1,0 @@
-# AHP Backend Django Package
