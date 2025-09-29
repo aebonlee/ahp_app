@@ -31,6 +31,7 @@ class User(AbstractUser):
     timezone = models.CharField(max_length=50, default='Asia/Seoul')
     
     class Meta:
+        app_label = 'accounts'
         db_table = 'users'
         
     def __str__(self):
@@ -62,6 +63,7 @@ class UserProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        app_label = 'accounts'
         db_table = 'user_profiles'
         
     def __str__(self):
