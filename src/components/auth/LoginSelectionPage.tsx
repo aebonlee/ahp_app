@@ -69,11 +69,6 @@ const LoginSelectionPage: React.FC<LoginSelectionPageProps> = ({
               className="text-center p-6 sm:p-8 lg:p-10"
               onClick={onRegisterSelect}
             >
-              <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 mx-auto mb-6 lg:mb-8 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-              </div>
               
               <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 lg:mb-6" style={{
                 color: '#1f2937',

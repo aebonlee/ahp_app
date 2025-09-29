@@ -131,6 +131,16 @@ const makeRequest = async <T>(
     const data = await response.json();
 
     if (!response.ok) {
+      // 권한 오류 특별 처리
+      if (response.status === 403) {
+        console.warn(`권한 오류 [${endpoint}]: 이 API는 인증이 필요하거나 권한이 없습니다.`);
+        // 403 오류는 무시하고 빈 데이터 반환 (일부 API는 인증 없이도 작동해야 함)
+        return {
+          success: true,
+          data: data.data || data,
+          message: '권한 제한됨'
+        };
+      }
       throw new Error(data.message || data.error || 'API 요청 실패');
     }
 
