@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import LoginSelectionPage from './LoginSelectionPage';
-import RegisterPage from './RegisterPage';
-import ServiceLoginPage from './ServiceLoginPage';
+import UnifiedAuthPage from './UnifiedAuthPage';
 import AdminSelectPage from './AdminSelectPage';
 
-type LoginMode = 'selection' | 'service' | 'register' | 'admin-select';
+type LoginMode = 'auth' | 'admin-select';
 
 interface LoginFormProps {
   onLogin: (email: string, password: string, role?: string) => Promise<void>;
@@ -16,18 +14,14 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading = false, error, isAdmin = false, userEmail = '' }) => {
-  const [mode, setMode] = useState<LoginMode>('selection');
+  const [mode, setMode] = useState<LoginMode>('auth');
 
   // 관리자 권한 확인 후 서비스 선택 모드로 전환
   React.useEffect(() => {
-    if (isAdmin && mode === 'service') {
+    if (isAdmin) {
       setMode('admin-select');
     }
-  }, [isAdmin, mode]);
-
-  const handleModeSelect = (selectedMode: 'service' | 'register') => {
-    setMode(selectedMode);
-  };
+  }, [isAdmin]);
 
   // 관리자 서비스 선택 핸들러
   const handleAdminServiceSelect = (serviceType: 'admin' | 'personal') => {
@@ -40,35 +34,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading = fa
     }
   };
 
-  const handleBackToSelection = () => {
-    setMode('selection');
-  };
-
   const handleRegister = async (email: string, password: string, role?: string) => {
     await onLogin(email, password, role || 'user');
   };
-
-  if (mode === 'selection') {
-    return (
-      <LoginSelectionPage
-        onRegisterSelect={() => handleModeSelect('register')}
-        onServiceSelect={() => handleModeSelect('service')}
-      />
-    );
-  }
-
-  // 회원가입 폼 화면
-  if (mode === 'register') {
-    return (
-      <RegisterPage
-        onRegister={handleRegister}
-        onBackToSelection={handleBackToSelection}
-        onSwitchToLogin={() => handleModeSelect('service')}
-        loading={loading}
-        error={error}
-      />
-    );
-  }
 
   // 관리자 서비스 선택 화면
   if (mode === 'admin-select') {
@@ -76,17 +44,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading = fa
       <AdminSelectPage
         onAdminSelect={() => handleAdminServiceSelect('admin')}
         onUserSelect={() => handleAdminServiceSelect('personal')}
-        onBackToLogin={() => setMode('selection')}
+        onBackToLogin={() => setMode('auth')}
       />
     );
   }
 
-  // 개선된 로그인 폼 화면 (서비스)
+  // 통합 인증 화면 (로그인/회원가입 통합)
   return (
-    <ServiceLoginPage
+    <UnifiedAuthPage
       onLogin={onLogin}
-      onBackToSelection={handleBackToSelection}
-      onSwitchToRegister={() => handleModeSelect('register')}
+      onRegister={handleRegister}
       loading={loading}
       error={error}
     />

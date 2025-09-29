@@ -832,7 +832,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
             { id: 'user-guide', label: '사용자 가이드', icon: '📚', color: 'from-blue-500 to-blue-600' },
-            { id: 'model-builder', label: '모델 구성', icon: '🏗️', color: 'from-green-500 to-green-600' },
+            { id: 'model-builder', label: '모델 구성', icon: '⚙️', color: 'from-green-500 to-green-600' },
             { id: 'validity-check', label: '평가문항 확인', icon: '🔍', color: 'from-teal-500 to-teal-600' },
             { id: 'monitoring', label: '진행률 확인', icon: '📈', color: 'from-purple-500 to-purple-600' },
             { id: 'survey-links', label: '설문 링크', icon: '🔗', color: 'from-orange-500 to-orange-600' },
@@ -1534,7 +1534,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                           title="모델 구성"
                           type="button"
                         >
-                          🏗️
+                          ⚙️
                         </button>
                         <button
                           onClick={(e) => {
@@ -1689,7 +1689,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                             title="모델 구성"
                             type="button"
                           >
-                            🏗️
+                            ⚙️
                           </button>
                           <button
                             onClick={(e) => {
@@ -2981,7 +2981,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                 </button>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                    <span className="text-4xl mr-3">🏗️</span>
+                    <span className="text-4xl mr-3">⚙️</span>
                     모델 구축
                   </h1>
                   <p className="text-gray-600 mt-2">단계별로 AHP 분석 모델을 구성합니다</p>
@@ -3067,7 +3067,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           <Card title="모델 구축">
             <div className="space-y-6">
               <div className="text-center py-8">
-                <div className="text-gray-400 text-6xl mb-4">🏗️</div>
+                <div className="text-gray-400 text-6xl mb-4">⚙️</div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">모델을 구축할 프로젝트를 선택하세요</h3>
                 <p className="text-gray-600 mb-4">프로젝트를 선택하고 단계별로 모델을 구성해보세요.</p>
                 <Button variant="primary" className="p-5 lg:p-6 text-xl lg:text-2xl" onClick={() => handleTabChange('projects')}>
@@ -4047,7 +4047,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                 { id: 'dashboard', label: '대시보드', icon: '🏠', tooltip: '프로젝트 현황과 통계를 한눈에 확인', color: 'blue' },
                 { id: 'projects', label: '내 프로젝트', icon: '📂', tooltip: '생성한 모든 프로젝트 관리 및 편집', color: 'green' },
                 { id: 'creation', label: '새 프로젝트', icon: '➕', tooltip: '새로운 AHP 분석 프로젝트 생성', color: 'purple' },
-                { id: 'model-builder', label: '모델 구축', icon: '🏗️', tooltip: '기준과 대안을 설정하여 모델 구성', color: 'orange' },
+                { id: 'model-builder', label: '모델 구축', icon: '⚙️', tooltip: '기준과 대안을 설정하여 모델 구성', color: 'orange' },
                 { id: 'analysis', label: '결과 분석', icon: '📊', tooltip: 'AHP 분석 결과와 순위 확인', color: 'cyan' }
               ].map((item) => (
                 <div key={item.id} className="relative group">

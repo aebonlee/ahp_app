@@ -5,6 +5,7 @@ import cleanDataService from './services/dataService_clean';
 import type { User } from './types';
 import Layout from './components/layout/Layout';
 import LoginForm from './components/auth/LoginForm';
+import UnifiedAuthPage from './components/auth/UnifiedAuthPage';
 import RegisterForm from './components/auth/RegisterForm';
 import HomePage from './components/home/HomePage';
 // import WelcomeDashboard from './components/admin/WelcomeDashboard'; // 더 이상 사용하지 않음
@@ -1065,14 +1066,25 @@ function App() {
           return <HomePage onLoginClick={handleLoginClick} />;
         
         case 'login':
-        return (
-          <LoginForm
-            onLogin={handleLogin}
-            onRegister={handleRegisterClick}
-            loading={loginLoading}
-            error={loginError}
-          />
-        );
+          // 직접 통합 인증 페이지로 이동 (단계 완전 간소화)
+          return (
+            <UnifiedAuthPage
+              onLogin={handleLogin}
+              onRegister={async (email: string, password: string, role?: string) => {
+                await handleRegister({
+                  username: email,
+                  email: email,
+                  password: password,
+                  password2: password,
+                  first_name: '',
+                  last_name: '',
+                  role: role || 'user'
+                });
+              }}
+              loading={loginLoading}
+              error={loginError}
+            />
+          );
 
         case 'register':
           if (!registerMode) return null;
@@ -1105,7 +1117,28 @@ function App() {
           }
         
         default:
-          // 로그인하지 않은 상태에서 다른 페이지 접근 시 홈으로 리다이렉트
+          // 로그인하지 않은 상태에서 보호된 페이지 접근 시 직접 로그인 페이지로 이동
+          if (protectedTabs.includes(activeTab)) {
+            return (
+              <UnifiedAuthPage
+                onLogin={handleLogin}
+                onRegister={async (email: string, password: string, role?: string) => {
+                  await handleRegister({
+                    username: email,
+                    email: email,
+                    password: password,
+                    password2: password,
+                    first_name: '',
+                    last_name: '',
+                    role: role || 'user'
+                  });
+                }}
+                loading={loginLoading}
+                error={loginError}
+              />
+            );
+          }
+          // 그 외의 경우만 홈으로 리다이렉트
           return <HomePage onLoginClick={handleLoginClick} />;
       }
     }
