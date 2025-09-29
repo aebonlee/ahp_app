@@ -197,8 +197,8 @@ api_patterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
-    # Apps
-    path('accounts/', include('apps.accounts.urls')),
+    # Apps  
+    # path('accounts/', include('accounts.urls')),  # Temporarily disabled
     path('projects/', include('apps.projects.urls')),
     path('evaluations/', include('apps.evaluations.urls')),
     path('analysis/', include('apps.analysis.urls')),
