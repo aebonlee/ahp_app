@@ -393,7 +393,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       objective: (project as ProjectData).objective || '',
       last_modified: project.updated_at || new Date().toISOString(),
       evaluator_count: 0,
-      completion_rate: 0
+      completion_rate: 0,
+      criteria_count: (project as ProjectData).criteria_count || 0,
+      alternatives_count: (project as ProjectData).alternatives_count || 0
     };
     
     setEditingProject(userProject);
