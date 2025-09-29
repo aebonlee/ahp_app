@@ -32,6 +32,8 @@ import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
 import ConnectionTestPage from './components/demo/ConnectionTestPage';
 import RoleBasedDashboard from './components/common/RoleBasedDashboard';
 import DjangoAdminIntegration from './components/admin/DjangoAdminIntegration';
+import AHPMethodologyPage from './components/methodology/AHPMethodologyPage';
+import FuzzyAHPMethodologyPage from './components/methodology/FuzzyAHPMethodologyPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
@@ -1218,6 +1220,12 @@ function App() {
 
       case 'connection-test':
         return <ConnectionTestPage />;
+
+      case 'ai-ahp-methodology':
+        return <AHPMethodologyPage />;
+
+      case 'ai-fuzzy-methodology':
+        return <FuzzyAHPMethodologyPage />;
 
       case 'django-admin-integration':
         // Django 관리자 페이지 연동은 super_admin, service_admin만 접근 가능
