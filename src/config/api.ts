@@ -29,13 +29,13 @@ export const API_ENDPOINTS = {
     PROFILE: '/api/auth/profile/',
     REFRESH: '/api/auth/token/refresh/'
   },
-  // Projects - 실제 Django Service API
+  // Projects - 실제 Django Service API (경로 수정)
   PROJECTS: {
-    LIST: '/api/v1/projects/',
-    CREATE: '/api/v1/projects/',
-    GET: (id: string) => `/api/v1/projects/${id}/`,
-    UPDATE: (id: string) => `/api/v1/projects/${id}/`,
-    DELETE: (id: string) => `/api/v1/projects/${id}/`
+    LIST: '/api/service/projects/projects/',
+    CREATE: '/api/service/projects/projects/',
+    GET: (id: string) => `/api/service/projects/projects/${id}/`,
+    UPDATE: (id: string) => `/api/service/projects/projects/${id}/`,
+    DELETE: (id: string) => `/api/service/projects/projects/${id}/`
   },
   // Criteria - 실제 Django Service API
   CRITERIA: {

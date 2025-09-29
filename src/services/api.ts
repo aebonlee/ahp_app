@@ -128,7 +128,7 @@ const makeRequest = async <T>(
 export const projectApi = {
   // 프로젝트 목록 조회
   getProjects: () => 
-    makeRequest<ProjectData[]>('/api/v1/projects/'),
+    makeRequest<{count: number, results: ProjectData[]}>('/api/service/projects/projects/'),
 
   // 프로젝트 상세 조회
   getProject: (id: string) => 

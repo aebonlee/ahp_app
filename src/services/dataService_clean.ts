@@ -20,9 +20,9 @@ class CleanDataService {
       });
       
       if (response.success && response.data) {
-        // 배열인지 확인하고 각 프로젝트 데이터 검증
+        // 페이지네이션된 응답 처리 (Django REST framework 구조)
         const rawData = response.data;
-        const projects = Array.isArray(rawData) ? rawData : [];
+        const projects = rawData.results ? rawData.results : (Array.isArray(rawData) ? rawData : []);
         
         // 각 프로젝트 데이터 무결성 검증
         const validProjects = projects.filter(project => {
