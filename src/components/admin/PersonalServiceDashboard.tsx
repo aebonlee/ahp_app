@@ -2,7 +2,7 @@
  * PersonalServiceDashboard - AHP 플랫폼 개인 서비스 대시보드
  * 프로젝트 생성 워크플로우: 기본정보 → 기준설정 → 대안설정 → 평가자배정
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import MyProjects from './MyProjects';
@@ -224,6 +224,26 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   // 프로젝트 목록 새로고침을 위한 트리거
   const [projectRefreshTrigger, setProjectRefreshTrigger] = useState(0);
   
+  // 실시간 프로젝트 동기화 함수
+  const refreshProjectList = useCallback(async () => {
+    try {
+      console.log('🔄 프로젝트 목록 실시간 새로고침 시작...');
+      const updatedProjects = await dataService.getProjects();
+      
+      // App.tsx의 프로젝트 목록 업데이트를 위한 이벤트 발생
+      if (onCreateProject && updatedProjects.length > 0) {
+        // 새로고침 트리거를 통해 상위 컴포넌트에 알림
+        setProjectRefreshTrigger(prev => prev + 1);
+        console.log('✅ 프로젝트 목록 새로고침 완료:', updatedProjects.length, '개');
+      }
+      
+      return updatedProjects;
+    } catch (error) {
+      console.error('❌ 프로젝트 새로고침 실패:', error);
+      throw error;
+    }
+  }, [onCreateProject]);
+  
   const [activeMenu, setActiveMenu] = useState<'dashboard' | 'projects' | 'creation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash'>(() => {
     // URL 파라미터에서 직접 demographic-survey 확인
     const urlParams = new URLSearchParams(window.location.search);
@@ -384,8 +404,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           await onDeleteProject(projectId);
           console.log('✅ 백엔드 삭제 완료');
           
-          // 삭제는 App.tsx에서 관리됨
-          console.log('✅ 프로젝트 목록 새로고침 완료');
+          // 삭제 후 실시간 프로젝트 목록 새로고침
+          await refreshProjectList();
+          console.log('🔄 프로젝트 삭제 후 실시간 동기화 완료');
           
           alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
         } else {
@@ -434,8 +455,10 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             evaluation_method: projectForm.evaluation_method
           };
           
-          // 프로젝트 수정은 App.tsx에서 관리됨
+          // 프로젝트 수정 완료 후 실시간 새로고침
           console.log('✅ 프로젝트 수정 완료');
+          await refreshProjectList();
+          console.log('🔄 프로젝트 수정 후 실시간 동기화 완료');
         } else {
           throw new Error('프로젝트 수정에 실패했습니다.');
         }
@@ -473,9 +496,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           setSelectedProjectId(newProject.id || '');
           console.log('✅ 새 프로젝트 생성 완료:', newProject.title);
           
-          // 프로젝트 목록 새로고침 트리거
-          setProjectRefreshTrigger(prev => prev + 1);
-          console.log('🔄 프로젝트 목록 새로고침 트리거 발동');
+          // 실시간 프로젝트 목록 새로고침
+          await refreshProjectList();
+          console.log('🔄 실시간 동기화 완료');
         } else {
           throw new Error('프로젝트 생성에 실패했습니다.');
         }
