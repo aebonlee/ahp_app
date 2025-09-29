@@ -6,9 +6,7 @@ import { EvaluationMode } from '../evaluation/EvaluationModeSelector';
 import { WorkflowStage } from '../workflow/WorkflowStageIndicator';
 import dataService from '../../services/dataService';
 import type { ProjectData } from '../../services/dataService';
-
-// UserProject 인터페이스를 PersonalServiceDashboard에서 가져오도록 변경
-// 중복 정의 방지
+import type { UserProject } from '../admin/PersonalServiceDashboard';
 
 interface ProjectSelectorProps {
   onProjectSelect: (project: UserProject) => void;
@@ -216,8 +214,8 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                           </div>
                           
                           <div className="flex items-center justify-between text-xs text-gray-400">
-                            <span>생성일: {formatDate(project.created_at)}</span>
-                            <span>수정일: {formatDate(project.last_modified)}</span>
+                            <span>생성일: {formatDate(project.created_at || '')}</span>
+                            <span>수정일: {formatDate(project.last_modified || '')}</span>
                           </div>
                         </div>
                         
