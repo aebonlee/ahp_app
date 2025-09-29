@@ -8,7 +8,27 @@ export interface ApiResponse<T = any> {
   error?: string;
 }
 
-// 프로젝트 관련 타입
+// Django API 원본 응답 타입 (백엔드에서 실제로 받는 형식)
+export interface DjangoProjectResponse {
+  id: string;
+  title: string;
+  description: string;
+  objective?: string;
+  status: 'draft' | 'active' | 'completed' | 'deleted' | 'evaluation' | 'archived';
+  evaluation_mode: 'practical' | 'theoretical' | 'direct_input' | 'fuzzy_ahp';
+  workflow_stage: 'creating' | 'waiting' | 'evaluating' | 'completed';
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+  deadline?: string;
+  criteria_count: number;
+  alternatives_count: number;
+  member_count?: number;
+  owner?: string;
+  tags?: string[];
+}
+
+// 프론트엔드에서 사용하는 정규화된 타입
 export interface ProjectData {
   id?: string;
   title: string;
@@ -126,27 +146,94 @@ const makeRequest = async <T>(
 
 // === 프로젝트 API ===
 export const projectApi = {
-  // 프로젝트 목록 조회
-  getProjects: () => 
-    makeRequest<{count: number, results: ProjectData[]}>('/api/service/projects/projects/'),
+  // 프로젝트 목록 조회 (정규화 적용)
+  getProjects: async () => {
+    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/projects/');
+    if (response.success && response.data) {
+      // Django 응답을 정규화하여 반환
+      const normalizedProjects = normalizeProjectListResponse(response.data);
+      return {
+        success: true,
+        data: normalizedProjects,
+        message: response.message
+      };
+    }
+    return response as any; // 에러 응답은 그대로 반환
+  },
 
-  // 프로젝트 상세 조회
-  getProject: (id: string) => 
-    makeRequest<ProjectData>(`/api/service/projects/projects/${id}/`),
+  // 프로젝트 상세 조회 (정규화 적용)
+  getProject: async (id: string) => {
+    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`);
+    if (response.success && response.data) {
+      // Django 응답을 정규화하여 반환
+      const normalizedProject = normalizeProjectData(response.data);
+      return {
+        success: true,
+        data: normalizedProject,
+        message: response.message
+      };
+    }
+    return response as any; // 에러 응답은 그대로 반환
+  },
 
-  // 프로젝트 생성
-  createProject: (data: Omit<ProjectData, 'id'>) =>
-    makeRequest<ProjectData>('/api/service/projects/projects/', {
+  // 프로젝트 생성 (정규화 적용)
+  createProject: async (data: Omit<ProjectData, 'id'>) => {
+    // 프론트엔드 데이터를 Django 형식으로 변환
+    const djangoData = {
+      title: data.title,
+      description: data.description,
+      objective: data.objective,
+      status: data.status,
+      evaluation_mode: data.evaluation_mode,
+      workflow_stage: data.workflow_stage,
+      deadline: data.dueDate, // dueDate → deadline 매핑
+    };
+    
+    const response = await makeRequest<DjangoProjectResponse>('/api/service/projects/projects/', {
       method: 'POST',
-      body: JSON.stringify(data)
-    }),
+      body: JSON.stringify(djangoData)
+    });
+    
+    if (response.success && response.data) {
+      // Django 응답을 정규화하여 반환
+      const normalizedProject = normalizeProjectData(response.data);
+      return {
+        success: true,
+        data: normalizedProject,
+        message: response.message
+      };
+    }
+    return response as any; // 에러 응답은 그대로 반환
+  },
 
-  // 프로젝트 수정
-  updateProject: (id: string, data: Partial<ProjectData>) =>
-    makeRequest<ProjectData>(`/api/service/projects/projects/${id}/`, {
+  // 프로젝트 수정 (정규화 적용)
+  updateProject: async (id: string, data: Partial<ProjectData>) => {
+    // 프론트엔드 데이터를 Django 형식으로 변환
+    const djangoData: any = {};
+    if (data.title) djangoData.title = data.title;
+    if (data.description) djangoData.description = data.description;
+    if (data.objective) djangoData.objective = data.objective;
+    if (data.status) djangoData.status = data.status;
+    if (data.evaluation_mode) djangoData.evaluation_mode = data.evaluation_mode;
+    if (data.workflow_stage) djangoData.workflow_stage = data.workflow_stage;
+    if (data.dueDate) djangoData.deadline = data.dueDate; // dueDate → deadline 매핑
+    
+    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`, {
       method: 'PUT',
-      body: JSON.stringify(data)
-    }),
+      body: JSON.stringify(djangoData)
+    });
+    
+    if (response.success && response.data) {
+      // Django 응답을 정규화하여 반환
+      const normalizedProject = normalizeProjectData(response.data);
+      return {
+        success: true,
+        data: normalizedProject,
+        message: response.message
+      };
+    }
+    return response as any; // 에러 응답은 그대로 반환
+  },
 
   // 프로젝트 삭제 (휴지통으로 이동)
   deleteProject: (id: string) =>
@@ -154,9 +241,20 @@ export const projectApi = {
       method: 'DELETE'
     }),
 
-  // 휴지통 프로젝트 조회
-  getTrashedProjects: () =>
-    makeRequest<{count: number, results: ProjectData[]}>('/api/service/projects/projects/trash/'),
+  // 휴지통 프로젝트 조회 (정규화 적용)
+  getTrashedProjects: async () => {
+    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/projects/trash/');
+    if (response.success && response.data) {
+      // Django 응답을 정규화하여 반환
+      const normalizedProjects = normalizeProjectListResponse(response.data);
+      return {
+        success: true,
+        data: normalizedProjects,
+        message: response.message
+      };
+    }
+    return response as any; // 에러 응답은 그대로 반환
+  },
 
   // 프로젝트 복원
   restoreProject: (id: string) =>
@@ -352,6 +450,82 @@ export const authApi = {
   // 토큰 검증
   verifyToken: () =>
     makeRequest<any>('/api/auth/verify')
+};
+
+// === 데이터 정규화 함수 ===
+
+/**
+ * Django API 응답을 프론트엔드 형식으로 정규화
+ */
+export const normalizeProjectData = (djangoProject: DjangoProjectResponse): ProjectData => {
+  // 상태 정규화 (Django의 추가 상태를 기본 상태로 매핑)
+  const normalizeStatus = (status: DjangoProjectResponse['status']): ProjectData['status'] => {
+    switch (status) {
+      case 'evaluation':
+        return 'active'; // 평가 중인 프로젝트는 활성 상태로 처리
+      case 'archived':
+        return 'completed'; // 아카이브된 프로젝트는 완료 상태로 처리
+      default:
+        return status as ProjectData['status'];
+    }
+  };
+
+  // 완료율 계산 (criteria_count와 alternatives_count 기반)
+  const calculateCompletionRate = (project: DjangoProjectResponse): number => {
+    const hasBasicSetup = project.criteria_count > 0 && project.alternatives_count > 0;
+    const hasEvaluators = (project.member_count || 0) > 0;
+    
+    if (!hasBasicSetup) return 0;
+    if (!hasEvaluators) return 30; // 기본 구조만 설정됨
+    
+    // 상태 기반 완료율
+    switch (project.status) {
+      case 'draft': return 30;
+      case 'active':
+      case 'evaluation': return 70;
+      case 'completed':
+      case 'archived': return 100;
+      default: return 50;
+    }
+  };
+
+  // 소유자 이메일 생성 (owner가 있으면 가상 이메일 생성)
+  const generateOwnerEmail = (owner?: string): string => {
+    if (!owner) return '';
+    // 간단한 이메일 형식 생성 (실제로는 백엔드에서 제공해야 함)
+    return `${owner.toLowerCase().replace(/\s+/g, '.')}@ahp-platform.com`;
+  };
+
+  return {
+    id: djangoProject.id,
+    title: djangoProject.title,
+    description: djangoProject.description,
+    objective: djangoProject.objective,
+    status: normalizeStatus(djangoProject.status),
+    evaluation_mode: djangoProject.evaluation_mode,
+    workflow_stage: djangoProject.workflow_stage,
+    created_at: djangoProject.created_at,
+    updated_at: djangoProject.updated_at,
+    deleted_at: djangoProject.deleted_at,
+    criteria_count: djangoProject.criteria_count,
+    alternatives_count: djangoProject.alternatives_count,
+    
+    // 정규화된 필드들
+    owner: djangoProject.owner,
+    ownerEmail: generateOwnerEmail(djangoProject.owner),
+    evaluatorCount: djangoProject.member_count || 0,
+    completionRate: calculateCompletionRate(djangoProject),
+    dueDate: djangoProject.deadline, // deadline → dueDate 매핑
+  };
+};
+
+/**
+ * Django API 프로젝트 목록 응답을 정규화
+ */
+export const normalizeProjectListResponse = (
+  response: { count: number; results: DjangoProjectResponse[] }
+): ProjectData[] => {
+  return response.results.map(normalizeProjectData);
 };
 
 const apiExports = {

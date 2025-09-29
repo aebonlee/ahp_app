@@ -20,12 +20,11 @@ class CleanDataService {
       });
       
       if (response.success && response.data) {
-        // 페이지네이션된 응답 처리 (Django REST framework 구조)
-        const rawData = response.data;
-        const projects = rawData.results ? rawData.results : (Array.isArray(rawData) ? rawData : []);
+        // projectApi에서 이미 정규화된 데이터를 반환하므로 직접 사용
+        const projects = Array.isArray(response.data) ? response.data : [];
         
-        // 각 프로젝트 데이터 무결성 검증
-        const validProjects = projects.filter(project => {
+        // 각 프로젝트 데이터 무결성 검증 (정규화된 데이터에 대해)
+        const validProjects = projects.filter((project: any) => {
           const isValid = project && 
                          typeof project.id !== 'undefined' && 
                          typeof project.title === 'string' &&
@@ -127,11 +126,10 @@ class CleanDataService {
       });
       
       if (response.success && response.data) {
-        // 페이지네이션된 응답 처리 (Django REST framework 구조)
-        const rawData = response.data;
-        const projects = rawData.results ? rawData.results : (Array.isArray(rawData) ? rawData : []);
+        // projectApi에서 이미 정규화된 데이터를 반환하므로 직접 사용
+        const projects = Array.isArray(response.data) ? response.data : [];
         
-        const validProjects = projects.filter(project => {
+        const validProjects = projects.filter((project: any) => {
           const isValid = project && 
                          typeof project.id !== 'undefined' && 
                          typeof project.title === 'string' &&

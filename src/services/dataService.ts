@@ -37,8 +37,8 @@ class DataService {
     try {
       const response = await projectApi.getProjects();
       if (response.success && response.data) {
-        // 페이지네이션된 응답 처리
-        return response.data.results || response.data;
+        // projectApi에서 이미 정규화된 데이터를 반환
+        return response.data;
       }
       console.error('Failed to fetch projects from backend');
       return [];
@@ -320,8 +320,8 @@ class DataService {
     try {
       const response = await projectApi.getTrashedProjects();
       if (response.success && response.data) {
-        // 페이지네이션된 응답 처리
-        return response.data.results || response.data;
+        // projectApi에서 이미 정규화된 데이터를 반환
+        return response.data;
       }
     } catch (error) {
       console.warn('Backend API getTrashedProjects failed:', error);
