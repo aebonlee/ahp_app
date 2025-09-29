@@ -378,13 +378,30 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
 
 
-  const handleEditProject = (project: UserProject) => {
-    setEditingProject(project);
+  const handleEditProject = (project: ProjectData | UserProject) => {
+    console.log('✏️ 프로젝트 편집 시작:', project.title);
+    
+    // ProjectData를 UserProject 형식으로 변환
+    const userProject: UserProject = {
+      id: project.id || '',
+      title: project.title,
+      description: project.description || '',
+      status: project.status || 'draft',
+      evaluation_method: 'pairwise', // 기본값
+      evaluation_mode: project.evaluation_mode || 'practical',
+      workflow_stage: project.workflow_stage || 'creating',
+      objective: (project as ProjectData).objective || '',
+      last_modified: project.updated_at || new Date().toISOString(),
+      evaluator_count: 0,
+      completion_rate: 0
+    };
+    
+    setEditingProject(userProject);
     setProjectForm({
       title: project.title,
-      description: project.description,
-      objective: project.objective || '',
-      evaluation_method: project.evaluation_method,
+      description: project.description || '',
+      objective: (project as ProjectData).objective || '',
+      evaluation_method: 'pairwise',
       evaluation_mode: project.evaluation_mode || 'practical',
       workflow_stage: project.workflow_stage || 'creating'
     });
@@ -399,25 +416,29 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       try {
         console.log('🗑️ 삭제 시작:', projectId, projectTitle);
         
-        // onDeleteProject prop 사용 (백엔드 API 호출)
-        if (onDeleteProject) {
-          await onDeleteProject(projectId);
+        // dataService를 직접 사용하여 삭제
+        const success = await dataService.deleteProject(projectId);
+        
+        if (success) {
           console.log('✅ 백엔드 삭제 완료');
           
           // 삭제 후 실시간 프로젝트 목록 새로고침
-          await refreshProjectList();
-          console.log('🔄 프로젝트 삭제 후 실시간 동기화 완료');
+          if (refreshProjectList) {
+            await refreshProjectList();
+            console.log('🔄 프로젝트 삭제 후 실시간 동기화 완료');
+          }
+          
+          // 프로젝트 새로고침 트리거
+          setProjectRefreshTrigger(prev => prev + 1);
           
           alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
         } else {
-          console.error('❌ onDeleteProject prop이 없습니다');
-          alert('삭제 기능이 연결되지 않았습니다.');
+          console.error('❌ 프로젝트 삭제 실패');
+          alert('프로젝트 삭제에 실패했습니다.');
         }
       } catch (error) {
         console.error('❌ Project deletion error:', error);
         alert(error instanceof Error ? error.message : '프로젝트 삭제 중 오류가 발생했습니다.');
-        
-        // 실패시에도 App.tsx에서 관리됨
       }
     }
   };
@@ -1087,7 +1108,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           }}
           onAnalysis={(project) => {
             setSelectedProjectId(project.id || '');
-            handleTabChange('analysis');
+            handleTabChange('results-analysis');
           }}
         />
       </div>
@@ -3128,7 +3149,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             }}
             onAnalysis={(project) => {
               setSelectedProjectId(project.id || '');
-              setActiveMenu('analysis');
+              setActiveMenu('results-analysis' as any);
             }}
           />
         );
