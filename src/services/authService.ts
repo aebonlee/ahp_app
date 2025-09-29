@@ -147,19 +147,27 @@ class AuthService {
   }
 
   /**
-   * 로그인
+   * 로그인 - 이메일 또는 username 지원
    */
-  async login(username: string, password: string): Promise<LoginResponse> {
-    const result = await this.apiRequest<{ tokens: AuthTokens; user: User }>(
-      API_ENDPOINTS.AUTH.LOGIN,
+  async login(usernameOrEmail: string, password: string): Promise<LoginResponse> {
+    // 이메일 형식인지 확인
+    const isEmail = usernameOrEmail.includes('@');
+    const loginData = isEmail 
+      ? { email: usernameOrEmail, password }
+      : { username: usernameOrEmail, password };
+
+    // JWT 토큰 엔드포인트 사용 (Django custom_token_obtain_pair)
+    const result = await this.apiRequest<{ access: string; refresh: string; user: User }>(
+      '/api/auth/token/',
       {
         method: 'POST',
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(loginData),
       }
     );
 
     if (result.success && result.data) {
-      const { tokens, user } = result.data;
+      const { access, refresh, user } = result.data;
+      const tokens = { access, refresh };
       this.saveTokens(tokens);
       this.initTokenRefresh();
       return { user, tokens };
@@ -182,11 +190,19 @@ class AuthService {
     organization?: string;
     role?: string;
   }): Promise<LoginResponse> {
-    const result = await this.apiRequest<{ tokens: AuthTokens; user: User }>(
-      API_ENDPOINTS.AUTH.REGISTER,
+    // password2를 password_confirm으로 변환 (Django 기대값)
+    const registerData = {
+      ...userData,
+      password_confirm: userData.password2,
+      full_name: `${userData.first_name} ${userData.last_name}`.trim()
+    };
+    delete (registerData as any).password2;
+
+    const result = await this.apiRequest<{ tokens: { access: string; refresh: string }; user: User }>(
+      '/api/auth/register/',
       {
         method: 'POST',
-        body: JSON.stringify(userData),
+        body: JSON.stringify(registerData),
       }
     );
 

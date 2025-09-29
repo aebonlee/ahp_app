@@ -11,6 +11,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+from apps.accounts.views import login_view as login_api, register as register_api
+from apps.accounts.jwt_views import custom_token_obtain_pair
 import os
 
 
@@ -192,13 +194,17 @@ api_patterns = [
     # API root
     path('', api_root, name='api_root'),
     
-    # Authentication
-    path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # JWT Authentication - Custom view that supports email/username
+    path('auth/token/', custom_token_obtain_pair, name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
+    # Custom Authentication (for login with email/username)
+    path('auth/login/', login_api, name='api_login'),
+    path('auth/register/', register_api, name='api_register'),
+    
     # Apps  
-    # path('accounts/', include('accounts.urls')),  # Temporarily disabled
+    path('accounts/', include('apps.accounts.urls')),  # Re-enabled with correct path
     path('projects/', include('apps.projects.urls')),
     path('evaluations/', include('apps.evaluations.urls')),
     path('analysis/', include('apps.analysis.urls')),

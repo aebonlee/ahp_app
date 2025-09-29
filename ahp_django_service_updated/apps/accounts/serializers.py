@@ -93,25 +93,43 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    username = serializers.CharField(required=False)
+    email = serializers.CharField(required=False)
     password = serializers.CharField(write_only=True)
     
     def validate(self, data):
-        """Validate login credentials"""
+        """Validate login credentials - supports both username and email login"""
         username = data.get('username')
+        email = data.get('email')
         password = data.get('password')
         
-        if username and password:
+        # Require either username or email
+        if not (username or email) or not password:
+            raise serializers.ValidationError('Must include (username or email) and password')
+        
+        # Try to authenticate
+        user = None
+        
+        # First try with username
+        if username:
             user = authenticate(username=username, password=password)
-            if user:
-                if user.is_active:
-                    data['user'] = user
-                else:
-                    raise serializers.ValidationError('User account is disabled')
+        
+        # If no user found and email provided, try finding user by email
+        if not user and email:
+            try:
+                user_obj = User.objects.get(email=email)
+                user = authenticate(username=user_obj.username, password=password)
+            except User.DoesNotExist:
+                pass
+        
+        # Check authentication result
+        if user:
+            if user.is_active:
+                data['user'] = user
             else:
-                raise serializers.ValidationError('Invalid credentials')
+                raise serializers.ValidationError('User account is disabled')
         else:
-            raise serializers.ValidationError('Must include username and password')
+            raise serializers.ValidationError('Invalid credentials')
         
         return data
 
