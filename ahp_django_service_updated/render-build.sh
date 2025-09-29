@@ -97,17 +97,13 @@ EOF
     python manage.py shell <<EOF
 from accounts.models import User
 try:
-    # 슈퍼 관리자 생성 (이메일 기반)
+    # 슈퍼 관리자 생성 (Django 표준 방식)
     if not User.objects.filter(email='admin@ahp.com').exists():
-        admin_user = User.objects.create_user(
-            username='admin_ahp',  # username은 고유값으로만 사용
-            email='admin@ahp.com',  # 실제 로그인 ID
+        admin_user = User.objects.create_superuser(
+            username='admin_ahp',
+            email='admin@ahp.com',
             password='admin123!',
-            role='super_admin',
-            can_create_projects=True,
-            max_projects=999,
-            is_staff=True,
-            is_superuser=True
+            full_name='AHP Platform Administrator'
         )
         print(f"✅ 슈퍼 관리자 생성됨: {admin_user.email}")
     
@@ -123,11 +119,10 @@ try:
         if not User.objects.filter(email=email).exists():
             test_user = User.objects.create_user(
                 username=username,
-                email=email,  # 실제 로그인 ID
+                email=email,
                 password='test123!',
-                role='service_admin',
-                can_create_projects=True,
-                max_projects=10
+                full_name=description,
+                is_project_manager=True
             )
             print(f"✅ {description} 계정 생성됨: {test_user.email}")
     
@@ -137,9 +132,8 @@ try:
             username='evaluator_user',
             email='evaluator@test.com',
             password='eval123!',
-            role='evaluator',
-            can_create_projects=False,
-            max_projects=0
+            full_name='테스트 평가자',
+            is_evaluator=True
         )
         print(f"✅ 일반 회원 계정 생성됨: {eval_user.email}")
         
