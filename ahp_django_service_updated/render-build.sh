@@ -19,19 +19,13 @@ if [ "$FLUSH_DB" = "true" ]; then
     echo "⚠️  FLUSH_DB=true detected - Performing complete reset..."
     echo "This will DELETE ALL DATA and regenerate migrations!"
     
-    # Step 1: Delete all migration files except __init__.py
-    echo "🗑️  Removing all existing migration files..."
-    find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+    # Step 1: Clear migration cache only (keep migration files)
+    echo "🗑️  Clearing migration cache..."
+    find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
     find . -path "*/migrations/*.pyc" -delete
     
-    # Step 2: Delete migration cache
-    find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
-    
-    # Step 3: Create fresh migration files
-    echo "📝 Creating fresh migration files..."
-    python manage.py makemigrations accounts --name "initial_user_models"
-    python manage.py makemigrations projects --name "initial_project_models" 
-    python manage.py makemigrations
+    # Step 2: Use existing migration files
+    echo "📝 Using existing migration files..."
     
     echo "📋 Generated migrations:"
     find . -name "*.py" -path "*/migrations/*" -not -name "__init__.py" | head -10
