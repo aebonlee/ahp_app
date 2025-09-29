@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/ahp_app/static/css/main.53f2a159.css",
+    "main.js": "/ahp_app/static/js/main.bab42700.js",
+    "static/js/453.8ffde8ac.chunk.js": "/ahp_app/static/js/453.8ffde8ac.chunk.js",
+    "index.html": "/ahp_app/index.html",
+    "main.53f2a159.css.map": "/ahp_app/static/css/main.53f2a159.css.map",
+    "main.bab42700.js.map": "/ahp_app/static/js/main.bab42700.js.map",
+    "453.8ffde8ac.chunk.js.map": "/ahp_app/static/js/453.8ffde8ac.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.53f2a159.css",
+    "static/js/main.bab42700.js"
+  ]
+}
