@@ -7,13 +7,26 @@ type LoginMode = 'auth' | 'admin-select';
 interface LoginFormProps {
   onLogin: (email: string, password: string, role?: string) => Promise<void>;
   onRegister?: () => void;
+  onGoogleAuth?: () => Promise<void>;
+  onKakaoAuth?: () => Promise<void>;
+  onNaverAuth?: () => Promise<void>;
   loading?: boolean;
   error?: string;
   isAdmin?: boolean; // 관리자 권한 여부
   userEmail?: string; // 로그인한 사용자 이메일
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading = false, error, isAdmin = false, userEmail = '' }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ 
+  onLogin, 
+  onRegister, 
+  onGoogleAuth,
+  onKakaoAuth,
+  onNaverAuth,
+  loading = false, 
+  error, 
+  isAdmin = false, 
+  userEmail = '' 
+}) => {
   const [mode, setMode] = useState<LoginMode>('auth');
 
   // 관리자 권한 확인 후 서비스 선택 모드로 전환
@@ -54,6 +67,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onRegister, loading = fa
     <UnifiedAuthPage
       onLogin={onLogin}
       onRegister={handleRegister}
+      onGoogleAuth={onGoogleAuth}
+      onKakaoAuth={onKakaoAuth}
+      onNaverAuth={onNaverAuth}
       loading={loading}
       error={error}
     />
