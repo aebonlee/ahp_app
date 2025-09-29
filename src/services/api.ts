@@ -237,13 +237,13 @@ export const projectApi = {
 
   // 프로젝트 삭제 (휴지통으로 이동)
   deleteProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/${id}/soft_delete/`, {
+    makeRequest<void>(`/api/service/projects/projects/${id}/`, {
       method: 'DELETE'
     }),
 
-  // 휴지통 프로젝트 조회 (정규화 적용)
+  // 휴지통 프로젝트 조회 (정규화 적용) - 임시로 일반 프로젝트 목록 반환
   getTrashedProjects: async () => {
-    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/projects/trash/');
+    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/projects/');
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProjects = normalizeProjectListResponse(response.data);
@@ -256,15 +256,16 @@ export const projectApi = {
     return response as any; // 에러 응답은 그대로 반환
   },
 
-  // 프로젝트 복원
+  // 프로젝트 복원 - 임시로 업데이트로 대체
   restoreProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/${id}/restore/`, {
-      method: 'POST'
+    makeRequest<void>(`/api/service/projects/projects/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ is_active: true })
     }),
 
-  // 프로젝트 영구 삭제
+  // 프로젝트 영구 삭제 - 일반 삭제와 동일
   permanentDeleteProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/${id}/permanent_delete/`, {
+    makeRequest<void>(`/api/service/projects/projects/${id}/`, {
       method: 'DELETE'
     })
 };

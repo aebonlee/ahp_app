@@ -1236,6 +1236,9 @@ function App() {
       case 'ai-results-interpretation':
         return <AIResultsInterpretationPage user={user} />;
 
+      case 'ai-quality-validation':
+        return <AIQualityValidationPage user={user} />;
+
       case 'django-admin-integration':
         // Django 관리자 페이지 연동은 super_admin, service_admin만 접근 가능
         if (user.role === 'super_admin' || user.role === 'service_admin') {
