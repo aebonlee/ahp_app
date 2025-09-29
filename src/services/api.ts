@@ -148,7 +148,7 @@ const makeRequest = async <T>(
 export const projectApi = {
   // 프로젝트 목록 조회 (정규화 적용)
   getProjects: async () => {
-    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/projects/');
+    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/');
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProjects = normalizeProjectListResponse(response.data);
@@ -163,7 +163,7 @@ export const projectApi = {
 
   // 프로젝트 상세 조회 (정규화 적용)
   getProject: async (id: string) => {
-    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`);
+    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/${id}/`);
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProject = normalizeProjectData(response.data);
@@ -189,7 +189,7 @@ export const projectApi = {
       deadline: data.dueDate, // dueDate → deadline 매핑
     };
     
-    const response = await makeRequest<DjangoProjectResponse>('/api/service/projects/projects/', {
+    const response = await makeRequest<DjangoProjectResponse>('/api/service/projects/', {
       method: 'POST',
       body: JSON.stringify(djangoData)
     });
@@ -218,7 +218,7 @@ export const projectApi = {
     if (data.workflow_stage) djangoData.workflow_stage = data.workflow_stage;
     if (data.dueDate) djangoData.deadline = data.dueDate; // dueDate → deadline 매핑
     
-    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`, {
+    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(djangoData)
     });
@@ -237,13 +237,13 @@ export const projectApi = {
 
   // 프로젝트 삭제 (휴지통으로 이동)
   deleteProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/${id}/`, {
+    makeRequest<void>(`/api/service/projects/${id}/`, {
       method: 'DELETE'
     }),
 
   // 휴지통 프로젝트 조회 (정규화 적용) - 임시로 일반 프로젝트 목록 반환
   getTrashedProjects: async () => {
-    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/projects/');
+    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/');
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProjects = normalizeProjectListResponse(response.data);
@@ -258,14 +258,14 @@ export const projectApi = {
 
   // 프로젝트 복원 - 임시로 업데이트로 대체
   restoreProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/${id}/`, {
+    makeRequest<void>(`/api/service/projects/${id}/`, {
       method: 'PATCH',
       body: JSON.stringify({ is_active: true })
     }),
 
   // 프로젝트 영구 삭제 - 일반 삭제와 동일
   permanentDeleteProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/${id}/`, {
+    makeRequest<void>(`/api/service/projects/${id}/`, {
       method: 'DELETE'
     })
 };

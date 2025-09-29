@@ -37,6 +37,7 @@ import FuzzyAHPMethodologyPage from './components/methodology/FuzzyAHPMethodolog
 import AIPaperGenerationPage from './components/ai-paper/AIPaperGenerationPage';
 import AIResultsInterpretationPage from './components/ai-interpretation/AIResultsInterpretationPage';
 import AIQualityValidationPage from './components/ai-quality/AIQualityValidationPage';
+import AIMaterialsGenerationPage from './components/ai-materials/AIMaterialsGenerationPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
@@ -1238,6 +1239,9 @@ function App() {
 
       case 'ai-quality-validation':
         return <AIQualityValidationPage user={user} />;
+
+      case 'ai-materials-generation':
+        return <AIMaterialsGenerationPage user={user} />;
 
       case 'django-admin-integration':
         // Django 관리자 페이지 연동은 super_admin, service_admin만 접근 가능
