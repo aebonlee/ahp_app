@@ -7,22 +7,8 @@ import { WorkflowStage } from '../workflow/WorkflowStageIndicator';
 import dataService from '../../services/dataService';
 import type { ProjectData } from '../../services/dataService';
 
-interface UserProject {
-  id: string;
-  title: string;
-  description: string;
-  objective: string;
-  status: 'draft' | 'active' | 'completed' | 'deleted';
-  evaluation_mode: EvaluationMode;
-  workflow_stage: WorkflowStage;
-  created_at: string;
-  evaluator_count: number;
-  completion_rate: number;
-  criteria_count: number;
-  alternatives_count: number;
-  last_modified: string;
-  evaluation_method: 'pairwise' | 'direct' | 'mixed';
-}
+// UserProject 인터페이스를 PersonalServiceDashboard에서 가져오도록 변경
+// 중복 정의 방지
 
 interface ProjectSelectorProps {
   onProjectSelect: (project: UserProject) => void;

@@ -50,7 +50,7 @@ interface PersonalServiceProps {
   onSelectProject?: (projectId: string | null) => void;
 }
 
-interface UserProject extends Omit<ProjectData, 'evaluation_method'> {
+export interface UserProject extends Omit<ProjectData, 'evaluation_method'> {
   evaluator_count?: number;
   completion_rate?: number;
   criteria_count: number;
@@ -1562,7 +1562,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                             setActiveProject(project.id || null);
                             console.log('📊 결과 분석 버튼 클릭:', project.id, project.title);
                             handleTabChange('results-analysis');
-                          }}
                           }}
                           className="p-2 rounded-lg transition-colors"
                           style={{ color: 'var(--text-muted)' }}
