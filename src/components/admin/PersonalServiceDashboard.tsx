@@ -418,11 +418,11 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       try {
         console.log('🗑️ 삭제 시작:', projectId, projectTitle);
         
-        // dataService를 직접 사용하여 삭제
-        const success = await dataService.deleteProject(projectId);
-        
-        if (success) {
-          console.log('✅ 백엔드 삭제 완료');
+        // App.tsx의 onDeleteProject 사용 (휴지통 오버플로우 처리 포함)
+        if (onDeleteProject) {
+          console.log('✅ App.tsx onDeleteProject 호출 (휴지통 오버플로우 처리 포함)');
+          await onDeleteProject(projectId);
+          console.log('✅ App.tsx에서 삭제 처리 완료');
           
           // 삭제 후 실시간 프로젝트 목록 새로고침
           if (refreshProjectList) {
@@ -435,8 +435,27 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           
           alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
         } else {
-          console.error('❌ 프로젝트 삭제 실패');
-          alert('프로젝트 삭제에 실패했습니다.');
+          console.log('⚠️ onDeleteProject prop이 없음 - dataService 직접 호출 (fallback)');
+          // Fallback to dataService
+          const success = await dataService.deleteProject(projectId);
+          
+          if (success) {
+            console.log('✅ 백엔드 삭제 완료 (fallback)');
+            
+            // 삭제 후 실시간 프로젝트 목록 새로고침
+            if (refreshProjectList) {
+              await refreshProjectList();
+              console.log('🔄 프로젝트 삭제 후 실시간 동기화 완료');
+            }
+            
+            // 프로젝트 새로고침 트리거
+            setProjectRefreshTrigger(prev => prev + 1);
+            
+            alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
+          } else {
+            console.error('❌ 프로젝트 삭제 실패 (fallback)');
+            alert('프로젝트 삭제에 실패했습니다.');
+          }
         }
       } catch (error) {
         console.error('❌ Project deletion error:', error);
@@ -1526,9 +1545,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                             e.stopPropagation();
                             setSelectedProjectId(project.id || '');
                             setActiveProject(project.id || null);
-                            if (externalOnTabChange) {
-                              externalOnTabChange('model-building');
-                            }
+                            console.log('⚙️ 모델 구성 버튼 클릭:', project.id, project.title);
+                            handleTabChange('model-builder');
                           }}
                           className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                           title="모델 구성"
@@ -1542,9 +1560,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                             e.stopPropagation();
                             setSelectedProjectId(project.id || '');
                             setActiveProject(project.id || null);
-                            if (externalOnTabChange) {
-                              externalOnTabChange('results-analysis');
-                            }
+                            console.log('📊 결과 분석 버튼 클릭:', project.id, project.title);
+                            handleTabChange('results-analysis');
+                          }}
                           }}
                           className="p-2 rounded-lg transition-colors"
                           style={{ color: 'var(--text-muted)' }}
