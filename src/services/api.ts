@@ -132,41 +132,41 @@ export const projectApi = {
 
   // 프로젝트 상세 조회
   getProject: (id: string) => 
-    makeRequest<ProjectData>(`/api/v1/projects/${id}/`),
+    makeRequest<ProjectData>(`/api/service/projects/projects/${id}/`),
 
   // 프로젝트 생성
   createProject: (data: Omit<ProjectData, 'id'>) =>
-    makeRequest<ProjectData>('/api/v1/projects/', {
+    makeRequest<ProjectData>('/api/service/projects/projects/', {
       method: 'POST',
       body: JSON.stringify(data)
     }),
 
   // 프로젝트 수정
   updateProject: (id: string, data: Partial<ProjectData>) =>
-    makeRequest<ProjectData>(`/api/v1/projects/${id}/`, {
+    makeRequest<ProjectData>(`/api/service/projects/projects/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(data)
     }),
 
   // 프로젝트 삭제 (휴지통으로 이동)
   deleteProject: (id: string) =>
-    makeRequest<void>(`/api/v1/projects/${id}/soft_delete/`, {
+    makeRequest<void>(`/api/service/projects/projects/${id}/soft_delete/`, {
       method: 'DELETE'
     }),
 
   // 휴지통 프로젝트 조회
   getTrashedProjects: () =>
-    makeRequest<ProjectData[]>('/api/v1/projects/trash/'),
+    makeRequest<{count: number, results: ProjectData[]}>('/api/service/projects/projects/trash/'),
 
   // 프로젝트 복원
   restoreProject: (id: string) =>
-    makeRequest<void>(`/api/v1/projects/${id}/restore/`, {
+    makeRequest<void>(`/api/service/projects/projects/${id}/restore/`, {
       method: 'POST'
     }),
 
   // 프로젝트 영구 삭제
   permanentDeleteProject: (id: string) =>
-    makeRequest<void>(`/api/v1/projects/${id}/permanent_delete/`, {
+    makeRequest<void>(`/api/service/projects/projects/${id}/permanent_delete/`, {
       method: 'DELETE'
     })
 };

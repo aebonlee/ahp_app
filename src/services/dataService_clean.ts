@@ -127,8 +127,9 @@ class CleanDataService {
       });
       
       if (response.success && response.data) {
+        // 페이지네이션된 응답 처리 (Django REST framework 구조)
         const rawData = response.data;
-        const projects = Array.isArray(rawData) ? rawData : [];
+        const projects = rawData.results ? rawData.results : (Array.isArray(rawData) ? rawData : []);
         
         const validProjects = projects.filter(project => {
           const isValid = project && 
