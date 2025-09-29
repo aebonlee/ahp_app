@@ -30,30 +30,35 @@ class SessionService {
     // localStorage 제거됨 - JWT 토큰 만료 시간에 따라 서버에서 처리
   }
 
-  // 로그인 시 세션 시작 (JWT 기반)
+  // 로그인 시 세션 시작 (JWT 토큰 기반 - 서버에서 만료 관리)
   public startSession(): void {
-    this.startSessionTimer();
-    console.log('세션이 시작되었습니다. (30분)');
+    // JWT 토큰 기반에서는 authService가 토큰 만료를 자동 관리
+    // 클라이언트에서 별도 타이머 없이 서버 토큰 상태를 따름
+    console.log('세션이 시작되었습니다. (JWT 토큰 기반)');
+    
+    // 토큰 만료 이벤트 리스너 등록
+    this.setupTokenExpirationListener();
   }
 
-  // 세션 타이머 시작
+  // JWT 토큰 만료 이벤트 리스너 설정
+  private setupTokenExpirationListener(): void {
+    window.addEventListener('auth:tokenExpired', () => {
+      console.log('JWT 토큰 만료 - 자동 로그아웃');
+      this.logout();
+    });
+  }
+
+  // 레거시 세션 타이머 (JWT 기반에서는 사용하지 않음)
   private startSessionTimer(): void {
-    this.clearTimers();
-    
-    // 5분 전 경고 타이머
-    this.warningTimer = setTimeout(() => {
-      this.showSessionWarning();
-    }, this.SESSION_DURATION - this.WARNING_TIME);
-    
-    // 30분 후 자동 로그아웃 타이머
-    this.sessionTimer = setTimeout(() => {
-      this.forceLogout();
-    }, this.SESSION_DURATION);
+    // JWT 기반에서는 authService가 토큰 자동 갱신을 관리하므로
+    // 클라이언트에서 별도 세션 타이머를 설정하지 않음
+    console.log('JWT 기반 인증: 서버에서 토큰 만료 관리');
   }
 
-  // 세션 타이머 재개 (페이지 새로고침 후)
+  // 세션 타이머 재개 (JWT 기반에서는 사용하지 않음)
   private resumeSessionTimer(remainingTime: number): void {
-    this.clearTimers();
+    // JWT 기반에서는 authService가 자동으로 토큰 상태를 관리
+    console.log('JWT 기반 인증: 토큰 자동 갱신으로 세션 유지');
     
     console.log(`세션 타이머 재개: 남은 시간 ${Math.floor(remainingTime / 60000)}분`);
     
@@ -91,16 +96,26 @@ class SessionService {
 
   // 세션 상태 확인 (JWT 기반)
   public async isSessionValid(): Promise<boolean> {
-    // localStorage 제거됨 - 서버 API로 세션 상태 확인
-    // TODO: 서버 세션 상태 확인 API 호출 구현
-    return true; // 임시로 true 반환
+    // JWT 토큰 유효성을 authService에서 확인
+    return authService.isAuthenticated();
   }
 
   // 남은 세션 시간 (JWT 기반)
   public async getRemainingTime(): Promise<number> {
-    // localStorage 제거됨 - 서버에서 남은 세션 시간 조회
-    // TODO: 서버 API를 통해 JWT 토큰 남은 시간 조회
-    return Math.floor(this.SESSION_DURATION / 60000); // 임시로 30분 반환
+    const token = authService.getAccessToken();
+    if (!token) return 0;
+    
+    try {
+      // JWT 토큰에서 만료 시간 추출
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expirationTime = payload.exp * 1000; // 밀리초로 변환
+      const currentTime = Date.now();
+      const remainingTime = expirationTime - currentTime;
+      
+      return Math.max(0, Math.floor(remainingTime / 60000)); // 분 단위로 반환
+    } catch {
+      return 0;
+    }
   }
 
   // 세션 경고 표시
@@ -286,7 +301,8 @@ class SessionService {
 
   // 세션 상태 확인 (JWT 기반)
   public async checkSessionStatus(): Promise<boolean> {
-    return await this.isSessionValid();
+    // JWT 기반에서는 authService의 토큰 상태를 확인
+    return authService.isAuthenticated();
   }
 
   // 세션 새로고침
