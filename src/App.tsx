@@ -34,6 +34,7 @@ import RoleBasedDashboard from './components/common/RoleBasedDashboard';
 import DjangoAdminIntegration from './components/admin/DjangoAdminIntegration';
 import AHPMethodologyPage from './components/methodology/AHPMethodologyPage';
 import FuzzyAHPMethodologyPage from './components/methodology/FuzzyAHPMethodologyPage';
+import AIPaperGenerationPage from './components/ai-paper/AIPaperGenerationPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
@@ -1226,6 +1227,9 @@ function App() {
 
       case 'ai-fuzzy-methodology':
         return <FuzzyAHPMethodologyPage />;
+
+      case 'ai-paper-generation':
+        return <AIPaperGenerationPage user={user} />;
 
       case 'django-admin-integration':
         // Django 관리자 페이지 연동은 super_admin, service_admin만 접근 가능
