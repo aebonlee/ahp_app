@@ -22,6 +22,11 @@ export interface ProjectData {
   deleted_at?: string;
   criteria_count?: number;
   alternatives_count?: number;
+  owner?: string;
+  ownerEmail?: string;
+  evaluatorCount?: number;
+  completionRate?: number;
+  dueDate?: string;
 }
 
 // 기준 관련 타입

@@ -101,7 +101,42 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     planName: 'Standard Plan'
   });
 
-  // props에서 projects를 직접 사용하므로 useEffect 불필요
+  // 프로젝트 자동 로딩 로직 (빈 상태일 때만)
+  const [isAutoLoading, setIsAutoLoading] = useState(false);
+  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
+
+  useEffect(() => {
+    const autoLoadProjects = async () => {
+      // 이미 로딩 시도했거나 현재 로딩 중이면 스킵
+      if (hasAttemptedLoad || isAutoLoading) return;
+      
+      // 프로젝트가 있거나 명시적으로 빈 배열이 전달된 경우 스킵
+      if (externalProjects && externalProjects.length > 0) return;
+      
+      console.log('🔄 PersonalServiceDashboard: 프로젝트 자동 로딩 시작...');
+      setIsAutoLoading(true);
+      setHasAttemptedLoad(true);
+      
+      try {
+        const projects = await dataService.getProjects();
+        console.log('✅ 자동 로딩 성공:', projects.length, '개 프로젝트');
+        
+        // App.tsx의 프로젝트 목록 업데이트를 위한 콜백 호출
+        if (onCreateProject && projects.length > 0) {
+          // 상위 컴포넌트에 프로젝트 데이터 전달하는 방법이 없으므로
+          // 일단 로그만 남기고 사용자에게 새로고침 안내
+          console.log('💡 프로젝트를 불러왔습니다. 페이지를 새로고침하면 표시됩니다.');
+        }
+      } catch (error) {
+        console.error('❌ 프로젝트 자동 로딩 실패:', error);
+        setError('프로젝트를 불러오는데 실패했습니다. 새로고침을 시도해보세요.');
+      } finally {
+        setIsAutoLoading(false);
+      }
+    };
+
+    autoLoadProjects();
+  }, [externalProjects, hasAttemptedLoad, isAutoLoading, onCreateProject]);
 
   // props의 user가 변경될 때 내부 상태도 업데이트
   useEffect(() => {
@@ -1286,7 +1321,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       )}
 
       {/* 프로젝트 목록 또는 빈 상태 */}
-      {(projects || []).length === 0 ? (
+      {isAutoLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-500">프로젝트를 불러오는 중...</p>
+        </div>
+      ) : (projects || []).length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📊</div>
           <h3 className="text-xl font-medium text-gray-900 mb-2">첫 번째 프로젝트를 시작해보세요</h3>
@@ -3544,7 +3584,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               )}
             </div>
             
-            {(projects || []).length === 0 ? (
+            {isAutoLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-gray-500">프로젝트를 불러오는 중...</p>
+              </div>
+            ) : (projects || []).length === 0 ? (
               <div className="text-center py-8">
                 <div className="text-6xl mb-4 opacity-50">📊</div>
                 <h4 

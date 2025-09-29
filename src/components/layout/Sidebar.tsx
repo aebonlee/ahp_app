@@ -14,7 +14,8 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, activeTab, onTabChange, canSwitchModes, onModeSwitch }) => {
   const superAdminMenuItems = [
-    { id: 'dashboard', label: '시스템 대시보드', icon: '📊' },
+    { id: 'dashboard', label: '관리자 대시보드', icon: '👑' },
+    { id: 'django-admin-integration', label: 'Django 관리자', icon: '🔧' },
     { id: 'users', label: '사용자 관리', icon: '👥' },
     { id: 'projects', label: '전체 프로젝트', icon: '📋' },
     { id: 'monitoring', label: '시스템 모니터링', icon: '⚡' },
@@ -26,13 +27,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
   ];
 
   const serviceAdminMenuItems = [
-    { id: 'personal-service', label: '내 대시보드', icon: '🏠' },
+    { id: 'dashboard', label: '내 대시보드', icon: '🏠' },
     { id: 'user-guide', label: '사용자 가이드', icon: '📚' },
     { id: 'demographic-survey', label: '인구통계학적 설문조사', icon: '📊' },
     { id: 'my-projects', label: '내 프로젝트', icon: '📂' },
     { id: 'project-creation', label: '새 프로젝트', icon: '➕' },
     { id: 'model-builder', label: '모델 구축', icon: '🏗️' },
     { id: 'evaluation-test', label: '평가 테스트', icon: '🧪' },
+    { id: 'connection-test', label: '연동 테스트', icon: '🔌' },
     { id: 'evaluator-management', label: '평가자 관리', icon: '👥' },
     { id: 'progress-monitoring', label: '진행률 모니터링', icon: '📈' },
     { id: 'results-analysis', label: '결과 분석', icon: '📊' },
@@ -56,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
   ];
 
   const evaluatorMenuItems = [
-    { id: 'evaluator-dashboard', label: '평가자 홈', icon: '🏠' },
+    { id: 'dashboard', label: '평가자 홈', icon: '🏠' },
     { id: 'assigned-projects', label: '할당된 프로젝트', icon: '📋' },
     { id: 'pairwise-evaluation', label: '쌍대비교 평가', icon: '⚖️' },
     { id: 'direct-evaluation', label: '직접입력 평가', icon: '📝' },

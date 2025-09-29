@@ -29,6 +29,9 @@ import EvaluatorDashboard from './components/evaluator/EvaluatorDashboard';
 import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
 import EvaluationTest from './components/evaluation/EvaluationTest';
 import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
+import ConnectionTestPage from './components/demo/ConnectionTestPage';
+import RoleBasedDashboard from './components/common/RoleBasedDashboard';
+import DjangoAdminIntegration from './components/admin/DjangoAdminIntegration';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
@@ -456,7 +459,8 @@ function App() {
     'evaluation-results', 'project-completion', 'personal-projects', 
     'personal-users', 'results', 'evaluator-dashboard', 'pairwise-evaluation', 
     'direct-evaluation', 'evaluator-status', 'evaluations', 'progress',
-    'demographic-survey', 'evaluator-mode', 'ahp-analysis'
+    'demographic-survey', 'evaluator-mode', 'ahp-analysis', 'django-admin-integration',
+    'connection-test'
   ], []);
 
   // 사용자 상태 저장 및 복원
@@ -1129,6 +1133,15 @@ function App() {
 
       case 'super-admin':
       case 'dashboard':
+        // 역할별 대시보드 자동 라우팅
+        return (
+          <RoleBasedDashboard 
+            user={user}
+            onTabChange={setActiveTab}
+            viewMode={viewMode}
+          />
+        );
+
       case 'users':
       case 'projects':
       case 'monitoring':
@@ -1152,7 +1165,7 @@ function App() {
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             }}
-            activeTab={activeTab === 'super-admin' ? 'overview' : activeTab}
+            activeTab={activeTab}
             onTabChange={setActiveTab}
           />
         );
@@ -1202,6 +1215,18 @@ function App() {
 
       case 'evaluation-test':
         return <EvaluationTest />;
+
+      case 'connection-test':
+        return <ConnectionTestPage />;
+
+      case 'django-admin-integration':
+        // Django 관리자 페이지 연동은 super_admin, service_admin만 접근 가능
+        if (user.role === 'super_admin' || user.role === 'service_admin') {
+          return <DjangoAdminIntegration user={user} />;
+        }
+        // 권한이 없는 경우 대시보드로 리다이렉트
+        setActiveTab('dashboard');
+        return null;
 
       case 'evaluator-mode':
         // 로그인한 사용자의 경우
