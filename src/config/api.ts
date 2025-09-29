@@ -1,9 +1,9 @@
 // API 설정 - Django 백엔드 서버 URL (Render.com 백엔드)
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-django-backend.onrender.com';
 
-// 데이터 저장 모드 설정
+// 데이터 저장 모드 설정 - Django 백엔드 연동
 export const DATA_STORAGE_MODE = process.env.REACT_APP_DATA_MODE || 
-  (process.env.NODE_ENV === 'production' ? 'offline' : 'hybrid');
+  (process.env.NODE_ENV === 'production' ? 'online' : 'hybrid');
 
 // 오프라인 모드에서의 동기화 간격 (ms)
 export const SYNC_INTERVAL = 5 * 60 * 1000; // 5분

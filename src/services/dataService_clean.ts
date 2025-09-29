@@ -169,6 +169,22 @@ class CleanDataService {
     }
   }
 
+  async permanentDeleteProject(id: string): Promise<boolean> {
+    try {
+      console.log('🗑️ 실제 DB에서 프로젝트 영구 삭제 시작:', id);
+      const response = await projectApi.permanentDeleteProject(id);
+      if (response.success) {
+        console.log('✅ 프로젝트 영구 삭제 성공');
+        return true;
+      }
+      console.error('❌ 프로젝트 영구 삭제 실패');
+      return false;
+    } catch (error) {
+      console.error('❌ 프로젝트 영구 삭제 중 오류:', error);
+      throw error;
+    }
+  }
+
   // === 기준 관리 ===
   async getCriteria(projectId: string): Promise<CriteriaData[]> {
     try {

@@ -110,7 +110,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     }
   };
 
-  // 프로젝트 영구 삭제 (추후 백엔드 API 추가 필요)
+  // 프로젝트 영구 삭제
   const handlePermanentDelete = async (projectId: string, projectTitle: string) => {
     if (!window.confirm(`"${projectTitle}" 프로젝트를 영구 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다!`)) {
       return;
@@ -122,8 +122,13 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     }
 
     try {
-      // TODO: 영구 삭제 API 구현 필요
-      alert('영구 삭제 기능은 아직 구현되지 않았습니다.');
+      const success = await dataService.permanentDeleteProject(projectId);
+      if (success) {
+        alert('프로젝트가 영구 삭제되었습니다.');
+        fetchProjects(); // 목록 새로고침
+      } else {
+        alert('프로젝트 영구 삭제에 실패했습니다.');
+      }
     } catch (error) {
       console.error('Failed to permanently delete project:', error);
       alert('영구 삭제 중 오류가 발생했습니다.');

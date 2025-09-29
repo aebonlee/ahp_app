@@ -145,7 +145,7 @@ export const projectApi = {
 
   // 프로젝트 삭제 (휴지통으로 이동)
   deleteProject: (id: string) =>
-    makeRequest<void>(`/api/v1/projects/${id}/`, {
+    makeRequest<void>(`/api/v1/projects/${id}/soft_delete/`, {
       method: 'DELETE'
     }),
 
@@ -156,12 +156,12 @@ export const projectApi = {
   // 프로젝트 복원
   restoreProject: (id: string) =>
     makeRequest<void>(`/api/v1/projects/${id}/restore/`, {
-      method: 'PUT'
+      method: 'POST'
     }),
 
   // 프로젝트 영구 삭제
   permanentDeleteProject: (id: string) =>
-    makeRequest<void>(`/api/v1/projects/${id}/permanent/`, {
+    makeRequest<void>(`/api/v1/projects/${id}/permanent_delete/`, {
       method: 'DELETE'
     })
 };
