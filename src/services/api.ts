@@ -26,6 +26,7 @@ export interface DjangoProjectResponse {
   member_count?: number;
   owner?: string;
   tags?: string[];
+  settings?: any; // 메타데이터 저장용 필드
 }
 
 // 프론트엔드에서 사용하는 정규화된 타입
@@ -47,6 +48,7 @@ export interface ProjectData {
   evaluatorCount?: number;
   completionRate?: number;
   dueDate?: string;
+  settings?: any; // 메타데이터 저장용 필드
 }
 
 // 기준 관련 타입
@@ -58,6 +60,8 @@ export interface CriteriaData {
   position: number;
   weight?: number;
   parent_id?: string | null;
+  level?: number;
+  order?: number;
 }
 
 // 대안 관련 타입

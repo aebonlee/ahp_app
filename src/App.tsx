@@ -39,6 +39,7 @@ import AIResultsInterpretationPage from './components/ai-interpretation/AIResult
 import AIQualityValidationPage from './components/ai-quality/AIQualityValidationPage';
 import AIMaterialsGenerationPage from './components/ai-materials/AIMaterialsGenerationPage';
 import AIChatbotAssistantPage from './components/ai-chatbot/AIChatbotAssistantPage';
+import TestPage from './pages/TestPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
@@ -467,7 +468,7 @@ function App() {
     'personal-users', 'results', 'evaluator-dashboard', 'pairwise-evaluation', 
     'direct-evaluation', 'evaluator-status', 'evaluations', 'progress',
     'demographic-survey', 'evaluator-mode', 'ahp-analysis', 'django-admin-integration',
-    'connection-test'
+    'connection-test', 'integration-test'
   ], []);
 
   // 사용자 상태 저장 및 복원
@@ -1225,6 +1226,9 @@ function App() {
 
       case 'connection-test':
         return <ConnectionTestPage />;
+
+      case 'integration-test':
+        return <TestPage />;
 
       case 'ai-ahp-methodology':
         return <AHPMethodologyPage />;
