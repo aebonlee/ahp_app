@@ -36,6 +36,7 @@ import AHPMethodologyPage from './components/methodology/AHPMethodologyPage';
 import FuzzyAHPMethodologyPage from './components/methodology/FuzzyAHPMethodologyPage';
 import AIPaperGenerationPage from './components/ai-paper/AIPaperGenerationPage';
 import AIResultsInterpretationPage from './components/ai-interpretation/AIResultsInterpretationPage';
+import AIQualityValidationPage from './components/ai-quality/AIQualityValidationPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
