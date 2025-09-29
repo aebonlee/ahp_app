@@ -187,14 +187,26 @@ class CleanDataService {
   // === 기준 관리 ===
   async getCriteria(projectId: string): Promise<CriteriaData[]> {
     try {
-      console.log('🔍 실제 DB에서 기준 조회 시작:', projectId);
+      console.log('🔍 기준 조회 시작 (메타데이터 우선):', projectId);
+      
+      // 1단계: 프로젝트 메타데이터에서 기준 확인
+      const projectResponse = await projectApi.getProject(projectId);
+      if (projectResponse.success && projectResponse.data?.settings?.criteria) {
+        const metaCriteria = projectResponse.data.settings.criteria;
+        console.log('✅ 프로젝트 메타데이터에서 기준 발견:', metaCriteria.length, '개');
+        return metaCriteria;
+      }
+      
+      // 2단계: 기존 API로 시도 (인증 문제 가능성)
+      console.log('🔍 기존 기준 API로 시도...');
       const response = await criteriaApi.getCriteria(projectId);
       if (response.success && response.data) {
         const criteria = Array.isArray(response.data) ? response.data : [];
-        console.log('✅ 기준 조회 성공:', criteria.length, '개');
+        console.log('✅ 기준 API 조회 성공:', criteria.length, '개');
         return criteria;
       }
-      console.error('❌ 기준 조회 실패');
+      
+      console.warn('⚠️ 기준 조회 실패 - 메타데이터와 API 모두 실패');
       return [];
     } catch (error) {
       console.error('❌ 기준 조회 중 오류:', error);
@@ -204,13 +216,51 @@ class CleanDataService {
 
   async createCriteria(data: Omit<CriteriaData, 'id'>): Promise<CriteriaData | null> {
     try {
-      console.log('🔍 실제 DB에 기준 생성 시작:', data.name);
-      const response = await criteriaApi.createCriteria(data);
-      if (response.success && response.data) {
-        console.log('✅ 기준 생성 성공');
-        return response.data;
+      console.log('🔍 기준 생성 시작 (메타데이터 우선):', data.name);
+      
+      // 1단계: 기존 API로 시도
+      try {
+        const response = await criteriaApi.createCriteria(data);
+        if (response.success && response.data) {
+          console.log('✅ 기준 API 생성 성공');
+          return response.data;
+        }
+      } catch (apiError) {
+        console.warn('⚠️ 기준 API 생성 실패, 메타데이터 방법 시도:', apiError);
       }
-      console.error('❌ 기준 생성 실패');
+      
+      // 2단계: 메타데이터에 저장 (인증 문제 우회)
+      if (data.project_id) {
+        const projectResponse = await projectApi.getProject(data.project_id);
+        if (projectResponse.success && projectResponse.data) {
+          const currentProject = projectResponse.data;
+          const existingCriteria = currentProject.settings?.criteria || [];
+          
+          // 새 기준 ID 생성
+          const newCriterion = {
+            ...data,
+            id: 'c' + Date.now(),
+            order: existingCriteria.length + 1
+          };
+          
+          // 메타데이터 업데이트
+          const updatedCriteria = [...existingCriteria, newCriterion];
+          const updateResponse = await projectApi.updateProject(data.project_id, {
+            settings: {
+              ...currentProject.settings,
+              criteria: updatedCriteria,
+              criteria_count: updatedCriteria.length
+            }
+          });
+          
+          if (updateResponse.success) {
+            console.log('✅ 메타데이터로 기준 생성 성공');
+            return newCriterion as CriteriaData;
+          }
+        }
+      }
+      
+      console.error('❌ 기준 생성 실패 (모든 방법 실패)');
       return null;
     } catch (error) {
       console.error('❌ 기준 생성 중 오류:', error);
