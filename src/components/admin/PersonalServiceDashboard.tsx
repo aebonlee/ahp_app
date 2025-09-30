@@ -1907,13 +1907,26 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           {/* Step 2: 기준 설정 */}
           {newProjectStep === 2 && newProjectId && (
             <div className="space-y-4">
-              <div className="text-center py-8">
-                <h3 className="text-lg font-semibold mb-4">평가 기준 설정</h3>
-                <p className="text-gray-600 mb-6">프로젝트에서 사용할 평가 기준을 설정하세요.</p>
+              <div className="text-center py-4">
+                <h3 className="text-lg font-semibold mb-2">평가 기준 설정</h3>
+                <p className="text-gray-600 mb-4">프로젝트에서 사용할 평가 기준을 설정하세요.</p>
               </div>
-              <div className="flex justify-between">
+              
+              {/* 기준 관리 컴포넌트 */}
+              <CriteriaManagement 
+                projectId={newProjectId}
+                onComplete={() => {
+                  console.log('✅ 기준 설정 완료');
+                  // 자동으로 다음 단계로 이동하지 않고 사용자가 버튼을 클릭하도록 함
+                }}
+                onCriteriaChange={(criteria) => {
+                  console.log('📝 기준 변경됨:', criteria.length, '개');
+                }}
+              />
+              
+              <div className="flex justify-between mt-6">
                 <Button variant="secondary" onClick={() => setNewProjectStep(1)}>
-                  이전
+                  이전: 기본정보
                 </Button>
                 <Button variant="primary" onClick={() => setNewProjectStep(3)}>
                   다음: 대안 설정
@@ -1925,13 +1938,26 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           {/* Step 3: 대안 설정 */}
           {newProjectStep === 3 && newProjectId && (
             <div className="space-y-4">
-              <div className="text-center py-8">
-                <h3 className="text-lg font-semibold mb-4">대안 설정</h3>
-                <p className="text-gray-600 mb-6">비교할 대안들을 설정하세요.</p>
+              <div className="text-center py-4">
+                <h3 className="text-lg font-semibold mb-2">대안 설정</h3>
+                <p className="text-gray-600 mb-4">비교할 대안들을 설정하세요.</p>
               </div>
-              <div className="flex justify-between">
+              
+              {/* 대안 관리 컴포넌트 */}
+              <AlternativeManagement 
+                projectId={newProjectId}
+                onComplete={() => {
+                  console.log('✅ 대안 설정 완료');
+                  // 자동으로 다음 단계로 이동하지 않고 사용자가 버튼을 클릭하도록 함
+                }}
+                onAlternativesChange={(alternatives) => {
+                  console.log('📝 대안 변경됨:', alternatives.length, '개');
+                }}
+              />
+              
+              <div className="flex justify-between mt-6">
                 <Button variant="secondary" onClick={() => setNewProjectStep(2)}>
-                  이전
+                  이전: 기준 설정
                 </Button>
                 <Button variant="primary" onClick={() => setNewProjectStep(4)}>
                   다음: 평가자 배정
