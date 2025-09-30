@@ -1,5 +1,5 @@
 // API 설정 - 분리된 Django 백엔드 서버 URL (독립 Repository)
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-backend-zt6h.onrender.com';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-django-backend.onrender.com';
 
 // 데이터 저장 모드 설정 - Django 백엔드 연동
 export const DATA_STORAGE_MODE = process.env.REACT_APP_DATA_MODE || 
