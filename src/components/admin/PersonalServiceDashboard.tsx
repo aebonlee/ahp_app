@@ -22,6 +22,7 @@ import PaperManagement from '../paper/PaperManagement';
 import ProjectSelector from '../project/ProjectSelector';
 import SurveyManagementSystem from '../survey/SurveyManagementSystem';
 import PersonalSettings from '../settings/PersonalSettings';
+import DemographicSurvey from '../survey/DemographicSurvey';
 import UsageManagement from './UsageManagement';
 import ValidityCheck from '../validity/ValidityCheck';
 import TrashBin from './TrashBin';
@@ -2920,7 +2921,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                     <span className="text-4xl mr-3">📊</span>
                     인구통계학적 설문조사
                   </h1>
-                  <p className="text-gray-600 mt-2">평가자를 위한 Google Forms 스타일 설문조사를 생성하고 관리합니다</p>
+                  <p className="text-gray-600 mt-2">연구 참여자의 기본 정보를 수집하는 설문조사입니다</p>
                 </div>
               </div>
             </div>
@@ -2928,9 +2929,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <SurveyManagementSystem 
-          projectId="current-project-id"
-          onBack={() => handleTabChange('dashboard')}
+        <DemographicSurvey 
+          onSave={(data) => {
+            console.log('인구통계학적 설문 데이터:', data);
+            // 실제 데이터 저장 로직
+          }}
+          onCancel={() => handleTabChange('dashboard')}
         />
       </div>
     </div>
