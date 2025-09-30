@@ -82,6 +82,18 @@ export const API_ENDPOINTS = {
     CALCULATE_GROUP: (projectId: string) => `/api/v1/results/group/`,
     SENSITIVITY: (projectId: string) => `/api/v1/results/sensitivity/?project=${projectId}`
   },
+  // Surveys - 설문조사 관련 API
+  SURVEYS: {
+    LIST: (projectId: string) => `/api/service/projects/${projectId}/surveys/`,
+    CREATE: (projectId: string) => `/api/service/projects/${projectId}/surveys/`,
+    GET: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/`,
+    UPDATE: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/`,
+    DELETE: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/`,
+    STATUS: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/status/`,
+    RESPONSES: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/responses/`,
+    ANALYTICS: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/analytics/`,
+    SUBMIT_RESPONSE: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/submit/`
+  },
   // Export
   EXPORT: {
     EXCEL: (projectId: string) => `/api/service/export/excel/?project=${projectId}`,
