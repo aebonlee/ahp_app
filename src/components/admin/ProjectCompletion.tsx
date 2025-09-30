@@ -1,23 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import dataService from '../../services/dataService_clean';
+import { projectApi } from '../../services/api';
 
 interface ProjectCompletionProps {
   projectId: string;
   projectTitle: string;
   onBack: () => void;
   onProjectStatusChange: (status: 'terminated' | 'completed') => void;
+  criteriaCount?: number;
+  alternativesCount?: number;
+  evaluatorsCount?: number;
 }
 
 const ProjectCompletion: React.FC<ProjectCompletionProps> = ({ 
   projectId, 
   projectTitle, 
   onBack,
-  onProjectStatusChange 
+  onProjectStatusChange,
+  criteriaCount = 0,
+  alternativesCount = 0,
+  evaluatorsCount = 0
 }) => {
   const [selectedAction, setSelectedAction] = useState<'terminate' | 'complete' | 'lock' | 'export' | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [exportFormat, setExportFormat] = useState<'excel' | 'pdf' | 'both'>('both');
+  const [projectSummary, setProjectSummary] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadProjectSummary();
+  }, [projectId]);
+
+  const loadProjectSummary = async () => {
+    try {
+      setLoading(true);
+      
+      // 프로젝트 데이터 로드
+      const [criteria, alternatives, evaluators] = await Promise.all([
+        dataService.getCriteria(projectId),
+        dataService.getAlternatives(projectId),
+        dataService.getEvaluators(projectId)
+      ]);
+
+      const completedEvaluators = evaluators.filter((e: any) => e.status === 'completed');
+      const completionRate = evaluators.length > 0 
+        ? Math.round((completedEvaluators.length / evaluators.length) * 100)
+        : 0;
+
+      setProjectSummary({
+        totalCriteria: criteria.length,
+        totalAlternatives: alternatives.length,
+        totalEvaluators: evaluators.length,
+        completedEvaluators: completedEvaluators.length,
+        completionRate,
+        pendingEvaluators: evaluators.filter((e: any) => e.status === 'pending').length,
+        activeEvaluators: evaluators.filter((e: any) => e.status === 'active').length,
+        consistencyRatio: 0.08, // TODO: 실제 CR 계산 필요
+        createdDate: new Date().toLocaleDateString('ko-KR'),
+        lastModified: new Date().toLocaleDateString('ko-KR')
+      });
+    } catch (error) {
+      console.error('프로젝트 요약 로드 실패:', error);
+      // 기본값 설정
+      setProjectSummary({
+        totalCriteria: criteriaCount,
+        totalAlternatives: alternativesCount,
+        totalEvaluators: evaluatorsCount,
+        completedEvaluators: 0,
+        completionRate: 0,
+        pendingEvaluators: evaluatorsCount,
+        activeEvaluators: 0,
+        consistencyRatio: 0,
+        createdDate: new Date().toLocaleDateString('ko-KR'),
+        lastModified: new Date().toLocaleDateString('ko-KR')
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const actions = [
     {
@@ -65,14 +127,16 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
     setIsConfirming(true);
   };
 
-  const handleExecute = () => {
+  const handleExecute = async () => {
     if (!selectedAction) return;
 
     switch (selectedAction) {
       case 'terminate':
+        await updateProjectStatus('terminated');
         onProjectStatusChange('terminated');
         break;
       case 'complete':
+        await updateProjectStatus('completed');
         onProjectStatusChange('completed');
         break;
       case 'lock':
@@ -89,24 +153,36 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
     setIsConfirming(false);
   };
 
+  const updateProjectStatus = async (status: string) => {
+    try {
+      // TODO: 프로젝트 상태 업데이트 API 호출
+      console.log(`프로젝트 ${projectId} 상태를 ${status}로 변경`);
+      // await projectApi.updateProject(projectId, { status });
+    } catch (error) {
+      console.error('프로젝트 상태 업데이트 실패:', error);
+    }
+  };
+
   const handleExport = () => {
     const formats = exportFormat === 'both' ? ['Excel', 'PDF'] : [exportFormat.toUpperCase()];
     alert(`${formats.join(', ')} 형식으로 내보내기를 시작합니다.`);
   };
 
-  const getProjectSummary = () => {
-    return {
-      totalEvaluators: 4,
-      completedEvaluators: 3,
-      completionRate: 75,
-      consistencyRatio: 0.08,
-      finalRanking: ['대안 A', '대안 B', '대안 C'],
-      createdDate: '2024-01-15',
-      lastModified: '2024-01-20'
-    };
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">프로젝트 정보 로듩 중...</div>
+      </div>
+    );
+  }
 
-  const summary = getProjectSummary();
+  if (!projectSummary) {
+    return (
+      <div className="text-center py-8 text-red-600">
+        프로젝트 정보를 로드할 수 없습니다.
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -131,36 +207,55 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
         <Card title="📊 프로젝트 현황">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-2xl font-bold text-blue-900">{summary.totalEvaluators}</div>
-              <div className="text-sm text-blue-700">총 평가자</div>
+              <div className="text-2xl font-bold text-blue-900">{projectSummary.totalCriteria}</div>
+              <div className="text-sm text-blue-700">평가 기준</div>
             </div>
             <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="text-2xl font-bold text-green-900">{summary.completedEvaluators}</div>
-              <div className="text-sm text-green-700">완료 평가자</div>
+              <div className="text-2xl font-bold text-green-900">{projectSummary.totalAlternatives}</div>
+              <div className="text-sm text-green-700">대안 수</div>
             </div>
             <div className="text-center p-4 bg-purple-50 border border-purple-200 rounded-lg">
-              <div className="text-2xl font-bold text-purple-900">{summary.completionRate}%</div>
-              <div className="text-sm text-purple-700">진행률</div>
+              <div className="text-2xl font-bold text-purple-900">{projectSummary.totalEvaluators}</div>
+              <div className="text-sm text-purple-700">총 평가자</div>
             </div>
             <div className="text-center p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <div className="text-2xl font-bold text-orange-900">{summary.consistencyRatio}</div>
-              <div className="text-sm text-orange-700">일관성 비율</div>
+              <div className="text-2xl font-bold text-orange-900">{projectSummary.completionRate}%</div>
+              <div className="text-sm text-orange-700">진행률</div>
             </div>
           </div>
 
-          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-2">최종 순위</h4>
-            <div className="flex items-center space-x-6">
-              {summary.finalRanking.map((alternative, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <span className="w-6 h-6 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center">
-                    {index + 1}
-                  </span>
-                  <span className="font-medium">{alternative}</span>
-                </div>
-              ))}
+          <div className="mt-4 grid grid-cols-3 gap-4">
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+              <div className="text-xl font-bold text-yellow-900">{projectSummary.pendingEvaluators}</div>
+              <div className="text-sm text-yellow-700">대기 중</div>
+            </div>
+            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-center">
+              <div className="text-xl font-bold text-indigo-900">{projectSummary.activeEvaluators}</div>
+              <div className="text-sm text-indigo-700">진행 중</div>
+            </div>
+            <div className="p-4 bg-teal-50 border border-teal-200 rounded-lg text-center">
+              <div className="text-xl font-bold text-teal-900">{projectSummary.completedEvaluators}</div>
+              <div className="text-sm text-teal-700">완료</div>
             </div>
           </div>
+
+          {projectSummary.consistencyRatio > 0 && (
+            <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-2">일관성 비율 (CR)</h4>
+              <div className="flex items-center space-x-4">
+                <div className="text-2xl font-bold">
+                  {projectSummary.consistencyRatio.toFixed(3)}
+                </div>
+                <div className="text-sm">
+                  {projectSummary.consistencyRatio <= 0.1 ? (
+                    <span className="text-green-600">✅ 적합 (CR ≤ 0.1)</span>
+                  ) : (
+                    <span className="text-red-600">⚠️ 재검토 필요 (CR > 0.1)</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Action Selection */}
@@ -268,8 +363,21 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <h4 className="font-medium text-gray-900 mb-2">📋 프로젝트 정보</h4>
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-            <div>생성일: {summary.createdDate}</div>
-            <div>최종 수정: {summary.lastModified}</div>
+            <div>생성일: {projectSummary.createdDate}</div>
+            <div>최종 수정: {projectSummary.lastModified}</div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-300">
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="bg-white p-2 rounded text-center">
+                <span className="font-medium">기준: </span>{projectSummary.totalCriteria}개
+              </div>
+              <div className="bg-white p-2 rounded text-center">
+                <span className="font-medium">대안: </span>{projectSummary.totalAlternatives}개
+              </div>
+              <div className="bg-white p-2 rounded text-center">
+                <span className="font-medium">평가자: </span>{projectSummary.totalEvaluators}명
+              </div>
+            </div>
           </div>
         </div>
       </div>

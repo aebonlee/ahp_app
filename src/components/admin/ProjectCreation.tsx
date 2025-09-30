@@ -9,7 +9,13 @@ interface ProjectCreationProps {
   onProjectCreated: () => void;
   onCancel: () => void;
   loading?: boolean;
-  createProject?: (projectData: { title: string; description: string; objective: string; evaluationMode: EvaluationMode }) => Promise<any>;
+  createProject?: (projectData: { 
+    title: string; 
+    description: string; 
+    objective: string; 
+    evaluationMode: EvaluationMode;
+    ahpType: 'general' | 'fuzzy';
+  }) => Promise<any>;
 }
 
 const ProjectCreation: React.FC<ProjectCreationProps> = ({ 
@@ -22,7 +28,8 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
     title: '',
     description: '',
     objective: '',
-    evaluationMode: 'practical' as EvaluationMode
+    evaluationMode: 'practical' as EvaluationMode,
+    ahpType: 'general' as 'general' | 'fuzzy'
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showWorkflowGuide, setShowWorkflowGuide] = useState(false);
@@ -67,7 +74,8 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
           title: '',
           description: '',
           objective: '',
-          evaluationMode: 'practical'
+          evaluationMode: 'practical',
+          ahpType: 'general'
         });
         
         onProjectCreated();
@@ -200,6 +208,64 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
           />
 
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                AHP 분석 유형 선택 <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('ahpType', 'general')}
+                  className={`p-4 rounded-lg border-2 transition-colors ${
+                    formData.ahpType === 'general'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-left">
+                    <div className="font-medium text-gray-900 mb-1">📊 일반 AHP</div>
+                    <div className="text-sm text-gray-600">
+                      전통적인 쌍대비교 방법
+                      <ul className="mt-1 text-xs space-y-1">
+                        <li>• Saaty's 1-9 척도 사용</li>
+                        <li>• 명확한 가중치 산출</li>
+                        <li>• 일관성 검증 (CR ≤ 0.1)</li>
+                      </ul>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('ahpType', 'fuzzy')}
+                  className={`p-4 rounded-lg border-2 transition-colors ${
+                    formData.ahpType === 'fuzzy'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-left">
+                    <div className="font-medium text-gray-900 mb-1">🔮 퍼지 AHP</div>
+                    <div className="text-sm text-gray-600">
+                      불확실성을 고려한 분석
+                      <ul className="mt-1 text-xs space-y-1">
+                        <li>• 삼각 퍼지수 활용</li>
+                        <li>• 불확실성 범위 표현</li>
+                        <li>• 민감도 분석 강화</li>
+                      </ul>
+                    </div>
+                  </div>
+                </button>
+              </div>
+              {formData.ahpType === 'fuzzy' && (
+                <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                  <p className="text-sm text-purple-700">
+                    💡 <strong>퍼지 AHP 추천 상황:</strong> 평가자 간 의견 차이가 크거나, 
+                    정성적 기준이 많은 경우, 불확실성이 높은 의사결정 문제에 적합합니다.
+                  </p>
+                </div>
+              )}
+            </div>
+
             <EvaluationModeSelector
               selectedMode={formData.evaluationMode}
               onModeChange={(mode) => handleInputChange('evaluationMode', mode)}
@@ -211,13 +277,13 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
             <ol className="text-sm text-blue-700 space-y-1">
               <li>1️⃣ <strong>평가 기준 설정</strong> (기본 3개, 필요시 추가 가능)</li>
               <li>2️⃣ <strong>대안 설정</strong> (기본 3개, 필요시 추가 가능)</li>
-              <li>3️⃣ <strong>쌍대비교 평가</strong> (일반 AHP 완료)</li>
-              <li>4️⃣ <strong>결과 분석 및 검증</strong> (CR, 가중치 확인)</li>
-              <li>5️⃣ <strong>퍼지 AHP 분석</strong> (선택사항, 강건성 검증)</li>
+              <li>3️⃣ <strong>평가자 배정</strong> (선택사항, 다중 평가자 지원)</li>
+              <li>4️⃣ <strong>쌍대비교 평가</strong> ({formData.ahpType === 'general' ? '일반' : '퍼지'} AHP)</li>
+              <li>5️⃣ <strong>결과 분석 및 검증</strong> (CR, 가중치, {formData.ahpType === 'fuzzy' ? '불확실성 범위' : '민감도'} 확인)</li>
             </ol>
             <div className="mt-3 pt-3 border-t border-blue-200">
               <p className="text-xs text-blue-600">
-                💡 <strong>TIP:</strong> 일반 AHP 완료 후 동일 구조로 퍼지 AHP를 수행하면 논문의 분석 깊이가 향상됩니다.
+                💡 <strong>선택된 분석 유형:</strong> {formData.ahpType === 'general' ? '일반 AHP - 명확한 가중치와 순위 결정' : '퍼지 AHP - 불확실성을 고려한 강건한 분석'}
               </p>
             </div>
           </div>
