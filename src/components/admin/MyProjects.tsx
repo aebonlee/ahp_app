@@ -283,7 +283,15 @@ const MyProjects: React.FC<MyProjectsProps> = ({
           </p>
         </div>
         <button
-          onClick={onCreateNew}
+          onClick={() => {
+            console.log('🔘 MyProjects 버튼 클릭됨');
+            console.log('onCreateNew 함수 존재:', !!onCreateNew);
+            if (onCreateNew) {
+              onCreateNew();
+            } else {
+              console.log('❌ onCreateNew 함수가 없습니다');
+            }
+          }}
           className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
           style={{ 
             backgroundColor: 'var(--accent-primary)', 
@@ -356,7 +364,15 @@ const MyProjects: React.FC<MyProjectsProps> = ({
           </p>
           {!searchTerm && (
             <button
-              onClick={onCreateNew}
+              onClick={() => {
+                console.log('🔘 MyProjects 빈 상태 버튼 클릭됨');
+                console.log('onCreateNew 함수 존재:', !!onCreateNew);
+                if (onCreateNew) {
+                  onCreateNew();
+                } else {
+                  console.log('❌ onCreateNew 함수가 없습니다');
+                }
+              }}
               className="px-6 py-3 rounded-lg transition-colors"
               style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}

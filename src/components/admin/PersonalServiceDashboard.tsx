@@ -1104,7 +1104,17 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <MyProjects
           refreshTrigger={projectRefreshTrigger}
-          onCreateNew={() => externalOnTabChange?.('project-workflow') || handleTabChange('creation')}
+          onCreateNew={() => {
+            console.log('🆕 프로젝트 추가 버튼 클릭됨');
+            console.log('externalOnTabChange 존재:', !!externalOnTabChange);
+            if (externalOnTabChange) {
+              console.log('📍 project-workflow로 이동 중...');
+              externalOnTabChange('project-workflow');
+            } else {
+              console.log('📍 creation으로 이동 중...');
+              handleTabChange('creation');
+            }
+          }}
           onProjectSelect={(project) => {
             setSelectedProjectId(project.id || '');
             console.log('프로젝트 선택:', project.title);
@@ -3286,7 +3296,17 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         return (
           <MyProjects
             refreshTrigger={projectRefreshTrigger}
-            onCreateNew={() => externalOnTabChange?.('project-workflow') || setActiveMenu('creation')}
+            onCreateNew={() => {
+              console.log('🆕 프로젝트 추가 버튼 클릭됨 (projects 메뉴)');
+              console.log('externalOnTabChange 존재:', !!externalOnTabChange);
+              if (externalOnTabChange) {
+                console.log('📍 project-workflow로 이동 중...');
+                externalOnTabChange('project-workflow');
+              } else {
+                console.log('📍 creation으로 이동 중...');
+                setActiveMenu('creation');
+              }
+            }}
             onProjectSelect={(project) => {
               setSelectedProjectId(project.id || '');
               console.log('프로젝트 선택:', project.title);
