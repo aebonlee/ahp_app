@@ -331,12 +331,15 @@ function App() {
 
   const validateSession = async () => {
     try {
+      // authService가 이미 localStorage + sessionStorage에서 토큰을 자동 로드함
       const token = authService.getAccessToken();
       if (!token) {
         console.log('⚠️ 토큰이 없어 세션 검증 건너뜀');
         return;
       }
 
+      console.log('🔄 세션 검증 중... (강력한 새로고침 대응)');
+      
       const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         credentials: 'include',
         headers: {
@@ -353,10 +356,9 @@ function App() {
           admin_type: undefined // admin_type은 더 이상 사용하지 않음
         };
         setUser(userWithAdminType);
-        console.log('✅ 세션 복구 성공:', data.user.email);
+        console.log('✅ 세션 복구 성공 (localStorage에서 복원):', data.user.email);
         
-        // 세션 타이머 시작 (세션 검증 후 세션 관리)
-        // localStorage 제거됨 - sessionService에서 세션 관리
+        // 세션 타이머 시작
         sessionService.startSession();
       } else if (response.status === 401) {
         console.log('⚠️ 토큰 만료 - 자동 로그아웃');

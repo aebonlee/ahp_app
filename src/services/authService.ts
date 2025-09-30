@@ -16,49 +16,82 @@ class AuthService {
   }
 
   /**
-   * 메모리에서 토큰 로드 (localStorage 금지에 따라 세션 기반)
+   * 메모리에서 토큰 로드 (localStorage + sessionStorage 조합)
    */
   private loadTokensFromMemory(): void {
     try {
-      // 세션 스토리지에서 토큰 복원 (새로고침 대응)
+      // 1. sessionStorage에서 먼저 시도 (일반 새로고침 대응)
       this.accessToken = sessionStorage.getItem('ahp_access_token');
       this.refreshToken = sessionStorage.getItem('ahp_refresh_token');
       
+      // 2. sessionStorage에 없으면 localStorage에서 시도 (강력한 새로고침 대응)
+      if (!this.accessToken) {
+        this.accessToken = localStorage.getItem('ahp_access_token');
+        this.refreshToken = localStorage.getItem('ahp_refresh_token');
+        
+        // localStorage에서 복원했으면 sessionStorage에도 복사
+        if (this.accessToken) {
+          sessionStorage.setItem('ahp_access_token', this.accessToken);
+          if (this.refreshToken) {
+            sessionStorage.setItem('ahp_refresh_token', this.refreshToken);
+          }
+        }
+      }
+      
+      // 3. 토큰 만료 확인 및 정리
       if (this.accessToken && this.isTokenExpired(this.accessToken)) {
-        this.accessToken = null;
-        sessionStorage.removeItem('ahp_access_token');
+        console.log('🔄 만료된 토큰 감지 - 자동 정리');
+        this.clearTokens();
+      }
+      
+      if (this.accessToken) {
+        console.log('✅ 세션 복원 성공 - 로그인 상태 유지');
       }
     } catch (error) {
-      console.warn('Token loading failed:', error);
+      console.warn('❌ 토큰 로딩 실패:', error);
       this.clearTokens();
     }
   }
 
   /**
-   * 토큰을 메모리 및 세션 스토리지에 저장
+   * 토큰을 메모리, sessionStorage, localStorage에 저장
    */
   private saveTokens(tokens: AuthTokens): void {
     this.accessToken = tokens.access;
     this.refreshToken = tokens.refresh;
     
-    // 세션 스토리지에 저장 (페이지 새로고침 대응)
+    // sessionStorage에 저장 (일반 새로고침 대응)
     sessionStorage.setItem('ahp_access_token', tokens.access);
     sessionStorage.setItem('ahp_refresh_token', tokens.refresh);
+    
+    // localStorage에도 저장 (강력한 새로고침 대응)
+    localStorage.setItem('ahp_access_token', tokens.access);
+    localStorage.setItem('ahp_refresh_token', tokens.refresh);
+    
+    console.log('💾 토큰 저장 완료 - 세션 유지 강화');
   }
 
   /**
-   * 토큰 정리
+   * 토큰 정리 (메모리, sessionStorage, localStorage 모두 정리)
    */
   clearTokens(): void {
     this.accessToken = null;
     this.refreshToken = null;
+    
+    // sessionStorage 정리
     sessionStorage.removeItem('ahp_access_token');
     sessionStorage.removeItem('ahp_refresh_token');
+    
+    // localStorage 정리
+    localStorage.removeItem('ahp_access_token');
+    localStorage.removeItem('ahp_refresh_token');
     
     if (this.tokenRefreshTimer) {
       clearTimeout(this.tokenRefreshTimer);
       this.tokenRefreshTimer = null;
     }
+    
+    console.log('🧹 토큰 정리 완료 - 완전 로그아웃');
   }
 
   /**
@@ -270,15 +303,20 @@ class AuthService {
 
       if (response.ok && data.access) {
         this.accessToken = data.access;
+        
+        // sessionStorage와 localStorage 모두 업데이트
         sessionStorage.setItem('ahp_access_token', data.access);
+        localStorage.setItem('ahp_access_token', data.access);
         
         // 새 refresh 토큰이 있으면 업데이트
         if (data.refresh) {
           this.refreshToken = data.refresh;
           sessionStorage.setItem('ahp_refresh_token', data.refresh);
+          localStorage.setItem('ahp_refresh_token', data.refresh);
         }
 
         this.initTokenRefresh();
+        console.log('🔄 토큰 갱신 완료 - 세션 연장');
         return { success: true };
       }
 
