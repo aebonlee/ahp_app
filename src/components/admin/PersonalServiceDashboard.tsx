@@ -570,8 +570,19 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
 
   const handleCreateNewProject = async () => {
+    // 폼 검증
     if (!projectForm.title.trim()) {
       setError('프로젝트명을 입력해주세요.');
+      return;
+    }
+    
+    if (!projectForm.description.trim()) {
+      setError('프로젝트 설명을 입력해주세요.');
+      return;
+    }
+    
+    if (!projectForm.objective.trim()) {
+      setError('분석 목표를 입력해주세요.');
       return;
     }
 
@@ -1822,25 +1833,65 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       <Card title="프로젝트 생성 단계">
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 1 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
-              <div className="text-2xl mb-2">📋</div>
+            <div className={`text-center p-4 border-2 rounded-lg transition-all ${
+              newProjectStep === 1 ? 'border-blue-500 bg-blue-50 shadow-md' : 
+              newProjectStep > 1 ? 'border-green-300 bg-green-50' : 'border-gray-200'
+            }`}>
+              <div className="text-2xl mb-2">
+                {newProjectStep > 1 ? '✅' : '📋'}
+              </div>
               <h4 className="font-medium text-gray-900 mb-1">1. 기본 정보</h4>
               <p className="text-xs text-gray-600">프로젝트명, 설명, 목적</p>
+              {newProjectStep === 1 && (
+                <div className="mt-2 w-full bg-blue-200 rounded-full h-1">
+                  <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{width: '100%'}}></div>
+                </div>
+              )}
             </div>
-            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 2 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
-              <div className="text-2xl mb-2">🎯</div>
+            <div className={`text-center p-4 border-2 rounded-lg transition-all ${
+              newProjectStep === 2 ? 'border-blue-500 bg-blue-50 shadow-md' : 
+              newProjectStep > 2 ? 'border-green-300 bg-green-50' : 'border-gray-200'
+            }`}>
+              <div className="text-2xl mb-2">
+                {newProjectStep > 2 ? '✅' : '🎯'}
+              </div>
               <h4 className="font-medium text-gray-900 mb-1">2. 기준 설정</h4>
               <p className="text-xs text-gray-600">평가 기준 정의</p>
+              {newProjectStep === 2 && (
+                <div className="mt-2 w-full bg-blue-200 rounded-full h-1">
+                  <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{width: '100%'}}></div>
+                </div>
+              )}
             </div>
-            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 3 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
-              <div className="text-2xl mb-2">📊</div>
+            <div className={`text-center p-4 border-2 rounded-lg transition-all ${
+              newProjectStep === 3 ? 'border-blue-500 bg-blue-50 shadow-md' : 
+              newProjectStep > 3 ? 'border-green-300 bg-green-50' : 'border-gray-200'
+            }`}>
+              <div className="text-2xl mb-2">
+                {newProjectStep > 3 ? '✅' : '📊'}
+              </div>
               <h4 className="font-medium text-gray-900 mb-1">3. 대안 설정</h4>
               <p className="text-xs text-gray-600">선택 대안 정의</p>
+              {newProjectStep === 3 && (
+                <div className="mt-2 w-full bg-blue-200 rounded-full h-1">
+                  <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{width: '100%'}}></div>
+                </div>
+              )}
             </div>
-            <div className={`text-center p-4 border-2 rounded-lg ${newProjectStep === 4 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
-              <div className="text-2xl mb-2">👥</div>
+            <div className={`text-center p-4 border-2 rounded-lg transition-all ${
+              newProjectStep === 4 ? 'border-blue-500 bg-blue-50 shadow-md' : 
+              newProjectStep > 4 ? 'border-green-300 bg-green-50' : 'border-gray-200'
+            }`}>
+              <div className="text-2xl mb-2">
+                {newProjectStep > 4 ? '✅' : '👥'}
+              </div>
               <h4 className="font-medium text-gray-900 mb-1">4. 평가자 배정</h4>
               <p className="text-xs text-gray-600">평가자 초대 및 관리</p>
+              {newProjectStep === 4 && (
+                <div className="mt-2 w-full bg-blue-200 rounded-full h-1">
+                  <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{width: '100%'}}></div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1880,10 +1931,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">평가 방법</label>
-                <select className="w-full border border-gray-300 rounded px-3 py-2">
-                  <option>쌍대비교 (권장)</option>
-                  <option>직접입력</option>
-                  <option>혼합 방식</option>
+                <select 
+                  value={projectForm.evaluation_method}
+                  onChange={(e) => setProjectForm({...projectForm, evaluation_method: e.target.value as 'pairwise' | 'direct' | 'mixed'})}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                >
+                  <option value="pairwise">쌍대비교 (권장)</option>
+                  <option value="direct">직접입력</option>
+                  <option value="mixed">혼합 방식</option>
                 </select>
               </div>
               
@@ -1928,7 +1983,27 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                 <Button variant="secondary" onClick={() => setNewProjectStep(1)}>
                   이전: 기본정보
                 </Button>
-                <Button variant="primary" onClick={() => setNewProjectStep(3)}>
+                <Button 
+                  variant="primary" 
+                  onClick={async () => {
+                    // 기준이 설정되었는지 확인
+                    try {
+                      const criteriaResponse = await dataService.getCriteria(newProjectId);
+                      const criteriaCount = criteriaResponse?.length || 0;
+                      
+                      if (criteriaCount === 0) {
+                        alert('최소 1개 이상의 평가 기준을 추가해주세요.');
+                        return;
+                      }
+                      
+                      console.log(`✅ 기준 ${criteriaCount}개 확인됨. 다음 단계로 진행`);
+                      setNewProjectStep(3);
+                    } catch (error) {
+                      console.log('⚠️ 기준 확인 실패, 다음 단계로 진행');
+                      setNewProjectStep(3);
+                    }
+                  }}
+                >
                   다음: 대안 설정
                 </Button>
               </div>
@@ -1959,7 +2034,32 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                 <Button variant="secondary" onClick={() => setNewProjectStep(2)}>
                   이전: 기준 설정
                 </Button>
-                <Button variant="primary" onClick={() => setNewProjectStep(4)}>
+                <Button 
+                  variant="primary" 
+                  onClick={async () => {
+                    // 대안이 설정되었는지 확인
+                    try {
+                      const alternativesResponse = await dataService.getAlternatives(newProjectId);
+                      const alternativesCount = alternativesResponse?.length || 0;
+                      
+                      if (alternativesCount === 0) {
+                        alert('최소 2개 이상의 대안을 추가해주세요.');
+                        return;
+                      }
+                      
+                      if (alternativesCount < 2) {
+                        alert('AHP 분석을 위해 최소 2개 이상의 대안이 필요합니다.');
+                        return;
+                      }
+                      
+                      console.log(`✅ 대안 ${alternativesCount}개 확인됨. 다음 단계로 진행`);
+                      setNewProjectStep(4);
+                    } catch (error) {
+                      console.log('⚠️ 대안 확인 실패, 다음 단계로 진행');
+                      setNewProjectStep(4);
+                    }
+                  }}
+                >
                   다음: 평가자 배정
                 </Button>
               </div>
@@ -1979,19 +2079,47 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               />
               <div className="flex justify-between">
                 <Button variant="secondary" onClick={() => setNewProjectStep(3)}>
-                  이전
+                  이전: 대안 설정
                 </Button>
-                <Button variant="primary" onClick={() => {
-                  if (projectEvaluators.length > 0) {
-                    handleTabChange('model-builder');
-                    setNewProjectStep(1);
-                    setNewProjectId(null);
-                  } else {
-                    alert('최소 1명 이상의 평가자를 추가하거나 건너뛰기를 선택하세요.');
-                  }
-                }}>
-                  완료 및 모델 구축으로 이동
-                </Button>
+                <div className="space-x-2">
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => {
+                      // 평가자 없이 진행 (본인만 평가)
+                      console.log('✅ 평가자 배정 건너뛰고 모델 구축으로 이동');
+                      setSelectedProjectId(newProjectId || '');
+                      handleTabChange('model-builder');
+                      setNewProjectStep(1);
+                      setNewProjectId(null);
+                    }}
+                  >
+                    건너뛰기 (본인만 평가)
+                  </Button>
+                  <Button 
+                    variant="primary" 
+                    onClick={async () => {
+                      // 평가자가 있는지 확인
+                      try {
+                        const evaluatorsResponse = await dataService.getEvaluators(newProjectId);
+                        const evaluatorsCount = evaluatorsResponse?.length || 0;
+                        
+                        console.log(`✅ 평가자 ${evaluatorsCount}명과 함께 모델 구축으로 이동`);
+                        setSelectedProjectId(newProjectId || '');
+                        handleTabChange('model-builder');
+                        setNewProjectStep(1);
+                        setNewProjectId(null);
+                      } catch (error) {
+                        console.log('⚠️ 평가자 확인 실패, 모델 구축으로 진행');
+                        setSelectedProjectId(newProjectId || '');
+                        handleTabChange('model-builder');
+                        setNewProjectStep(1);
+                        setNewProjectId(null);
+                      }
+                    }}
+                  >
+                    완료 및 모델 구축으로 이동
+                  </Button>
+                </div>
               </div>
             </div>
           )}
