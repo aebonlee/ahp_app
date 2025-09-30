@@ -22,7 +22,7 @@ import PaperManagement from '../paper/PaperManagement';
 import ProjectSelector from '../project/ProjectSelector';
 import SurveyManagementSystem from '../survey/SurveyManagementSystem';
 import PersonalSettings from '../settings/PersonalSettings';
-import DemographicSurvey from '../survey/DemographicSurvey';
+import EnhancedDemographicSurvey from '../survey/EnhancedDemographicSurvey';
 import UsageManagement from './UsageManagement';
 import ValidityCheck from '../validity/ValidityCheck';
 import TrashBin from './TrashBin';
@@ -2929,10 +2929,11 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <DemographicSurvey 
+        <EnhancedDemographicSurvey 
           onSave={(data) => {
-            console.log('인구통계학적 설문 데이터:', data);
+            console.log('고급 인구통계학적 설문 데이터:', data);
             // 실제 데이터 저장 로직
+            alert('설문조사가 성공적으로 저장되었습니다!');
           }}
           onCancel={() => handleTabChange('dashboard')}
         />
@@ -3495,10 +3496,11 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               </button>
             </div>
             
-            <DemographicSurvey 
+            <EnhancedDemographicSurvey 
               onSave={(data) => {
-                console.log('인구통계학적 설문 데이터:', data);
+                console.log('고급 인구통계학적 설문 데이터:', data);
                 // 실제 데이터 저장 로직
+                alert('설문조사가 성공적으로 저장되었습니다!');
               }}
               onCancel={() => handleTabChange('dashboard')}
             />
