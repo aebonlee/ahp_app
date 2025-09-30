@@ -1813,11 +1813,48 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {renderProjectCreation()}
+        <ProjectCreation
+          onProjectCreated={() => {
+            console.log('✅ 프로젝트 생성 완료 - project-workflow로 이동');
+            if (externalOnTabChange) {
+              externalOnTabChange('project-workflow');
+            } else {
+              handleTabChange('projects');
+            }
+            setProjectRefreshTrigger(prev => prev + 1);
+          }}
+          onCancel={() => {
+            console.log('❌ 프로젝트 생성 취소 - my-projects로 돌아감');
+            if (externalOnTabChange) {
+              externalOnTabChange('my-projects');
+            } else {
+              handleTabChange('projects');
+            }
+          }}
+          createProject={async (projectData) => {
+            console.log('🚀 프로젝트 생성 시작:', projectData);
+            try {
+              if (onCreateProject) {
+                const result = await onCreateProject(projectData);
+                console.log('✅ 프로젝트 생성 성공:', result);
+                return result;
+              } else {
+                console.log('⚠️ onCreateProject 콜백이 없어 dataService 사용');
+                const result = await dataService.createProject(projectData);
+                console.log('✅ dataService로 프로젝트 생성 성공:', result);
+                return result;
+              }
+            } catch (error) {
+              console.error('❌ 프로젝트 생성 실패:', error);
+              throw error;
+            }
+          }}
+        />
       </div>
     </div>
   );
 
+  // 더 이상 사용하지 않는 함수 - ProjectCreation 컴포넌트를 직접 사용
   const renderProjectCreation = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">새 프로젝트 생성</h3>
