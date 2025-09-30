@@ -1370,9 +1370,24 @@ function App() {
 
       case 'demographic-survey':
         return (
-          <ProjectWorkflow
-            onComplete={() => setActiveTab('my-projects')}
-            onCancel={() => setActiveTab('my-projects')}
+          <PersonalServiceDashboard
+            user={user}
+            activeTab="demographic-survey"
+            onTabChange={setActiveTab}
+            onUserUpdate={setUser}
+            projects={projects}
+            onCreateProject={handleCreateProject}
+            onDeleteProject={handleDeleteProject}
+            onFetchCriteria={handleFetchCriteria}
+            onCreateCriteria={handleCreateCriteria}
+            onFetchAlternatives={handleFetchAlternatives}
+            onCreateAlternative={handleCreateAlternative}
+            onSaveEvaluation={handleSaveEvaluation}
+            onFetchTrashedProjects={handleFetchTrashedProjects}
+            onRestoreProject={handleRestoreProject}
+            onPermanentDeleteProject={handlePermanentDeleteProject}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={setSelectedProjectId}
           />
         );
         
