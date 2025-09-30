@@ -55,47 +55,29 @@ const MyProjects: React.FC<MyProjectsProps> = ({
         data = await dataService.getProjects();
       }
       
-      // 프로젝트별 통계 정보 로드
+      // 프로젝트별 통계 정보를 기본값으로 설정 (API 실패 시)
       if (data && Array.isArray(data)) {
-        const projectsWithStats = await Promise.all(
-          data.map(async (project) => {
-            try {
-              // 기준 수와 대안 수를 실제 API에서 가져오기
-              const [criteriaData, alternativesData] = await Promise.all([
-                dataService.getCriteria(project.id || '').catch(() => []),
-                dataService.getAlternatives(project.id || '').catch(() => [])
-              ]);
-              
-              const criteriaCount = Array.isArray(criteriaData) ? criteriaData.length : 0;
-              const alternativesCount = Array.isArray(alternativesData) ? alternativesData.length : 0;
-              
-              // 진행률 계산 (간단한 로직)
-              let completionRate = 0;
-              if (project.status === 'completed') {
-                completionRate = 100;
-              } else if (project.status === 'active') {
-                completionRate = Math.min(80, (criteriaCount * 20) + (alternativesCount * 15));
-              } else if (criteriaCount > 0 || alternativesCount > 0) {
-                completionRate = Math.min(50, (criteriaCount * 10) + (alternativesCount * 8));
-              }
-              
-              return {
-                ...project,
-                criteria_count: criteriaCount,
-                alternatives_count: alternativesCount,
-                completionRate: completionRate
-              };
-            } catch (error) {
-              console.warn(`프로젝트 ${project.id} 통계 로드 실패:`, error);
-              return {
-                ...project,
-                criteria_count: project.criteria_count || 0,
-                alternatives_count: project.alternatives_count || 0,
-                completionRate: project.status === 'completed' ? 100 : 0
-              };
-            }
-          })
-        );
+        const projectsWithStats = data.map((project) => {
+          // 진행률 계산 (기본 로직)
+          let completionRate = 0;
+          const criteriaCount = project.criteria_count || 0;
+          const alternativesCount = project.alternatives_count || 0;
+          
+          if (project.status === 'completed') {
+            completionRate = 100;
+          } else if (project.status === 'active') {
+            completionRate = Math.min(80, (criteriaCount * 20) + (alternativesCount * 15));
+          } else if (criteriaCount > 0 || alternativesCount > 0) {
+            completionRate = Math.min(50, (criteriaCount * 10) + (alternativesCount * 8));
+          }
+          
+          return {
+            ...project,
+            criteria_count: criteriaCount,
+            alternatives_count: alternativesCount,
+            completionRate: completionRate
+          };
+        });
         setProjects(projectsWithStats);
       } else {
         setProjects([]);
@@ -214,17 +196,22 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   const handleDeleteWithConfirm = async (project: ProjectData) => {
     const projectTitle = project.title || '프로젝트';
     
+    // 한 번만 확인 (부모에서 추가 확인 방지)
     if (!window.confirm(`"${projectTitle}"를 휴지통으로 이동하시겠습니까?\n\n휴지통에서 복원하거나 영구 삭제할 수 있습니다.`)) {
       return;
     }
 
     try {
       if (onDeleteProject) {
-        // 부모 컴포넌트의 삭제 함수 사용
+        // 부모 컴포넌트의 삭제 함수 사용 (확인 없이)
+        console.log('🗑️ 부모 컴포넌트 삭제 함수 호출:', project.id);
         await onDeleteProject(project.id || '');
-        alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
+        // 성공 메시지는 부모에서 처리하므로 여기서는 생략
+        console.log('✅ 삭제 완료');
+        fetchProjects(); // 목록 새로고침
       } else {
         // 직접 dataService 사용
+        console.log('🗑️ dataService 직접 호출:', project.id);
         const success = await dataService.deleteProject(project.id || '');
         if (success) {
           alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
@@ -241,31 +228,34 @@ const MyProjects: React.FC<MyProjectsProps> = ({
 
   // 프로젝트 편집
   const handleEditProject = (project: ProjectData) => {
+    console.log('✏️ 프로젝트 편집 시작:', project.title);
     if (onEditProject) {
       onEditProject(project);
     } else {
-      console.log('프로젝트 편집:', project.title);
-      alert('편집 기능이 연결되지 않았습니다.');
+      console.log('⚠️ 편집 핸들러가 연결되지 않음');
+      alert('편집 기능을 준비 중입니다.');
     }
   };
 
   // 모델 구축
   const handleModelBuilder = (project: ProjectData) => {
+    console.log('🏗️ 모델 구축 시작:', project.title, project.id);
     if (onModelBuilder) {
       onModelBuilder(project);
     } else {
-      console.log('모델 구축:', project.title);
-      alert('모델 구축 기능이 연결되지 않았습니다.');
+      console.log('⚠️ 모델 구축 핸들러가 연결되지 않음');
+      alert('모델 구축 기능을 준비 중입니다.');
     }
   };
 
   // 결과 분석
   const handleAnalysis = (project: ProjectData) => {
+    console.log('📊 결과 분석 시작:', project.title, project.id);
     if (onAnalysis) {
       onAnalysis(project);
     } else {
-      console.log('결과 분석:', project.title);
-      alert('결과 분석 기능이 연결되지 않았습니다.');
+      console.log('⚠️ 결과 분석 핸들러가 연결되지 않음');
+      alert('결과 분석 기능을 준비 중입니다.');
     }
   };
 
