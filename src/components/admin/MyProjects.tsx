@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import dataService from '../../services/dataService_clean';
 import { ProjectData } from '../../services/api';
 
+// 확장된 프로젝트 데이터 타입 (진행률 등 추가 정보 포함)
+interface ProjectWithStats extends ProjectData {
+  completion_rate?: number;
+}
+
 interface MyProjectsProps {
   onProjectSelect?: (project: ProjectData) => void;
   onCreateNew?: () => void;
@@ -21,7 +26,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   onAnalysis,
   refreshTrigger
 }) => {
-  const [projects, setProjects] = useState<ProjectData[]>([]);
+  const [projects, setProjects] = useState<ProjectWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft' | 'trash'>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -142,7 +147,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     return '#6B7280'; // gray
   };
 
-  const getProgressText = (project: ProjectData) => {
+  const getProgressText = (project: ProjectWithStats) => {
     const criteriaCount = project.criteria_count || 0;
     const alternativesCount = project.alternatives_count || 0;
     const completionRate = project.completion_rate || 0;
@@ -210,7 +215,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   };
 
   // 일반 프로젝트 삭제 (휴지통으로 이동)
-  const handleDeleteWithConfirm = async (project: ProjectData) => {
+  const handleDeleteWithConfirm = async (project: ProjectWithStats) => {
     const projectTitle = project.title || '프로젝트';
     
     if (!window.confirm(`"${projectTitle}"를 휴지통으로 이동하시겠습니까?\n\n휴지통에서 복원하거나 영구 삭제할 수 있습니다.`)) {
@@ -239,7 +244,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   };
 
   // 프로젝트 편집
-  const handleEditProject = (project: ProjectData) => {
+  const handleEditProject = (project: ProjectWithStats) => {
     if (onEditProject) {
       onEditProject(project);
     } else {
@@ -249,7 +254,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   };
 
   // 모델 구축
-  const handleModelBuilder = (project: ProjectData) => {
+  const handleModelBuilder = (project: ProjectWithStats) => {
     if (onModelBuilder) {
       onModelBuilder(project);
     } else {
@@ -259,7 +264,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   };
 
   // 결과 분석
-  const handleAnalysis = (project: ProjectData) => {
+  const handleAnalysis = (project: ProjectWithStats) => {
     if (onAnalysis) {
       onAnalysis(project);
     } else {
