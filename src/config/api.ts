@@ -22,12 +22,12 @@ export const RETRY_config = {
 export const API_ENDPOINTS = {
   // Auth - JWT 토큰 기반 인증
   AUTH: {
-    LOGIN: '/api/auth/login/',
-    REGISTER: '/api/auth/register/',
-    LOGOUT: '/api/auth/logout/',
-    ME: '/api/auth/profile/',
-    PROFILE: '/api/auth/profile/',
-    REFRESH: '/api/auth/token/refresh/'
+    LOGIN: '/api/service/auth/login/',
+    REGISTER: '/api/service/auth/register/',
+    LOGOUT: '/api/service/auth/logout/',
+    ME: '/api/service/auth/profile/',
+    PROFILE: '/api/service/auth/profile/',
+    REFRESH: '/api/service/auth/token/refresh/'
   },
   // Projects - 실제 Django Service API (경로 수정)
   PROJECTS: {

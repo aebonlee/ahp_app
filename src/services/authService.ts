@@ -191,7 +191,7 @@ class AuthService {
 
     // JWT 토큰 엔드포인트 사용 (Django custom_token_obtain_pair)
     const result = await this.apiRequest<{ access: string; refresh: string; user: User }>(
-      '/api/auth/token/',
+      '/api/service/auth/token/',
       {
         method: 'POST',
         body: JSON.stringify(loginData),
@@ -232,7 +232,7 @@ class AuthService {
     delete (registerData as any).password2;
 
     const result = await this.apiRequest<{ tokens: { access: string; refresh: string }; user: User }>(
-      '/api/auth/register/',
+      '/api/service/auth/register/',
       {
         method: 'POST',
         body: JSON.stringify(registerData),
@@ -379,7 +379,7 @@ class AuthService {
    * 소셜 로그인 - Google
    */
   async googleLogin(): Promise<void> {
-    const authUrl = `${API_BASE_URL}/api/auth/social/google/`;
+    const authUrl = `${API_BASE_URL}/api/service/auth/social/google/`;
     window.location.href = authUrl;
   }
 
@@ -387,7 +387,7 @@ class AuthService {
    * 소셜 로그인 - Kakao
    */
   async kakaoLogin(): Promise<void> {
-    const authUrl = `${API_BASE_URL}/api/auth/social/kakao/`;
+    const authUrl = `${API_BASE_URL}/api/service/auth/social/kakao/`;
     window.location.href = authUrl;
   }
 
@@ -395,7 +395,7 @@ class AuthService {
    * 소셜 로그인 - Naver
    */
   async naverLogin(): Promise<void> {
-    const authUrl = `${API_BASE_URL}/api/auth/social/naver/`;
+    const authUrl = `${API_BASE_URL}/api/service/auth/social/naver/`;
     window.location.href = authUrl;
   }
 
@@ -404,7 +404,7 @@ class AuthService {
    */
   async handleSocialCallback(provider: string, code: string, state?: string): Promise<LoginResponse> {
     const result = await this.apiRequest<{ access: string; refresh: string; user: User }>(
-      `/api/auth/social/${provider}/callback/`,
+      `/api/service/auth/social/${provider}/callback/`,
       {
         method: 'POST',
         body: JSON.stringify({ code, state }),

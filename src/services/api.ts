@@ -469,18 +469,18 @@ export const exportApi = {
 export const authApi = {
   // 로그인
   login: (email: string, password: string) =>
-    makeRequest<{ token: string; user: any }>('/api/auth/login', {
+    makeRequest<{ token: string; user: any }>('/api/service/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password })
     }),
 
   // 사용자 정보 조회
   getCurrentUser: () =>
-    makeRequest<any>('/api/auth/me'),
+    makeRequest<any>('/api/service/auth/me'),
 
   // 토큰 검증
   verifyToken: () =>
-    makeRequest<any>('/api/auth/verify')
+    makeRequest<any>('/api/service/auth/verify')
 };
 
 // === 데이터 정규화 함수 ===
