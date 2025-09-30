@@ -68,8 +68,46 @@ class CleanDataService {
   async createProject(data: Omit<ProjectData, 'id'>): Promise<ProjectData | null> {
     try {
       console.log('🔍 실제 DB에 프로젝트 생성 시작:', data.title);
+      
+      // 생성 전 프로젝트 수 확인
+      const beforeResponse = await this.getProjects();
+      const beforeCount = beforeResponse.length;
+      console.log('📊 생성 전 프로젝트 수:', beforeCount);
+      
       const response = await projectApi.createProject(data);
       if (response.success && response.data) {
+        console.log('✅ 프로젝트 생성 응답 수신:', Object.keys(response.data));
+        
+        // ID가 응답에 없으면 목록을 다시 조회해서 새 프로젝트 찾기
+        if (!response.data.id) {
+          console.log('⚠️ 응답에 ID 없음, 목록 재조회로 새 프로젝트 찾기...');
+          
+          // 잠시 대기 후 목록 재조회
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const afterResponse = await this.getProjects();
+          console.log('📊 생성 후 프로젝트 수:', afterResponse.length);
+          
+          // 새로 생성된 프로젝트 찾기 (제목으로 매칭)
+          const newProject = afterResponse.find(p => 
+            p.title === data.title && 
+            new Date(p.created_at || '').getTime() > Date.now() - 60000 // 1분 내 생성
+          );
+          
+          if (newProject) {
+            console.log('✅ 새 프로젝트 찾기 성공:', newProject.id);
+            return newProject;
+          } else {
+            console.warn('⚠️ 새 프로젝트를 찾을 수 없음, 응답 데이터 사용');
+            // ID 없이라도 생성된 데이터 반환
+            return {
+              ...response.data,
+              id: `temp_${Date.now()}`, // 임시 ID 생성
+              created_at: new Date().toISOString()
+            } as ProjectData;
+          }
+        }
+        
         console.log('✅ 프로젝트 생성 성공:', response.data.id);
         return response.data;
       }
