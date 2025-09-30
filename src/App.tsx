@@ -1371,14 +1371,24 @@ function App() {
 
       case 'demographic-survey':
         return (
-          <DemographicSurvey
-            onSave={(data) => {
-              console.log('설문조사 데이터 저장:', data);
-              alert('설문조사가 저장되었습니다!');
-            }}
-            onCancel={() => {
-              setActiveTab('home');
-            }}
+          <PersonalServiceDashboard
+            user={user}
+            activeTab="demographic-survey"
+            onTabChange={setActiveTab}
+            onUserUpdate={setUser}
+            projects={projects}
+            onCreateProject={createProject}
+            onDeleteProject={deleteProject}
+            onFetchCriteria={fetchCriteria}
+            onCreateCriteria={createCriteria}
+            onFetchAlternatives={fetchAlternatives}
+            onCreateAlternative={createAlternative}
+            onSaveEvaluation={saveEvaluation}
+            onFetchTrashedProjects={fetchTrashedProjects}
+            onRestoreProject={restoreProject}
+            onPermanentDeleteProject={permanentDeleteProject}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={setSelectedProjectId}
           />
         );
         
