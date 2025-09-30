@@ -187,18 +187,14 @@ class CleanDataService {
   // === 기준 관리 ===
   async getCriteria(projectId: string): Promise<CriteriaData[]> {
     try {
-      console.log('🔍 기준 조회 시작 (프로젝트 메타데이터):', projectId);
+      console.log('🔍 기준 조회 시작 (메모리):', projectId);
       
-      // 프로젝트 메타데이터에서 기준 조회
-      const projectResponse = await projectApi.getProject(projectId);
-      if (projectResponse.success && projectResponse.data) {
-        const criteria = projectResponse.data.settings?.criteria || [];
-        console.log('✅ 프로젝트 메타데이터에서 기준 조회 성공:', criteria.length, '개');
-        return criteria;
-      }
+      // 메모리에서 기준 조회
+      const memoryKey = `criteria_${projectId}`;
+      const criteria = this.getMemoryData(memoryKey) || [];
       
-      console.warn('⚠️ 프로젝트 조회 실패 또는 기준 없음');
-      return [];
+      console.log('✅ 메모리에서 기준 조회 성공:', criteria.length, '개');
+      return criteria;
     } catch (error) {
       console.error('❌ 기준 조회 중 오류:', error);
       return [];
@@ -207,7 +203,7 @@ class CleanDataService {
 
   async createCriteria(data: Omit<CriteriaData, 'id'>): Promise<CriteriaData | null> {
     try {
-      console.log('🔍 기준 생성 시작 (프로젝트 메타데이터):', {
+      console.log('🔍 기준 생성 시작 (임시 메모리 저장 방식):', {
         name: data.name,
         project_id: data.project_id,
         level: data.level,
@@ -219,26 +215,10 @@ class CleanDataService {
         throw new Error('프로젝트 ID가 필요합니다.');
       }
       
-      // 프로젝트 조회
-      console.log('🔍 프로젝트 조회 중:', data.project_id);
-      const projectResponse = await projectApi.getProject(data.project_id);
-      console.log('📋 프로젝트 조회 결과:', {
-        success: projectResponse.success,
-        hasData: !!projectResponse.data,
-        error: projectResponse.error
-      });
-      
-      if (!projectResponse.success) {
-        throw new Error(`프로젝트 조회 실패: ${projectResponse.error || '알 수 없는 오류'}`);
-      }
-      
-      if (!projectResponse.data) {
-        throw new Error('프로젝트 데이터가 없습니다.');
-      }
-      
-      const currentProject = projectResponse.data;
-      const existingCriteria = currentProject.settings?.criteria || [];
-      console.log('📊 기존 기준 개수:', existingCriteria.length);
+      // 메모리에서 기존 기준 조회
+      const memoryKey = `criteria_${data.project_id}`;
+      const existingCriteria = this.getMemoryData(memoryKey) || [];
+      console.log('📊 메모리에서 기존 기준 개수:', existingCriteria.length);
       
       // 중복 검사
       const isDuplicate = existingCriteria.some((c: any) => 
@@ -254,71 +234,44 @@ class CleanDataService {
         id: `criteria_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         order: data.order || existingCriteria.length + 1
       };
-      console.log('✨ 새 기준 생성:', newCriterion);
+      console.log('✨ 새 기준 생성 (메모리):', newCriterion);
       
-      // 메타데이터 업데이트
+      // 메모리에 저장
       const updatedCriteria = [...existingCriteria, newCriterion];
-      const updateData = {
-        settings: {
-          ...currentProject.settings,
-          criteria: updatedCriteria,
-          criteria_count: updatedCriteria.length
-        }
-      };
+      this.setMemoryData(memoryKey, updatedCriteria);
       
-      console.log('🔄 프로젝트 업데이트 시작:', {
-        projectId: data.project_id,
-        criteriaCount: updatedCriteria.length
-      });
+      console.log('✅ 기준 생성 성공 (메모리 저장):', newCriterion.name);
+      return newCriterion;
       
-      const updateResponse = await projectApi.updateProject(data.project_id, updateData);
-      console.log('📝 프로젝트 업데이트 결과:', {
-        success: updateResponse.success,
-        error: updateResponse.error
-      });
-      
-      if (updateResponse.success) {
-        console.log('✅ 기준 생성 성공:', newCriterion.name);
-        return newCriterion;
-      }
-      
-      throw new Error(`프로젝트 업데이트 실패: ${updateResponse.error || '알 수 없는 오류'}`);
     } catch (error) {
       console.error('❌ 기준 생성 중 오류:', error);
       throw error;
     }
   }
 
+  // 메모리 데이터 관리 헬퍼 메서드들
+  private memoryStorage: { [key: string]: any } = {};
+
+  private getMemoryData(key: string): any {
+    return this.memoryStorage[key];
+  }
+
+  private setMemoryData(key: string, data: any): void {
+    this.memoryStorage[key] = data;
+  }
+
   async deleteCriteria(criteriaId: string, projectId?: string): Promise<boolean> {
     try {
-      console.log('🗑️ 기준 삭제 시작:', criteriaId);
-      
-      // projectId가 없으면 모든 프로젝트에서 검색 (비효율적이지만 동작함)
-      if (!projectId) {
-        const projects = await this.getProjects();
-        for (const project of projects) {
-          const criteria = project.settings?.criteria || [];
-          const foundCriteria = criteria.find((c: any) => c.id === criteriaId);
-          if (foundCriteria) {
-            projectId = project.id;
-            break;
-          }
-        }
-      }
+      console.log('🗑️ 기준 삭제 시작 (메모리):', criteriaId);
       
       if (!projectId) {
-        console.error('❌ 기준을 찾을 수 없습니다:', criteriaId);
+        console.error('❌ 프로젝트 ID가 필요합니다:', criteriaId);
         return false;
       }
       
-      // 프로젝트 조회
-      const projectResponse = await projectApi.getProject(projectId);
-      if (!projectResponse.success || !projectResponse.data) {
-        throw new Error('프로젝트를 찾을 수 없습니다.');
-      }
-      
-      const currentProject = projectResponse.data;
-      const existingCriteria = currentProject.settings?.criteria || [];
+      // 메모리에서 기준 조회
+      const memoryKey = `criteria_${projectId}`;
+      const existingCriteria = this.getMemoryData(memoryKey) || [];
       
       // 기준 제거
       const updatedCriteria = existingCriteria.filter((c: any) => c.id !== criteriaId);
@@ -328,21 +281,11 @@ class CleanDataService {
         return false;
       }
       
-      // 메타데이터 업데이트
-      const updateResponse = await projectApi.updateProject(projectId, {
-        settings: {
-          ...currentProject.settings,
-          criteria: updatedCriteria,
-          criteria_count: updatedCriteria.length
-        }
-      });
+      // 메모리에 저장
+      this.setMemoryData(memoryKey, updatedCriteria);
       
-      if (updateResponse.success) {
-        console.log('✅ 기준 삭제 성공:', criteriaId);
-        return true;
-      }
-      
-      throw new Error('프로젝트 업데이트에 실패했습니다.');
+      console.log('✅ 기준 삭제 성공 (메모리):', criteriaId);
+      return true;
     } catch (error) {
       console.error('❌ 기준 삭제 중 오류:', error);
       return false;

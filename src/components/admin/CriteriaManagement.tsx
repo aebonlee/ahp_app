@@ -158,7 +158,15 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
   };
 
   const handleAddCriterion = async () => {
+    console.log('🚀 CriteriaManagement handleAddCriterion 시작:', {
+      projectId,
+      criterionName: newCriterion.name,
+      criterionDescription: newCriterion.description,
+      parentId: newCriterion.parentId
+    });
+    
     if (!validateCriterion(newCriterion.name)) {
+      console.log('❌ 유효성 검사 실패');
       return;
     }
 
@@ -184,7 +192,11 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         order: getAllCriteria(criteria).filter(c => (c.level || 1) === level).length + 1
       });
 
-      console.log('🔄 기준 추가 중...', criterionData);
+      console.log('🔄 CriteriaManagement 기준 추가 중...', {
+        criterionData,
+        projectIdFromProps: projectId,
+        hasProjectId: !!criterionData.project_id
+      });
       const createdCriterion = await dataService.createCriteria(criterionData);
       
       if (!createdCriterion) {
@@ -207,9 +219,16 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         onCriteriaChange(convertedUpdatedCriteria.length);
       }
     } catch (error) {
-      console.error('❌ 기준 추가 실패:', error);
-      const errorMessage = error instanceof Error ? error.message : '기준 추가 중 오류가 발생했습니다.';
-      setErrors({ name: errorMessage });
+      console.error('❌ CriteriaManagement 기준 추가 실패:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorStack: error instanceof Error ? error.stack : undefined,
+        projectId,
+        criterionName: newCriterion.name
+      });
+      
+      const errorMessage = error instanceof Error ? error.message : '기준 추가 중 알 수 없는 오류가 발생했습니다.';
+      setErrors({ name: `오류: ${errorMessage}` });
     }
   };
 

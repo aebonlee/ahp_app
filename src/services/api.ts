@@ -112,6 +112,17 @@ const makeRequest = async <T>(
 ): Promise<ApiResponse<T>> => {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
+    
+    // PUT 요청에 대한 상세 로그
+    if (options.method === 'PUT' && endpoint.includes('/projects/')) {
+      console.log('🌐 HTTP PUT 요청 상세:', {
+        url,
+        method: options.method,
+        bodyContent: options.body ? JSON.parse(options.body as string) : 'no body',
+        headers: { ...getAuthHeaders(), ...options.headers }
+      });
+    }
+    
     const response = await fetch(url, {
       credentials: 'include',
       ...options,
@@ -120,6 +131,16 @@ const makeRequest = async <T>(
         ...options.headers
       }
     });
+    
+    // PUT 응답에 대한 상세 로그
+    if (options.method === 'PUT' && endpoint.includes('/projects/')) {
+      console.log('📤 HTTP PUT 응답 상세:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType: response.headers.get('content-type'),
+        ok: response.ok
+      });
+    }
 
     // DELETE 요청의 경우 응답 본문이 없을 수 있음
     const isDeleteRequest = options.method?.toUpperCase() === 'DELETE';
@@ -247,10 +268,26 @@ export const projectApi = {
     if (data.evaluation_mode) djangoData.evaluation_mode = data.evaluation_mode;
     if (data.workflow_stage) djangoData.workflow_stage = data.workflow_stage;
     if (data.dueDate) djangoData.deadline = data.dueDate; // dueDate → deadline 매핑
+    if (data.settings) djangoData.settings = data.settings; // settings 필드 추가
+    
+    console.log('🔍 projectApi.updateProject 호출:', {
+      projectId: id,
+      inputData: data,
+      djangoDataToSend: djangoData,
+      hasSettings: !!data.settings,
+      settingsStructure: data.settings ? Object.keys(data.settings) : 'none'
+    });
     
     const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(djangoData)
+    });
+    
+    console.log('📡 projectApi.updateProject 응답:', {
+      success: response.success,
+      error: response.error,
+      message: response.message,
+      statusInfo: response.data ? 'has data' : 'no data'
     });
     
     if (response.success && response.data) {

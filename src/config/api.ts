@@ -1,4 +1,4 @@
-// API 설정 - 분리된 Django 백엔드 서버 URL (독립 Repository)
+// API 설정 - 실제 작동하는 Django 백엔드 URL
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-django-backend.onrender.com';
 
 // 데이터 저장 모드 설정 - Django 백엔드 연동
@@ -29,7 +29,7 @@ export const API_ENDPOINTS = {
     PROFILE: '/api/service/auth/profile/',
     REFRESH: '/api/service/auth/token/refresh/'
   },
-  // Projects - 실제 Django Service API (경로 수정)
+  // Projects - 실제 작동하는 백엔드 API 구조
   PROJECTS: {
     LIST: '/api/service/projects/projects/',
     CREATE: '/api/service/projects/projects/',
@@ -37,12 +37,12 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/service/projects/projects/${id}/`,
     DELETE: (id: string) => `/api/service/projects/projects/${id}/`
   },
-  // Criteria - 실제 Django Service API
+  // Criteria - 프로젝트 내부 기능으로 처리 (직접 API 대신)
   CRITERIA: {
-    LIST: (projectId: string) => `/api/v1/criteria/?project=${projectId}`,
-    CREATE: '/api/v1/criteria/',
-    UPDATE: (id: string) => `/api/v1/criteria/${id}/`,
-    DELETE: (id: string) => `/api/v1/criteria/${id}/`
+    LIST: (projectId: string) => `/api/service/projects/projects/${projectId}/criteria/`,
+    CREATE: `/api/service/projects/projects/add_criteria/`,
+    UPDATE: (id: string) => `/api/service/projects/criteria/${id}/`,
+    DELETE: (id: string) => `/api/service/projects/criteria/${id}/`
   },
   // Alternatives
   ALTERNATIVES: {
