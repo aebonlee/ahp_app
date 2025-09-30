@@ -1919,8 +1919,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                   console.log('✅ 기준 설정 완료');
                   // 자동으로 다음 단계로 이동하지 않고 사용자가 버튼을 클릭하도록 함
                 }}
-                onCriteriaChange={(criteria) => {
-                  console.log('📝 기준 변경됨:', criteria.length, '개');
+                onCriteriaChange={(criteriaCount) => {
+                  console.log('📝 기준 변경됨:', criteriaCount, '개');
                 }}
               />
               
@@ -1950,8 +1950,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                   console.log('✅ 대안 설정 완료');
                   // 자동으로 다음 단계로 이동하지 않고 사용자가 버튼을 클릭하도록 함
                 }}
-                onAlternativesChange={(alternatives) => {
-                  console.log('📝 대안 변경됨:', alternatives.length, '개');
+                onAlternativesChange={(alternativesCount) => {
+                  console.log('📝 대안 변경됨:', alternativesCount, '개');
                 }}
               />
               
