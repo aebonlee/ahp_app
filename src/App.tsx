@@ -1377,8 +1377,38 @@ function App() {
         }
 
       case 'demographic-survey':
+        return (
+          <ProjectWorkflow
+            onComplete={() => setActiveTab('my-projects')}
+            onCancel={() => setActiveTab('my-projects')}
+          />
+        );
+        
       case 'my-projects':
       case 'project-creation':
+        console.log('🎯 PersonalServiceDashboard 렌더링 (my-projects/project-creation):', { activeTab, userId: user.id, userRole: user.role });
+        return (
+          <PersonalServiceDashboard 
+            user={user}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            onUserUpdate={handleUserUpdate}
+            projects={projects}
+            onCreateProject={handleCreateProject}
+            onDeleteProject={handleDeleteProject}
+            onFetchCriteria={handleFetchCriteria}
+            onCreateCriteria={handleCreateCriteria}
+            onFetchAlternatives={handleFetchAlternatives}
+            onCreateAlternative={handleCreateAlternative}
+            onSaveEvaluation={handleSaveEvaluation}
+            onFetchTrashedProjects={handleFetchTrashedProjects}
+            onRestoreProject={handleRestoreProject}
+            onPermanentDeleteProject={handlePermanentDeleteProject}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={(id) => setSelectedProjectId(id)}
+          />
+        );
+        
       case 'project-workflow':
         return (
           <ProjectWorkflow
