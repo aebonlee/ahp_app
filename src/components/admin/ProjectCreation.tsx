@@ -266,10 +266,12 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
               )}
             </div>
 
-            <EvaluationModeSelector
-              selectedMode={formData.evaluationMode}
-              onModeChange={(mode) => handleInputChange('evaluationMode', mode)}
-            />
+            <div style={{ maxWidth: 'calc(100% + 400px)', margin: '0 -200px' }}>
+              <EvaluationModeSelector
+                selectedMode={formData.evaluationMode}
+                onModeChange={(mode) => handleInputChange('evaluationMode', mode)}
+              />
+            </div>
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

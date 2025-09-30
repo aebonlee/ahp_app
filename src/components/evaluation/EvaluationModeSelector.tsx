@@ -106,14 +106,14 @@ export const EvaluationModeSelector: React.FC<EvaluationModeSelectorProps> = ({
   const [hoveredMode, setHoveredMode] = useState<EvaluationMode | null>(null);
 
   return (
-    <Card title="평가 방법 선택" className="max-w-7xl mx-auto">
+    <Card title="평가 방법 선택" className="w-full">
       <div className="mb-6">
         <p className="text-sm text-gray-600">
           프로젝트의 목적과 상황에 맞는 최적의 평가 방법을 선택하세요.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
         {EVALUATION_MODES.map((config) => (
           <div
             key={config.mode}
