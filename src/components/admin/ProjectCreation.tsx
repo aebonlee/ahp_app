@@ -117,8 +117,8 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
           onClose={() => setShowWorkflowGuide(false)}
         />
       )}
-      <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
+      <div className="max-w-6xl mx-auto px-4">
+      <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           단계 1 — 프로젝트 추가
         </h1>
@@ -127,7 +127,7 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
         </p>
         
         {/* 논문 작성 권장 구조 안내 */}
-        <div className="mt-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+        <div className="mt-6 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-6 rounded-r-lg shadow-sm">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -159,14 +159,15 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
         </div>
       </div>
 
-      <Card>
+      <div className="mt-8">
+        <Card className="p-8 shadow-lg">
         {errors.general && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-red-600">{errors.general}</p>
           </div>
         )}
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           <Input
             id="title"
             label="프로젝트명"
@@ -207,16 +208,16 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
             required
           />
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-4">
                 AHP 분석 유형 선택 <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <button
                   type="button"
                   onClick={() => handleInputChange('ahpType', 'general')}
-                  className={`p-4 rounded-lg border-2 transition-colors ${
+                  className={`p-6 rounded-lg border-2 transition-colors ${
                     formData.ahpType === 'general'
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
@@ -237,7 +238,7 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
                 <button
                   type="button"
                   onClick={() => handleInputChange('ahpType', 'fuzzy')}
-                  className={`p-4 rounded-lg border-2 transition-colors ${
+                  className={`p-6 rounded-lg border-2 transition-colors ${
                     formData.ahpType === 'fuzzy'
                       ? 'border-purple-500 bg-purple-50'
                       : 'border-gray-200 hover:border-gray-300'
@@ -266,7 +267,7 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
               )}
             </div>
 
-            <div style={{ maxWidth: 'calc(100% + 400px)', margin: '0 -200px' }}>
+            <div className="mt-8">
               <EvaluationModeSelector
                 selectedMode={formData.evaluationMode}
                 onModeChange={(mode) => handleInputChange('evaluationMode', mode)}
@@ -274,9 +275,9 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">📋 프로젝트 생성 후 진행 단계</h4>
-            <ol className="text-sm text-blue-700 space-y-1">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 shadow-sm">
+            <h4 className="font-medium text-blue-900 mb-4">📋 프로젝트 생성 후 진행 단계</h4>
+            <ol className="text-sm text-blue-700 space-y-2">
               <li>1️⃣ <strong>평가 기준 설정</strong> (기본 3개, 필요시 추가 가능)</li>
               <li>2️⃣ <strong>대안 설정</strong> (기본 3개, 필요시 추가 가능)</li>
               <li>3️⃣ <strong>평가자 배정</strong> (선택사항, 다중 평가자 지원)</li>
@@ -290,7 +291,7 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end space-x-6 pt-4 border-t border-gray-200">
             <Button
               type="button"
               variant="secondary"
@@ -309,7 +310,8 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
             </Button>
           </div>
         </form>
-      </Card>
+        </Card>
+      </div>
 
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-500">
