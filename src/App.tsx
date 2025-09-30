@@ -1391,19 +1391,19 @@ function App() {
           <PersonalServiceDashboard 
             user={user}
             activeTab={activeTab}
-            onTabChange={handleTabChange}
-            onUserUpdate={handleUserUpdate}
+            onTabChange={setActiveTab}
+            onUserUpdate={setUser}
             projects={projects}
-            onCreateProject={handleCreateProject}
-            onDeleteProject={handleDeleteProject}
-            onFetchCriteria={handleFetchCriteria}
-            onCreateCriteria={handleCreateCriteria}
-            onFetchAlternatives={handleFetchAlternatives}
-            onCreateAlternative={handleCreateAlternative}
-            onSaveEvaluation={handleSaveEvaluation}
-            onFetchTrashedProjects={handleFetchTrashedProjects}
-            onRestoreProject={handleRestoreProject}
-            onPermanentDeleteProject={handlePermanentDeleteProject}
+            onCreateProject={createProject}
+            onDeleteProject={deleteProject}
+            onFetchCriteria={fetchCriteria}
+            onCreateCriteria={createCriteria}
+            onFetchAlternatives={fetchAlternatives}
+            onCreateAlternative={createAlternative}
+            onSaveEvaluation={saveEvaluation}
+            onFetchTrashedProjects={fetchTrashedProjects}
+            onRestoreProject={restoreProject}
+            onPermanentDeleteProject={permanentDeleteProject}
             selectedProjectId={selectedProjectId}
             onSelectProject={(id) => setSelectedProjectId(id)}
           />
