@@ -3495,9 +3495,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               </button>
             </div>
             
-            <SurveyManagementSystem 
-              projectId="current-project-id"
-              onBack={() => handleTabChange('dashboard')}
+            <DemographicSurvey 
+              onSave={(data) => {
+                console.log('인구통계학적 설문 데이터:', data);
+                // 실제 데이터 저장 로직
+              }}
+              onCancel={() => handleTabChange('dashboard')}
             />
           </div>
         );
