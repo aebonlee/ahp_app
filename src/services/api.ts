@@ -304,31 +304,31 @@ export const projectApi = {
 export const criteriaApi = {
   // 프로젝트의 기준 목록 조회
   getCriteria: (projectId: string) =>
-    makeRequest<CriteriaData[]>(`/api/projects/${projectId}/criteria`),
+    makeRequest<CriteriaData[]>(`/api/service/projects/projects/${projectId}/criteria/`),
 
   // 기준 생성
   createCriteria: (data: Omit<CriteriaData, 'id'>) =>
-    makeRequest<CriteriaData>('/api/criteria', {
+    makeRequest<CriteriaData>('/api/service/projects/criteria/', {
       method: 'POST',
       body: JSON.stringify(data)
     }),
 
   // 기준 수정
   updateCriteria: (id: string, data: Partial<CriteriaData>) =>
-    makeRequest<CriteriaData>(`/api/criteria/${id}`, {
+    makeRequest<CriteriaData>(`/api/service/projects/criteria/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(data)
     }),
 
   // 기준 삭제
   deleteCriteria: (id: string) =>
-    makeRequest<void>(`/api/criteria/${id}`, {
+    makeRequest<void>(`/api/service/projects/criteria/${id}/`, {
       method: 'DELETE'
     }),
 
   // 기준 순서 변경
   reorderCriteria: (projectId: string, criteriaIds: string[]) =>
-    makeRequest<void>(`/api/projects/${projectId}/criteria/reorder`, {
+    makeRequest<void>(`/api/service/projects/projects/${projectId}/criteria/reorder/`, {
       method: 'PUT',
       body: JSON.stringify({ criteriaIds })
     })
@@ -338,31 +338,31 @@ export const criteriaApi = {
 export const alternativeApi = {
   // 프로젝트의 대안 목록 조회
   getAlternatives: (projectId: string) =>
-    makeRequest<AlternativeData[]>(`/api/projects/${projectId}/alternatives`),
+    makeRequest<AlternativeData[]>(`/api/service/projects/projects/${projectId}/alternatives/`),
 
   // 대안 생성
   createAlternative: (data: Omit<AlternativeData, 'id'>) =>
-    makeRequest<AlternativeData>('/api/alternatives', {
+    makeRequest<AlternativeData>('/api/service/projects/alternatives/', {
       method: 'POST',
       body: JSON.stringify(data)
     }),
 
   // 대안 수정
   updateAlternative: (id: string, data: Partial<AlternativeData>) =>
-    makeRequest<AlternativeData>(`/api/alternatives/${id}`, {
+    makeRequest<AlternativeData>(`/api/service/projects/alternatives/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(data)
     }),
 
   // 대안 삭제
   deleteAlternative: (id: string) =>
-    makeRequest<void>(`/api/alternatives/${id}`, {
+    makeRequest<void>(`/api/service/projects/alternatives/${id}/`, {
       method: 'DELETE'
     }),
 
   // 대안 순서 변경
   reorderAlternatives: (projectId: string, alternativeIds: string[]) =>
-    makeRequest<void>(`/api/projects/${projectId}/alternatives/reorder`, {
+    makeRequest<void>(`/api/service/projects/projects/${projectId}/alternatives/reorder/`, {
       method: 'PUT',
       body: JSON.stringify({ alternativeIds })
     })
