@@ -216,7 +216,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     console.log('기준 삭제:', id);
     
     try {
-      const success = await dataService.deleteCriteria(id);
+      const success = await dataService.deleteCriteria(id, projectId);
       
       if (!success) {
         console.error('❌ 기준 삭제 실패');
@@ -276,7 +276,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       try {
         // 모든 기준을 PostgreSQL에서 삭제
         for (const criterion of criteria) {
-          await dataService.deleteCriteria(criterion.id);
+          await dataService.deleteCriteria(criterion.id, projectId);
         }
         
         setCriteria([]);
@@ -340,7 +340,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     try {
       // 기존 데이터 삭제 후 템플릿 생성
       for (const criterion of criteria) {
-        await dataService.deleteCriteria(criterion.id);
+        await dataService.deleteCriteria(criterion.id, projectId);
       }
       
       // 템플릿 데이터 생성

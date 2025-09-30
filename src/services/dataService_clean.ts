@@ -187,26 +187,17 @@ class CleanDataService {
   // === 기준 관리 ===
   async getCriteria(projectId: string): Promise<CriteriaData[]> {
     try {
-      console.log('🔍 기준 조회 시작 (메타데이터 우선):', projectId);
+      console.log('🔍 기준 조회 시작 (프로젝트 메타데이터):', projectId);
       
-      // 1단계: 프로젝트 메타데이터에서 기준 확인
+      // 프로젝트 메타데이터에서 기준 조회
       const projectResponse = await projectApi.getProject(projectId);
-      if (projectResponse.success && projectResponse.data?.settings?.criteria) {
-        const metaCriteria = projectResponse.data.settings.criteria;
-        console.log('✅ 프로젝트 메타데이터에서 기준 발견:', metaCriteria.length, '개');
-        return metaCriteria;
-      }
-      
-      // 2단계: 기존 API로 시도 (인증 문제 가능성)
-      console.log('🔍 기존 기준 API로 시도...');
-      const response = await criteriaApi.getCriteria(projectId);
-      if (response.success && response.data) {
-        const criteria = Array.isArray(response.data) ? response.data : [];
-        console.log('✅ 기준 API 조회 성공:', criteria.length, '개');
+      if (projectResponse.success && projectResponse.data) {
+        const criteria = projectResponse.data.settings?.criteria || [];
+        console.log('✅ 프로젝트 메타데이터에서 기준 조회 성공:', criteria.length, '개');
         return criteria;
       }
       
-      console.warn('⚠️ 기준 조회 실패 - 메타데이터와 API 모두 실패');
+      console.warn('⚠️ 프로젝트 조회 실패 또는 기준 없음');
       return [];
     } catch (error) {
       console.error('❌ 기준 조회 중 오류:', error);
@@ -216,78 +207,112 @@ class CleanDataService {
 
   async createCriteria(data: Omit<CriteriaData, 'id'>): Promise<CriteriaData | null> {
     try {
-      console.log('🔍 기준 생성 시작 (메타데이터 우선):', data.name);
+      console.log('🔍 기준 생성 시작 (프로젝트 메타데이터):', data.name);
       
-      // 1단계: 기존 API로 시도
-      try {
-        const response = await criteriaApi.createCriteria(data);
-        if (response.success && response.data) {
-          console.log('✅ 기준 API 생성 성공');
-          return response.data;
-        }
-      } catch (apiError) {
-        console.warn('⚠️ 기준 API 생성 실패, 메타데이터 방법 시도:', apiError);
+      if (!data.project_id) {
+        throw new Error('프로젝트 ID가 필요합니다.');
       }
       
-      // 2단계: 메타데이터에 저장 (인증 문제 우회)
-      if (data.project_id) {
-        const projectResponse = await projectApi.getProject(data.project_id);
-        if (projectResponse.success && projectResponse.data) {
-          const currentProject = projectResponse.data;
-          const existingCriteria = currentProject.settings?.criteria || [];
-          
-          // 새 기준 ID 생성
-          const newCriterion = {
-            ...data,
-            id: 'c' + Date.now(),
-            order: existingCriteria.length + 1
-          };
-          
-          // 메타데이터 업데이트
-          const updatedCriteria = [...existingCriteria, newCriterion];
-          const updateResponse = await projectApi.updateProject(data.project_id, {
-            settings: {
-              ...currentProject.settings,
-              criteria: updatedCriteria,
-              criteria_count: updatedCriteria.length
-            }
-          });
-          
-          if (updateResponse.success) {
-            console.log('✅ 메타데이터로 기준 생성 성공');
-            return newCriterion as CriteriaData;
-          }
-        }
+      // 프로젝트 조회
+      const projectResponse = await projectApi.getProject(data.project_id);
+      if (!projectResponse.success || !projectResponse.data) {
+        throw new Error('프로젝트를 찾을 수 없습니다.');
       }
       
-      console.error('❌ 기준 생성 실패 (모든 방법 실패)');
-      return null;
+      const currentProject = projectResponse.data;
+      const existingCriteria = currentProject.settings?.criteria || [];
+      
+      // 중복 검사
+      const isDuplicate = existingCriteria.some((c: any) => 
+        c.name.toLowerCase() === data.name.toLowerCase()
+      );
+      if (isDuplicate) {
+        throw new Error('동일한 기준명이 이미 존재합니다.');
+      }
+      
+      // 새 기준 생성
+      const newCriterion: CriteriaData = {
+        ...data,
+        id: `criteria_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        order: data.order || existingCriteria.length + 1
+      };
+      
+      // 메타데이터 업데이트
+      const updatedCriteria = [...existingCriteria, newCriterion];
+      const updateResponse = await projectApi.updateProject(data.project_id, {
+        settings: {
+          ...currentProject.settings,
+          criteria: updatedCriteria,
+          criteria_count: updatedCriteria.length
+        }
+      });
+      
+      if (updateResponse.success) {
+        console.log('✅ 기준 생성 성공:', newCriterion.name);
+        return newCriterion;
+      }
+      
+      throw new Error('프로젝트 업데이트에 실패했습니다.');
     } catch (error) {
       console.error('❌ 기준 생성 중 오류:', error);
       throw error;
     }
   }
 
-  async deleteCriteria(criteriaId: string): Promise<boolean> {
+  async deleteCriteria(criteriaId: string, projectId?: string): Promise<boolean> {
     try {
       console.log('🗑️ 기준 삭제 시작:', criteriaId);
       
-      // 1단계: 기존 API로 시도
-      try {
-        const response = await criteriaApi.deleteCriteria(criteriaId);
-        if (response.success) {
-          console.log('✅ 기준 API 삭제 성공');
-          return true;
+      // projectId가 없으면 모든 프로젝트에서 검색 (비효율적이지만 동작함)
+      if (!projectId) {
+        const projects = await this.getProjects();
+        for (const project of projects) {
+          const criteria = project.settings?.criteria || [];
+          const foundCriteria = criteria.find((c: any) => c.id === criteriaId);
+          if (foundCriteria) {
+            projectId = project.id;
+            break;
+          }
         }
-      } catch (apiError) {
-        console.warn('⚠️ 기준 API 삭제 실패, 메타데이터 방법 시도:', apiError);
       }
       
-      // 2단계: 메타데이터에서 제거 (모든 프로젝트 검색 필요)
-      // 실제로는 criteriaId에서 projectId를 추출하거나 별도로 전달받아야 함
-      console.warn('⚠️ 기준 삭제: 메타데이터 방법은 projectId가 필요함');
-      return false;
+      if (!projectId) {
+        console.error('❌ 기준을 찾을 수 없습니다:', criteriaId);
+        return false;
+      }
       
+      // 프로젝트 조회
+      const projectResponse = await projectApi.getProject(projectId);
+      if (!projectResponse.success || !projectResponse.data) {
+        throw new Error('프로젝트를 찾을 수 없습니다.');
+      }
+      
+      const currentProject = projectResponse.data;
+      const existingCriteria = currentProject.settings?.criteria || [];
+      
+      // 기준 제거
+      const updatedCriteria = existingCriteria.filter((c: any) => c.id !== criteriaId);
+      
+      if (updatedCriteria.length === existingCriteria.length) {
+        console.warn('⚠️ 삭제할 기준을 찾을 수 없습니다:', criteriaId);
+        return false;
+      }
+      
+      // 메타데이터 업데이트
+      const updateResponse = await projectApi.updateProject(projectId, {
+        settings: {
+          ...currentProject.settings,
+          criteria: updatedCriteria,
+          criteria_count: updatedCriteria.length
+        }
+      });
+      
+      if (updateResponse.success) {
+        console.log('✅ 기준 삭제 성공:', criteriaId);
+        return true;
+      }
+      
+      throw new Error('프로젝트 업데이트에 실패했습니다.');
     } catch (error) {
       console.error('❌ 기준 삭제 중 오류:', error);
       return false;
@@ -297,14 +322,17 @@ class CleanDataService {
   // === 대안 관리 ===
   async getAlternatives(projectId: string): Promise<AlternativeData[]> {
     try {
-      console.log('🔍 실제 DB에서 대안 조회 시작:', projectId);
-      const response = await alternativeApi.getAlternatives(projectId);
-      if (response.success && response.data) {
-        const alternatives = Array.isArray(response.data) ? response.data : [];
-        console.log('✅ 대안 조회 성공:', alternatives.length, '개');
+      console.log('🔍 대안 조회 시작 (프로젝트 메타데이터):', projectId);
+      
+      // 프로젝트 메타데이터에서 대안 조회
+      const projectResponse = await projectApi.getProject(projectId);
+      if (projectResponse.success && projectResponse.data) {
+        const alternatives = projectResponse.data.settings?.alternatives || [];
+        console.log('✅ 프로젝트 메타데이터에서 대안 조회 성공:', alternatives.length, '개');
         return alternatives;
       }
-      console.error('❌ 대안 조회 실패');
+      
+      console.warn('⚠️ 프로젝트 조회 실패 또는 대안 없음');
       return [];
     } catch (error) {
       console.error('❌ 대안 조회 중 오류:', error);
@@ -314,30 +342,112 @@ class CleanDataService {
 
   async createAlternative(data: Omit<AlternativeData, 'id'>): Promise<AlternativeData | null> {
     try {
-      console.log('🔍 실제 DB에 대안 생성 시작:', data.name);
-      const response = await alternativeApi.createAlternative(data);
-      if (response.success && response.data) {
-        console.log('✅ 대안 생성 성공');
-        return response.data;
+      console.log('🔍 대안 생성 시작 (프로젝트 메타데이터):', data.name);
+      
+      if (!data.project_id) {
+        throw new Error('프로젝트 ID가 필요합니다.');
       }
-      console.error('❌ 대안 생성 실패');
-      return null;
+      
+      // 프로젝트 조회
+      const projectResponse = await projectApi.getProject(data.project_id);
+      if (!projectResponse.success || !projectResponse.data) {
+        throw new Error('프로젝트를 찾을 수 없습니다.');
+      }
+      
+      const currentProject = projectResponse.data;
+      const existingAlternatives = currentProject.settings?.alternatives || [];
+      
+      // 중복 검사
+      const isDuplicate = existingAlternatives.some((a: any) => 
+        a.name.toLowerCase() === data.name.toLowerCase()
+      );
+      if (isDuplicate) {
+        throw new Error('동일한 대안명이 이미 존재합니다.');
+      }
+      
+      // 새 대안 생성
+      const newAlternative: AlternativeData = {
+        ...data,
+        id: `alternative_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        position: data.position || existingAlternatives.length + 1
+      };
+      
+      // 메타데이터 업데이트
+      const updatedAlternatives = [...existingAlternatives, newAlternative];
+      const updateResponse = await projectApi.updateProject(data.project_id, {
+        settings: {
+          ...currentProject.settings,
+          alternatives: updatedAlternatives,
+          alternatives_count: updatedAlternatives.length
+        }
+      });
+      
+      if (updateResponse.success) {
+        console.log('✅ 대안 생성 성공:', newAlternative.name);
+        return newAlternative;
+      }
+      
+      throw new Error('프로젝트 업데이트에 실패했습니다.');
     } catch (error) {
       console.error('❌ 대안 생성 중 오류:', error);
       throw error;
     }
   }
 
-  async deleteAlternative(alternativeId: string): Promise<boolean> {
+  async deleteAlternative(alternativeId: string, projectId?: string): Promise<boolean> {
     try {
       console.log('🗑️ 대안 삭제 시작:', alternativeId);
-      const response = await alternativeApi.deleteAlternative(alternativeId);
-      if (response.success) {
-        console.log('✅ 대안 삭제 성공');
+      
+      // projectId가 없으면 모든 프로젝트에서 검색
+      if (!projectId) {
+        const projects = await this.getProjects();
+        for (const project of projects) {
+          const alternatives = project.settings?.alternatives || [];
+          const foundAlternative = alternatives.find((a: any) => a.id === alternativeId);
+          if (foundAlternative) {
+            projectId = project.id;
+            break;
+          }
+        }
+      }
+      
+      if (!projectId) {
+        console.error('❌ 대안을 찾을 수 없습니다:', alternativeId);
+        return false;
+      }
+      
+      // 프로젝트 조회
+      const projectResponse = await projectApi.getProject(projectId);
+      if (!projectResponse.success || !projectResponse.data) {
+        throw new Error('프로젝트를 찾을 수 없습니다.');
+      }
+      
+      const currentProject = projectResponse.data;
+      const existingAlternatives = currentProject.settings?.alternatives || [];
+      
+      // 대안 제거
+      const updatedAlternatives = existingAlternatives.filter((a: any) => a.id !== alternativeId);
+      
+      if (updatedAlternatives.length === existingAlternatives.length) {
+        console.warn('⚠️ 삭제할 대안을 찾을 수 없습니다:', alternativeId);
+        return false;
+      }
+      
+      // 메타데이터 업데이트
+      const updateResponse = await projectApi.updateProject(projectId, {
+        settings: {
+          ...currentProject.settings,
+          alternatives: updatedAlternatives,
+          alternatives_count: updatedAlternatives.length
+        }
+      });
+      
+      if (updateResponse.success) {
+        console.log('✅ 대안 삭제 성공:', alternativeId);
         return true;
       }
-      console.error('❌ 대안 삭제 실패');
-      return false;
+      
+      throw new Error('프로젝트 업데이트에 실패했습니다.');
     } catch (error) {
       console.error('❌ 대안 삭제 중 오류:', error);
       return false;

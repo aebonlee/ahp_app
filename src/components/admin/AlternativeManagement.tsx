@@ -185,7 +185,7 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
   const handleDeleteAlternative = async (id: string) => {
     try {
       console.log('🗑️ 대안 삭제:', id);
-      const success = await dataService.deleteAlternative(id);
+      const success = await dataService.deleteAlternative(id, projectId);
       
       if (!success) {
         console.error('❌ 대안 삭제 실패');
