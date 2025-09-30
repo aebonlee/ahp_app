@@ -208,7 +208,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       }
     } catch (error) {
       console.error('❌ 기준 추가 실패:', error);
-      setErrors({ name: '기준 추가 중 오류가 발생했습니다. 권한을 확인해주세요.' });
+      const errorMessage = error instanceof Error ? error.message : '기준 추가 중 오류가 발생했습니다.';
+      setErrors({ name: errorMessage });
     }
   };
 

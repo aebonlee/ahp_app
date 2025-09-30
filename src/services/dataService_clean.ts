@@ -207,27 +207,45 @@ class CleanDataService {
 
   async createCriteria(data: Omit<CriteriaData, 'id'>): Promise<CriteriaData | null> {
     try {
-      console.log('🔍 기준 생성 시작 (프로젝트 메타데이터):', data.name);
+      console.log('🔍 기준 생성 시작 (프로젝트 메타데이터):', {
+        name: data.name,
+        project_id: data.project_id,
+        level: data.level,
+        parent_id: data.parent_id
+      });
       
       if (!data.project_id) {
+        console.error('❌ 프로젝트 ID가 없습니다:', data);
         throw new Error('프로젝트 ID가 필요합니다.');
       }
       
       // 프로젝트 조회
+      console.log('🔍 프로젝트 조회 중:', data.project_id);
       const projectResponse = await projectApi.getProject(data.project_id);
-      if (!projectResponse.success || !projectResponse.data) {
-        throw new Error('프로젝트를 찾을 수 없습니다.');
+      console.log('📋 프로젝트 조회 결과:', {
+        success: projectResponse.success,
+        hasData: !!projectResponse.data,
+        error: projectResponse.error
+      });
+      
+      if (!projectResponse.success) {
+        throw new Error(`프로젝트 조회 실패: ${projectResponse.error || '알 수 없는 오류'}`);
+      }
+      
+      if (!projectResponse.data) {
+        throw new Error('프로젝트 데이터가 없습니다.');
       }
       
       const currentProject = projectResponse.data;
       const existingCriteria = currentProject.settings?.criteria || [];
+      console.log('📊 기존 기준 개수:', existingCriteria.length);
       
       // 중복 검사
       const isDuplicate = existingCriteria.some((c: any) => 
         c.name.toLowerCase() === data.name.toLowerCase()
       );
       if (isDuplicate) {
-        throw new Error('동일한 기준명이 이미 존재합니다.');
+        throw new Error(`동일한 기준명이 이미 존재합니다: "${data.name}"`);
       }
       
       // 새 기준 생성
@@ -236,15 +254,27 @@ class CleanDataService {
         id: `criteria_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         order: data.order || existingCriteria.length + 1
       };
+      console.log('✨ 새 기준 생성:', newCriterion);
       
       // 메타데이터 업데이트
       const updatedCriteria = [...existingCriteria, newCriterion];
-      const updateResponse = await projectApi.updateProject(data.project_id, {
+      const updateData = {
         settings: {
           ...currentProject.settings,
           criteria: updatedCriteria,
           criteria_count: updatedCriteria.length
         }
+      };
+      
+      console.log('🔄 프로젝트 업데이트 시작:', {
+        projectId: data.project_id,
+        criteriaCount: updatedCriteria.length
+      });
+      
+      const updateResponse = await projectApi.updateProject(data.project_id, updateData);
+      console.log('📝 프로젝트 업데이트 결과:', {
+        success: updateResponse.success,
+        error: updateResponse.error
       });
       
       if (updateResponse.success) {
@@ -252,7 +282,7 @@ class CleanDataService {
         return newCriterion;
       }
       
-      throw new Error('프로젝트 업데이트에 실패했습니다.');
+      throw new Error(`프로젝트 업데이트 실패: ${updateResponse.error || '알 수 없는 오류'}`);
     } catch (error) {
       console.error('❌ 기준 생성 중 오류:', error);
       throw error;
