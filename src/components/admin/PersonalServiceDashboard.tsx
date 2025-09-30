@@ -1834,13 +1834,24 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           createProject={async (projectData) => {
             console.log('🚀 프로젝트 생성 시작:', projectData);
             try {
+              // ProjectCreation에서 오는 데이터를 ProjectData 형식으로 변환
+              const convertedData = {
+                title: projectData.title,
+                description: projectData.description,
+                objective: projectData.objective,
+                evaluation_mode: projectData.evaluationMode, // evaluationMode -> evaluation_mode
+                ahp_type: projectData.ahpType,
+                status: 'draft' as const,
+                workflow_stage: 'creating' as const
+              };
+              
               if (onCreateProject) {
-                const result = await onCreateProject(projectData);
+                const result = await onCreateProject(convertedData);
                 console.log('✅ 프로젝트 생성 성공:', result);
                 return result;
               } else {
                 console.log('⚠️ onCreateProject 콜백이 없어 dataService 사용');
-                const result = await dataService.createProject(projectData);
+                const result = await dataService.createProject(convertedData);
                 console.log('✅ dataService로 프로젝트 생성 성공:', result);
                 return result;
               }
