@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import dataService from '../../services/dataService_clean';
 import { ProjectData } from '../../services/api';
 
-// 확장된 프로젝트 데이터 타입 (진행률 등 추가 정보 포함)
-interface ProjectWithStats extends ProjectData {
-  completion_rate?: number;
-}
 
 interface MyProjectsProps {
   onProjectSelect?: (project: ProjectData) => void;
@@ -26,7 +22,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   onAnalysis,
   refreshTrigger
 }) => {
-  const [projects, setProjects] = useState<ProjectWithStats[]>([]);
+  const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft' | 'trash'>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -87,7 +83,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                 ...project,
                 criteria_count: criteriaCount,
                 alternatives_count: alternativesCount,
-                completion_rate: completionRate
+                completionRate: completionRate
               };
             } catch (error) {
               console.warn(`프로젝트 ${project.id} 통계 로드 실패:`, error);
@@ -95,7 +91,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                 ...project,
                 criteria_count: project.criteria_count || 0,
                 alternatives_count: project.alternatives_count || 0,
-                completion_rate: project.status === 'completed' ? 100 : 0
+                completionRate: project.status === 'completed' ? 100 : 0
               };
             }
           })
@@ -147,10 +143,10 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     return '#6B7280'; // gray
   };
 
-  const getProgressText = (project: ProjectWithStats) => {
+  const getProgressText = (project: ProjectData) => {
     const criteriaCount = project.criteria_count || 0;
     const alternativesCount = project.alternatives_count || 0;
-    const completionRate = project.completion_rate || 0;
+    const completionRate = project.completionRate || 0;
 
     if (completionRate === 0) {
       return '아직 시작하지 않음';
@@ -215,7 +211,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   };
 
   // 일반 프로젝트 삭제 (휴지통으로 이동)
-  const handleDeleteWithConfirm = async (project: ProjectWithStats) => {
+  const handleDeleteWithConfirm = async (project: ProjectData) => {
     const projectTitle = project.title || '프로젝트';
     
     if (!window.confirm(`"${projectTitle}"를 휴지통으로 이동하시겠습니까?\n\n휴지통에서 복원하거나 영구 삭제할 수 있습니다.`)) {
@@ -244,7 +240,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   };
 
   // 프로젝트 편집
-  const handleEditProject = (project: ProjectWithStats) => {
+  const handleEditProject = (project: ProjectData) => {
     if (onEditProject) {
       onEditProject(project);
     } else {
@@ -254,7 +250,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   };
 
   // 모델 구축
-  const handleModelBuilder = (project: ProjectWithStats) => {
+  const handleModelBuilder = (project: ProjectData) => {
     if (onModelBuilder) {
       onModelBuilder(project);
     } else {
@@ -264,7 +260,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   };
 
   // 결과 분석
-  const handleAnalysis = (project: ProjectWithStats) => {
+  const handleAnalysis = (project: ProjectData) => {
     if (onAnalysis) {
       onAnalysis(project);
     } else {
@@ -460,15 +456,15 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--text-muted)' }}>진행률</span>
                   <span style={{ color: 'var(--text-primary)' }}>
-                    {project.completion_rate || 0}%
+                    {project.completionRate || 0}%
                   </span>
                 </div>
                 <div className="w-full rounded-full h-2" style={{ backgroundColor: 'var(--border-light)' }}>
                   <div 
                     className="h-2 rounded-full transition-all"
                     style={{ 
-                      width: `${project.completion_rate || 0}%`,
-                      backgroundColor: getProgressColor(project.completion_rate || 0)
+                      width: `${project.completionRate || 0}%`,
+                      backgroundColor: getProgressColor(project.completionRate || 0)
                     }}
                   />
                 </div>
