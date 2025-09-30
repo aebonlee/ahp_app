@@ -442,16 +442,16 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
       </section>
 
       {/* 주요 기능 섹션 - AURI 스타일 그리드 */}
-      <section id="features" className="py-20" style={{ backgroundColor: '#f8f9fa' }}>
+      <section id="features" className="py-20" style={{ backgroundColor: 'var(--bg-subtle)' }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ 
-              color: '#222',
+              color: 'var(--text-primary)',
               fontWeight: '700'
             }}>
               주요 기능
             </h2>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: '#666' }}>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
               연구에 필요한 모든 도구를 하나의 플랫폼에서 제공합니다
             </p>
           </div>
@@ -460,61 +460,73 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               
               {/* 기능 아이템 1 - AURI 스타일 */}
-              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ borderColor: '#e5e7eb' }}>
+              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ 
+                backgroundColor: 'var(--bg-secondary)', 
+                borderColor: 'var(--border-light)' 
+              }}>
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{
-                  backgroundColor: '#e3f2fd'
+                  backgroundColor: 'var(--accent-light)'
                 }}>
-                  <svg className="w-6 h-6" fill="none" stroke="#0066cc" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg className="w-6 h-6" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-2" style={{ color: '#222' }}>계층 구조 설계</h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#666' }}>
+                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>계층 구조 설계</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                   목표-기준-대안의 체계적 구조화
                 </p>
               </div>
 
               {/* 기능 아이템 2 */}
-              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ borderColor: '#e5e7eb' }}>
+              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ 
+                backgroundColor: 'var(--bg-secondary)', 
+                borderColor: 'var(--border-light)' 
+              }}>
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{
-                  backgroundColor: '#e8f5e8'
+                  backgroundColor: 'var(--accent-light)'
                 }}>
-                  <svg className="w-6 h-6" fill="none" stroke="#22c55e" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg className="w-6 h-6" fill="none" stroke="var(--accent-secondary)" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-2" style={{ color: '#222' }}>쌍대 비교 분석</h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#666' }}>
+                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>쌍대 비교 분석</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                   1:1 비교를 통한 정량적 평가
                 </p>
               </div>
 
               {/* 기능 아이템 3 */}
-              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ borderColor: '#e5e7eb' }}>
+              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ 
+                backgroundColor: 'var(--bg-secondary)', 
+                borderColor: 'var(--border-light)' 
+              }}>
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{
-                  backgroundColor: '#fef3e2'
+                  backgroundColor: 'var(--accent-light)'
                 }}>
-                  <svg className="w-6 h-6" fill="none" stroke="#f59e0b" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg className="w-6 h-6" fill="none" stroke="var(--accent-tertiary)" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-2" style={{ color: '#222' }}>결과 시각화</h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#666' }}>
+                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>결과 시각화</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                   차트와 표로 명확한 결과 제시
                 </p>
               </div>
 
               {/* 기능 아이템 4 */}
-              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ borderColor: '#e5e7eb' }}>
+              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ 
+                backgroundColor: 'var(--bg-secondary)', 
+                borderColor: 'var(--border-light)' 
+              }}>
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{
-                  backgroundColor: '#f3e8ff'
+                  backgroundColor: 'var(--accent-light)'
                 }}>
-                  <svg className="w-6 h-6" fill="none" stroke="#8b5cf6" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg className="w-6 h-6" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-2" style={{ color: '#222' }}>협업 연구</h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#666' }}>
+                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>협업 연구</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                   다중 평가자 의견 수집 및 통합
                 </p>
               </div>
@@ -1111,8 +1123,8 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
 
       {/* Footer - AURI 스타일 */}
       <footer className="border-t py-12" style={{ 
-        backgroundColor: '#f8f9fa',
-        borderColor: '#e5e7eb'
+        backgroundColor: 'var(--bg-subtle)',
+        borderColor: 'var(--border-light)'
       }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-8 items-center">
@@ -1126,20 +1138,20 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
                     <path d="M12 2L2 7v10c0 5.55 3.84 9.739 9 11 5.16-1.261 9-5.45 9-11V7l-10-5z"/>
                   </svg>
                 </div>
-                <span className="text-lg font-bold" style={{ color: '#222' }}>
+                <span className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                   AHP for Paper
                 </span>
               </div>
-              <p className="text-sm mb-2" style={{ color: '#666' }}>
+              <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                 한국직업능력개발센터
               </p>
-              <p className="text-sm mb-2" style={{ color: '#666' }}>
+              <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                 사업자등록번호: 601-45-20154
               </p>
-              <p className="text-sm mb-2" style={{ color: '#666' }}>
+              <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                 경기도 수원시 팔달구 매산로 45, 419호
               </p>
-              <p className="text-sm" style={{ color: '#666' }}>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 대표이사: 이애본 | 통신판매신고: 제2024-수원팔달-0584호
               </p>
             </div>

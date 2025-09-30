@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import './index.css';
+import './App.css';
 import sessionService from './services/sessionService';
 import authService from './services/authService';
 import cleanDataService from './services/dataService_clean';
@@ -21,6 +23,7 @@ import PersonalServiceDashboard from './components/admin/PersonalServiceDashboar
 import ModelBuilding from './components/admin/ModelBuilding';
 import EvaluationResults from './components/admin/EvaluationResults';
 import ProjectCompletion from './components/admin/ProjectCompletion';
+import ProjectWorkflow from './components/admin/ProjectWorkflow';
 import UserManagement from './components/admin/UserManagement';
 import ProjectSelection from './components/evaluator/ProjectSelection';
 import PairwiseEvaluation from './components/evaluator/PairwiseEvaluation';
@@ -70,7 +73,7 @@ function App() {
     const validTabs = [
       'home', 'user-guide', 'evaluator-mode', 'evaluator-workflow',
       'personal-service', 'demographic-survey', 
-      'my-projects', 'project-creation', 'model-builder',
+      'my-projects', 'project-creation', 'project-workflow', 'model-builder',
       'evaluator-management', 'progress-monitoring', 'results-analysis',
       'paper-management', 'export-reports', 'workshop-management',
       'decision-support-system', 'personal-settings', 'landing',
@@ -124,7 +127,7 @@ function App() {
       
       const validTabs = [
         'home', 'personal-service', 'demographic-survey', 
-        'my-projects', 'project-creation', 'model-builder',
+        'my-projects', 'project-creation', 'project-workflow', 'model-builder',
         'evaluator-management', 'progress-monitoring', 'results-analysis',
         'paper-management', 'export-reports', 'workshop-management',
         'decision-support-system', 'personal-settings'
@@ -1374,6 +1377,13 @@ function App() {
       case 'demographic-survey':
       case 'my-projects':
       case 'project-creation':
+      case 'project-workflow':
+        return (
+          <ProjectWorkflow
+            onComplete={() => setActiveTab('my-projects')}
+            onCancel={() => setActiveTab('my-projects')}
+          />
+        );
       case 'model-builder':
       case 'evaluator-management':
       case 'trash':
@@ -1797,7 +1807,7 @@ function App() {
   // 로그인한 사용자만 Layout과 함께 렌더링
   if (user) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="App min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         <Layout
           user={user}
           viewMode={viewMode}
@@ -1828,7 +1838,7 @@ function App() {
 
   // 로그인하지 않은 사용자는 Layout 없이 렌더링 (홈페이지, 로그인, 회원가입)
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="App min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {renderContent()}
       <ApiErrorModal
         isVisible={showApiErrorModal}

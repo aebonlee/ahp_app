@@ -9,6 +9,7 @@ import { CriteriaData } from '../../services/api';
 
 interface Criterion extends Omit<CriteriaData, 'project_id' | 'position' | 'id'> {
   id: string; // required
+  level: number; // override to make required
   children?: Criterion[];
   weight?: number;
 }
@@ -21,8 +22,30 @@ interface CriteriaManagementProps {
 }
 
 const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, projectTitle, onComplete, onCriteriaChange }) => {
-  // DEMO_CRITERIA와 DEMO_SUB_CRITERIA를 조합하여 완전한 계층구조 생성
   const [criteria, setCriteria] = useState<Criterion[]>([]);
+
+  // CriteriaData를 Criterion으로 변환
+  const convertToCriterion = (data: CriteriaData): Criterion => ({
+    id: data.id || `crit_${Date.now()}_${Math.random()}`,
+    name: data.name,
+    description: data.description,
+    parent_id: data.parent_id,
+    level: data.level || 1,
+    order: data.order,
+    children: [],
+    weight: 0
+  });
+
+  // Criterion을 CriteriaData로 변환
+  const convertToCriteriaData = (crit: Partial<Criterion & { position?: number }>): Omit<CriteriaData, 'id'> => ({
+    project_id: projectId,
+    name: crit.name || '',
+    description: crit.description || '',
+    parent_id: crit.parent_id,
+    level: crit.level || 1,
+    position: crit.position || crit.order || 0,
+    order: crit.order
+  });
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
   const [showHelp, setShowHelp] = useState(false);
   const [showBulkInput, setShowBulkInput] = useState(false);
@@ -33,12 +56,13 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       try {
         console.log(`🔍 프로젝트 ${projectId}의 기준 데이터 로드 중...`);
         const criteriaData = await dataService.getCriteria(projectId);
-        setCriteria(criteriaData || []);
-        console.log(`✅ ${criteriaData?.length || 0}개 기준 로드 완료`);
+        const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+        setCriteria(convertedCriteria);
+        console.log(`✅ ${convertedCriteria.length}개 기준 로드 완료`);
         
         // 부모 컴포넌트에 개수 알림
         if (onCriteriaChange) {
-          onCriteriaChange(criteriaData?.length || 0);
+          onCriteriaChange(convertedCriteria.length);
         }
       } catch (error) {
         console.error('❌ 기준 데이터 로드 실패:', error);
@@ -120,7 +144,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
           description: item.description,
           parent_id: item.parent_id,
           level: actualLevel,
-          weight: item.weight
+          weight: item.weight || 0
         });
         
         // 하위 항목이 있으면 재귀적으로 처리
@@ -142,7 +166,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     let level = 1;
     if (newCriterion.parentId) {
       const parent = getAllCriteria(criteria).find(c => c.id === newCriterion.parentId);
-      level = parent ? parent.level + 1 : 2;
+      level = parent ? (parent.level || 1) + 1 : 2;
     }
     
     // 최대 5레벨까지만 허용
@@ -152,14 +176,13 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     }
 
     try {
-      const criterionData = {
-        project_id: projectId, // String 형태로 전달
+      const criterionData = convertToCriteriaData({
         name: newCriterion.name,
         description: newCriterion.description || '',
         parent_id: newCriterion.parentId || null,
         level,
-        order_index: getAllCriteria(criteria).filter(c => c.level === level).length + 1
-      };
+        order: getAllCriteria(criteria).filter(c => (c.level || 1) === level).length + 1
+      });
 
       console.log('🔄 기준 추가 중...', criterionData);
       const createdCriterion = await dataService.createCriteria(criterionData);
@@ -172,15 +195,16 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       console.log('✅ 기준이 성공적으로 추가되었습니다:', createdCriterion);
       
       // 데이터 다시 로드
-      const updatedCriteria = await dataService.getCriteria(projectId);
-      setCriteria(updatedCriteria || []);
+      const updatedCriteriaData = await dataService.getCriteria(projectId);
+      const convertedUpdatedCriteria = (updatedCriteriaData || []).map(convertToCriterion);
+      setCriteria(convertedUpdatedCriteria);
       
       setNewCriterion({ name: '', description: '', parentId: '' });
       setErrors({});
       
       // 기준 개수 변경 콜백 호출
       if (onCriteriaChange) {
-        onCriteriaChange((updatedCriteria || []).length);
+        onCriteriaChange(convertedUpdatedCriteria.length);
       }
     } catch (error) {
       console.error('❌ 기준 추가 실패:', error);
@@ -202,12 +226,13 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       console.log('✅ 기준이 삭제되었습니다:', id);
       
       // 데이터 다시 로드
-      const updatedCriteria = await dataService.getCriteria(projectId);
-      setCriteria(updatedCriteria || []);
+      const updatedCriteriaData = await dataService.getCriteria(projectId);
+      const convertedUpdatedCriteria = (updatedCriteriaData || []).map(convertToCriterion);
+      setCriteria(convertedUpdatedCriteria);
       
       // 기준 개수 변경 콜백 호출
       if (onCriteriaChange) {
-        onCriteriaChange((updatedCriteria || []).length);
+        onCriteriaChange(convertedUpdatedCriteria.length);
       }
     } catch (error) {
       console.error('❌ 기준 삭제 실패:', error);
@@ -219,7 +244,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
   const getAvailableParentCriteria = () => {
     const flatCriteria = getAllCriteria(criteria);
     // 최대 4레벨까지만 상위 기준으로 선택 가능 (5레벨까지 지원)
-    return flatCriteria.filter(c => c.level <= 4);
+    return flatCriteria.filter(c => (c.level || 1) <= 4);
   };
 
   // 레벨별 표시 아이콘 (최소화)
@@ -251,7 +276,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       try {
         // 모든 기준을 PostgreSQL에서 삭제
         for (const criterion of criteria) {
-          await apiService.criteriaAPI.delete(criterion.id);
+          await dataService.deleteCriteria(criterion.id);
         }
         
         setCriteria([]);
@@ -275,56 +300,58 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     // 논문 작성 권장: 3개 기준 템플릿 구조
     const templateCriteria = [
       {
-        project_id: Number(projectId),
+        project_id: projectId,
         name: '프로젝트 목표',
         description: '최종 달성하고자 하는 목표를 입력하세요',
         parent_id: null,
         level: 1,
-        order_index: 1
+        position: 1,
+        order: 1
       },
       {
-        project_id: Number(projectId),
+        project_id: projectId,
         name: '기준 1',
         description: '첫 번째 평가 기준',
         parent_id: null,
         level: 2,
-        order_index: 1
+        position: 1,
+        order: 1
       },
       {
-        project_id: Number(projectId),
+        project_id: projectId,
         name: '기준 2', 
         description: '두 번째 평가 기준',
         parent_id: null,
         level: 2,
-        order_index: 2
+        position: 2,
+        order: 2
       },
       {
-        project_id: Number(projectId),
+        project_id: projectId,
         name: '기준 3',
         description: '세 번째 평가 기준 (논문 권장 구조)',
         parent_id: null,
         level: 2,
-        order_index: 3
+        position: 3,
+        order: 3
       }
     ];
     
     try {
       // 기존 데이터 삭제 후 템플릿 생성
       for (const criterion of criteria) {
-        await apiService.criteriaAPI.delete(criterion.id);
+        await dataService.deleteCriteria(criterion.id);
       }
       
       // 템플릿 데이터 생성
       for (const criterionData of templateCriteria) {
-        await apiService.criteriaAPI.create(criterionData);
+        await dataService.createCriteria(criterionData);
       }
       
       // 데이터 다시 로드
-      const response = await apiService.criteriaAPI.fetch(projectId);
-      if (response.data) {
-        const criteriaData = (response.data as any).criteria || response.data || [];
-        setCriteria(criteriaData);
-      }
+      const criteriaData = await dataService.getCriteria(projectId);
+      const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+      setCriteria(convertedCriteria);
       
       setNewCriterion({ name: '', description: '', parentId: '' });
       setErrors({});
@@ -339,24 +366,21 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     try {
       // 가져온 기준들을 PostgreSQL에 저장
       for (const criterion of importedCriteria) {
-        const criterionData = {
-          project_id: Number(projectId),
+        const criterionData = convertToCriteriaData({
           name: criterion.name,
-          description: criterion.description || null,
+          description: criterion.description || '',
           parent_id: criterion.parent_id,
           level: criterion.level,
-          order_index: criterion.level
-        };
+          order: criterion.order || 1
+        });
         
-        await apiService.criteriaAPI.create(criterionData);
+        await dataService.createCriteria(criterionData);
       }
       
       // 데이터 다시 로드
-      const response = await apiService.criteriaAPI.fetch(projectId);
-      if (response.data) {
-        const criteriaData = (response.data as any).criteria || response.data || [];
-        setCriteria(criteriaData);
-      }
+      const criteriaData = await dataService.getCriteria(projectId);
+      const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+      setCriteria(convertedCriteria);
       
       setShowBulkInput(false);
       
@@ -675,7 +699,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
                   <option value="">🎯 최상위 기준 (목표)</option>
                   {getAvailableParentCriteria().map(criterion => (
                     <option key={criterion.id} value={criterion.id}>
-                      {getLevelIcon(criterion.level)} {criterion.name} ({getLevelName(criterion.level)})
+                      {getLevelIcon(criterion.level || 1)} {criterion.name} ({getLevelName(criterion.level || 1)})
                     </option>
                   ))}
                 </select>
@@ -712,7 +736,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
             <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
               총 {getAllCriteria(criteria).length}개 기준 (
               {[1,2,3,4,5].map(level => {
-                const count = getAllCriteria(criteria).filter(c => c.level === level).length;
+                const count = getAllCriteria(criteria).filter(c => (c.level || 1) === level).length;
                 return count > 0 ? `L${level}: ${count}개` : null;
               }).filter(Boolean).join(', ') || '없음'}
               ) | 평가방법: {evaluationMethod === 'pairwise' ? '쌍대비교' : '직접입력'}

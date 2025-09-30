@@ -406,15 +406,34 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     const project = projects.find(p => p.id === projectId);
     const projectTitle = project?.title || '프로젝트';
     
-    if (window.confirm(`"${projectTitle}"를 휴지통으로 이동하시겠습니까?\n\n휴지통에서 복원하거나 영구 삭제할 수 있습니다.`)) {
-      try {
-        console.log('🗑️ 삭제 시작:', projectId, projectTitle);
+    // MyProjects에서 이미 확인을 받았으므로 여기서는 확인하지 않음
+    try {
+      console.log('🗑️ 삭제 시작:', projectId, projectTitle);
+      
+      // App.tsx의 onDeleteProject 사용 (휴지통 오버플로우 처리 포함)
+      if (onDeleteProject) {
+        console.log('✅ App.tsx onDeleteProject 호출 (휴지통 오버플로우 처리 포함)');
+        await onDeleteProject(projectId);
+        console.log('✅ App.tsx에서 삭제 처리 완료');
         
-        // App.tsx의 onDeleteProject 사용 (휴지통 오버플로우 처리 포함)
-        if (onDeleteProject) {
-          console.log('✅ App.tsx onDeleteProject 호출 (휴지통 오버플로우 처리 포함)');
-          await onDeleteProject(projectId);
-          console.log('✅ App.tsx에서 삭제 처리 완료');
+        // 삭제 후 실시간 프로젝트 목록 새로고침
+        if (refreshProjectList) {
+          await refreshProjectList();
+          console.log('🔄 프로젝트 삭제 후 실시간 동기화 완료');
+        }
+        
+        // 프로젝트 새로고침 트리거
+        setProjectRefreshTrigger(prev => prev + 1);
+        
+        // 성공 메시지 표시
+        alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
+      } else {
+        console.log('⚠️ onDeleteProject prop이 없음 - dataService 직접 호출 (fallback)');
+        // Fallback to dataService
+        const success = await dataService.deleteProject(projectId);
+        
+        if (success) {
+          console.log('✅ 백엔드 삭제 완료 (fallback)');
           
           // 삭제 후 실시간 프로젝트 목록 새로고침
           if (refreshProjectList) {
@@ -427,31 +446,21 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           
           alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
         } else {
-          console.log('⚠️ onDeleteProject prop이 없음 - dataService 직접 호출 (fallback)');
-          // Fallback to dataService
-          const success = await dataService.deleteProject(projectId);
-          
-          if (success) {
-            console.log('✅ 백엔드 삭제 완료 (fallback)');
-            
-            // 삭제 후 실시간 프로젝트 목록 새로고침
-            if (refreshProjectList) {
-              await refreshProjectList();
-              console.log('🔄 프로젝트 삭제 후 실시간 동기화 완료');
-            }
-            
-            // 프로젝트 새로고침 트리거
-            setProjectRefreshTrigger(prev => prev + 1);
-            
-            alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
-          } else {
-            console.error('❌ 프로젝트 삭제 실패 (fallback)');
-            alert('프로젝트 삭제에 실패했습니다.');
-          }
+          console.error('❌ 프로젝트 삭제 실패 (fallback)');
+          throw new Error('프로젝트 삭제에 실패했습니다.');
         }
-      } catch (error) {
-        console.error('❌ Project deletion error:', error);
-        alert(error instanceof Error ? error.message : '프로젝트 삭제 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('❌ Project deletion error:', error);
+      // JSON 에러 메시지 처리
+      if (error instanceof Error) {
+        // JSON 파싱 에러인 경우 처리
+        const errorMessage = error.message.includes('JSON') 
+          ? '서버 응답 형식 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+          : error.message;
+        alert(errorMessage);
+      } else {
+        alert('프로젝트 삭제 중 오류가 발생했습니다.');
       }
     }
   };
@@ -1095,7 +1104,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <MyProjects
           refreshTrigger={projectRefreshTrigger}
-          onCreateNew={() => handleTabChange('creation')}
+          onCreateNew={() => externalOnTabChange?.('project-workflow') || handleTabChange('creation')}
           onProjectSelect={(project) => {
             setSelectedProjectId(project.id || '');
             console.log('프로젝트 선택:', project.title);
@@ -3277,7 +3286,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         return (
           <MyProjects
             refreshTrigger={projectRefreshTrigger}
-            onCreateNew={() => setActiveMenu('creation')}
+            onCreateNew={() => externalOnTabChange?.('project-workflow') || setActiveMenu('creation')}
             onProjectSelect={(project) => {
               setSelectedProjectId(project.id || '');
               console.log('프로젝트 선택:', project.title);

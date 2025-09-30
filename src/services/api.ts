@@ -38,6 +38,7 @@ export interface ProjectData {
   status: 'draft' | 'active' | 'completed' | 'deleted';
   evaluation_mode: 'practical' | 'theoretical' | 'direct_input' | 'fuzzy_ahp';
   workflow_stage: 'creating' | 'waiting' | 'evaluating' | 'completed';
+  ahp_type?: 'general' | 'fuzzy';
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
@@ -120,15 +121,30 @@ const makeRequest = async <T>(
       }
     });
 
-    // 응답이 JSON이 아닌 경우 (HTML 오류 페이지 등) 처리
+    // DELETE 요청의 경우 응답 본문이 없을 수 있음
+    const isDeleteRequest = options.method?.toUpperCase() === 'DELETE';
+    
+    // 응답이 JSON이 아닌 경우 처리
     const contentType = response.headers.get('content-type');
+    let data: any = null;
+    
     if (!contentType || !contentType.includes('application/json')) {
-      const text = await response.text();
-      console.error(`API Error [${endpoint}]: Expected JSON, got ${contentType}`, text.substring(0, 200));
-      throw new Error(`서버가 올바른 응답을 반환하지 않았습니다. (${response.status})`);
+      if (isDeleteRequest && response.ok) {
+        // DELETE 요청이 성공했고 JSON이 아닌 경우 (예: 204 No Content)
+        console.log(`DELETE 성공 [${endpoint}]: ${response.status}`);
+        return {
+          success: true,
+          data: undefined,
+          message: '삭제 완료'
+        };
+      } else {
+        const text = await response.text();
+        console.error(`API Error [${endpoint}]: Expected JSON, got ${contentType}`, text.substring(0, 200));
+        throw new Error(`서버가 올바른 응답을 반환하지 않았습니다. (${response.status})`);
+      }
+    } else {
+      data = await response.json();
     }
-
-    const data = await response.json();
 
     if (!response.ok) {
       // 권한 오류 특별 처리
