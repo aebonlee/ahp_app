@@ -338,6 +338,53 @@ class AuthService {
   }
 
   /**
+   * 소셜 로그인 - Google
+   */
+  async googleLogin(): Promise<void> {
+    const authUrl = `${API_BASE_URL}/api/auth/social/google/`;
+    window.location.href = authUrl;
+  }
+
+  /**
+   * 소셜 로그인 - Kakao
+   */
+  async kakaoLogin(): Promise<void> {
+    const authUrl = `${API_BASE_URL}/api/auth/social/kakao/`;
+    window.location.href = authUrl;
+  }
+
+  /**
+   * 소셜 로그인 - Naver
+   */
+  async naverLogin(): Promise<void> {
+    const authUrl = `${API_BASE_URL}/api/auth/social/naver/`;
+    window.location.href = authUrl;
+  }
+
+  /**
+   * 소셜 로그인 콜백 처리
+   */
+  async handleSocialCallback(provider: string, code: string, state?: string): Promise<LoginResponse> {
+    const result = await this.apiRequest<{ access: string; refresh: string; user: User }>(
+      `/api/auth/social/${provider}/callback/`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ code, state }),
+      }
+    );
+
+    if (result.success && result.data) {
+      const { access, refresh, user } = result.data;
+      const tokens = { access, refresh };
+      this.saveTokens(tokens);
+      this.initTokenRefresh();
+      return { user, tokens };
+    }
+
+    throw new Error(result.error || 'Social login failed');
+  }
+
+  /**
    * 인증된 API 요청을 위한 헬퍼
    */
   async authenticatedRequest<T>(

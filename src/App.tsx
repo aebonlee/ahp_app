@@ -457,6 +457,46 @@ function App() {
     console.log('✅ 로그아웃 완료');
   };
 
+  // 소셜 인증 핸들러들
+  const handleGoogleAuth = async () => {
+    try {
+      setLoginLoading(true);
+      setLoginError('');
+      console.log('🔍 Google 소셜 로그인 시도');
+      await authService.googleLogin();
+    } catch (error: any) {
+      console.error('❌ Google 로그인 실패:', error);
+      setLoginError(error.message || 'Google 로그인에 실패했습니다.');
+      setLoginLoading(false);
+    }
+  };
+
+  const handleKakaoAuth = async () => {
+    try {
+      setLoginLoading(true);
+      setLoginError('');
+      console.log('🔍 Kakao 소셜 로그인 시도');
+      await authService.kakaoLogin();
+    } catch (error: any) {
+      console.error('❌ Kakao 로그인 실패:', error);
+      setLoginError(error.message || 'Kakao 로그인에 실패했습니다.');
+      setLoginLoading(false);
+    }
+  };
+
+  const handleNaverAuth = async () => {
+    try {
+      setLoginLoading(true);
+      setLoginError('');
+      console.log('🔍 Naver 소셜 로그인 시도');
+      await authService.naverLogin();
+    } catch (error: any) {
+      console.error('❌ Naver 로그인 실패:', error);
+      setLoginError(error.message || 'Naver 로그인에 실패했습니다.');
+      setLoginLoading(false);
+    }
+  };
+
   // 보호된 탭 목록을 useMemo로 메모이제이션
   const protectedTabs = useMemo(() => [
     'welcome', 'super-admin', 'personal-service', 'my-projects', 
@@ -1081,6 +1121,9 @@ function App() {
                   role: role || 'user'
                 });
               }}
+              onGoogleAuth={handleGoogleAuth}
+              onKakaoAuth={handleKakaoAuth}
+              onNaverAuth={handleNaverAuth}
               loading={loginLoading}
               error={loginError}
             />
@@ -1133,6 +1176,9 @@ function App() {
                     role: role || 'user'
                   });
                 }}
+                onGoogleAuth={handleGoogleAuth}
+                onKakaoAuth={handleKakaoAuth}
+                onNaverAuth={handleNaverAuth}
                 loading={loginLoading}
                 error={loginError}
               />
