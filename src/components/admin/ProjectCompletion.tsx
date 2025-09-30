@@ -250,7 +250,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
                   {projectSummary.consistencyRatio <= 0.1 ? (
                     <span className="text-green-600">✅ 적합 (CR ≤ 0.1)</span>
                   ) : (
-                    <span className="text-red-600">⚠️ 재검토 필요 (CR > 0.1)</span>
+                    <span className="text-red-600">⚠️ 재검토 필요 (CR &gt; 0.1)</span>
                   )}
                 </div>
               </div>
