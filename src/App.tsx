@@ -689,6 +689,12 @@ function App() {
       if (newProject) {
         console.log('✅ 프로젝트 생성 성공:', newProject.id);
         await fetchProjects(); // 목록 새로고침
+        
+        // 프로젝트 생성 후 자동으로 모델 구축 페이지로 이동
+        setSelectedProjectId(newProject.id || '');
+        setActiveTab('project-workflow');
+        console.log('🎯 자동 이동: project-workflow 페이지, 프로젝트 ID:', newProject.id);
+        
         return newProject;
       } else {
         throw new Error('프로젝트 생성에 실패했습니다.');
