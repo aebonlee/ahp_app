@@ -355,9 +355,13 @@ const MyProjects: React.FC<MyProjectsProps> = ({
       {filteredProjects.length === 0 ? (
         <div className="text-center py-12 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
           <div className="text-6xl mb-4" style={{ color: 'var(--text-muted)' }}>□</div>
-          <p className="text-xl font-medium mb-2">프로젝트가 없습니다</p>
+          <p className="text-xl font-medium mb-2">
+            {filter === 'trash' ? '휴지통이 비어있습니다' : '프로젝트가 없습니다'}
+          </p>
           <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
-            {searchTerm ? '검색 결과가 없습니다' : '첫 번째 프로젝트를 생성해보세요'}
+            {searchTerm ? '검색 결과가 없습니다' : 
+             filter === 'trash' ? '삭제된 프로젝트가 없습니다' :
+             '첫 번째 프로젝트를 생성해보세요'}
           </p>
           {!searchTerm && (
             <button
