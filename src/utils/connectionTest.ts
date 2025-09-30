@@ -71,7 +71,12 @@ class ConnectionTester {
       const endpoints = [
         '/api/v1/projects/',
         '/api/auth/profile/', 
-        '/health/'
+        '/health/',
+        '/api/auth/social/naver/',
+        '/api/auth/social/google/',
+        '/api/auth/social/kakao/',
+        '/db-status/',
+        '/test-deploy/'
       ];
 
       const results = [];
@@ -169,6 +174,112 @@ class ConnectionTester {
   }
 
   /**
+   * 4. 소셜 인증 엔드포인트 테스트
+   */
+  async testSocialAuthEndpoints(): Promise<ConnectionTestResult> {
+    try {
+      console.log('🔍 소셜 인증 엔드포인트 테스트 시작...');
+
+      const socialEndpoints = [
+        { name: 'Naver OAuth', endpoint: '/api/auth/social/naver/' },
+        { name: 'Google OAuth', endpoint: '/api/auth/social/google/' },
+        { name: 'Kakao OAuth', endpoint: '/api/auth/social/kakao/' }
+      ];
+
+      const results = [];
+
+      for (const { name, endpoint } of socialEndpoints) {
+        try {
+          const response = await fetch(`${this.baseUrl}${endpoint}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+          });
+
+          results.push({
+            name,
+            endpoint,
+            status: response.status,
+            ok: response.ok || response.status === 302, // OAuth는 리다이렉트 응답이 정상
+            method: 'GET'
+          });
+
+        } catch (error) {
+          results.push({
+            name,
+            endpoint,
+            status: 'ERROR',
+            error: error instanceof Error ? error.message : 'Unknown error',
+            ok: false
+          });
+        }
+      }
+
+      const successCount = results.filter(r => r.ok).length;
+      const totalCount = results.length;
+
+      return {
+        success: successCount > 0,
+        message: `🔐 소셜 인증 테스트: ${successCount}/${totalCount} 성공`,
+        details: { results, successRate: `${successCount}/${totalCount}` },
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        message: '❌ 소셜 인증 테스트 실패',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * 5. 데이터베이스 연결 테스트
+   */
+  async testDatabaseConnection(): Promise<ConnectionTestResult> {
+    try {
+      console.log('🔍 데이터베이스 연결 테스트 시작...');
+
+      const response = await fetch(`${this.baseUrl}/db-status/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          success: data.connection === 'OK',
+          message: data.connection === 'OK' ? '✅ 데이터베이스 연결 성공' : '❌ 데이터베이스 연결 실패',
+          details: data,
+          timestamp: new Date().toISOString()
+        };
+      } else {
+        return {
+          success: false,
+          message: `❌ DB 상태 확인 오류: ${response.status}`,
+          details: { status: response.status, statusText: response.statusText },
+          timestamp: new Date().toISOString()
+        };
+      }
+
+    } catch (error) {
+      return {
+        success: false,
+        message: '❌ 데이터베이스 테스트 실패',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
    * 4. 종합 연결 테스트 (모든 테스트 실행)
    */
   async runFullTest(): Promise<{
@@ -182,7 +293,9 @@ class ConnectionTester {
     const results = [
       await this.testBasicConnection(),
       await this.testApiEndpoints(), 
-      await this.testProjectsApi()
+      await this.testProjectsApi(),
+      await this.testSocialAuthEndpoints(),
+      await this.testDatabaseConnection()
     ];
 
     const successCount = results.filter(r => r.success).length;
