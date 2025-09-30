@@ -64,60 +64,24 @@ const UnifiedAuthPage: React.FC<UnifiedAuthPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{
-      backgroundColor: 'var(--bg-primary)'
-    }}>
-      {/* 고급스러운 그라디언트 배경 */}
-      <div className="absolute inset-0" style={{
-        background: 'linear-gradient(to bottom right, var(--bg-elevated), var(--accent-primary), var(--accent-secondary))'
-      }}></div>
-      <div className="absolute inset-0" style={{
-        background: 'linear-gradient(to top right, transparent, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.2))'
-      }}></div>
-      
-      {/* 세련된 기하학적 패턴 */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{
-          backgroundColor: isRegistering ? 'rgba(168, 85, 247, 0.2)' : 'rgba(var(--accent-rgb), 0.2)'
-        }}></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 rounded-full blur-3xl animate-pulse delay-1000" style={{
-          backgroundColor: isRegistering ? 'rgba(147, 51, 234, 0.15)' : 'rgba(var(--accent-rgb), 0.15)'
-        }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl" style={{
-          backgroundColor: isRegistering ? 'rgba(196, 181, 253, 0.1)' : 'rgba(var(--accent-rgb), 0.1)'
-        }}></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
 
       <div className="max-w-xl w-full space-y-6 relative z-10">
-        {/* 개선된 헤더 */}
+        {/* 간소화된 헤더 */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 mb-6 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl shadow-2xl transform rotate-3 hover:rotate-0 transition-all duration-300">
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          
-          <div className="relative inline-block">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-2 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
-              AHP for Paper
-            </h1>
-            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
-          </div>
-          
-          <p className="text-base sm:text-lg font-semibold mt-4 mb-2" style={{
-            color: '#374151'
-          }}>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-gray-900">
+            AHP for Paper
+          </h1>
+          <p className="text-lg font-medium text-gray-600 mb-2">
             전문가급 의사결정 지원 시스템
           </p>
-          <p className="text-sm font-medium tracking-wide" style={{
-            color: '#6b7280'
-          }}>
+          <p className="text-sm text-gray-500">
             Analytic Hierarchy Process Decision Support System
           </p>
         </div>
         
         {/* 통합 인증 폼 */}
-        <Card variant="glass" className="bg-white/95 backdrop-blur-xl border-2 border-gray-200 shadow-lg">
+        <Card variant="glass" className="bg-white border-2 border-blue-200 shadow-lg">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold mb-2" style={{
               color: '#1f2937'
@@ -211,12 +175,11 @@ const UnifiedAuthPage: React.FC<UnifiedAuthPageProps> = ({
               </div>
               
               <div className="relative group flex-1">
-                <div className="absolute -inset-1 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity bg-gradient-to-r from-purple-600 to-purple-800"></div>
                 <button
                   type="submit"
                   disabled={loading}
                   onClick={() => setIsRegistering(true)}
-                  className="relative w-full py-4 px-8 text-white font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+                  className="relative w-full py-4 px-8 text-purple-600 font-bold text-lg rounded-xl border-2 border-purple-600 bg-white hover:bg-purple-50 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading && isRegistering ? (
                     <span className="flex items-center justify-center">

@@ -53,7 +53,52 @@ const MyProjects: React.FC<MyProjectsProps> = ({
         // 일반 프로젝트 조회
         data = await dataService.getProjects();
       }
-      setProjects(data || []);
+      
+      // 프로젝트별 통계 정보 로드
+      if (data && Array.isArray(data)) {
+        const projectsWithStats = await Promise.all(
+          data.map(async (project) => {
+            try {
+              // 기준 수와 대안 수를 실제 API에서 가져오기
+              const [criteriaData, alternativesData] = await Promise.all([
+                dataService.getCriteria(project.id || '').catch(() => []),
+                dataService.getAlternatives(project.id || '').catch(() => [])
+              ]);
+              
+              const criteriaCount = Array.isArray(criteriaData) ? criteriaData.length : 0;
+              const alternativesCount = Array.isArray(alternativesData) ? alternativesData.length : 0;
+              
+              // 진행률 계산 (간단한 로직)
+              let completionRate = 0;
+              if (project.status === 'completed') {
+                completionRate = 100;
+              } else if (project.status === 'active') {
+                completionRate = Math.min(80, (criteriaCount * 20) + (alternativesCount * 15));
+              } else if (criteriaCount > 0 || alternativesCount > 0) {
+                completionRate = Math.min(50, (criteriaCount * 10) + (alternativesCount * 8));
+              }
+              
+              return {
+                ...project,
+                criteria_count: criteriaCount,
+                alternatives_count: alternativesCount,
+                completion_rate: completionRate
+              };
+            } catch (error) {
+              console.warn(`프로젝트 ${project.id} 통계 로드 실패:`, error);
+              return {
+                ...project,
+                criteria_count: project.criteria_count || 0,
+                alternatives_count: project.alternatives_count || 0,
+                completion_rate: project.status === 'completed' ? 100 : 0
+              };
+            }
+          })
+        );
+        setProjects(projectsWithStats);
+      } else {
+        setProjects([]);
+      }
     } catch (error) {
       console.error('프로젝트 로딩 실패:', error);
       setProjects([]);
@@ -87,6 +132,35 @@ const MyProjects: React.FC<MyProjectsProps> = ({
       case 'completed': return '완료';
       case 'draft': return '초안';
       default: return status;
+    }
+  };
+
+  const getProgressColor = (percentage: number) => {
+    if (percentage >= 80) return '#10B981'; // green
+    if (percentage >= 50) return '#F59E0B'; // yellow
+    if (percentage >= 20) return '#3B82F6'; // blue
+    return '#6B7280'; // gray
+  };
+
+  const getProgressText = (project: ProjectData) => {
+    const criteriaCount = project.criteria_count || 0;
+    const alternativesCount = project.alternatives_count || 0;
+    const completionRate = project.completion_rate || 0;
+
+    if (completionRate === 0) {
+      return '아직 시작하지 않음';
+    } else if (completionRate === 100) {
+      return '프로젝트 완료';
+    } else if (criteriaCount === 0) {
+      return '기준 설정 필요';
+    } else if (alternativesCount === 0) {
+      return '대안 추가 필요';
+    } else if (completionRate < 50) {
+      return '기본 설정 진행 중';
+    } else if (completionRate < 80) {
+      return '평가 준비 단계';
+    } else {
+      return '평가 진행 중';
     }
   };
 
@@ -132,6 +206,65 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     } catch (error) {
       console.error('Failed to permanently delete project:', error);
       alert('영구 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 일반 프로젝트 삭제 (휴지통으로 이동)
+  const handleDeleteWithConfirm = async (project: ProjectData) => {
+    const projectTitle = project.title || '프로젝트';
+    
+    if (!window.confirm(`"${projectTitle}"를 휴지통으로 이동하시겠습니까?\n\n휴지통에서 복원하거나 영구 삭제할 수 있습니다.`)) {
+      return;
+    }
+
+    try {
+      if (onDeleteProject) {
+        // 부모 컴포넌트의 삭제 함수 사용
+        await onDeleteProject(project.id || '');
+        alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
+      } else {
+        // 직접 dataService 사용
+        const success = await dataService.deleteProject(project.id || '');
+        if (success) {
+          alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
+          fetchProjects(); // 목록 새로고침
+        } else {
+          alert('프로젝트 삭제에 실패했습니다.');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      alert('프로젝트 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 프로젝트 편집
+  const handleEditProject = (project: ProjectData) => {
+    if (onEditProject) {
+      onEditProject(project);
+    } else {
+      console.log('프로젝트 편집:', project.title);
+      alert('편집 기능이 연결되지 않았습니다.');
+    }
+  };
+
+  // 모델 구축
+  const handleModelBuilder = (project: ProjectData) => {
+    if (onModelBuilder) {
+      onModelBuilder(project);
+    } else {
+      console.log('모델 구축:', project.title);
+      alert('모델 구축 기능이 연결되지 않았습니다.');
+    }
+  };
+
+  // 결과 분석
+  const handleAnalysis = (project: ProjectData) => {
+    if (onAnalysis) {
+      onAnalysis(project);
+    } else {
+      console.log('결과 분석:', project.title);
+      alert('결과 분석 기능이 연결되지 않았습니다.');
     }
   };
 
@@ -318,17 +451,21 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--text-muted)' }}>진행률</span>
                   <span style={{ color: 'var(--text-primary)' }}>
-                    {(project as any).completion_rate || 0}%
+                    {project.completion_rate || 0}%
                   </span>
                 </div>
                 <div className="w-full rounded-full h-2" style={{ backgroundColor: 'var(--border-light)' }}>
                   <div 
                     className="h-2 rounded-full transition-all"
                     style={{ 
-                      width: `${(project as any).completion_rate || 0}%`,
-                      backgroundColor: 'var(--accent-primary)'
+                      width: `${project.completion_rate || 0}%`,
+                      backgroundColor: getProgressColor(project.completion_rate || 0)
                     }}
                   />
+                </div>
+                {/* 진행 상태 텍스트 */}
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  {getProgressText(project)}
                 </div>
               </div>
 
@@ -379,7 +516,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        onEditProject?.(project);
+                        handleEditProject(project);
                       }}
                       className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="편집"
@@ -391,7 +528,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        onModelBuilder?.(project);
+                        handleModelBuilder(project);
                       }}
                       className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                       title="모델 구축"
@@ -403,7 +540,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        onAnalysis?.(project);
+                        handleAnalysis(project);
                       }}
                       className="p-2 rounded-lg transition-colors"
                       style={{ color: 'var(--text-muted)' }}
@@ -424,7 +561,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        onDeleteProject?.(project.id || '');
+                        handleDeleteWithConfirm(project);
                       }}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="삭제"
