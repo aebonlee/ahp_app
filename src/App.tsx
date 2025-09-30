@@ -31,6 +31,7 @@ import DirectInputEvaluation from './components/evaluator/DirectInputEvaluation'
 import ComprehensiveUserGuide from './components/guide/ComprehensiveUserGuide';
 import EvaluatorDashboard from './components/evaluator/EvaluatorDashboard';
 import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
+import DemographicSurvey from './components/survey/DemographicSurvey';
 import EvaluationTest from './components/evaluation/EvaluationTest';
 import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
 import ConnectionTestPage from './components/demo/ConnectionTestPage';
@@ -1370,24 +1371,14 @@ function App() {
 
       case 'demographic-survey':
         return (
-          <PersonalServiceDashboard
-            user={user}
-            activeTab="demographic-survey"
-            onTabChange={setActiveTab}
-            onUserUpdate={setUser}
-            projects={projects}
-            onCreateProject={createProject}
-            onDeleteProject={deleteProject}
-            onFetchCriteria={fetchCriteria}
-            onCreateCriteria={createCriteria}
-            onFetchAlternatives={fetchAlternatives}
-            onCreateAlternative={createAlternative}
-            onSaveEvaluation={saveEvaluation}
-            onFetchTrashedProjects={fetchTrashedProjects}
-            onRestoreProject={restoreProject}
-            onPermanentDeleteProject={permanentDeleteProject}
-            selectedProjectId={selectedProjectId}
-            onSelectProject={setSelectedProjectId}
+          <DemographicSurvey
+            onSave={(data) => {
+              console.log('설문조사 데이터 저장:', data);
+              alert('설문조사가 저장되었습니다!');
+            }}
+            onCancel={() => {
+              setActiveTab('home');
+            }}
           />
         );
         
