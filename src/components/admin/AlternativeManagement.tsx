@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import apiService from '../../services/apiService';
+import dataService from '../../services/dataService_clean';
+import { AlternativeData } from '../../services/api';
 
-interface Alternative {
-  id: string;
-  name: string;
-  description?: string;
+interface Alternative extends Omit<AlternativeData, 'project_id' | 'position' | 'id'> {
+  id: string; // required
   order: number;
   weight?: number;
   rank?: number;
@@ -22,22 +21,46 @@ interface AlternativeManagementProps {
 const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId, onComplete, onAlternativesChange }) => {
   const [alternatives, setAlternatives] = useState<Alternative[]>([]);
 
+  // AlternativeData를 Alternative로 변환
+  const convertToAlternative = (data: AlternativeData): Alternative => ({
+    id: data.id || `alt_${Date.now()}_${Math.random()}`,
+    name: data.name,
+    description: data.description,
+    order: data.position || 0,
+    cost: data.cost,
+    weight: 0,
+    rank: 0
+  });
+
+  // Alternative를 AlternativeData로 변환
+  const convertToAlternativeData = (alt: Partial<Alternative>): Omit<AlternativeData, 'id'> => ({
+    project_id: projectId,
+    name: alt.name || '',
+    description: alt.description || '',
+    position: alt.order || 0,
+    cost: alt.cost
+  });
+
   useEffect(() => {
     // 프로젝트별 대안 데이터 로드 (PostgreSQL에서)
     const loadProjectAlternatives = async () => {
       try {
-        const response = await apiService.alternativesAPI.fetch(projectId);
-        if (response.data) {
-          const alternativesData = (response.data as any).alternatives || response.data || [];
-          setAlternatives(alternativesData);
-          console.log(`Loaded ${alternativesData.length} alternatives from API for project ${projectId}`);
-        } else {
-          setAlternatives([]);
-          console.log(`No alternatives found for project ${projectId}`);
+        console.log(`🔍 프로젝트 ${projectId}의 대안 데이터 로드 중...`);
+        const alternativesData = await dataService.getAlternatives(projectId);
+        const convertedAlternatives = (alternativesData || []).map(convertToAlternative);
+        setAlternatives(convertedAlternatives);
+        console.log(`✅ ${convertedAlternatives.length}개 대안 로드 완료`);
+        
+        // 부모 컴포넌트에 개수 알림
+        if (onAlternativesChange) {
+          onAlternativesChange(convertedAlternatives.length);
         }
       } catch (error) {
-        console.error('Failed to load alternatives from API:', error);
+        console.error('❌ 대안 데이터 로드 실패:', error);
         setAlternatives([]);
+        if (onAlternativesChange) {
+          onAlternativesChange(0);
+        }
       }
     };
 
@@ -93,38 +116,37 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
     const maxOrder = Math.max(...alternatives.map(alt => alt.order), 0);
 
     try {
-      const alternativeData = {
-        project_id: Number(projectId),
+      const alternativeData = convertToAlternativeData({
         name: newAlternative.name,
-        description: newAlternative.description || null,
-        order_index: maxOrder + 1
-      };
+        description: newAlternative.description || '',
+        order: maxOrder + 1
+      });
 
-      const response = await apiService.alternativesAPI.create(alternativeData);
+      console.log('🔄 대안 추가 중...', alternativeData);
+      const createdAlternative = await dataService.createAlternative(alternativeData);
       
-      if (response.error) {
-        setErrors({ name: response.error });
+      if (!createdAlternative) {
+        setErrors({ name: '대안 추가에 실패했습니다.' });
         return;
       }
 
-      // API 성공 시 데이터 다시 로드
-      const updatedResponse = await apiService.alternativesAPI.fetch(projectId);
-      if (updatedResponse.data) {
-        const alternativesData = (updatedResponse.data as any).alternatives || updatedResponse.data || [];
-        setAlternatives(alternativesData);
-        console.log('✅ 대안이 저장되었습니다.');
-      }
+      console.log('✅ 대안이 성공적으로 추가되었습니다:', createdAlternative);
+      
+      // 데이터 다시 로드
+      const updatedAlternativesData = await dataService.getAlternatives(projectId);
+      const convertedUpdatedAlternatives = (updatedAlternativesData || []).map(convertToAlternative);
+      setAlternatives(convertedUpdatedAlternatives);
       
       setNewAlternative({ name: '', description: '' });
       setErrors({});
       
       // 대안 개수 변경 콜백 호출
       if (onAlternativesChange) {
-        onAlternativesChange(alternatives.length + 1);
+        onAlternativesChange(convertedUpdatedAlternatives.length);
       }
     } catch (error) {
-      console.error('대안 추가 실패:', error);
-      setErrors({ name: '대안 추가 중 오류가 발생했습니다. 서버 연결을 확인해주세요.' });
+      console.error('❌ 대안 추가 실패:', error);
+      setErrors({ name: '대안 추가 중 오류가 발생했습니다. 권한을 확인해주세요.' });
     }
   };
 
@@ -142,29 +164,12 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
     }
 
     try {
-      const updateData = {
-        name: editingAlternative.name,
-        description: editingAlternative.description || null
-      };
-      
-      const response = await apiService.alternativesAPI.update(editingId, updateData);
-      
-      if (response.error) {
-        setErrors({ general: response.error });
-        return;
-      }
-
-      // 성공 시 데이터 다시 로드
-      const updatedResponse = await apiService.alternativesAPI.fetch(projectId);
-      if (updatedResponse.data) {
-        const alternativesData = (updatedResponse.data as any).alternatives || updatedResponse.data || [];
-        setAlternatives(alternativesData);
-      }
+      // TODO: 대안 편집 기능은 추후 구현
+      console.log('🚧 대안 편집 기능은 추후 구현 예정');
       
       setEditingId(null);
       setEditingAlternative({ name: '', description: '' });
       setErrors({});
-      console.log('✅ 대안이 PostgreSQL에서 수정되었습니다:', editingId);
     } catch (error) {
       console.error('Failed to save alternative edit:', error);
       setErrors({ general: '대안 수정 중 오류가 발생했습니다.' });
@@ -179,23 +184,27 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
 
   const handleDeleteAlternative = async (id: string) => {
     try {
-      const response = await apiService.alternativesAPI.delete(id);
+      console.log('🗑️ 대안 삭제:', id);
+      const success = await dataService.deleteAlternative(id);
       
-      if (response.error) {
-        console.error('Failed to delete alternative:', response.error);
+      if (!success) {
+        console.error('❌ 대안 삭제 실패');
         return;
       }
 
-      // 성공 시 데이터 다시 로드
-      const updatedResponse = await apiService.alternativesAPI.fetch(projectId);
-      if (updatedResponse.data) {
-        const alternativesData = (updatedResponse.data as any).alternatives || updatedResponse.data || [];
-        setAlternatives(alternativesData);
-      }
+      console.log('✅ 대안이 삭제되었습니다:', id);
       
-      console.log('✅ 대안이 PostgreSQL에서 삭제되었습니다:', id);
+      // 데이터 다시 로드
+      const updatedAlternativesData = await dataService.getAlternatives(projectId);
+      const convertedUpdatedAlternatives = (updatedAlternativesData || []).map(convertToAlternative);
+      setAlternatives(convertedUpdatedAlternatives);
+      
+      // 대안 개수 변경 콜백 호출
+      if (onAlternativesChange) {
+        onAlternativesChange(convertedUpdatedAlternatives.length);
+      }
     } catch (error) {
-      console.error('Failed to delete alternative from API:', error);
+      console.error('❌ 대안 삭제 실패:', error);
     }
   };
 

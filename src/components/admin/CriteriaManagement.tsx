@@ -4,14 +4,11 @@ import Button from '../common/Button';
 import Input from '../common/Input';
 import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
-import apiService from '../../services/apiService';
+import dataService from '../../services/dataService_clean';
+import { CriteriaData } from '../../services/api';
 
-interface Criterion {
-  id: string;
-  name: string;
-  description?: string;
-  parent_id?: string | null;
-  level: number;
+interface Criterion extends Omit<CriteriaData, 'project_id' | 'position' | 'id'> {
+  id: string; // required
   children?: Criterion[];
   weight?: number;
 }
@@ -34,18 +31,21 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     // 백엔드에서 실제 프로젝트별 기준 데이터 로드
     const loadProjectCriteria = async () => {
       try {
-        const response = await apiService.criteriaAPI.fetch(projectId);
-        if (response.data) {
-          const criteriaData = (response.data as any).criteria || response.data || [];
-          setCriteria(criteriaData);
-          console.log(`Loaded ${criteriaData.length} criteria from API for project ${projectId}`);
-        } else {
-          setCriteria([]);
-          console.log(`No criteria found for project ${projectId}`);
+        console.log(`🔍 프로젝트 ${projectId}의 기준 데이터 로드 중...`);
+        const criteriaData = await dataService.getCriteria(projectId);
+        setCriteria(criteriaData || []);
+        console.log(`✅ ${criteriaData?.length || 0}개 기준 로드 완료`);
+        
+        // 부모 컴포넌트에 개수 알림
+        if (onCriteriaChange) {
+          onCriteriaChange(criteriaData?.length || 0);
         }
       } catch (error) {
-        console.error('Failed to load criteria from API:', error);
+        console.error('❌ 기준 데이터 로드 실패:', error);
         setCriteria([]);
+        if (onCriteriaChange) {
+          onCriteriaChange(0);
+        }
       }
     };
 
@@ -153,39 +153,38 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
 
     try {
       const criterionData = {
-        project_id: Number(projectId),
+        project_id: projectId, // String 형태로 전달
         name: newCriterion.name,
-        description: newCriterion.description || null,
+        description: newCriterion.description || '',
         parent_id: newCriterion.parentId || null,
         level,
         order_index: getAllCriteria(criteria).filter(c => c.level === level).length + 1
       };
 
-      const response = await apiService.criteriaAPI.create(criterionData);
+      console.log('🔄 기준 추가 중...', criterionData);
+      const createdCriterion = await dataService.createCriteria(criterionData);
       
-      if (response.error) {
-        setErrors({ name: response.error });
+      if (!createdCriterion) {
+        setErrors({ name: '기준 추가에 실패했습니다.' });
         return;
       }
 
-      // API 성공 시 데이터 다시 로드
-      const updatedResponse = await apiService.criteriaAPI.fetch(projectId);
-      if (updatedResponse.data) {
-        const criteriaData = (updatedResponse.data as any).criteria || updatedResponse.data || [];
-        setCriteria(criteriaData);
-        console.log('✅ 기준이 저장되었습니다.');
-      }
+      console.log('✅ 기준이 성공적으로 추가되었습니다:', createdCriterion);
+      
+      // 데이터 다시 로드
+      const updatedCriteria = await dataService.getCriteria(projectId);
+      setCriteria(updatedCriteria || []);
       
       setNewCriterion({ name: '', description: '', parentId: '' });
       setErrors({});
       
       // 기준 개수 변경 콜백 호출
       if (onCriteriaChange) {
-        onCriteriaChange(getAllCriteria(criteria).length + 1);
+        onCriteriaChange((updatedCriteria || []).length);
       }
     } catch (error) {
-      console.error('기준 추가 실패:', error);
-      setErrors({ name: '기준 추가 중 오류가 발생했습니다. 서버 연결을 확인해주세요.' });
+      console.error('❌ 기준 추가 실패:', error);
+      setErrors({ name: '기준 추가 중 오류가 발생했습니다. 권한을 확인해주세요.' });
     }
   };
 
@@ -193,23 +192,25 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     console.log('기준 삭제:', id);
     
     try {
-      const response = await apiService.criteriaAPI.delete(id);
+      const success = await dataService.deleteCriteria(id);
       
-      if (response.error) {
-        console.error('Failed to delete criterion:', response.error);
+      if (!success) {
+        console.error('❌ 기준 삭제 실패');
         return;
       }
 
-      // 성공 시 데이터 다시 로드
-      const updatedResponse = await apiService.criteriaAPI.fetch(projectId);
-      if (updatedResponse.data) {
-        const criteriaData = (updatedResponse.data as any).criteria || updatedResponse.data || [];
-        setCriteria(criteriaData);
-      }
+      console.log('✅ 기준이 삭제되었습니다:', id);
       
-      console.log('✅ 기준이 PostgreSQL에서 삭제되었습니다:', id);
+      // 데이터 다시 로드
+      const updatedCriteria = await dataService.getCriteria(projectId);
+      setCriteria(updatedCriteria || []);
+      
+      // 기준 개수 변경 콜백 호출
+      if (onCriteriaChange) {
+        onCriteriaChange((updatedCriteria || []).length);
+      }
     } catch (error) {
-      console.error('Failed to delete criterion from API:', error);
+      console.error('❌ 기준 삭제 실패:', error);
     }
   };
 

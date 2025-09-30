@@ -268,6 +268,32 @@ class CleanDataService {
     }
   }
 
+  async deleteCriteria(criteriaId: string): Promise<boolean> {
+    try {
+      console.log('🗑️ 기준 삭제 시작:', criteriaId);
+      
+      // 1단계: 기존 API로 시도
+      try {
+        const response = await criteriaApi.deleteCriteria(criteriaId);
+        if (response.success) {
+          console.log('✅ 기준 API 삭제 성공');
+          return true;
+        }
+      } catch (apiError) {
+        console.warn('⚠️ 기준 API 삭제 실패, 메타데이터 방법 시도:', apiError);
+      }
+      
+      // 2단계: 메타데이터에서 제거 (모든 프로젝트 검색 필요)
+      // 실제로는 criteriaId에서 projectId를 추출하거나 별도로 전달받아야 함
+      console.warn('⚠️ 기준 삭제: 메타데이터 방법은 projectId가 필요함');
+      return false;
+      
+    } catch (error) {
+      console.error('❌ 기준 삭제 중 오류:', error);
+      return false;
+    }
+  }
+
   // === 대안 관리 ===
   async getAlternatives(projectId: string): Promise<AlternativeData[]> {
     try {
@@ -299,6 +325,22 @@ class CleanDataService {
     } catch (error) {
       console.error('❌ 대안 생성 중 오류:', error);
       throw error;
+    }
+  }
+
+  async deleteAlternative(alternativeId: string): Promise<boolean> {
+    try {
+      console.log('🗑️ 대안 삭제 시작:', alternativeId);
+      const response = await alternativeApi.deleteAlternative(alternativeId);
+      if (response.success) {
+        console.log('✅ 대안 삭제 성공');
+        return true;
+      }
+      console.error('❌ 대안 삭제 실패');
+      return false;
+    } catch (error) {
+      console.error('❌ 대안 삭제 중 오류:', error);
+      return false;
     }
   }
 
