@@ -5,8 +5,7 @@ import Button from '../common/Button';
 import { EvaluationMode } from '../evaluation/EvaluationModeSelector';
 import { WorkflowStage } from '../workflow/WorkflowStageIndicator';
 import dataService from '../../services/dataService';
-import type { ProjectData } from '../../services/dataService';
-import type { UserProject } from '../admin/PersonalServiceDashboard';
+import type { ProjectData, UserProject } from '../../types';
 
 interface ProjectSelectorProps {
   onProjectSelect: (project: UserProject) => void;

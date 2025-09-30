@@ -137,6 +137,39 @@ export interface Result {
   updated_at: string;
 }
 
+// 프로젝트 데이터 타입 (확장된 버전)
+export interface ProjectData {
+  id?: string;
+  title: string;
+  description: string;
+  objective?: string;
+  status: 'draft' | 'active' | 'completed' | 'deleted';
+  evaluation_mode: 'practical' | 'theoretical' | 'direct_input' | 'fuzzy_ahp';
+  evaluation_method?: 'pairwise' | 'direct' | 'mixed';
+  workflow_stage: 'creating' | 'waiting' | 'evaluating' | 'completed';
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+  criteria_count?: number;
+  alternatives_count?: number;
+  owner?: string;
+  ownerEmail?: string;
+  evaluatorCount?: number;
+  completionRate?: number;
+  dueDate?: string;
+  settings?: any;
+}
+
+// 사용자 프로젝트 타입 (UI용 확장)
+export interface UserProject extends Omit<ProjectData, 'evaluation_method'> {
+  evaluator_count?: number;
+  completion_rate?: number;
+  criteria_count: number;
+  alternatives_count: number;
+  last_modified: string;
+  evaluation_method: 'pairwise' | 'direct' | 'mixed';
+}
+
 // API 에러 타입
 export interface ApiError {
   message: string;

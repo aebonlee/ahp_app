@@ -27,7 +27,7 @@ import ValidityCheck from '../validity/ValidityCheck';
 import TrashBin from './TrashBin';
 import dataService from '../../services/dataService_clean';
 import type { ProjectData } from '../../services/api';
-import type { User } from '../../types';
+import type { User, UserProject } from '../../types';
 // DEMO 데이터 제거 - 실제 DB만 사용
 
 interface PersonalServiceProps {
@@ -50,14 +50,6 @@ interface PersonalServiceProps {
   onSelectProject?: (projectId: string | null) => void;
 }
 
-export interface UserProject extends Omit<ProjectData, 'evaluation_method'> {
-  evaluator_count?: number;
-  completion_rate?: number;
-  criteria_count: number;
-  alternatives_count: number;
-  last_modified: string;
-  evaluation_method: 'pairwise' | 'direct' | 'mixed'; // 레거시 호환성
-}
 
 
 // 요금제별 할당량 정의
