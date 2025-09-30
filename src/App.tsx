@@ -803,38 +803,24 @@ function App() {
 
   // 프로젝트 삭제 (휴지통으로 이동)
   const deleteProject = async (projectId: string) => {
-    // 휴지통 개수 확인
+    console.log('🗑️ App.tsx deleteProject 호출됨:', projectId);
+    
     try {
-      const trashedProjects = await fetchTrashedProjects();
-      if (trashedProjects.length >= 3) {
-        // 휴지통이 가득 찬 경우 레이어 팝업 표시
-        setTrashOverflowData({
-          trashedProjects,
-          projectToDelete: projectId,
-          isVisible: true
-        });
-        return;
+      // dataService_clean.ts의 deleteProject 사용 (정확한 API 엔드포인트 사용)
+      const success = await cleanDataService.deleteProject(projectId);
+      
+      if (success) {
+        console.log('✅ 프로젝트 삭제 성공:', projectId);
+        await fetchProjects(); // 목록 새로고침
+        return true;
+      } else {
+        throw new Error('프로젝트 삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('휴지통 개수 확인 실패:', error);
+      console.error('❌ deleteProject 실패:', error);
+      // 에러를 다시 throw하여 호출자가 처리하도록 함
+      throw error;
     }
-
-    // 휴지통에 여유가 있으면 바로 삭제
-    const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || '프로젝트 삭제에 실패했습니다.');
-    }
-
-    await fetchProjects(); // 목록 새로고침
-    return response.json();
   };
 
   // 휴지통 프로젝트 조회
