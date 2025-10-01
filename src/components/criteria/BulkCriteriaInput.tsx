@@ -195,7 +195,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
             </div>
 
             {/* 스크롤 가능한 콘텐츠 영역 */}
-            <div className="flex-1 overflow-y-scroll p-6 space-y-6">
+            <div className="flex-1 overflow-y-scroll p-6 space-y-6 pb-20">
 
             {activeTab === 'input' && (
               <div className="space-y-4">
@@ -285,7 +285,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
             )}
 
             {activeTab === 'examples' && (
-              <div className="space-y-6">
+              <div className="space-y-6 pb-8">
                 <div className="text-center">
                   <h3 className="text-lg font-medium text-gray-900 mb-2">입력 형식 예제</h3>
                   <p className="text-gray-600 text-sm">
@@ -293,7 +293,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                   </p>
                 </div>
 
-                <div className="grid gap-4">
+                <div className="grid gap-4 mb-8">
                   {Object.entries(exampleTexts).map(([key, text]) => (
                     <div key={key} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
@@ -316,6 +316,9 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                     </div>
                   ))}
                 </div>
+                
+                {/* 하단 여백 확보를 위한 추가 공간 */}
+                <div className="h-16"></div>
               </div>
             )}
             </div>
