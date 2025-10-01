@@ -236,61 +236,209 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
 
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 AHP 분석 유형 선택 <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <p className="text-xs text-gray-500 mb-4">원하는 분석 방법을 선택하세요</p>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* 일반 AHP 카드 */}
                 <button
                   type="button"
                   onClick={() => handleInputChange('ahpType', 'general')}
-                  className={`p-6 rounded-lg border-2 transition-colors ${
+                  className={`relative group p-6 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                     formData.ahpType === 'general'
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'bg-gradient-to-br from-blue-500 to-cyan-500 shadow-xl scale-105'
+                      : 'bg-white border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg'
                   }`}
                 >
+                  {/* 선택됨 배지 */}
+                  {formData.ahpType === 'general' && (
+                    <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                      ✓ 선택됨
+                    </div>
+                  )}
+                  
                   <div className="text-left">
-                    <div className="font-medium text-gray-900 mb-1">📊 일반 AHP</div>
-                    <div className="text-sm text-gray-600">
+                    {/* 아이콘과 제목 */}
+                    <div className="flex items-center mb-3">
+                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mr-3 ${
+                        formData.ahpType === 'general' 
+                          ? 'bg-white/20' 
+                          : 'bg-gradient-to-br from-blue-100 to-cyan-100'
+                      }`}>
+                        <span className="text-2xl">📊</span>
+                      </div>
+                      <div>
+                        <h3 className={`font-bold text-lg ${
+                          formData.ahpType === 'general' ? 'text-white' : 'text-gray-900'
+                        }`}>
+                          일반 AHP
+                        </h3>
+                        <p className={`text-xs ${
+                          formData.ahpType === 'general' ? 'text-blue-100' : 'text-gray-500'
+                        }`}>
+                          Standard AHP
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* 설명 */}
+                    <p className={`text-sm mb-3 ${
+                      formData.ahpType === 'general' ? 'text-white/90' : 'text-gray-600'
+                    }`}>
                       전통적인 쌍대비교 방법
-                      <ul className="mt-1 text-xs space-y-1">
-                        <li>• Saaty's 1-9 척도 사용</li>
-                        <li>• 명확한 가중치 산출</li>
-                        <li>• 일관성 검증 (CR ≤ 0.1)</li>
-                      </ul>
+                    </p>
+                    
+                    {/* 특징 리스트 */}
+                    <ul className="space-y-2">
+                      <li className={`flex items-start text-xs ${
+                        formData.ahpType === 'general' ? 'text-white/80' : 'text-gray-500'
+                      }`}>
+                        <span className="mr-2 mt-0.5">✓</span>
+                        <span>Saaty's 1-9 척도 사용</span>
+                      </li>
+                      <li className={`flex items-start text-xs ${
+                        formData.ahpType === 'general' ? 'text-white/80' : 'text-gray-500'
+                      }`}>
+                        <span className="mr-2 mt-0.5">✓</span>
+                        <span>명확한 가중치 산출</span>
+                      </li>
+                      <li className={`flex items-start text-xs ${
+                        formData.ahpType === 'general' ? 'text-white/80' : 'text-gray-500'
+                      }`}>
+                        <span className="mr-2 mt-0.5">✓</span>
+                        <span>일관성 검증 (CR ≤ 0.1)</span>
+                      </li>
+                    </ul>
+                    
+                    {/* 추천 태그 */}
+                    <div className="mt-4">
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        formData.ahpType === 'general' 
+                          ? 'bg-white/20 text-white' 
+                          : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        👍 입문자 추천
+                      </span>
                     </div>
                   </div>
                 </button>
+
+                {/* 퍼지 AHP 카드 */}
                 <button
                   type="button"
                   onClick={() => handleInputChange('ahpType', 'fuzzy')}
-                  className={`p-6 rounded-lg border-2 transition-colors ${
+                  className={`relative group p-6 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                     formData.ahpType === 'fuzzy'
-                      ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-xl scale-105'
+                      : 'bg-white border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg'
                   }`}
                 >
+                  {/* 선택됨 배지 */}
+                  {formData.ahpType === 'fuzzy' && (
+                    <div className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                      ✓ 선택됨
+                    </div>
+                  )}
+                  
                   <div className="text-left">
-                    <div className="font-medium text-gray-900 mb-1">🔮 퍼지 AHP</div>
-                    <div className="text-sm text-gray-600">
+                    {/* 아이콘과 제목 */}
+                    <div className="flex items-center mb-3">
+                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mr-3 ${
+                        formData.ahpType === 'fuzzy' 
+                          ? 'bg-white/20' 
+                          : 'bg-gradient-to-br from-purple-100 to-pink-100'
+                      }`}>
+                        <span className="text-2xl">🔮</span>
+                      </div>
+                      <div>
+                        <h3 className={`font-bold text-lg ${
+                          formData.ahpType === 'fuzzy' ? 'text-white' : 'text-gray-900'
+                        }`}>
+                          퍼지 AHP
+                        </h3>
+                        <p className={`text-xs ${
+                          formData.ahpType === 'fuzzy' ? 'text-purple-100' : 'text-gray-500'
+                        }`}>
+                          Fuzzy AHP
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* 설명 */}
+                    <p className={`text-sm mb-3 ${
+                      formData.ahpType === 'fuzzy' ? 'text-white/90' : 'text-gray-600'
+                    }`}>
                       불확실성을 고려한 분석
-                      <ul className="mt-1 text-xs space-y-1">
-                        <li>• 삼각 퍼지수 활용</li>
-                        <li>• 불확실성 범위 표현</li>
-                        <li>• 민감도 분석 강화</li>
-                      </ul>
+                    </p>
+                    
+                    {/* 특징 리스트 */}
+                    <ul className="space-y-2">
+                      <li className={`flex items-start text-xs ${
+                        formData.ahpType === 'fuzzy' ? 'text-white/80' : 'text-gray-500'
+                      }`}>
+                        <span className="mr-2 mt-0.5">✓</span>
+                        <span>삼각 퍼지수 활용</span>
+                      </li>
+                      <li className={`flex items-start text-xs ${
+                        formData.ahpType === 'fuzzy' ? 'text-white/80' : 'text-gray-500'
+                      }`}>
+                        <span className="mr-2 mt-0.5">✓</span>
+                        <span>불확실성 범위 표현</span>
+                      </li>
+                      <li className={`flex items-start text-xs ${
+                        formData.ahpType === 'fuzzy' ? 'text-white/80' : 'text-gray-500'
+                      }`}>
+                        <span className="mr-2 mt-0.5">✓</span>
+                        <span>민감도 분석 강화</span>
+                      </li>
+                    </ul>
+                    
+                    {/* 추천 태그 */}
+                    <div className="mt-4">
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        formData.ahpType === 'fuzzy' 
+                          ? 'bg-white/20 text-white' 
+                          : 'bg-purple-100 text-purple-700'
+                      }`}>
+                        🎯 전문가용
+                      </span>
                     </div>
                   </div>
                 </button>
               </div>
-              {formData.ahpType === 'fuzzy' && (
-                <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                  <p className="text-sm text-purple-700">
-                    💡 <strong>퍼지 AHP 추천 상황:</strong> 평가자 간 의견 차이가 크거나, 
-                    정성적 기준이 많은 경우, 불확실성이 높은 의사결정 문제에 적합합니다.
-                  </p>
-                </div>
-              )}
+              
+              {/* 선택된 유형에 대한 추가 정보 */}
+              <div className="mt-4">
+                {formData.ahpType === 'general' && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-start">
+                      <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <div className="text-sm text-blue-700">
+                        <strong>일반 AHP 선택됨:</strong> 가장 널리 사용되는 표준 AHP 방법입니다.
+                        명확한 수치 척도를 사용하여 의사결정의 일관성을 검증합니다.
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {formData.ahpType === 'fuzzy' && (
+                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div className="flex items-start">
+                      <svg className="w-5 h-5 text-purple-600 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <div className="text-sm text-purple-700">
+                        <strong>퍼지 AHP 선택됨:</strong> 평가자 간 의견 차이가 크거나, 
+                        정성적 기준이 많은 경우, 불확실성이 높은 의사결정 문제에 적합합니다.
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="mt-8">
