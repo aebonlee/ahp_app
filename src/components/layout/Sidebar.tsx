@@ -47,25 +47,17 @@ const Sidebar: React.FC<SidebarProps> = ({
   console.log('🔍 ===================');
 
   const toggleCategory = (categoryId: string) => {
-    // 주요 카테고리 리스트 (관리자는 super-admin도 포함)
-    const isAdmin = userRole === 'super_admin' || userRole === 'service_admin';
-    const mainCategories = isAdmin 
-      ? ['basic', 'advanced', 'ai', 'super-admin']
-      : ['basic', 'advanced', 'ai'];
+    // 모든 주요 카테고리 리스트 (슈퍼 관리자 메뉴 포함)
+    const mainCategories = ['basic', 'advanced', 'ai', 'super-admin'];
     
     // 클릭한 카테고리가 주요 카테고리 중 하나인지 확인
     if (mainCategories.includes(categoryId)) {
       // 이미 열려있는 카테고리를 다시 클릭하면 닫기
       if (expandedCategories.includes(categoryId)) {
-        setExpandedCategories(prev => prev.filter(id => !mainCategories.includes(id)));
+        setExpandedCategories([]);
       } else {
         // 다른 주요 카테고리는 모두 닫고, 클릭한 것만 열기
-        setExpandedCategories(prev => {
-          // 기존 열려있던 카테고리 중 주요 카테고리가 아닌 것들만 유지
-          const otherCategories = prev.filter(id => !mainCategories.includes(id));
-          // 새로 클릭한 카테고리 추가
-          return [...otherCategories, categoryId];
-        });
+        setExpandedCategories([categoryId]);
       }
     } else {
       // 다른 카테고리들은 기존 토글 방식 유지
@@ -398,8 +390,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <span style={{ 
                     textTransform: 'uppercase', 
                     letterSpacing: '0.1em', 
-                    fontSize: category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' || category.id === 'super-admin' ? '1rem' : '0.85rem',
-                    fontWeight: category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' || category.id === 'super-admin' ? 'bold' : 'semibold',
+                    fontSize: ['basic', 'advanced', 'ai', 'super-admin'].includes(category.id) ? '1rem' : '0.85rem',
+                    fontWeight: ['basic', 'advanced', 'ai', 'super-admin'].includes(category.id) ? 'bold' : 'semibold',
                     color: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--text-primary)' 
                   }}>
                     {category.title}
