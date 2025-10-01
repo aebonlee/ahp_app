@@ -37,14 +37,22 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
 
   const toggleCategory = (categoryId: string) => {
-    // 기본기능, 고급기능, AI지원 카테고리만 아코디언 방식으로 동작
-    if (categoryId === 'basic' || categoryId === 'advanced' || categoryId === 'ai') {
+    // 주요 3개 카테고리 리스트
+    const mainCategories = ['basic', 'advanced', 'ai'];
+    
+    // 클릭한 카테고리가 주요 3개 카테고리 중 하나인지 확인
+    if (mainCategories.includes(categoryId)) {
       // 이미 열려있는 카테고리를 다시 클릭하면 닫기
       if (expandedCategories.includes(categoryId)) {
-        setExpandedCategories([]);
+        setExpandedCategories(prev => prev.filter(id => !mainCategories.includes(id)));
       } else {
-        // 다른 카테고리를 클릭하면 기존 것은 닫고 새로운 것만 열기
-        setExpandedCategories([categoryId]);
+        // 다른 주요 카테고리는 모두 닫고, 클릭한 것만 열기
+        setExpandedCategories(prev => {
+          // 기존 열려있던 카테고리 중 주요 카테고리가 아닌 것들만 유지
+          const otherCategories = prev.filter(id => !mainCategories.includes(id));
+          // 새로 클릭한 카테고리 추가
+          return [...otherCategories, categoryId];
+        });
       }
     } else {
       // 다른 카테고리들은 기존 토글 방식 유지
