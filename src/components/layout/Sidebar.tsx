@@ -37,10 +37,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
 
   const toggleCategory = (categoryId: string) => {
-    // 주요 3개 카테고리 리스트
-    const mainCategories = ['basic', 'advanced', 'ai'];
+    // 주요 3개 카테고리 리스트 (슈퍼관리자는 super-admin도 포함)
+    const mainCategories = userRole === 'super_admin' 
+      ? ['basic', 'advanced', 'ai', 'super-admin']
+      : ['basic', 'advanced', 'ai'];
     
-    // 클릭한 카테고리가 주요 3개 카테고리 중 하나인지 확인
+    // 클릭한 카테고리가 주요 카테고리 중 하나인지 확인
     if (mainCategories.includes(categoryId)) {
       // 이미 열려있는 카테고리를 다시 클릭하면 닫기
       if (expandedCategories.includes(categoryId)) {
