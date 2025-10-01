@@ -216,13 +216,38 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
 
         {/* 하위 노드들 렌더링 */}
         {hasChildren && (
-          <div className="mt-4">
-            {/* 연결선 */}
-            <div className="flex justify-center mb-4">
-              <div className="h-8 w-px bg-gray-300"></div>
+          <div className="relative mt-8">
+            {/* 부모에서 자식들로의 연결선 */}
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2">
+              {/* 세로 연결선 */}
+              <div className="w-px h-4 bg-gray-300 -mt-8"></div>
             </div>
+            
+            {/* 자식 노드가 여러 개일 때 가로 연결선 */}
+            {node.children!.length > 1 && (
+              <div className="absolute top-0 left-0 right-0 flex justify-center -mt-4">
+                <div 
+                  className="h-px bg-gray-300" 
+                  style={{
+                    width: `${(node.children!.length - 1) * 150}px`,
+                    marginLeft: '75px',
+                    marginRight: '75px'
+                  }}
+                />
+              </div>
+            )}
+            
+            {/* 각 자식 노드로의 세로 연결선 */}
             <div className="flex space-x-6 justify-center">
-              {node.children!.map((child) => renderHorizontalNode(child))}
+              {node.children!.map((child, index) => (
+                <div key={child.id} className="relative">
+                  {/* 가로선에서 각 자식으로의 세로 연결선 */}
+                  {node.children!.length > 1 && (
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-px h-4 bg-gray-300 -mt-4"></div>
+                  )}
+                  {renderHorizontalNode(child)}
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -280,14 +305,23 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
       </div>
 
       {/* 계층구조 렌더링 */}
-      <div className={layout === 'horizontal' ? 'overflow-x-auto' : 'space-y-2'}>
+      <div className={layout === 'horizontal' ? 'overflow-x-auto pb-8' : 'space-y-2'}>
         {layout === 'vertical' ? (
           <div className="space-y-2">
             {hierarchy.map((node, index) => renderVerticalNode(node, index))}
           </div>
         ) : (
-          <div className="flex space-x-8 justify-center min-w-max py-4">
-            {hierarchy.map((node) => renderHorizontalNode(node))}
+          <div className="flex justify-center min-w-max py-8">
+            <div className="inline-block">
+              {/* 루트 노드가 하나인 경우와 여러 개인 경우를 구분 */}
+              {hierarchy.length === 1 ? (
+                renderHorizontalNode(hierarchy[0])
+              ) : (
+                <div className="flex space-x-8">
+                  {hierarchy.map((node) => renderHorizontalNode(node))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
