@@ -74,7 +74,37 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 
     // 파싱된 기준을 실제 Criterion 객체로 변환
     const convertedCriteria = convertParsedCriteria(parseResult.criteria);
-    onImport(convertedCriteria);
+    
+    // AHP 평가에서는 주 기준만 사용하므로 레벨 1 기준만 추출
+    const rootCriteria = convertedCriteria.filter(c => c.level === 1);
+    const subCriteria = getAllFlatCriteria(convertedCriteria).filter(c => c.level === 2);
+    
+    // 하위 기준들을 주 기준의 설명에 포함
+    const finalCriteria = rootCriteria.map(rootCriterion => {
+      const relatedSubCriteria = subCriteria.filter(c => c.parent_id === rootCriterion.id);
+      
+      let description = rootCriterion.description || '';
+      
+      if (relatedSubCriteria.length > 0) {
+        const subCriteriaText = relatedSubCriteria.map(sub => 
+          sub.description ? `${sub.name}: ${sub.description}` : sub.name
+        ).join(', ');
+        
+        description = description 
+          ? `${description} [하위 기준: ${subCriteriaText}]`
+          : `[하위 기준: ${subCriteriaText}]`;
+      }
+      
+      return {
+        ...rootCriterion,
+        description,
+        parent_id: null,
+        level: 1,
+        children: []
+      };
+    });
+    
+    onImport(finalCriteria);
   };
 
   const convertParsedCriteria = (parsedCriteria: any[]): Criterion[] => {
@@ -151,6 +181,20 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
   };
 
   const getAllCriteria = (criteriaList: Criterion[]): Criterion[] => {
+    const all: Criterion[] = [];
+    const traverse = (items: Criterion[]) => {
+      items.forEach(item => {
+        all.push(item);
+        if (item.children && item.children.length > 0) {
+          traverse(item.children);
+        }
+      });
+    };
+    traverse(criteriaList);
+    return all;
+  };
+
+  const getAllFlatCriteria = (criteriaList: Criterion[]): Criterion[] => {
     const all: Criterion[] = [];
     const traverse = (items: Criterion[]) => {
       items.forEach(item => {
