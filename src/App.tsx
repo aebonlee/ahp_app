@@ -20,6 +20,7 @@ import AHPProjectManager from './components/ahp/AHPProjectManager';
 import LandingPage from './components/admin/LandingPage';
 import EnhancedSuperAdminDashboard from './components/admin/EnhancedSuperAdminDashboard';
 import PersonalServiceDashboard from './components/admin/PersonalServiceDashboard';
+import PersonalServiceDashboard_Enhanced from './components/admin/PersonalServiceDashboard_Enhanced';
 import ModelBuilding from './components/admin/ModelBuilding';
 import EvaluationResults from './components/admin/EvaluationResults';
 import ProjectCompletion from './components/admin/ProjectCompletion';
@@ -1193,9 +1194,9 @@ function App() {
       case 'register':
       case 'personal-service':
       case 'welcome':
-        // 로그인 후에는 모두 personal-service로 통합
+        // 로그인 후에는 모두 personal-service로 통합 - 개선된 버전 사용
         return (
-          <PersonalServiceDashboard 
+          <PersonalServiceDashboard_Enhanced 
             user={user}
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -1371,7 +1372,7 @@ function App() {
 
       case 'demographic-survey':
         return (
-          <PersonalServiceDashboard
+          <PersonalServiceDashboard_Enhanced
             user={user}
             activeTab="demographic-survey"
             onTabChange={setActiveTab}
@@ -1394,9 +1395,9 @@ function App() {
         
       case 'my-projects':
       case 'project-creation':
-        console.log('🎯 PersonalServiceDashboard 렌더링 (my-projects/project-creation):', { activeTab, userId: user.id, userRole: user.role });
+        console.log('🎯 PersonalServiceDashboard_Enhanced 렌더링 (my-projects/project-creation):', { activeTab, userId: user.id, userRole: user.role });
         return (
-          <PersonalServiceDashboard 
+          <PersonalServiceDashboard_Enhanced 
             user={user}
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -1434,9 +1435,9 @@ function App() {
       case 'workshop-management':
       case 'decision-support-system':
       case 'personal-settings':
-        console.log('🎯 PersonalServiceDashboard 렌더링:', { activeTab, userId: user.id, userRole: user.role });
+        console.log('🎯 PersonalServiceDashboard_Enhanced 렌더링:', { activeTab, userId: user.id, userRole: user.role });
         return (
-          <PersonalServiceDashboard 
+          <PersonalServiceDashboard_Enhanced 
             user={user}
             activeTab={activeTab}
             onTabChange={setActiveTab}
