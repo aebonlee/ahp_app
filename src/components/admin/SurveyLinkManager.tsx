@@ -92,7 +92,7 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
     setSurveyLinks(prevLinks => {
       // 기존 링크와 병합 (중복 제거)
       const existingIds = prevLinks.map(l => l.id);
-      const uniqueNewLinks = newLinks.filter(l => !existingIds.includes(l.id));
+      const uniqueNewLinks = (Array.isArray(newLinks) ? newLinks : []).filter(l => !existingIds.includes(l.id));
       return [...prevLinks, ...uniqueNewLinks];
     });
     setLoading(false);
@@ -239,7 +239,7 @@ ${link.projectName} 프로젝트의 AHP 평가에 참여해 주시기 바랍니�
   };
 
   // 필터링된 링크
-  const filteredLinks = surveyLinks
+  const filteredLinks = (Array.isArray(surveyLinks) ? surveyLinks : [])
     .filter(link => {
       const matchesSearch = 
         link.evaluatorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -253,12 +253,13 @@ ${link.projectName} 프로젝트의 AHP 평가에 참여해 주시기 바랍니�
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   // 통계 계산
+  const safeLinks = Array.isArray(surveyLinks) ? surveyLinks : [];
   const stats = {
-    total: surveyLinks.length,
-    active: surveyLinks.filter(l => l.status === 'active').length,
-    completed: surveyLinks.filter(l => l.status === 'completed').length,
-    expired: surveyLinks.filter(l => l.status === 'expired').length,
-    totalClicks: surveyLinks.reduce((sum, l) => sum + l.clickCount, 0)
+    total: safeLinks.length,
+    active: safeLinks.filter(l => l.status === 'active').length,
+    completed: safeLinks.filter(l => l.status === 'completed').length,
+    expired: safeLinks.filter(l => l.status === 'expired').length,
+    totalClicks: safeLinks.reduce((sum, l) => sum + l.clickCount, 0)
   };
 
   return (

@@ -89,12 +89,15 @@ export class TextParser {
     const markdownMatch = line.match(/^(\s*)([-*+])\s+(.+)$/);
     if (markdownMatch) {
       const [, indent, , content] = markdownMatch;
-      // 들여쓰기 깊이 계산 (2칸 또는 4칸을 1레벨로)
+      // 들여쓰기 깊이 계산
       let level = 1;
       if (indent.length > 0) {
         // 탭은 4칸으로 계산
         const spaces = indent.replace(/\t/g, '    ').length;
-        level = Math.floor(spaces / 2) + 1; // 2칸당 1레벨 증가
+        // 2칸당 1레벨 증가 (더 유연하게 처리)
+        if (spaces >= 2) {
+          level = Math.floor((spaces - 1) / 2) + 1;
+        }
       }
       const [name, description] = this.extractNameAndDescription(content);
       return { name: name.trim(), description, level };
@@ -104,31 +107,36 @@ export class TextParser {
     const numberedMatch = line.match(/^(\s*)(\d+(?:[.-]\d+)*\.?)\s+(.+)$/);
     if (numberedMatch) {
       const [, indent, number, content] = numberedMatch;
-      // 들여쓰기가 있으면 고려
-      let level = (number.match(/[.-]/g) || []).length + 1;
+      
+      // 번호 형식으로 레벨 계산
+      const numberLevel = (number.match(/[.-]/g) || []).length + 1;
+      
+      // 들여쓰기로 레벨 계산
+      let indentLevel = 1;
       if (indent.length > 0) {
         const spaces = indent.replace(/\t/g, '    ').length;
-        const indentLevel = Math.floor(spaces / 2);
-        // 들여쓰기와 번호 형식 중 더 큰 값 사용
-        level = Math.max(level, indentLevel + 1);
+        if (spaces >= 2) {
+          indentLevel = Math.floor((spaces - 1) / 2) + 1;
+        }
       }
+      
+      // 번호 형식과 들여쓰기 중 더 큰 값 사용
+      const level = Math.max(numberLevel, indentLevel);
+      
       const [name, description] = this.extractNameAndDescription(content);
       return { name: name.trim(), description, level };
     }
 
-    // 탭/공백 들여쓰기 형식 (들여쓰기가 없는 경우 무시)
+    // 들여쓰기 형식 처리 (들여쓰기가 있는 경우)
     const indentMatch = line.match(/^(\s+)(.+)$/);
     if (indentMatch) {
       const [, indent, content] = indentMatch;
-      let level = 1;
       
       // 탭과 공백을 모두 공백으로 변환하여 계산
       const spaces = indent.replace(/\t/g, '    ').length;
       
-      // 최소 2칸 이상의 들여쓰기가 있어야 레벨 증가
-      if (spaces >= 2) {
-        level = Math.floor(spaces / 4) + 1; // 4칸당 1레벨
-      }
+      // 4칸당 1레벨 증가 (4칸 = 레벨 2, 8칸 = 레벨 3, ...)
+      const level = Math.floor(spaces / 4) + 1;
 
       const [name, description] = this.extractNameAndDescription(content);
       return { name: name.trim(), description, level };
