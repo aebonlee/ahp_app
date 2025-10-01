@@ -233,6 +233,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const getMenuCategories = (): MenuCategory[] => {
     if (userRole === 'super_admin') {
+      console.log('슈퍼관리자 메뉴 로드:', superAdminCategories);
       return superAdminCategories;
     } else if (userRole === 'service_admin' || userRole === 'service_user') {
       if (viewMode === 'evaluator') {
@@ -246,6 +247,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const menuCategories = getMenuCategories();
+  console.log('현재 userRole:', userRole, '메뉴 카테고리 수:', menuCategories.length);
 
   const handleItemClick = (itemId: string) => {
     // Django 관리자 링크 처리
@@ -304,7 +306,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         className="flex-1 scrollbar-luxury overflow-y-auto"
         style={{ 
           padding: 'var(--space-6)',
-          paddingBottom: 0
+          paddingBottom: 'var(--space-8)' // 하단 여백 추가하여 모든 메뉴가 보이도록
         }}
       >
         {!isCollapsed && (
