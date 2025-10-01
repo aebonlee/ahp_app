@@ -84,6 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'basic',
       title: '기본 기능',
+      icon: '📌',
       items: [
         { id: 'dashboard', label: '내 대시보드' },
         { id: 'my-projects', label: '내 프로젝트' },
@@ -97,6 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'advanced',
       title: '고급 기능',
+      icon: '🚀',
       items: [
         { id: 'demographic-survey', label: '인구통계 설문' },
         { id: 'evaluation-test', label: '평가 테스트' },
@@ -111,6 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'ai',
       title: 'AI 지원',
+      icon: '🤖',
       items: [
         { id: 'ai-paper-assistant', label: 'AI 논문 도우미' },
         { id: 'ai-ahp-methodology', label: 'AHP 방법론' },
@@ -291,12 +294,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
               >
                 <div className="flex items-center">
-                  {category.icon && (
-                    <span className="mr-2" style={{ fontSize: 'var(--font-size-md)' }}>
+                  {category.icon && (category.id === 'basic' || category.id === 'advanced' || category.id === 'ai') && (
+                    <span className="mr-2" style={{ fontSize: '1.2rem' }}>
                       {category.icon}
                     </span>
                   )}
-                  <span style={{ textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.85rem', color: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--text-primary)' }}>
+                  <span style={{ 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.1em', 
+                    fontSize: category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' ? '1rem' : '0.85rem',
+                    fontWeight: category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' ? 'bold' : 'semibold',
+                    color: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--text-primary)' 
+                  }}>
                     {category.title}
                   </span>
                 </div>
