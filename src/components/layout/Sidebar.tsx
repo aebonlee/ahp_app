@@ -35,10 +35,19 @@ const Sidebar: React.FC<SidebarProps> = ({
   onModeSwitch 
 }) => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
+  
+  // 디버깅: userRole 확인
+  console.log('=== Sidebar Debug ===');
+  console.log('userRole received:', userRole);
+  console.log('userRole type:', typeof userRole);
+  console.log('Is super_admin?:', userRole === 'super_admin');
+  console.log('viewMode:', viewMode);
+  console.log('===================');
 
   const toggleCategory = (categoryId: string) => {
-    // 주요 3개 카테고리 리스트 (슈퍼관리자는 super-admin도 포함)
-    const mainCategories = userRole === 'super_admin' 
+    // 주요 카테고리 리스트 (관리자는 super-admin도 포함)
+    const isAdmin = userRole === 'super_admin' || userRole === 'service_admin';
+    const mainCategories = isAdmin 
       ? ['basic', 'advanced', 'ai', 'super-admin']
       : ['basic', 'advanced', 'ai'];
     
@@ -232,22 +241,35 @@ const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const getMenuCategories = (): MenuCategory[] => {
-    if (userRole === 'super_admin') {
-      console.log('슈퍼관리자 메뉴 로드:', superAdminCategories);
+    console.log('getMenuCategories - userRole:', userRole, 'viewMode:', viewMode);
+    
+    // super_admin 체크를 더 유연하게 변경 - service_admin도 슈퍼관리자 메뉴 표시
+    // TODO: 백엔드에서 super_admin 역할이 제대로 오면 이 조건을 수정해야 함
+    const isAdminWithSuperPowers = userRole === 'super_admin' || 
+                                   userRole?.toLowerCase() === 'super_admin' || 
+                                   userRole === 'service_admin'; // 임시로 service_admin도 슈퍼관리자 메뉴 보이게
+    
+    if (isAdminWithSuperPowers) {
+      console.log('✅ 관리자 메뉴 로드! (role:', userRole, ')');
+      console.log('Categories:', superAdminCategories.map(c => c.id));
       return superAdminCategories;
-    } else if (userRole === 'service_admin' || userRole === 'service_user') {
+    } else if (userRole === 'service_user') {
+      console.log('서비스 사용자 메뉴 로드');
       if (viewMode === 'evaluator') {
         return evaluatorCategories;
       }
       return serviceAdminCategories;
     } else if (userRole === 'evaluator') {
+      console.log('평가자 메뉴 로드');
       return evaluatorCategories;
     }
+    console.log('기본 메뉴 로드 (fallback)');
     return serviceAdminCategories;
   };
 
   const menuCategories = getMenuCategories();
-  console.log('현재 userRole:', userRole, '메뉴 카테고리 수:', menuCategories.length);
+  console.log('최종 메뉴 카테고리:', menuCategories.map(c => `${c.id}(${c.title})`));
+  console.log('super-admin 카테고리 포함?:', menuCategories.some(c => c.id === 'super-admin'));
 
   const handleItemClick = (itemId: string) => {
     // Django 관리자 링크 처리
@@ -320,10 +342,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 paddingBottom: 'var(--space-3)',
                 marginBottom: 'var(--space-6)'
               }}>
-            {userRole === 'super_admin' 
+            {(userRole === 'super_admin' || userRole === 'service_admin')
               ? '시스템 관리자'
-              : userRole === 'service_admin'
-              ? (viewMode === 'evaluator' ? '개인 관리자 서비스' : '서비스 관리자')
               : userRole === 'service_user'
               ? (viewMode === 'evaluator' ? '개인 관리자 서비스' : '서비스 사용자')
               : '개인 관리자 서비스'
