@@ -37,6 +37,9 @@ import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
 import ConnectionTestPage from './components/demo/ConnectionTestPage';
 import RoleBasedDashboard from './components/common/RoleBasedDashboard';
 import DjangoAdminIntegration from './components/admin/DjangoAdminIntegration';
+import SuperAdminDashboard from './components/superadmin/SuperAdminDashboard';
+import RoleSwitcher from './components/superadmin/RoleSwitcher';
+import SystemReset from './components/superadmin/SystemReset';
 import AHPMethodologyPage from './components/methodology/AHPMethodologyPage';
 import FuzzyAHPMethodologyPage from './components/methodology/FuzzyAHPMethodologyPage';
 import AIPaperGenerationPage from './components/ai-paper/AIPaperGenerationPage';
@@ -1217,6 +1220,71 @@ function App() {
         );
 
       case 'super-admin':
+      case 'super-admin-dashboard':
+        // 슈퍼 관리자 대시보드
+        return (
+          <SuperAdminDashboard 
+            user={user}
+            onTabChange={setActiveTab}
+          />
+        );
+      
+      case 'role-switch-admin':
+        // 서비스 관리자로 전환
+        return (
+          <RoleSwitcher
+            currentUser={user}
+            targetRole="service_admin"
+            onRoleSwitch={(role) => {
+              // TODO: 역할 전환 로직 구현
+              setUser({ ...user, role });
+              setActiveTab('personal-service');
+            }}
+            onBack={() => setActiveTab('super-admin-dashboard')}
+          />
+        );
+      
+      case 'role-switch-user':
+        // 서비스 사용자로 전환
+        return (
+          <RoleSwitcher
+            currentUser={user}
+            targetRole="service_user"
+            onRoleSwitch={(role) => {
+              setUser({ ...user, role });
+              setActiveTab('personal-service');
+            }}
+            onBack={() => setActiveTab('super-admin-dashboard')}
+          />
+        );
+      
+      case 'role-switch-evaluator':
+        // 평가자로 전환
+        return (
+          <RoleSwitcher
+            currentUser={user}
+            targetRole="evaluator"
+            onRoleSwitch={(role) => {
+              setUser({ ...user, role });
+              setActiveTab('evaluator-mode');
+            }}
+            onBack={() => setActiveTab('super-admin-dashboard')}
+          />
+        );
+      
+      case 'system-reset':
+        // 시스템 초기화
+        return (
+          <SystemReset
+            onBack={() => setActiveTab('super-admin-dashboard')}
+            onReset={(options) => {
+              console.log('시스템 초기화 실행:', options);
+              // TODO: 실제 초기화 API 호출
+              alert('시스템 초기화가 완료되었습니다.');
+            }}
+          />
+        );
+
       case 'dashboard':
         // 역할별 대시보드 자동 라우팅
         return (
