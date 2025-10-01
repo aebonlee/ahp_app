@@ -240,26 +240,6 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
               >
                 내 프로젝트
               </UnifiedButton>
-              
-              <UnifiedButton
-                variant={activeTab === 'project-creation' ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => onTabChange && onTabChange('project-creation')}
-                icon="➕"
-                className="font-medium"
-              >
-                새 프로젝트
-              </UnifiedButton>
-              
-              <UnifiedButton
-                variant={activeTab === 'model-builder' ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => onTabChange && onTabChange('model-builder')}
-                icon="🏗️"
-                className="font-medium"
-              >
-                모델 구축
-              </UnifiedButton>
 
               {/* 즐겨찾기 메뉴 (축소형) */}
               <LayerPopup
@@ -363,16 +343,6 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                   className="font-medium"
                 >
                   가이드
-                </UnifiedButton>
-                
-                <UnifiedButton
-                  variant={activeTab === 'results-analysis' ? 'primary' : 'secondary'}
-                  size="sm"
-                  onClick={() => onTabChange && onTabChange('results-analysis')}
-                  icon="📊"
-                  className="font-medium"
-                >
-                  결과 분석
                 </UnifiedButton>
                 
                 <UnifiedButton
