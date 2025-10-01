@@ -234,212 +234,230 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
             required
           />
 
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+          {/* AHP 분석 유형 선택 섹션 */}
+          <div className="mt-10">
+            <div className="mb-6">
+              <label className="block text-base font-semibold text-gray-800 mb-2">
                 AHP 분석 유형 선택 <span className="text-red-500">*</span>
               </label>
-              <p className="text-xs text-gray-500 mb-4">원하는 분석 방법을 선택하세요</p>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* 일반 AHP 카드 */}
-                <button
-                  type="button"
-                  onClick={() => handleInputChange('ahpType', 'general')}
-                  className={`relative group p-6 rounded-xl transition-all duration-300 transform hover:scale-105 ${
-                    formData.ahpType === 'general'
-                      ? 'bg-gradient-to-br from-blue-500 to-cyan-500 shadow-xl scale-105'
-                      : 'bg-white border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg'
-                  }`}
-                >
+              <p className="text-sm text-gray-600">프로젝트에 적합한 분석 방법을 선택하세요</p>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* 일반 AHP 카드 */}
+              <button
+                type="button"
+                onClick={() => handleInputChange('ahpType', 'general')}
+                className={`relative group transition-all duration-300 ${
+                  formData.ahpType === 'general'
+                    ? 'transform scale-[1.02]'
+                    : 'hover:transform hover:scale-[1.01]'
+                }`}
+              >
+                <div className={`p-8 rounded-2xl h-full transition-all duration-300 ${
+                  formData.ahpType === 'general'
+                    ? 'bg-gradient-to-br from-blue-500 to-cyan-500 shadow-2xl'
+                    : 'bg-white border-2 border-gray-200 hover:border-blue-300 hover:shadow-xl'
+                }`}>
                   {/* 선택됨 배지 */}
                   {formData.ahpType === 'general' && (
-                    <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
-                      ✓ 선택됨
+                    <div className="absolute -top-3 -right-3 bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      선택됨
                     </div>
                   )}
                   
-                  <div className="text-left">
-                    {/* 아이콘과 제목 */}
-                    <div className="flex items-center mb-3">
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mr-3 ${
+                  <div className="text-left space-y-4">
+                    {/* 헤더 섹션 */}
+                    <div className="flex items-start space-x-4">
+                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${
                         formData.ahpType === 'general' 
-                          ? 'bg-white/20' 
-                          : 'bg-gradient-to-br from-blue-100 to-cyan-100'
+                          ? 'bg-white/20 backdrop-blur-sm' 
+                          : 'bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100'
                       }`}>
-                        <span className="text-2xl">📊</span>
+                        <span className="text-3xl">📊</span>
                       </div>
-                      <div>
-                        <h3 className={`font-bold text-lg ${
+                      <div className="flex-1">
+                        <h3 className={`font-bold text-xl mb-1 ${
                           formData.ahpType === 'general' ? 'text-white' : 'text-gray-900'
                         }`}>
                           일반 AHP
                         </h3>
-                        <p className={`text-xs ${
+                        <p className={`text-sm ${
                           formData.ahpType === 'general' ? 'text-blue-100' : 'text-gray-500'
                         }`}>
-                          Standard AHP
+                          Standard AHP Method
                         </p>
                       </div>
                     </div>
                     
-                    {/* 설명 */}
-                    <p className={`text-sm mb-3 ${
+                    {/* 설명 텍스트 */}
+                    <p className={`text-sm leading-relaxed ${
                       formData.ahpType === 'general' ? 'text-white/90' : 'text-gray-600'
                     }`}>
-                      전통적인 쌍대비교 방법
+                      전통적인 쌍대비교 방법으로 명확한 의사결정을 지원합니다
                     </p>
                     
                     {/* 특징 리스트 */}
-                    <ul className="space-y-2">
-                      <li className={`flex items-start text-xs ${
-                        formData.ahpType === 'general' ? 'text-white/80' : 'text-gray-500'
-                      }`}>
-                        <span className="mr-2 mt-0.5">✓</span>
-                        <span>Saaty's 1-9 척도 사용</span>
-                      </li>
-                      <li className={`flex items-start text-xs ${
-                        formData.ahpType === 'general' ? 'text-white/80' : 'text-gray-500'
-                      }`}>
-                        <span className="mr-2 mt-0.5">✓</span>
-                        <span>명확한 가중치 산출</span>
-                      </li>
-                      <li className={`flex items-start text-xs ${
-                        formData.ahpType === 'general' ? 'text-white/80' : 'text-gray-500'
-                      }`}>
-                        <span className="mr-2 mt-0.5">✓</span>
-                        <span>일관성 검증 (CR ≤ 0.1)</span>
-                      </li>
-                    </ul>
+                    <div className="space-y-3">
+                      {[
+                        'Saaty의 1-9 척도 사용',
+                        '명확한 가중치 산출',
+                        '일관성 검증 (CR ≤ 0.1)'
+                      ].map((feature, idx) => (
+                        <div key={idx} className={`flex items-center space-x-3 text-sm ${
+                          formData.ahpType === 'general' ? 'text-white/85' : 'text-gray-600'
+                        }`}>
+                          <svg className={`w-5 h-5 flex-shrink-0 ${
+                            formData.ahpType === 'general' ? 'text-white/70' : 'text-green-500'
+                          }`} fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
                     
                     {/* 추천 태그 */}
-                    <div className="mt-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                    <div className="pt-2">
+                      <span className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-bold ${
                         formData.ahpType === 'general' 
-                          ? 'bg-white/20 text-white' 
-                          : 'bg-blue-100 text-blue-700'
+                          ? 'bg-white/25 text-white backdrop-blur-sm' 
+                          : 'bg-blue-50 text-blue-700 border border-blue-200'
                       }`}>
-                        👍 입문자 추천
+                        <span className="mr-1">👍</span>
+                        입문자 추천
                       </span>
                     </div>
                   </div>
-                </button>
+                </div>
+              </button>
 
-                {/* 퍼지 AHP 카드 */}
-                <button
-                  type="button"
-                  onClick={() => handleInputChange('ahpType', 'fuzzy')}
-                  className={`relative group p-6 rounded-xl transition-all duration-300 transform hover:scale-105 ${
-                    formData.ahpType === 'fuzzy'
-                      ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-xl scale-105'
-                      : 'bg-white border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg'
-                  }`}
-                >
+              {/* 퍼지 AHP 카드 */}
+              <button
+                type="button"
+                onClick={() => handleInputChange('ahpType', 'fuzzy')}
+                className={`relative group transition-all duration-300 ${
+                  formData.ahpType === 'fuzzy'
+                    ? 'transform scale-[1.02]'
+                    : 'hover:transform hover:scale-[1.01]'
+                }`}
+              >
+                <div className={`p-8 rounded-2xl h-full transition-all duration-300 ${
+                  formData.ahpType === 'fuzzy'
+                    ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-2xl'
+                    : 'bg-white border-2 border-gray-200 hover:border-purple-300 hover:shadow-xl'
+                }`}>
                   {/* 선택됨 배지 */}
                   {formData.ahpType === 'fuzzy' && (
-                    <div className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
-                      ✓ 선택됨
+                    <div className="absolute -top-3 -right-3 bg-purple-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      선택됨
                     </div>
                   )}
                   
-                  <div className="text-left">
-                    {/* 아이콘과 제목 */}
-                    <div className="flex items-center mb-3">
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mr-3 ${
+                  <div className="text-left space-y-4">
+                    {/* 헤더 섹션 */}
+                    <div className="flex items-start space-x-4">
+                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${
                         formData.ahpType === 'fuzzy' 
-                          ? 'bg-white/20' 
-                          : 'bg-gradient-to-br from-purple-100 to-pink-100'
+                          ? 'bg-white/20 backdrop-blur-sm' 
+                          : 'bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100'
                       }`}>
-                        <span className="text-2xl">🔮</span>
+                        <span className="text-3xl">🔮</span>
                       </div>
-                      <div>
-                        <h3 className={`font-bold text-lg ${
+                      <div className="flex-1">
+                        <h3 className={`font-bold text-xl mb-1 ${
                           formData.ahpType === 'fuzzy' ? 'text-white' : 'text-gray-900'
                         }`}>
                           퍼지 AHP
                         </h3>
-                        <p className={`text-xs ${
+                        <p className={`text-sm ${
                           formData.ahpType === 'fuzzy' ? 'text-purple-100' : 'text-gray-500'
                         }`}>
-                          Fuzzy AHP
+                          Fuzzy AHP Method
                         </p>
                       </div>
                     </div>
                     
-                    {/* 설명 */}
-                    <p className={`text-sm mb-3 ${
+                    {/* 설명 텍스트 */}
+                    <p className={`text-sm leading-relaxed ${
                       formData.ahpType === 'fuzzy' ? 'text-white/90' : 'text-gray-600'
                     }`}>
-                      불확실성을 고려한 분석
+                      불확실성과 애매모호함을 수학적으로 처리하는 고급 분석 방법입니다
                     </p>
                     
                     {/* 특징 리스트 */}
-                    <ul className="space-y-2">
-                      <li className={`flex items-start text-xs ${
-                        formData.ahpType === 'fuzzy' ? 'text-white/80' : 'text-gray-500'
-                      }`}>
-                        <span className="mr-2 mt-0.5">✓</span>
-                        <span>삼각 퍼지수 활용</span>
-                      </li>
-                      <li className={`flex items-start text-xs ${
-                        formData.ahpType === 'fuzzy' ? 'text-white/80' : 'text-gray-500'
-                      }`}>
-                        <span className="mr-2 mt-0.5">✓</span>
-                        <span>불확실성 범위 표현</span>
-                      </li>
-                      <li className={`flex items-start text-xs ${
-                        formData.ahpType === 'fuzzy' ? 'text-white/80' : 'text-gray-500'
-                      }`}>
-                        <span className="mr-2 mt-0.5">✓</span>
-                        <span>민감도 분석 강화</span>
-                      </li>
-                    </ul>
+                    <div className="space-y-3">
+                      {[
+                        '삼각 퍼지수 활용',
+                        '불확실성 범위 표현',
+                        '민감도 분석 강화'
+                      ].map((feature, idx) => (
+                        <div key={idx} className={`flex items-center space-x-3 text-sm ${
+                          formData.ahpType === 'fuzzy' ? 'text-white/85' : 'text-gray-600'
+                        }`}>
+                          <svg className={`w-5 h-5 flex-shrink-0 ${
+                            formData.ahpType === 'fuzzy' ? 'text-white/70' : 'text-purple-500'
+                          }`} fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
                     
                     {/* 추천 태그 */}
-                    <div className="mt-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                    <div className="pt-2">
+                      <span className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-bold ${
                         formData.ahpType === 'fuzzy' 
-                          ? 'bg-white/20 text-white' 
-                          : 'bg-purple-100 text-purple-700'
+                          ? 'bg-white/25 text-white backdrop-blur-sm' 
+                          : 'bg-purple-50 text-purple-700 border border-purple-200'
                       }`}>
-                        🎯 전문가용
+                        <span className="mr-1">🎯</span>
+                        전문가용
                       </span>
                     </div>
                   </div>
-                </button>
-              </div>
-              
-              {/* 선택된 유형에 대한 추가 정보 */}
-              <div className="mt-4">
-                {formData.ahpType === 'general' && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-start">
-                      <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                      <div className="text-sm text-blue-700">
-                        <strong>일반 AHP 선택됨:</strong> 가장 널리 사용되는 표준 AHP 방법입니다.
-                        명확한 수치 척도를 사용하여 의사결정의 일관성을 검증합니다.
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {formData.ahpType === 'fuzzy' && (
-                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                    <div className="flex items-start">
-                      <svg className="w-5 h-5 text-purple-600 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                      <div className="text-sm text-purple-700">
-                        <strong>퍼지 AHP 선택됨:</strong> 평가자 간 의견 차이가 크거나, 
-                        정성적 기준이 많은 경우, 불확실성이 높은 의사결정 문제에 적합합니다.
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              </button>
             </div>
+            
+            {/* 선택된 유형에 대한 추가 정보 */}
+            {formData.ahpType === 'general' && (
+              <div className="p-5 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl">
+                <div className="flex items-start space-x-3">
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <div className="text-sm text-blue-800 leading-relaxed">
+                    <strong className="font-semibold">일반 AHP를 선택하셨습니다.</strong><br/>
+                    가장 널리 사용되는 표준 방법으로, 명확한 수치 척도를 사용하여 의사결정의 일관성을 검증합니다.
+                    처음 AHP를 사용하시는 분께 추천드립니다.
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {formData.ahpType === 'fuzzy' && (
+              <div className="p-5 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
+                <div className="flex items-start space-x-3">
+                  <svg className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <div className="text-sm text-purple-800 leading-relaxed">
+                    <strong className="font-semibold">퍼지 AHP를 선택하셨습니다.</strong><br/>
+                    평가자 간 의견 차이가 크거나, 정성적 기준이 많은 경우, 불확실성이 높은 의사결정 문제에 적합합니다.
+                    복잡한 의사결정 상황에서 더 정확한 분석이 가능합니다.
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
             <div className="mt-8">
               <EvaluationModeSelector
