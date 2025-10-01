@@ -384,17 +384,85 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
 
   const handleBulkImport = async (importedCriteria: Criterion[]) => {
     try {
-      // 가져온 기준들을 PostgreSQL에 저장
-      for (const criterion of importedCriteria) {
-        const criterionData = convertToCriteriaData({
-          name: criterion.name,
-          description: criterion.description || '',
-          parent_id: criterion.parent_id,
-          level: criterion.level,
-          order: criterion.order || 1
-        });
+      console.log('🔄 일괄 가져오기 시작:', importedCriteria);
+      
+      const rootCriteria = importedCriteria.filter(c => c.level === 1);
+      const subCriteria = importedCriteria.filter(c => c.level === 2);
+      
+      if (subCriteria.length > 0) {
+        // 계층구조가 있는 경우 사용자에게 옵션 제공
+        const userChoice = confirm(
+          `계층구조가 감지되었습니다:\n` +
+          `- 주 기준: ${rootCriteria.length}개\n` +
+          `- 하위 기준: ${subCriteria.length}개\n\n` +
+          `"확인": 주 기준만 저장 (하위 기준은 설명에 포함)\n` +
+          `"취소": 모든 기준을 개별적으로 저장`
+        );
         
-        await dataService.createCriteria(criterionData);
+        if (userChoice) {
+          // 옵션 1: 최상위 기준만 저장하고 하위 기준은 메타데이터로 포함
+          for (const rootCriterion of rootCriteria) {
+            const relatedSubCriteria = subCriteria.filter(c => c.parent_id === rootCriterion.id);
+            
+            console.log(`📋 "${rootCriterion.name}" 기준의 하위 기준 ${relatedSubCriteria.length}개:`, 
+              relatedSubCriteria.map(s => s.name));
+            
+            const criterionData = convertToCriteriaData({
+              name: rootCriterion.name,
+              description: rootCriterion.description || '',
+              parent_id: null,
+              level: 1,
+              order: rootCriterion.order || 1
+            });
+            
+            // 하위 기준 정보를 설명에 추가
+            if (relatedSubCriteria.length > 0) {
+              const subCriteriaText = relatedSubCriteria.map(sub => 
+                sub.description ? `${sub.name}: ${sub.description}` : sub.name
+              ).join(', ');
+              
+              criterionData.description = criterionData.description 
+                ? `${criterionData.description} [하위 기준: ${subCriteriaText}]`
+                : `[하위 기준: ${subCriteriaText}]`;
+            }
+            
+            console.log('💾 주 기준 저장:', criterionData);
+            await dataService.createCriteria(criterionData);
+          }
+          
+          alert(`✅ ${rootCriteria.length}개의 주 기준이 저장되었습니다.\n하위 기준들은 각 기준의 설명에 포함되었습니다.`);
+        } else {
+          // 옵션 2: 모든 기준을 개별적으로 저장 (기존 방식)
+          for (const criterion of importedCriteria) {
+            const criterionData = convertToCriteriaData({
+              name: criterion.name,
+              description: criterion.description || '',
+              parent_id: null, // AHP에서는 평면 구조 사용
+              level: 1,
+              order: criterion.order || 1
+            });
+            
+            console.log('💾 개별 기준 저장:', criterionData);
+            await dataService.createCriteria(criterionData);
+          }
+          
+          alert(`✅ ${importedCriteria.length}개의 기준이 개별적으로 저장되었습니다.`);
+        }
+      } else {
+        // 평면 구조인 경우 그대로 저장
+        for (const criterion of importedCriteria) {
+          const criterionData = convertToCriteriaData({
+            name: criterion.name,
+            description: criterion.description || '',
+            parent_id: null,
+            level: 1,
+            order: criterion.order || 1
+          });
+          
+          await dataService.createCriteria(criterionData);
+        }
+        
+        alert(`✅ ${importedCriteria.length}개의 기준이 저장되었습니다.`);
       }
       
       // 데이터 다시 로드
@@ -403,10 +471,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       setCriteria(convertedCriteria);
       
       setShowBulkInput(false);
-      
-      // 성공 메시지
-      const count = getAllCriteria(importedCriteria).length;
-      alert(`✅ ${count}개의 기준이 PostgreSQL에 저장되었습니다.`);
     } catch (error) {
       console.error('Failed to bulk import criteria:', error);
       alert('❌ 일괄 가져오기 중 오류가 발생했습니다.');
