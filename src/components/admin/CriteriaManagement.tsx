@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
+import HierarchyTreeBuilder from '../modeling/HierarchyTreeBuilder';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
 import dataService from '../../services/dataService_clean';
 import { CriteriaData } from '../../services/api';
@@ -23,6 +24,7 @@ interface CriteriaManagementProps {
 
 const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, projectTitle, onComplete, onCriteriaChange }) => {
   const [criteria, setCriteria] = useState<Criterion[]>([]);
+  const [useVisualBuilder, setUseVisualBuilder] = useState(false);
 
   // CriteriaData를 Criterion으로 변환
   const convertToCriterion = (data: CriteriaData): Criterion => ({
@@ -577,6 +579,66 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     );
   };
 
+  // 시각적 빌더 모드일 때 HierarchyTreeBuilder 렌더링
+  if (useVisualBuilder) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">시각적 모델 구축</h2>
+          <Button
+            onClick={() => setUseVisualBuilder(false)}
+            variant="outline"
+            size="sm"
+          >
+            ← 기본 모드로 전환
+          </Button>
+        </div>
+        <HierarchyTreeBuilder
+          projectId={projectId}
+          projectTitle={projectTitle || 'AHP 프로젝트'}
+          onComplete={async (hierarchy) => {
+            // 계층 구조를 평면 구조로 변환하여 저장
+            const flattenTree = (node: any, parentId: string | null = null, level: number = 0): any[] => {
+              const result: any[] = [];
+              if (node.id !== 'root') {
+                result.push({
+                  name: node.name,
+                  description: '',
+                  parent_id: parentId,
+                  level: level,
+                  order: node.order || 0
+                });
+              }
+              if (node.children) {
+                node.children.forEach((child: any, index: number) => {
+                  result.push(...flattenTree(child, node.id === 'root' ? null : node.id, level + 1));
+                });
+              }
+              return result;
+            };
+
+            const flatCriteria = flattenTree(hierarchy);
+            
+            // 각 기준을 백엔드에 저장
+            for (const criterion of flatCriteria) {
+              const criterionData = convertToCriteriaData(criterion);
+              await dataService.createCriteria(criterionData);
+            }
+            
+            // 데이터 다시 로드
+            const criteriaData = await dataService.getCriteria(projectId);
+            const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+            setCriteria(convertedCriteria);
+            
+            alert(`✅ ${flatCriteria.length}개의 기준이 저장되었습니다.`);
+            setUseVisualBuilder(false);
+            onComplete();
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {renderHelpModal()}
@@ -736,6 +798,14 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   🗂️ 일괄 입력
+                </Button>
+                <Button 
+                  variant="primary" 
+                  size="sm"
+                  onClick={() => setUseVisualBuilder(true)}
+                  className="transition-all duration-200 ml-2" 
+                >
+                  🎨 시각적 빌더
                 </Button>
                 {criteria.length > 0 && (
                   <Button 
