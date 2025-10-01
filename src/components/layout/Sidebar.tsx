@@ -250,10 +250,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             {userRole === 'super_admin' 
               ? '시스템 관리자'
               : userRole === 'service_admin'
-              ? (viewMode === 'evaluator' ? '평가자 모드' : '서비스 관리자')
+              ? (viewMode === 'evaluator' ? '개인 관리자 서비스' : '서비스 관리자')
               : userRole === 'service_user'
-              ? (viewMode === 'evaluator' ? '평가자 모드' : '서비스 사용자')
-              : '평가자'
+              ? (viewMode === 'evaluator' ? '개인 관리자 서비스' : '서비스 사용자')
+              : '개인 관리자 서비스'
             }
           </h2>
         )}
@@ -266,19 +266,28 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => toggleCategory(category.id)}
                 className="w-full flex items-center justify-between text-left transition-luxury"
                 style={{
-                  padding: 'var(--space-2) var(--space-3)',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'transparent',
+                  padding: 'var(--space-3) var(--space-4)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: expandedCategories.includes(category.id) ? 'var(--bg-elevated)' : 'var(--bg-subtle)',
                   color: 'var(--text-primary)',
-                  fontSize: 'var(--font-size-sm)',
-                  fontWeight: 'var(--font-weight-semibold)',
-                  marginBottom: 'var(--space-2)'
+                  fontSize: 'var(--font-size-md)',
+                  fontWeight: 'var(--font-weight-bold)',
+                  marginBottom: 'var(--space-3)',
+                  border: '1px solid',
+                  borderColor: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--border-light)',
+                  boxShadow: expandedCategories.includes(category.id) ? 'var(--shadow-sm)' : 'none'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
+                  if (!expandedCategories.includes(category.id)) {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
+                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  if (!expandedCategories.includes(category.id)) {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                    e.currentTarget.style.borderColor = 'var(--border-light)';
+                  }
                 }}
               >
                 <div className="flex items-center">
@@ -287,7 +296,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       {category.icon}
                     </span>
                   )}
-                  <span style={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
+                  <span style={{ textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.85rem', color: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--text-primary)' }}>
                     {category.title}
                   </span>
                 </div>
@@ -313,10 +322,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                       <button
                         key={item.id}
                         onClick={() => handleItemClick(item.id)}
-                        className="w-full flex items-center text-left transition-luxury group hover:scale-105"
+                        className="w-full flex items-center text-left transition-luxury group"
                         style={{
                           padding: 'var(--space-2) var(--space-4)',
-                          paddingLeft: 'var(--space-8)',
+                          paddingLeft: 'calc(var(--space-8) + var(--space-4))',
                           borderRadius: 'var(--radius-sm)',
                           backgroundColor: isActive 
                             ? 'var(--gold-primary)' 
@@ -330,7 +339,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                             : 'var(--text-secondary)',
                           fontWeight: 'var(--font-weight-medium)',
                           fontSize: 'var(--font-size-sm)',
-                          marginBottom: 'var(--space-1)'
+                          marginBottom: 'var(--space-1)',
+                          position: 'relative'
                         }}
                         onMouseEnter={(e) => {
                           if (!isActive) {
@@ -353,6 +363,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                           }
                         }}
                       >
+                        <span style={{ 
+                          position: 'absolute', 
+                          left: 'var(--space-6)', 
+                          color: isActive ? 'white' : 'var(--text-muted)',
+                          fontSize: '0.6rem'
+                        }}>
+                          {category.items.indexOf(item) === category.items.length - 1 ? '└' : '├'}
+                        </span>
                         {item.icon && (
                           <span className="mr-2" style={{ fontSize: 'var(--font-size-md)' }}>
                             {item.icon}
