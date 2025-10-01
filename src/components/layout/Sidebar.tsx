@@ -37,11 +37,23 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
 
   const toggleCategory = (categoryId: string) => {
-    setExpandedCategories(prev => 
-      prev.includes(categoryId) 
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
-    );
+    // 기본기능, 고급기능, AI지원 카테고리만 아코디언 방식으로 동작
+    if (categoryId === 'basic' || categoryId === 'advanced' || categoryId === 'ai') {
+      // 이미 열려있는 카테고리를 다시 클릭하면 닫기
+      if (expandedCategories.includes(categoryId)) {
+        setExpandedCategories([]);
+      } else {
+        // 다른 카테고리를 클릭하면 기존 것은 닫고 새로운 것만 열기
+        setExpandedCategories([categoryId]);
+      }
+    } else {
+      // 다른 카테고리들은 기존 토글 방식 유지
+      setExpandedCategories(prev => 
+        prev.includes(categoryId) 
+          ? prev.filter(id => id !== categoryId)
+          : [...prev, categoryId]
+      );
+    }
   };
 
   // 슈퍼관리자 메뉴 구조
