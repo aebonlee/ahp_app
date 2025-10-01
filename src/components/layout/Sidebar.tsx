@@ -362,7 +362,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
               >
                 <div className="flex items-center">
-                  {category.icon && (category.id === 'basic' || category.id === 'advanced' || category.id === 'ai') && (
+                  {category.icon && (category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' || category.id === 'super-admin') && (
                     <span className="mr-2" style={{ fontSize: '1.2rem' }}>
                       {category.icon}
                     </span>
@@ -370,8 +370,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <span style={{ 
                     textTransform: 'uppercase', 
                     letterSpacing: '0.1em', 
-                    fontSize: category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' ? '1rem' : '0.85rem',
-                    fontWeight: category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' ? 'bold' : 'semibold',
+                    fontSize: category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' || category.id === 'super-admin' ? '1rem' : '0.85rem',
+                    fontWeight: category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' || category.id === 'super-admin' ? 'bold' : 'semibold',
                     color: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--text-primary)' 
                   }}>
                     {category.title}
