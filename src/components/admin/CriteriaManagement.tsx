@@ -49,6 +49,12 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
   const [showHelp, setShowHelp] = useState(false);
   const [showBulkInput, setShowBulkInput] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [pendingImport, setPendingImport] = useState<{
+    rootCriteria: Criterion[];
+    subCriteria: Criterion[];
+    allCriteria: Criterion[];
+  } | null>(null);
 
   useEffect(() => {
     // 백엔드에서 실제 프로젝트별 기준 데이터 로드
@@ -391,90 +397,102 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       
       if (subCriteria.length > 0) {
         // 계층구조가 있는 경우 사용자에게 옵션 제공
-        const userChoice = confirm(
-          `계층구조가 감지되었습니다:\n` +
-          `- 주 기준: ${rootCriteria.length}개\n` +
-          `- 하위 기준: ${subCriteria.length}개\n\n` +
-          `"확인": 주 기준만 저장 (하위 기준은 설명에 포함)\n` +
-          `"취소": 모든 기준을 개별적으로 저장`
-        );
-        
-        if (userChoice) {
-          // 옵션 1: 최상위 기준만 저장하고 하위 기준은 메타데이터로 포함
-          for (const rootCriterion of rootCriteria) {
-            const relatedSubCriteria = subCriteria.filter(c => c.parent_id === rootCriterion.id);
-            
-            console.log(`📋 "${rootCriterion.name}" 기준의 하위 기준 ${relatedSubCriteria.length}개:`, 
-              relatedSubCriteria.map(s => s.name));
-            
-            const criterionData = convertToCriteriaData({
-              name: rootCriterion.name,
-              description: rootCriterion.description || '',
-              parent_id: null,
-              level: 1,
-              order: rootCriterion.order || 1
-            });
-            
-            // 하위 기준 정보를 설명에 추가
-            if (relatedSubCriteria.length > 0) {
-              const subCriteriaText = relatedSubCriteria.map(sub => 
-                sub.description ? `${sub.name}: ${sub.description}` : sub.name
-              ).join(', ');
-              
-              criterionData.description = criterionData.description 
-                ? `${criterionData.description} [하위 기준: ${subCriteriaText}]`
-                : `[하위 기준: ${subCriteriaText}]`;
-            }
-            
-            console.log('💾 주 기준 저장:', criterionData);
-            await dataService.createCriteria(criterionData);
-          }
-          
-          alert(`✅ ${rootCriteria.length}개의 주 기준이 저장되었습니다.\n하위 기준들은 각 기준의 설명에 포함되었습니다.`);
-        } else {
-          // 옵션 2: 모든 기준을 개별적으로 저장 (기존 방식)
-          for (const criterion of importedCriteria) {
-            const criterionData = convertToCriteriaData({
-              name: criterion.name,
-              description: criterion.description || '',
-              parent_id: null, // AHP에서는 평면 구조 사용
-              level: 1,
-              order: criterion.order || 1
-            });
-            
-            console.log('💾 개별 기준 저장:', criterionData);
-            await dataService.createCriteria(criterionData);
-          }
-          
-          alert(`✅ ${importedCriteria.length}개의 기준이 개별적으로 저장되었습니다.`);
-        }
-      } else {
-        // 평면 구조인 경우 그대로 저장
-        for (const criterion of importedCriteria) {
-          const criterionData = convertToCriteriaData({
-            name: criterion.name,
-            description: criterion.description || '',
-            parent_id: null,
-            level: 1,
-            order: criterion.order || 1
-          });
-          
-          await dataService.createCriteria(criterionData);
-        }
-        
-        alert(`✅ ${importedCriteria.length}개의 기준이 저장되었습니다.`);
+        setPendingImport({
+          rootCriteria,
+          subCriteria,
+          allCriteria: importedCriteria
+        });
+        setShowImportDialog(true);
+        setShowBulkInput(false);
+        return;
       }
       
-      // 데이터 다시 로드
-      const criteriaData = await dataService.getCriteria(projectId);
-      const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-      setCriteria(convertedCriteria);
-      
-      setShowBulkInput(false);
+      // 평면 구조인 경우 바로 저장
+      await processFlatImport(importedCriteria);
     } catch (error) {
       console.error('Failed to bulk import criteria:', error);
       alert('❌ 일괄 가져오기 중 오류가 발생했습니다.');
     }
+  };
+
+  const handleImportChoice = async (saveOnlyMain: boolean) => {
+    if (!pendingImport) return;
+    
+    try {
+      if (saveOnlyMain) {
+        await processHierarchicalImport(pendingImport.rootCriteria, pendingImport.subCriteria);
+      } else {
+        await processFlatImport(pendingImport.allCriteria);
+      }
+    } catch (error) {
+      console.error('Failed to process import choice:', error);
+      alert('❌ 가져오기 처리 중 오류가 발생했습니다.');
+    } finally {
+      setShowImportDialog(false);
+      setPendingImport(null);
+    }
+  };
+
+  const processHierarchicalImport = async (rootCriteria: Criterion[], subCriteria: Criterion[]) => {
+    // 최상위 기준만 저장하고 하위 기준은 메타데이터로 포함
+    for (const rootCriterion of rootCriteria) {
+      const relatedSubCriteria = subCriteria.filter(c => c.parent_id === rootCriterion.id);
+      
+      console.log(`📋 "${rootCriterion.name}" 기준의 하위 기준 ${relatedSubCriteria.length}개:`, 
+        relatedSubCriteria.map(s => s.name));
+      
+      const criterionData = convertToCriteriaData({
+        name: rootCriterion.name,
+        description: rootCriterion.description || '',
+        parent_id: null,
+        level: 1,
+        order: rootCriterion.order || 1
+      });
+      
+      // 하위 기준 정보를 설명에 추가
+      if (relatedSubCriteria.length > 0) {
+        const subCriteriaText = relatedSubCriteria.map(sub => 
+          sub.description ? `${sub.name}: ${sub.description}` : sub.name
+        ).join(', ');
+        
+        criterionData.description = criterionData.description 
+          ? `${criterionData.description} [하위 기준: ${subCriteriaText}]`
+          : `[하위 기준: ${subCriteriaText}]`;
+      }
+      
+      console.log('💾 주 기준 저장:', criterionData);
+      await dataService.createCriteria(criterionData);
+    }
+    
+    // 데이터 다시 로드
+    const criteriaData = await dataService.getCriteria(projectId);
+    const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+    setCriteria(convertedCriteria);
+    
+    alert(`✅ ${rootCriteria.length}개의 주 기준이 저장되었습니다.\n하위 기준들은 각 기준의 설명에 포함되었습니다.`);
+  };
+
+  const processFlatImport = async (criteria: Criterion[]) => {
+    // 모든 기준을 개별적으로 저장
+    for (const criterion of criteria) {
+      const criterionData = convertToCriteriaData({
+        name: criterion.name,
+        description: criterion.description || '',
+        parent_id: null, // AHP에서는 평면 구조 사용
+        level: 1,
+        order: criterion.order || 1
+      });
+      
+      console.log('💾 개별 기준 저장:', criterionData);
+      await dataService.createCriteria(criterionData);
+    }
+    
+    // 데이터 다시 로드
+    const criteriaData = await dataService.getCriteria(projectId);
+    const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+    setCriteria(convertedCriteria);
+    
+    alert(`✅ ${criteria.length}개의 기준이 저장되었습니다.`);
   };
 
   const renderHelpModal = () => {
@@ -848,6 +866,88 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
           onCancel={() => setShowBulkInput(false)}
           existingCriteria={criteria}
         />
+      )}
+
+      {/* Import Choice Modal */}
+      {showImportDialog && pendingImport && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0">
+                  <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="ml-3 text-lg font-medium text-gray-900">
+                  계층구조 가져오기 방식 선택
+                </h3>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-sm text-gray-600 mb-4">
+                  계층구조가 감지되었습니다:
+                </p>
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <div className="text-sm">
+                    <div className="flex justify-between mb-2">
+                      <span className="font-medium">주 기준:</span>
+                      <span className="text-blue-600">{pendingImport.rootCriteria.length}개</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">하위 기준:</span>
+                      <span className="text-green-600">{pendingImport.subCriteria.length}개</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 text-sm text-gray-600">
+                  <div className="border-l-4 border-blue-500 pl-3">
+                    <p className="font-medium text-gray-900">옵션 1: 주 기준만 저장 (권장)</p>
+                    <p>하위 기준들은 각 주 기준의 설명에 포함됩니다.</p>
+                    <p className="text-blue-600">→ AHP 평가에 적합한 {pendingImport.rootCriteria.length}개 기준 생성</p>
+                  </div>
+                  <div className="border-l-4 border-gray-400 pl-3">
+                    <p className="font-medium text-gray-900">옵션 2: 모든 기준을 개별 저장</p>
+                    <p>모든 항목을 별도의 기준으로 저장합니다.</p>
+                    <p className="text-gray-600">→ 총 {pendingImport.allCriteria.length}개 기준 생성</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <Button
+                  variant="primary"
+                  onClick={() => handleImportChoice(true)}
+                  className="flex-1"
+                >
+                  주 기준만 저장
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => handleImportChoice(false)}
+                  className="flex-1"
+                >
+                  모든 기준 저장
+                </Button>
+              </div>
+              
+              <div className="mt-4 text-center">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowImportDialog(false);
+                    setPendingImport(null);
+                    setShowBulkInput(true);
+                  }}
+                  size="sm"
+                >
+                  취소
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
