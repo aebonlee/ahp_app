@@ -225,14 +225,30 @@ class CleanDataService {
   // === 기준 관리 ===
   async getCriteria(projectId: string): Promise<CriteriaData[]> {
     try {
-      console.log('🔍 기준 조회 시작 (메모리):', projectId);
+      console.log('🔍 실제 DB에서 기준 조회 시작:', projectId);
+      const response = await criteriaApi.getCriteria(projectId);
       
-      // 메모리에서 기준 조회
-      const memoryKey = `criteria_${projectId}`;
-      const criteria = this.getMemoryData(memoryKey) || [];
+      if (response.success && response.data) {
+        // type이 'criteria' 또는 없는 항목만 필터링 (alternative 제외)
+        const criteria = (response.data || [])
+          .filter((item: any) => !item.type || item.type === 'criteria')
+          .map((item: any) => ({
+            id: item.id,
+            project_id: projectId,
+            name: item.name,
+            description: item.description || '',
+            parent_id: item.parent_id,
+            level: item.level || 1,
+            order: item.order || item.position || 0,
+            position: item.position || item.order || 0
+          }));
+        
+        console.log('✅ 기준 조회 성공:', criteria.length, '개');
+        return criteria;
+      }
       
-      console.log('✅ 메모리에서 기준 조회 성공:', criteria.length, '개');
-      return criteria;
+      console.warn('⚠️ 기준 조회 실패');
+      return [];
     } catch (error) {
       console.error('❌ 기준 조회 중 오류:', error);
       return [];
@@ -241,7 +257,7 @@ class CleanDataService {
 
   async createCriteria(data: Omit<CriteriaData, 'id'>): Promise<CriteriaData | null> {
     try {
-      console.log('🔍 기준 생성 시작 (임시 메모리 저장 방식):', {
+      console.log('🔍 실제 DB에 기준 생성 시작:', {
         name: data.name,
         project_id: data.project_id,
         level: data.level,
@@ -253,77 +269,90 @@ class CleanDataService {
         throw new Error('프로젝트 ID가 필요합니다.');
       }
       
-      // 메모리에서 기존 기준 조회
-      const memoryKey = `criteria_${data.project_id}`;
-      const existingCriteria = this.getMemoryData(memoryKey) || [];
-      console.log('📊 메모리에서 기존 기준 개수:', existingCriteria.length);
+      // 기존 기준 조회 (중복 검사를 위해)
+      const existingResponse = await criteriaApi.getCriteria(data.project_id);
+      const existingCriteria = existingResponse.success && existingResponse.data ? existingResponse.data : [];
       
       // 중복 검사
       const isDuplicate = existingCriteria.some((c: any) => 
-        c.name.toLowerCase() === data.name.toLowerCase()
+        c.name.toLowerCase() === data.name.toLowerCase() && 
+        (!c.type || c.type === 'criteria')
       );
       if (isDuplicate) {
         throw new Error(`동일한 기준명이 이미 존재합니다: "${data.name}"`);
       }
       
-      // 새 기준 생성
-      const newCriterion: CriteriaData = {
+      // Criteria API를 통해 생성
+      const response = await criteriaApi.createCriteria({
         ...data,
-        id: `criteria_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        order: data.order || existingCriteria.length + 1
-      };
-      console.log('✨ 새 기준 생성 (메모리):', newCriterion);
+        type: 'criteria'
+      });
       
-      // 메모리에 저장
-      const updatedCriteria = [...existingCriteria, newCriterion];
-      this.setMemoryData(memoryKey, updatedCriteria);
+      if (response.success && response.data) {
+        console.log('✅ 기준 생성 성공:', response.data.name);
+        
+        // 프로젝트의 criteria_count 업데이트
+        try {
+          const criteriaResponse = await this.getCriteria(data.project_id);
+          await projectApi.updateProject(data.project_id, {
+            criteria_count: criteriaResponse.length
+          });
+        } catch (updateError) {
+          console.warn('⚠️ 프로젝트 기준 수 업데이트 실패:', updateError);
+        }
+        
+        return response.data;
+      }
       
-      console.log('✅ 기준 생성 성공 (메모리 저장):', newCriterion.name);
-      return newCriterion;
-      
+      throw new Error('기준 생성에 실패했습니다.');
     } catch (error) {
       console.error('❌ 기준 생성 중 오류:', error);
       throw error;
     }
   }
 
-  // 메모리 데이터 관리 헬퍼 메서드들
+  // 메모리 데이터 관리 헬퍼 메서드들 (더 이상 사용하지 않음)
   private memoryStorage: { [key: string]: any } = {};
 
   private getMemoryData(key: string): any {
+    // Deprecated - 모든 데이터는 DB에서 직접 조회
+    console.warn('⚠️ getMemoryData는 더 이상 사용되지 않습니다. DB API를 사용하세요.');
     return this.memoryStorage[key];
   }
 
   private setMemoryData(key: string, data: any): void {
+    // Deprecated - 모든 데이터는 DB에 직접 저장
+    console.warn('⚠️ setMemoryData는 더 이상 사용되지 않습니다. DB API를 사용하세요.');
     this.memoryStorage[key] = data;
   }
 
   async deleteCriteria(criteriaId: string, projectId?: string): Promise<boolean> {
     try {
-      console.log('🗑️ 기준 삭제 시작 (메모리):', criteriaId);
+      console.log('🗑️ 실제 DB에서 기준 삭제 시작:', criteriaId);
       
-      if (!projectId) {
-        console.error('❌ 프로젝트 ID가 필요합니다:', criteriaId);
-        return false;
+      // Criteria API를 사용하여 삭제
+      const response = await criteriaApi.deleteCriteria(criteriaId);
+      
+      if (response.success) {
+        console.log('✅ 기준 삭제 성공:', criteriaId);
+        
+        // 프로젝트의 criteria_count 업데이트
+        if (projectId) {
+          try {
+            const criteriaResponse = await this.getCriteria(projectId);
+            await projectApi.updateProject(projectId, {
+              criteria_count: criteriaResponse.length
+            });
+          } catch (updateError) {
+            console.warn('⚠️ 프로젝트 기준 수 업데이트 실패:', updateError);
+          }
+        }
+        
+        return true;
       }
       
-      // 메모리에서 기준 조회
-      const memoryKey = `criteria_${projectId}`;
-      const existingCriteria = this.getMemoryData(memoryKey) || [];
-      
-      // 기준 제거
-      const updatedCriteria = existingCriteria.filter((c: any) => c.id !== criteriaId);
-      
-      if (updatedCriteria.length === existingCriteria.length) {
-        console.warn('⚠️ 삭제할 기준을 찾을 수 없습니다:', criteriaId);
-        return false;
-      }
-      
-      // 메모리에 저장
-      this.setMemoryData(memoryKey, updatedCriteria);
-      
-      console.log('✅ 기준 삭제 성공 (메모리):', criteriaId);
-      return true;
+      console.error('❌ 기준 삭제 실패');
+      return false;
     } catch (error) {
       console.error('❌ 기준 삭제 중 오류:', error);
       return false;
@@ -386,7 +415,6 @@ class CleanDataService {
       // Django 백엔드에서 type='alternative'로 처리됨
       const response = await criteriaApi.createCriteria({
         ...criteriaData,
-        // @ts-ignore - type 필드 추가
         type: 'alternative'
       });
       
