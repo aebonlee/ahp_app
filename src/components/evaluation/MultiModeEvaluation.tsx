@@ -8,6 +8,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import PairwiseGrid from './PairwiseGrid';
 import DirectInputEvaluation from './DirectInputEvaluation';
+import FuzzyPairwiseEvaluation from './fuzzy/FuzzyPairwiseEvaluation';
 
 export type EvaluationMode = 
   | 'pairwise'           // 쌍대비교
@@ -583,11 +584,30 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
   );
 
   const renderFuzzyEvaluation = () => (
-    <Card title={`퍼지 평가: ${criterionName}`}>
-      <div className="text-center py-8 text-gray-500">
-        퍼지 평가 모드는 개발 중입니다.
-      </div>
-    </Card>
+    <FuzzyPairwiseEvaluation
+      projectId={projectId}
+      criterionId={criterionId}
+      criterionName={criterionName}
+      items={alternatives}
+      evaluationType="alternatives"
+      participantId={participantId}
+      onComplete={(comparisons) => {
+        if (onComplete) {
+          onComplete({
+            mode: 'fuzzy',
+            participantId,
+            criterionId,
+            data: comparisons,
+            completionTime: Date.now(),
+            confidence: 0.95,
+            timestamp: new Date().toISOString()
+          });
+        }
+      }}
+      onSave={(comparisons) => {
+        console.log('퍼지 평가 임시 저장:', comparisons);
+      }}
+    />
   );
 
   const renderLinguisticEvaluation = () => (
