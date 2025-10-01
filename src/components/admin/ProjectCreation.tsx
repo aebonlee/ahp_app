@@ -128,32 +128,58 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
         
         {/* 논문 작성 권장 구조 안내 */}
         <div className="mt-6 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-6 rounded-r-lg shadow-sm">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-semibold text-yellow-800">📄 논문 작성 권장 구조</h3>
-              <div className="mt-2 text-sm text-yellow-700">
-                <p className="mb-2">학술 논문 작성 시 <strong>3개 기준 × 3개 대안</strong> 구조를 권장합니다.</p>
-                <ul className="list-disc list-inside space-y-1 text-xs">
-                  <li>명확한 연구 설계와 결과 해석이 용이</li>
-                  <li>일관성 검증(CR ≤ 0.1) 충족 확률 향상</li>
-                  <li>쌍대비교 횟수 최소화 (기준 3회, 대안 9회)</li>
-                  <li>추가 기준/대안은 다음 단계에서 선택 가능</li>
-                </ul>
-                <div className="mt-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowWorkflowGuide(true)}
-                    className="text-xs font-semibold text-yellow-700 hover:text-yellow-900 underline"
-                  >
-                    📚 전체 워크플로우 가이드 보기 →
-                  </button>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start flex-1">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-semibold text-yellow-800">📄 논문 작성 권장 구조</h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p className="mb-2">학술 논문 작성 시 <strong>3개 기준 × 3개 대안</strong> 구조를 권장합니다.</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>명확한 연구 설계와 결과 해석이 용이</li>
+                    <li>일관성 검증(CR ≤ 0.1) 충족 확률 향상</li>
+                    <li>쌍대비교 횟수 최소화 (기준 3회, 대안 9회)</li>
+                    <li>추가 기준/대안은 다음 단계에서 선택 가능</li>
+                  </ul>
                 </div>
               </div>
+            </div>
+            
+            {/* 워크플로우 가이드 버튼 - 우측에 배치 */}
+            <div className="ml-6 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowWorkflowGuide(true)}
+                className="group relative inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-400 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white font-bold text-sm rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+                style={{
+                  backgroundSize: '200% auto',
+                  backgroundPosition: '0%',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundPosition = '100%'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundPosition = '0%'}
+              >
+                <span className="absolute -top-1 -right-1">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                </span>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="flex flex-col items-start">
+                  <span className="text-sm">📚 워크플로우 가이드</span>
+                  <span className="text-xs opacity-90">단계별 상세 안내 보기</span>
+                </span>
+                <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
