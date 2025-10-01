@@ -21,7 +21,7 @@ export class TextParser {
    * 4. Excel 복사-붙여넣기 (탭 구분)
    */
   static parseText(text: string): ParseResult {
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    const lines = text.split('\n').filter(line => line.trim().length > 0);
     const criteria: ParsedCriterion[] = [];
     const errors: string[] = [];
     const nameMap = new Map<string, boolean>(); // 중복 검사용

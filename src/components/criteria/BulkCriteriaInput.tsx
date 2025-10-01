@@ -272,12 +272,13 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                     placeholder="여기에 계층구조를 입력하세요...
 
 예시:
-- 기술적 요소
-  - 성능 - 시스템의 처리 속도
+- 기술 품질
+  - 성능 - 시스템 처리 속도와 응답 시간
   - 안정성 - 오류 발생률과 복구 능력
-- 경제적 요소
-  - 초기 비용
-  - 운영 비용"
+  - 확장성 - 향후 기능 추가 및 규모 확대 가능성
+- 경제성
+  - 초기 비용 - 도입 및 구축에 필요한 투자 비용
+  - 운영 비용 - 월별 유지보수 및 관리 비용"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                   />
