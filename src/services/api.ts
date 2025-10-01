@@ -276,7 +276,8 @@ export const projectApi = {
       inputData: data,
       djangoDataToSend: djangoData,
       hasSettings: !!data.settings,
-      settingsStructure: data.settings ? Object.keys(data.settings) : 'none'
+      settingsStructure: data.settings ? Object.keys(data.settings) : 'none',
+      settingsStringified: data.settings ? JSON.stringify(data.settings) : 'none'
     });
     
     const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`, {

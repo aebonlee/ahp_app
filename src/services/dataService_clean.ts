@@ -480,20 +480,34 @@ class CleanDataService {
 
   async createEvaluator(data: Omit<EvaluatorData, 'id'>): Promise<EvaluatorData | null> {
     try {
-      console.log('🔍 평가자 생성 시작 (프로젝트 메타데이터):', data.name);
+      console.log('🔍 평가자 생성 시작 (프로젝트 메타데이터):', data.name, data.email);
+      console.log('🔍 프로젝트 ID:', data.project_id);
       
       if (!data.project_id) {
         throw new Error('프로젝트 ID가 필요합니다.');
       }
       
       // 프로젝트 조회
+      console.log('📥 프로젝트 조회 중...');
       const projectResponse = await projectApi.getProject(data.project_id);
+      console.log('📥 프로젝트 조회 응답:', projectResponse);
+      
       if (!projectResponse.success || !projectResponse.data) {
-        throw new Error('프로젝트를 찾을 수 없습니다.');
+        throw new Error(`프로젝트를 찾을 수 없습니다. (ID: ${data.project_id})`);
       }
       
       const currentProject = projectResponse.data;
-      const existingEvaluators = currentProject.settings?.evaluators || [];
+      console.log('📋 현재 프로젝트 데이터:', {
+        id: currentProject.id,
+        title: currentProject.title,
+        settings: currentProject.settings
+      });
+      
+      // settings가 null이면 빈 객체로 초기화
+      const currentSettings = currentProject.settings || {};
+      const existingEvaluators = currentSettings.evaluators || [];
+      console.log('👥 기존 평가자 수:', existingEvaluators.length);
+      console.log('📋 현재 settings 구조:', currentSettings);
       
       // 중복 검사
       const isDuplicate = existingEvaluators.some((e: any) => 
@@ -503,30 +517,56 @@ class CleanDataService {
         throw new Error('동일한 이메일의 평가자가 이미 존재합니다.');
       }
       
-      // 새 평가자 생성
+      // 새 평가자 생성 - 영어 이름과 이메일만 사용하여 인코딩 문제 방지
       const newEvaluator: EvaluatorData = {
-        ...data,
+        project_id: data.project_id,
+        name: data.name,
+        email: data.email,
         id: `evaluator_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         access_key: `KEY_${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
         status: 'pending'
       };
       
-      // 메타데이터 업데이트
+      console.log('✨ 새 평가자 데이터:', newEvaluator);
+      
+      // 메타데이터 업데이트 - Django가 받을 수 있는 형태로 수정
       const updatedEvaluators = [...existingEvaluators, newEvaluator];
-      const updateResponse = await projectApi.updateProject(data.project_id, {
-        settings: {
-          ...currentProject.settings,
-          evaluators: updatedEvaluators,
-          evaluators_count: updatedEvaluators.length
-        }
-      });
+      
+      // settings를 JSON 문자열로 변환 (Django JSONField 대응)
+      const newSettings = {
+        ...currentSettings, // currentProject.settings 대신 currentSettings 사용
+        evaluators: updatedEvaluators,
+        evaluators_count: updatedEvaluators.length
+      };
+      
+      const updateData = {
+        settings: newSettings // JSON 객체 그대로 전송
+      };
+      
+      console.log('🔄 프로젝트 업데이트 데이터:', updateData);
+      console.log('🔄 현재 프로젝트 settings:', currentSettings);
+      console.log('🔄 새로운 settings:', newSettings);
+      console.log('🔄 업데이트할 평가자 목록:', updatedEvaluators);
+      
+      const updateResponse = await projectApi.updateProject(data.project_id, updateData);
+      console.log('🔄 프로젝트 업데이트 응답:', updateResponse);
+      
+      // 응답 상세 분석
+      if (!updateResponse.success) {
+        console.error('❌ 프로젝트 업데이트 상세 오류:', {
+          error: updateResponse.error,
+          message: updateResponse.message,
+          statusInfo: 'HTTP 400 - Django 백엔드에서 요청 거부'
+        });
+      }
       
       if (updateResponse.success) {
         console.log('✅ 평가자 생성 성공:', newEvaluator.name);
         return newEvaluator;
       }
       
-      throw new Error('프로젝트 업데이트에 실패했습니다.');
+      console.error('❌ 프로젝트 업데이트 실패:', updateResponse.error);
+      throw new Error(`프로젝트 업데이트에 실패했습니다: ${updateResponse.error || '알 수 없는 오류'}`);
     } catch (error) {
       console.error('❌ 평가자 생성 중 오류:', error);
       throw error;
