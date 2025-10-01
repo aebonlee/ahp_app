@@ -42,24 +42,29 @@ const HierarchyTreeBuilder: React.FC<HierarchyTreeBuilderProps> = ({
   const handleBatchInput = () => {
     const mainCriteria = ['기준 1', '기준 2', '기준 3'];
     const subCriteria = ['하위기준 1', '하위기준 2', '하위기준 3'];
+    const timestamp = Date.now();
 
-    const newChildren: TreeNode[] = mainCriteria.map((main, mainIndex) => ({
-      id: `criteria-${Date.now()}-${mainIndex}`,
-      name: main,
-      level: 1,
-      parentId: 'root',
-      type: 'criteria',
-      order: mainIndex,
-      children: subCriteria.map((sub, subIndex) => ({
-        id: `subcriteria-${Date.now()}-${mainIndex}-${subIndex}`,
-        name: `${main} - ${sub}`,
-        level: 2,
-        parentId: `criteria-${Date.now()}-${mainIndex}`,
-        type: 'subcriteria',
-        order: subIndex,
-        children: []
-      }))
-    }));
+    const newChildren: TreeNode[] = mainCriteria.map((main, mainIndex) => {
+      const criteriaId = `criteria-${timestamp}-${mainIndex}`;
+      
+      return {
+        id: criteriaId,
+        name: main,
+        level: 1,
+        parentId: 'root',
+        type: 'criteria',
+        order: mainIndex,
+        children: subCriteria.map((sub, subIndex) => ({
+          id: `subcriteria-${timestamp}-${mainIndex}-${subIndex}`,
+          name: `${sub}`,  // 하위 기준 이름만 표시
+          level: 2,
+          parentId: criteriaId,  // 올바른 부모 ID 참조
+          type: 'subcriteria',
+          order: subIndex,
+          children: []
+        }))
+      };
+    });
 
     setHierarchy({
       ...hierarchy,
@@ -221,17 +226,41 @@ const HierarchyTreeBuilder: React.FC<HierarchyTreeBuilderProps> = ({
     const isEditing = editingNode === node.id;
     const isSelected = selectedNode?.id === node.id;
 
+    // 레벨에 따른 배경색 설정
+    const getLevelColor = () => {
+      switch (node.level) {
+        case 0: return 'bg-blue-50 border-blue-300';
+        case 1: return 'bg-green-50 border-green-300';
+        case 2: return 'bg-yellow-50 border-yellow-300';
+        default: return 'bg-gray-50 border-gray-300';
+      }
+    };
+
     return (
-      <div key={node.id} style={{ marginLeft: `${depth * 30}px` }} className="mb-2">
-        <div 
-          className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-all
-            ${isSelected ? 'bg-blue-100 border-2 border-blue-500' : 'hover:bg-gray-100'}`}
-          onClick={() => setSelectedNode(node)}
-        >
-          {/* 노드 타입 아이콘 */}
-          <span className="text-xl">
-            {node.type === 'goal' ? '🎯' : node.type === 'criteria' ? '📋' : '📌'}
-          </span>
+      <div key={node.id} className="relative">
+        {/* 연결선 (루트 노드가 아닌 경우) */}
+        {depth > 0 && (
+          <div 
+            className="absolute border-l-2 border-gray-300" 
+            style={{ 
+              left: `${(depth - 1) * 30 + 15}px`, 
+              top: '-8px', 
+              height: '16px' 
+            }}
+          />
+        )}
+        
+        <div style={{ marginLeft: `${depth * 30}px` }} className="mb-2">
+          <div 
+            className={`flex items-center gap-2 p-2 rounded border-2 cursor-pointer transition-all
+              ${getLevelColor()}
+              ${isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'}`}
+            onClick={() => setSelectedNode(node)}
+          >
+            {/* 노드 타입 아이콘 */}
+            <span className="text-xl">
+              {node.type === 'goal' ? '🎯' : node.type === 'criteria' ? '📋' : '📌'}
+            </span>
           
           {/* 노드 이름 */}
           {isEditing ? (
@@ -299,14 +328,26 @@ const HierarchyTreeBuilder: React.FC<HierarchyTreeBuilderProps> = ({
             </div>
           )}
         </div>
-
+        
         {/* 자식 노드들 */}
         {node.children.length > 0 && (
-          <div className="mt-1">
+          <div className="mt-2 relative">
+            {/* 자식들을 연결하는 세로선 */}
+            {node.children.length > 1 && (
+              <div 
+                className="absolute border-l-2 border-gray-300" 
+                style={{ 
+                  left: `${depth * 30 + 15}px`, 
+                  top: '0', 
+                  height: `calc(100% - 20px)` 
+                }}
+              />
+            )}
             {node.children.map(child => renderTreeNode(child, depth + 1))}
           </div>
         )}
       </div>
+    </div>
     );
   };
 
