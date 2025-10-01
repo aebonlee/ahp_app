@@ -29,7 +29,7 @@ export const API_ENDPOINTS = {
     PROFILE: '/api/service/auth/profile/',
     REFRESH: '/api/service/auth/token/refresh/'
   },
-  // Projects - 실제 작동하는 백엔드 API 구조
+  // Projects - 실제 Django REST Framework 라우터 경로 (확인됨)
   PROJECTS: {
     LIST: '/api/service/projects/projects/',
     CREATE: '/api/service/projects/projects/',
@@ -37,10 +37,10 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/service/projects/projects/${id}/`,
     DELETE: (id: string) => `/api/service/projects/projects/${id}/`
   },
-  // Criteria - 프로젝트 내부 기능으로 처리 (직접 API 대신)
+  // Criteria - Django REST Framework 프로젝트 액션 경로
   CRITERIA: {
     LIST: (projectId: string) => `/api/service/projects/projects/${projectId}/criteria/`,
-    CREATE: `/api/service/projects/projects/add_criteria/`,
+    CREATE: (projectId: string) => `/api/service/projects/projects/${projectId}/add_criteria/`,
     UPDATE: (id: string) => `/api/service/projects/criteria/${id}/`,
     DELETE: (id: string) => `/api/service/projects/criteria/${id}/`
   },

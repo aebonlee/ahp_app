@@ -331,19 +331,31 @@ class CleanDataService {
   }
 
   // === 대안 관리 ===
+  // Django에서는 Criteria 모델을 사용하며 type='alternative'로 구분
   async getAlternatives(projectId: string): Promise<AlternativeData[]> {
     try {
-      console.log('🔍 대안 조회 시작 (프로젝트 메타데이터):', projectId);
+      console.log('🔍 대안 조회 시작 (Criteria API with type=alternative):', projectId);
       
-      // 프로젝트 메타데이터에서 대안 조회
-      const projectResponse = await projectApi.getProject(projectId);
-      if (projectResponse.success && projectResponse.data) {
-        const alternatives = projectResponse.data.settings?.alternatives || [];
-        console.log('✅ 프로젝트 메타데이터에서 대안 조회 성공:', alternatives.length, '개');
+      // Criteria API를 사용하여 type='alternative'인 항목 조회
+      const response = await criteriaApi.getCriteria(projectId);
+      if (response.success && response.data) {
+        // type이 'alternative'인 항목만 필터링하고 AlternativeData 형식으로 변환
+        const alternatives = (response.data || [])
+          .filter((item: any) => item.type === 'alternative')
+          .map((item: any) => ({
+            id: item.id,
+            project_id: projectId,
+            name: item.name,
+            description: item.description || '',
+            position: item.order || item.position || 0,
+            cost: item.cost || 0
+          }));
+        
+        console.log('✅ 대안 조회 성공:', alternatives.length, '개');
         return alternatives;
       }
       
-      console.warn('⚠️ 프로젝트 조회 실패 또는 대안 없음');
+      console.warn('⚠️ 대안 조회 실패');
       return [];
     } catch (error) {
       console.error('❌ 대안 조회 중 오류:', error);
@@ -353,7 +365,122 @@ class CleanDataService {
 
   async createAlternative(data: Omit<AlternativeData, 'id'>): Promise<AlternativeData | null> {
     try {
-      console.log('🔍 대안 생성 시작 (프로젝트 메타데이터):', data.name);
+      console.log('🔍 대안 생성 시작 (Criteria API with type=alternative):', data.name);
+      
+      if (!data.project_id) {
+        throw new Error('프로젝트 ID가 필요합니다.');
+      }
+      
+      // Criteria API를 사용하여 type='alternative'로 생성
+      const criteriaData: Omit<CriteriaData, 'id'> = {
+        project_id: data.project_id,
+        name: data.name,
+        description: data.description,
+        position: data.position || 0,
+        parent_id: null, // 대안은 최상위 레벨
+        level: 0,
+        order: data.position || 0
+      };
+      
+      // Criteria API를 통해 alternative 타입으로 생성
+      // Django 백엔드에서 type='alternative'로 처리됨
+      const response = await criteriaApi.createCriteria({
+        ...criteriaData,
+        // @ts-ignore - type 필드 추가
+        type: 'alternative'
+      });
+      
+      if (response.success && response.data) {
+        console.log('✅ 대안 생성 성공:', data.name);
+        
+        // CriteriaData를 AlternativeData로 변환
+        const newAlternative: AlternativeData = {
+          id: response.data.id,
+          project_id: data.project_id,
+          name: response.data.name,
+          description: response.data.description || '',
+          position: response.data.position || response.data.order || 0,
+          cost: data.cost || 0
+        };
+        
+        // 프로젝트의 alternatives_count 업데이트
+        try {
+          const alternativesResponse = await this.getAlternatives(data.project_id);
+          await projectApi.updateProject(data.project_id, {
+            alternatives_count: alternativesResponse.length
+          });
+        } catch (updateError) {
+          console.warn('⚠️ 프로젝트 대안 수 업데이트 실패:', updateError);
+        }
+        
+        return newAlternative;
+      }
+      
+      throw new Error('대안 생성에 실패했습니다.');
+    } catch (error) {
+      console.error('❌ 대안 생성 중 오류:', error);
+      throw error;
+    }
+  }
+
+  async deleteAlternative(alternativeId: string, projectId?: string): Promise<boolean> {
+    try {
+      console.log('🗑️ 대안 삭제 시작 (Criteria API):', alternativeId);
+      
+      // Criteria API를 사용하여 삭제
+      const response = await criteriaApi.deleteCriteria(alternativeId);
+      
+      if (response.success) {
+        console.log('✅ 대안 삭제 성공:', alternativeId);
+        
+        // 프로젝트의 alternatives_count 업데이트
+        if (projectId) {
+          try {
+            const alternativesResponse = await this.getAlternatives(projectId);
+            await projectApi.updateProject(projectId, {
+              alternatives_count: alternativesResponse.length
+            });
+          } catch (updateError) {
+            console.warn('⚠️ 프로젝트 대안 수 업데이트 실패:', updateError);
+          }
+        }
+        
+        return true;
+      }
+      
+      console.error('❌ 대안 삭제 실패');
+      return false;
+    } catch (error) {
+      console.error('❌ 대안 삭제 중 오류:', error);
+      return false;
+    }
+  }
+
+  // === 평가자 관리 ===
+  // 평가자는 프로젝트 settings 메타데이터에 저장
+  async getEvaluators(projectId: string): Promise<EvaluatorData[]> {
+    try {
+      console.log('🔍 프로젝트 메타데이터에서 평가자 조회:', projectId);
+      
+      // 프로젝트 메타데이터에서 평가자 조회
+      const projectResponse = await projectApi.getProject(projectId);
+      if (projectResponse.success && projectResponse.data) {
+        const evaluators = projectResponse.data.settings?.evaluators || [];
+        console.log('✅ 평가자 조회 성공:', evaluators.length, '개');
+        return evaluators;
+      }
+      
+      console.warn('⚠️ 프로젝트 조회 실패 또는 평가자 없음');
+      return [];
+    } catch (error) {
+      console.error('❌ 평가자 조회 중 오류:', error);
+      return [];
+    }
+  }
+
+  async createEvaluator(data: Omit<EvaluatorData, 'id'>): Promise<EvaluatorData | null> {
+    try {
+      console.log('🔍 평가자 생성 시작 (프로젝트 메타데이터):', data.name);
       
       if (!data.project_id) {
         throw new Error('프로젝트 ID가 필요합니다.');
@@ -366,56 +493,57 @@ class CleanDataService {
       }
       
       const currentProject = projectResponse.data;
-      const existingAlternatives = currentProject.settings?.alternatives || [];
+      const existingEvaluators = currentProject.settings?.evaluators || [];
       
       // 중복 검사
-      const isDuplicate = existingAlternatives.some((a: any) => 
-        a.name.toLowerCase() === data.name.toLowerCase()
+      const isDuplicate = existingEvaluators.some((e: any) => 
+        e.email.toLowerCase() === data.email.toLowerCase()
       );
       if (isDuplicate) {
-        throw new Error('동일한 대안명이 이미 존재합니다.');
+        throw new Error('동일한 이메일의 평가자가 이미 존재합니다.');
       }
       
-      // 새 대안 생성
-      const newAlternative: AlternativeData = {
+      // 새 평가자 생성
+      const newEvaluator: EvaluatorData = {
         ...data,
-        id: `alternative_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        position: data.position || existingAlternatives.length + 1
+        id: `evaluator_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        access_key: `KEY_${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        status: 'pending'
       };
       
       // 메타데이터 업데이트
-      const updatedAlternatives = [...existingAlternatives, newAlternative];
+      const updatedEvaluators = [...existingEvaluators, newEvaluator];
       const updateResponse = await projectApi.updateProject(data.project_id, {
         settings: {
           ...currentProject.settings,
-          alternatives: updatedAlternatives,
-          alternatives_count: updatedAlternatives.length
+          evaluators: updatedEvaluators,
+          evaluators_count: updatedEvaluators.length
         }
       });
       
       if (updateResponse.success) {
-        console.log('✅ 대안 생성 성공:', newAlternative.name);
-        return newAlternative;
+        console.log('✅ 평가자 생성 성공:', newEvaluator.name);
+        return newEvaluator;
       }
       
       throw new Error('프로젝트 업데이트에 실패했습니다.');
     } catch (error) {
-      console.error('❌ 대안 생성 중 오류:', error);
+      console.error('❌ 평가자 생성 중 오류:', error);
       throw error;
     }
   }
 
-  async deleteAlternative(alternativeId: string, projectId?: string): Promise<boolean> {
+  async deleteEvaluator(evaluatorId: string, projectId?: string): Promise<boolean> {
     try {
-      console.log('🗑️ 대안 삭제 시작:', alternativeId);
+      console.log('🗑️ 평가자 삭제 시작:', evaluatorId);
       
       // projectId가 없으면 모든 프로젝트에서 검색
       if (!projectId) {
         const projects = await this.getProjects();
         for (const project of projects) {
-          const alternatives = project.settings?.alternatives || [];
-          const foundAlternative = alternatives.find((a: any) => a.id === alternativeId);
-          if (foundAlternative) {
+          const evaluators = project.settings?.evaluators || [];
+          const foundEvaluator = evaluators.find((e: any) => e.id === evaluatorId);
+          if (foundEvaluator) {
             projectId = project.id;
             break;
           }
@@ -423,7 +551,7 @@ class CleanDataService {
       }
       
       if (!projectId) {
-        console.error('❌ 대안을 찾을 수 없습니다:', alternativeId);
+        console.error('❌ 평가자를 찾을 수 없습니다:', evaluatorId);
         return false;
       }
       
@@ -434,13 +562,13 @@ class CleanDataService {
       }
       
       const currentProject = projectResponse.data;
-      const existingAlternatives = currentProject.settings?.alternatives || [];
+      const existingEvaluators = currentProject.settings?.evaluators || [];
       
-      // 대안 제거
-      const updatedAlternatives = existingAlternatives.filter((a: any) => a.id !== alternativeId);
+      // 평가자 제거
+      const updatedEvaluators = existingEvaluators.filter((e: any) => e.id !== evaluatorId);
       
-      if (updatedAlternatives.length === existingAlternatives.length) {
-        console.warn('⚠️ 삭제할 대안을 찾을 수 없습니다:', alternativeId);
+      if (updatedEvaluators.length === existingEvaluators.length) {
+        console.warn('⚠️ 삭제할 평가자를 찾을 수 없습니다:', evaluatorId);
         return false;
       }
       
@@ -448,54 +576,20 @@ class CleanDataService {
       const updateResponse = await projectApi.updateProject(projectId, {
         settings: {
           ...currentProject.settings,
-          alternatives: updatedAlternatives,
-          alternatives_count: updatedAlternatives.length
+          evaluators: updatedEvaluators,
+          evaluators_count: updatedEvaluators.length
         }
       });
       
       if (updateResponse.success) {
-        console.log('✅ 대안 삭제 성공:', alternativeId);
+        console.log('✅ 평가자 삭제 성공:', evaluatorId);
         return true;
       }
       
       throw new Error('프로젝트 업데이트에 실패했습니다.');
     } catch (error) {
-      console.error('❌ 대안 삭제 중 오류:', error);
+      console.error('❌ 평가자 삭제 중 오류:', error);
       return false;
-    }
-  }
-
-  // === 평가자 관리 ===
-  async getEvaluators(projectId: string): Promise<EvaluatorData[]> {
-    try {
-      console.log('🔍 실제 DB에서 평가자 조회 시작:', projectId);
-      const response = await evaluatorApi.getEvaluators(projectId);
-      if (response.success && response.data) {
-        const evaluators = Array.isArray(response.data) ? response.data : [];
-        console.log('✅ 평가자 조회 성공:', evaluators.length, '개');
-        return evaluators;
-      }
-      console.error('❌ 평가자 조회 실패');
-      return [];
-    } catch (error) {
-      console.error('❌ 평가자 조회 중 오류:', error);
-      return [];
-    }
-  }
-
-  async createEvaluator(data: Omit<EvaluatorData, 'id'>): Promise<EvaluatorData | null> {
-    try {
-      console.log('🔍 실제 DB에 평가자 생성 시작:', data.name);
-      const response = await evaluatorApi.addEvaluator(data);
-      if (response.success && response.data) {
-        console.log('✅ 평가자 생성 성공');
-        return response.data;
-      }
-      console.error('❌ 평가자 생성 실패');
-      return null;
-    } catch (error) {
-      console.error('❌ 평가자 생성 중 오류:', error);
-      throw error;
     }
   }
 

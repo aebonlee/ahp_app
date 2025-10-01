@@ -63,6 +63,7 @@ export interface CriteriaData {
   parent_id?: string | null;
   level?: number;
   order?: number;
+  type?: 'criteria' | 'alternative'; // Django 모델의 type 필드 추가
 }
 
 // 대안 관련 타입
@@ -343,12 +344,20 @@ export const criteriaApi = {
   getCriteria: (projectId: string) =>
     makeRequest<CriteriaData[]>(`/api/service/projects/projects/${projectId}/criteria/`),
 
-  // 기준 생성
-  createCriteria: (data: Omit<CriteriaData, 'id'>) =>
-    makeRequest<CriteriaData>('/api/service/projects/criteria/', {
+  // 기준 생성 (type 필드 포함)
+  createCriteria: (data: Omit<CriteriaData, 'id'>) => {
+    // type 필드가 없으면 기본값 'criteria' 설정
+    const requestData = {
+      ...data,
+      type: data.type || 'criteria'
+    };
+    // project_id를 사용하여 올바른 엔드포인트 생성
+    const endpoint = `/api/service/projects/projects/${data.project_id}/add_criteria/`;
+    return makeRequest<CriteriaData>(endpoint, {
       method: 'POST',
-      body: JSON.stringify(data)
-    }),
+      body: JSON.stringify(requestData)
+    });
+  },
 
   // 기준 수정
   updateCriteria: (id: string, data: Partial<CriteriaData>) =>
@@ -405,35 +414,48 @@ export const alternativeApi = {
     })
 };
 
-// === 평가자 API ===
+// === 평가자 API (Django ProjectMember 사용) ===
 export const evaluatorApi = {
-  // 프로젝트의 평가자 목록 조회
+  // 프로젝트의 평가자(멤버) 목록 조회
   getEvaluators: (projectId: string) =>
-    makeRequest<EvaluatorData[]>(`/api/projects/${projectId}/evaluators`),
+    makeRequest<EvaluatorData[]>(`/api/service/projects/projects/${projectId}/members/`),
 
-  // 평가자 추가
-  addEvaluator: (data: Omit<EvaluatorData, 'id'>) =>
-    makeRequest<EvaluatorData>('/api/evaluators', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    }),
+  // 평가자(멤버) 추가 - Django의 add_member action 사용
+  addEvaluator: (data: Omit<EvaluatorData, 'id'>) => {
+    // Django ProjectMember 형식으로 변환
+    const memberData = {
+      user: data.email, // 일단 email을 user로 전달 (나중에 user 생성 로직 필요)
+      role: 'evaluator',
+      can_edit_structure: false,
+      can_manage_evaluators: false,
+      can_view_results: true
+    };
+    
+    return makeRequest<EvaluatorData>(
+      `/api/service/projects/projects/${data.project_id}/add_member/`, 
+      {
+        method: 'POST',
+        body: JSON.stringify(memberData)
+      }
+    );
+  },
 
-  // 평가자 수정
+  // 평가자(멤버) 수정
   updateEvaluator: (id: string, data: Partial<EvaluatorData>) =>
-    makeRequest<EvaluatorData>(`/api/evaluators/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
+    makeRequest<EvaluatorData>(`/api/service/projects/projects/${data.project_id}/update_member/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ member_id: id, ...data })
     }),
 
-  // 평가자 삭제
+  // 평가자(멤버) 삭제
   removeEvaluator: (id: string) =>
-    makeRequest<void>(`/api/evaluators/${id}`, {
+    makeRequest<void>(`/api/service/projects/projects/remove_member/?member_id=${id}`, {
       method: 'DELETE'
     }),
 
-  // 평가 초대 이메일 발송
+  // 평가 초대 이메일 발송 (임시 - 향후 구현)
   sendInvitation: (projectId: string, evaluatorIds: string[]) =>
-    makeRequest<void>(`/api/projects/${projectId}/invitations`, {
+    makeRequest<void>(`/api/service/projects/projects/${projectId}/send_invitations/`, {
       method: 'POST',
       body: JSON.stringify({ evaluatorIds })
     })

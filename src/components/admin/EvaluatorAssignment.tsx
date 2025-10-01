@@ -170,10 +170,10 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
     try {
       console.log('🗑️ 평가자 삭제 시작:', id);
       
-      // 실제 API로 평가자 삭제 (향후 구현 예정)
-      // await evaluatorApi.removeEvaluator(id);
+      // dataService로 평가자 삭제
+      await cleanDataService.deleteEvaluator(id, projectId);
       
-      // 현재는 로컬 상태에서만 제거
+      // 로컬 상태에서도 제거
       setEvaluators(prev => prev.filter(e => e.id !== id));
       console.log('✅ 평가자가 삭제되었습니다.');
     } catch (error) {

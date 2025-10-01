@@ -1148,12 +1148,22 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           }}
           onDeleteProject={handleDeleteProject}
           onModelBuilder={(project) => {
+            console.log('🏗️ 모델 구축 버튼 클릭:', project.id, project.title);
             setSelectedProjectId(project.id || '');
-            handleTabChange('model-builder');
+            if (externalOnTabChange) {
+              externalOnTabChange('model-builder');
+            } else {
+              setActiveMenu('model-builder');
+            }
           }}
           onAnalysis={(project) => {
+            console.log('📊 결과 분석 버튼 클릭:', project.id, project.title);
             setSelectedProjectId(project.id || '');
-            handleTabChange('results-analysis');
+            if (externalOnTabChange) {
+              externalOnTabChange('results-analysis');
+            } else {
+              setActiveMenu('analysis');
+            }
           }}
         />
       </div>
@@ -3391,12 +3401,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             }}
             onDeleteProject={handleDeleteProject}
             onModelBuilder={(project) => {
+              console.log('🏗️ 모델 구축 버튼 클릭 (projects 메뉴):', project.id, project.title);
               setSelectedProjectId(project.id || '');
               setActiveMenu('model-builder');
             }}
             onAnalysis={(project) => {
+              console.log('📊 결과 분석 버튼 클릭 (projects 메뉴):', project.id, project.title);
               setSelectedProjectId(project.id || '');
-              setActiveMenu('results-analysis' as any);
+              setActiveMenu('analysis');
             }}
           />
         );
