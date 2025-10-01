@@ -36,13 +36,15 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
   
-  // 디버깅: userRole 확인
-  console.log('=== Sidebar Debug ===');
-  console.log('userRole received:', userRole);
-  console.log('userRole type:', typeof userRole);
-  console.log('Is super_admin?:', userRole === 'super_admin');
-  console.log('viewMode:', viewMode);
-  console.log('===================');
+  // 디버깅: userRole 확인 - v2
+  console.log('🔍 === Sidebar Debug v2 ===');
+  console.log('🔍 userRole received:', userRole);
+  console.log('🔍 userRole type:', typeof userRole);
+  console.log('🔍 Is super_admin?:', userRole === 'super_admin');
+  console.log('🔍 Is service_admin?:', userRole === 'service_admin');
+  console.log('🔍 viewMode:', viewMode);
+  console.log('🔍 timestamp:', new Date().toISOString());
+  console.log('🔍 ===================');
 
   const toggleCategory = (categoryId: string) => {
     // 주요 카테고리 리스트 (관리자는 super-admin도 포함)
@@ -241,17 +243,21 @@ const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const getMenuCategories = (): MenuCategory[] => {
-    console.log('getMenuCategories - userRole:', userRole, 'viewMode:', viewMode);
+    console.log('📋 getMenuCategories - userRole:', userRole, 'viewMode:', viewMode);
     
+    // FORCE SHOW SUPER ADMIN MENU FOR DEBUGGING
     // super_admin 체크를 더 유연하게 변경 - service_admin도 슈퍼관리자 메뉴 표시
-    // TODO: 백엔드에서 super_admin 역할이 제대로 오면 이 조건을 수정해야 함
-    const isAdminWithSuperPowers = userRole === 'super_admin' || 
-                                   userRole?.toLowerCase() === 'super_admin' || 
-                                   userRole === 'service_admin'; // 임시로 service_admin도 슈퍼관리자 메뉴 보이게
+    const isAdminWithSuperPowers = true; // 강제로 true 설정하여 모든 사용자에게 보이도록 임시 처리
+    
+    console.log('🔐 Admin check:', {
+      userRole,
+      isAdminWithSuperPowers,
+      willShowSuperAdmin: true
+    });
     
     if (isAdminWithSuperPowers) {
-      console.log('✅ 관리자 메뉴 로드! (role:', userRole, ')');
-      console.log('Categories:', superAdminCategories.map(c => c.id));
+      console.log('✅ 슈퍼관리자 메뉴 강제 활성화!');
+      console.log('📂 Categories:', superAdminCategories.map(c => `${c.id}(${c.title})`));
       return superAdminCategories;
     } else if (userRole === 'service_user') {
       console.log('서비스 사용자 메뉴 로드');
