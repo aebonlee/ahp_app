@@ -1,5 +1,4 @@
-import React from 'react';
-
+import React, { useState } from 'react';
 import type { UserRole } from '../../types';
 
 interface SidebarProps {
@@ -12,90 +11,208 @@ interface SidebarProps {
   onModeSwitch?: (mode: 'service' | 'evaluator') => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, activeTab, onTabChange, canSwitchModes, onModeSwitch }) => {
-  const superAdminMenuItems = [
-    { id: 'dashboard', label: '관리자 대시보드', icon: '👑' },
-    { id: 'django-admin-integration', label: 'Django 관리자', icon: '🔧' },
-    { id: 'users', label: '사용자 관리', icon: '👥' },
-    { id: 'projects', label: '전체 프로젝트', icon: '📋' },
-    { id: 'monitoring', label: '시스템 모니터링', icon: '⚡' },
-    { id: 'database', label: 'DB 관리', icon: '🗄️' },
-    { id: 'audit', label: '감사 로그', icon: '📝' },
-    { id: 'settings', label: '시스템 설정', icon: '⚙️' },
-    { id: 'backup', label: '백업/복원', icon: '💾' },
-    { id: 'system', label: '시스템 정보', icon: '🖥️' }
-  ];
+interface MenuItem {
+  id: string;
+  label: string;
+  icon?: string;
+  isAiSubmenu?: boolean;
+}
 
-  const serviceAdminMenuItems = [
-    { id: 'dashboard', label: '내 대시보드', icon: '🏠' },
-    { id: 'user-guide', label: '사용자 가이드', icon: '📚' },
-    { id: 'demographic-survey', label: '인구통계학적 설문조사', icon: '📊' },
-    { id: 'my-projects', label: '내 프로젝트', icon: '📂' },
-    { id: 'project-creation', label: '새 프로젝트', icon: '➕' },
-    { id: 'model-builder', label: '모델 구축', icon: '🏗️' },
-    { id: 'evaluation-test', label: '평가 테스트', icon: '🧪' },
-    { id: 'connection-test', label: '연동 테스트', icon: '🔌' },
-    { id: 'evaluator-management', label: '평가자 관리', icon: '👥' },
-    { id: 'progress-monitoring', label: '진행률 모니터링', icon: '📈' },
-    { id: 'results-analysis', label: '결과 분석', icon: '📊' },
-    { id: 'paper-management', label: '논문 작성 관리', icon: '📝' },
-    
-    // AI 논문 지원 시스템 메뉴
-    { id: 'ai-paper-assistant', label: 'AI 논문 지원', icon: '🤖', isAiMenu: true },
-    { id: 'ai-ahp-methodology', label: 'AHP 방법론 설명', icon: '📖', isAiSubmenu: true },
-    { id: 'ai-fuzzy-methodology', label: '퍼지 AHP 방법론', icon: '📖', isAiSubmenu: true },
-    { id: 'ai-paper-generation', label: '내 프로젝트 논문 작성', icon: '✍️', isAiSubmenu: true },
-    { id: 'ai-results-interpretation', label: 'AI 결과 분석 & 해석', icon: '🔍', isAiSubmenu: true },
-    { id: 'ai-quality-validation', label: '논문 품질 검증', icon: '✓', isAiSubmenu: true },
-    { id: 'ai-materials-generation', label: '학술 자료 생성', icon: '📄', isAiSubmenu: true },
-    { id: 'ai-chatbot-assistant', label: 'AI 챗봇 도우미', icon: '💬', isAiSubmenu: true },
-    
-    { id: 'export-reports', label: '보고서 내보내기', icon: '📤' },
-    { id: 'workshop-management', label: '워크숍 관리', icon: '🎯' },
-    { id: 'decision-support-system', label: '의사결정 지원', icon: '🧠' },
-    { id: 'personal-settings', label: '개인 설정', icon: '⚙️' },
-    ...(canSwitchModes ? [{ id: 'mode-switch-to-evaluator', label: '평가자 모드로 전환', icon: '⚖️' }] : [])
-  ];
+interface MenuCategory {
+  id: string;
+  title: string;
+  icon?: string;
+  items: MenuItem[];
+}
 
-  const evaluatorMenuItems = [
-    { id: 'dashboard', label: '평가자 홈', icon: '🏠' },
-    { id: 'assigned-projects', label: '할당된 프로젝트', icon: '📋' },
-    { id: 'pairwise-evaluation', label: '쌍대비교 평가', icon: '⚖️' },
-    { id: 'direct-evaluation', label: '직접입력 평가', icon: '📝' },
-    { id: 'my-evaluations', label: '내 평가 현황', icon: '📊' },
-    { id: 'evaluation-history', label: '평가 이력', icon: '📜' },
-    { id: 'consistency-check', label: '일관성 검증', icon: '✅' },
-    { id: 'evaluation-guide', label: '평가 가이드', icon: '📖' },
-    { id: 'evaluator-settings', label: '평가자 설정', icon: '⚙️' },
-    ...(canSwitchModes ? [{ id: 'mode-switch-to-service', label: '서비스 모드로 전환', icon: '🏠' }] : [])
-  ];
+const Sidebar: React.FC<SidebarProps> = ({ 
+  isCollapsed, 
+  userRole, 
+  viewMode, 
+  activeTab, 
+  onTabChange, 
+  canSwitchModes, 
+  onModeSwitch 
+}) => {
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const viewerMenuItems = [
-    { id: 'viewer-dashboard', label: '조회 대시보드', icon: '👁️' },
-    { id: 'public-projects', label: '공개 프로젝트', icon: '🌐' },
-    { id: 'completed-results', label: '완료된 결과', icon: '✅' },
-    { id: 'statistics-view', label: '통계 조회', icon: '📊' },
-    { id: 'download-reports', label: '보고서 다운로드', icon: '⬇️' },
-    { id: 'help-support', label: '도움말', icon: '❓' }
-  ];
-
-  const getMenuItems = () => {
-    if (userRole === 'super_admin') {
-      return superAdminMenuItems;
-    } else if (userRole === 'service_admin' || userRole === 'service_user') {
-      // 서비스 사용자는 viewMode에 따라 메뉴 전환
-      if (viewMode === 'evaluator') {
-        return evaluatorMenuItems;
-      }
-      return serviceAdminMenuItems;
-    } else if (userRole === 'evaluator') {
-      return evaluatorMenuItems;
-    }
-    return serviceAdminMenuItems;
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
   };
 
-  const menuItems = getMenuItems();
+  // 슈퍼관리자 메뉴 구조
+  const superAdminCategories: MenuCategory[] = [
+    {
+      id: 'system',
+      title: '시스템 관리',
+      icon: '🖥️',
+      items: [
+        { id: 'dashboard', label: '관리자 대시보드', icon: '👑' },
+        { id: 'django-admin-integration', label: 'Django 관리자', icon: '🔧' },
+        { id: 'system', label: '시스템 정보', icon: '💻' },
+        { id: 'monitoring', label: '시스템 모니터링', icon: '⚡' },
+        { id: 'database', label: 'DB 관리', icon: '🗄️' },
+        { id: 'backup', label: '백업/복원', icon: '💾' }
+      ]
+    },
+    {
+      id: 'users',
+      title: '사용자 관리',
+      icon: '👥',
+      items: [
+        { id: 'users', label: '사용자 관리', icon: '👤' },
+        { id: 'audit', label: '감사 로그', icon: '📝' },
+        { id: 'settings', label: '시스템 설정', icon: '⚙️' }
+      ]
+    },
+    {
+      id: 'projects',
+      title: '프로젝트 관리',
+      icon: '📋',
+      items: [
+        { id: 'projects', label: '전체 프로젝트', icon: '📂' }
+      ]
+    }
+  ];
+
+  // 서비스 관리자/사용자 메뉴 구조
+  const serviceAdminCategories: MenuCategory[] = [
+    {
+      id: 'basic',
+      title: '기본 기능',
+      items: [
+        { id: 'dashboard', label: '내 대시보드' },
+        { id: 'my-projects', label: '내 프로젝트' },
+        { id: 'project-creation', label: '새 프로젝트' },
+        { id: 'model-builder', label: '모델 구축' },
+        { id: 'evaluator-management', label: '평가자 관리' },
+        { id: 'results-analysis', label: '결과 분석' },
+        { id: 'export-reports', label: '보고서 내보내기' }
+      ]
+    },
+    {
+      id: 'advanced',
+      title: '고급 기능',
+      items: [
+        { id: 'demographic-survey', label: '인구통계 설문' },
+        { id: 'evaluation-test', label: '평가 테스트' },
+        { id: 'progress-monitoring', label: '진행률 모니터링' },
+        { id: 'paper-management', label: '논문 작성' },
+        { id: 'workshop-management', label: '워크숍 관리' },
+        { id: 'decision-support-system', label: '의사결정 지원' },
+        { id: 'user-guide', label: '사용자 가이드' },
+        { id: 'personal-settings', label: '개인 설정' }
+      ]
+    },
+    {
+      id: 'ai',
+      title: 'AI 지원',
+      items: [
+        { id: 'ai-paper-assistant', label: 'AI 논문 도우미' },
+        { id: 'ai-ahp-methodology', label: 'AHP 방법론' },
+        { id: 'ai-fuzzy-methodology', label: '퍼지 AHP' },
+        { id: 'ai-paper-generation', label: '논문 작성' },
+        { id: 'ai-results-interpretation', label: '결과 해석' },
+        { id: 'ai-quality-validation', label: '품질 검증' },
+        { id: 'ai-materials-generation', label: '학술 자료' },
+        { id: 'ai-chatbot-assistant', label: 'AI 챗봇' }
+      ]
+    }
+  ];
+
+  // 슈퍼관리자가 아닌 경우 관리자 메뉴 추가
+  if (userRole === 'service_admin') {
+    serviceAdminCategories.push({
+      id: 'admin',
+      title: '관리 기능',
+      items: [
+        { id: 'connection-test', label: '연동 테스트' }
+      ]
+    });
+  }
+
+  // 모드 전환 가능한 경우 메뉴 추가
+  if (canSwitchModes) {
+    serviceAdminCategories.push({
+      id: 'mode',
+      title: '모드 전환',
+      items: [
+        { id: 'mode-switch-to-evaluator', label: '평가자 모드로 전환' }
+      ]
+    });
+  }
+
+  // 평가자 메뉴 구조
+  const evaluatorCategories: MenuCategory[] = [
+    {
+      id: 'evaluation',
+      title: '평가 작업',
+      items: [
+        { id: 'dashboard', label: '평가자 홈' },
+        { id: 'assigned-projects', label: '할당된 프로젝트' },
+        { id: 'pairwise-evaluation', label: '쌍대비교 평가' },
+        { id: 'direct-evaluation', label: '직접입력 평가' },
+        { id: 'consistency-check', label: '일관성 검증' }
+      ]
+    },
+    {
+      id: 'history',
+      title: '평가 이력',
+      items: [
+        { id: 'my-evaluations', label: '내 평가 현황' },
+        { id: 'evaluation-history', label: '평가 이력' }
+      ]
+    },
+    {
+      id: 'support',
+      title: '지원',
+      items: [
+        { id: 'evaluation-guide', label: '평가 가이드' },
+        { id: 'evaluator-settings', label: '평가자 설정' }
+      ]
+    }
+  ];
+
+  // 평가자 모드 전환 가능한 경우
+  if (canSwitchModes && viewMode === 'evaluator') {
+    evaluatorCategories.push({
+      id: 'mode',
+      title: '모드 전환',
+      items: [
+        { id: 'mode-switch-to-service', label: '서비스 모드로 전환' }
+      ]
+    });
+  }
+
+  const getMenuCategories = (): MenuCategory[] => {
+    if (userRole === 'super_admin') {
+      return superAdminCategories;
+    } else if (userRole === 'service_admin' || userRole === 'service_user') {
+      if (viewMode === 'evaluator') {
+        return evaluatorCategories;
+      }
+      return serviceAdminCategories;
+    } else if (userRole === 'evaluator') {
+      return evaluatorCategories;
+    }
+    return serviceAdminCategories;
+  };
+
+  const menuCategories = getMenuCategories();
+
+  const handleItemClick = (itemId: string) => {
+    if (itemId === 'mode-switch-to-evaluator' && onModeSwitch) {
+      onModeSwitch('evaluator');
+    } else if (itemId === 'mode-switch-to-service' && onModeSwitch) {
+      onModeSwitch('service');
+    } else {
+      onTabChange(itemId);
+    }
+  };
 
   return (
     <aside className={`fixed left-0 transition-luxury z-40 flex flex-col ${
@@ -141,100 +258,114 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
           </h2>
         )}
         
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          {menuItems.map((item: any) => {
-            const isModeSwitch = item.id.startsWith('mode-switch-');
-            const isAiMenu = item.isAiMenu;
-            const isAiSubmenu = item.isAiSubmenu;
-            const isActive = activeTab === item.id;
-            
-            const handleClick = () => {
-              if (isModeSwitch && onModeSwitch) {
-                if (item.id === 'mode-switch-to-evaluator') {
-                  onModeSwitch('evaluator');
-                } else if (item.id === 'mode-switch-to-service') {
-                  onModeSwitch('service');
-                }
-              } else {
-                onTabChange(item.id);
-              }
-            };
-            
-            return (
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          {menuCategories.map((category) => (
+            <div key={category.id}>
+              {/* 카테고리 헤더 */}
               <button
-                key={item.id}
-                onClick={handleClick}
-                className="w-full flex items-center text-left transition-luxury group hover:scale-105"
+                onClick={() => toggleCategory(category.id)}
+                className="w-full flex items-center justify-between text-left transition-luxury"
                 style={{
-                  padding: isAiSubmenu 
-                    ? 'var(--space-2) var(--space-4)' 
-                    : 'var(--space-3) var(--space-4)',
-                  borderRadius: 'var(--radius-md)',
-                  backgroundColor: isActive 
-                    ? 'var(--gold-primary)' 
-                    : isModeSwitch 
-                    ? 'var(--bg-elevated)' 
-                    : 'transparent',
-                  color: isActive 
-                    ? 'white' 
-                    : isModeSwitch 
-                    ? 'var(--color-warning)' 
-                    : 'var(--text-secondary)',
-                  border: '1px solid',
-                  borderColor: isActive 
-                    ? 'var(--gold-primary)' 
-                    : isModeSwitch 
-                    ? 'var(--color-warning)' 
-                    : 'transparent',
-                  fontWeight: 'var(--font-weight-medium)',
-                  boxShadow: isActive 
-                    ? 'var(--shadow-gold)' 
-                    : 'var(--shadow-xs)',
-                  paddingLeft: isAiSubmenu ? 'var(--space-8)' : 'var(--space-4)',
-                  fontSize: 'var(--font-size-sm)'
+                  padding: 'var(--space-2) var(--space-3)',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-primary)',
+                  fontSize: 'var(--font-size-sm)',
+                  fontWeight: 'var(--font-weight-semibold)',
+                  marginBottom: 'var(--space-2)'
                 }}
                 onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = isModeSwitch 
-                      ? 'var(--color-warning)' 
-                      : 'var(--bg-elevated)';
-                    e.currentTarget.style.color = isModeSwitch 
-                      ? 'white' 
-                      : 'var(--text-primary)';
-                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-                  }
+                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
                 }}
                 onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = isModeSwitch 
-                      ? 'var(--bg-elevated)' 
-                      : 'transparent';
-                    e.currentTarget.style.color = isModeSwitch 
-                      ? 'var(--color-warning)' 
-                      : 'var(--text-secondary)';
-                    e.currentTarget.style.boxShadow = 'var(--shadow-xs)';
-                  }
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
-                <span className="text-xl mr-3" style={{ 
-                  fontSize: 'var(--font-size-lg)',
-                  minWidth: '2rem'
-                }}>
-                  {item.icon}
-                </span>
-                {!isCollapsed && (
-                  <span className="font-semibold" 
-                        style={{ 
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                          fontSize: 'var(--font-size-sm)',
-                          fontWeight: 'var(--font-weight-semibold)'
-                        }}>
-                    {item.label}
+                <div className="flex items-center">
+                  {category.icon && (
+                    <span className="mr-2" style={{ fontSize: 'var(--font-size-md)' }}>
+                      {category.icon}
+                    </span>
+                  )}
+                  <span style={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
+                    {category.title}
                   </span>
-                )}
+                </div>
+                <svg 
+                  className={`transition-transform ${expandedCategories.includes(category.id) ? 'rotate-180' : ''}`}
+                  style={{ width: '16px', height: '16px' }}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
-            );
-          })}
+
+              {/* 카테고리 아이템들 */}
+              {expandedCategories.includes(category.id) && (
+                <div style={{ marginBottom: 'var(--space-4)' }}>
+                  {category.items.map((item) => {
+                    const isModeSwitch = item.id.startsWith('mode-switch-');
+                    const isActive = activeTab === item.id;
+                    
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleItemClick(item.id)}
+                        className="w-full flex items-center text-left transition-luxury group hover:scale-105"
+                        style={{
+                          padding: 'var(--space-2) var(--space-4)',
+                          paddingLeft: 'var(--space-8)',
+                          borderRadius: 'var(--radius-sm)',
+                          backgroundColor: isActive 
+                            ? 'var(--gold-primary)' 
+                            : isModeSwitch 
+                            ? 'var(--bg-elevated)' 
+                            : 'transparent',
+                          color: isActive 
+                            ? 'white' 
+                            : isModeSwitch 
+                            ? 'var(--color-warning)' 
+                            : 'var(--text-secondary)',
+                          fontWeight: 'var(--font-weight-medium)',
+                          fontSize: 'var(--font-size-sm)',
+                          marginBottom: 'var(--space-1)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.backgroundColor = isModeSwitch 
+                              ? 'var(--color-warning)' 
+                              : 'var(--bg-elevated)';
+                            e.currentTarget.style.color = isModeSwitch 
+                              ? 'white' 
+                              : 'var(--text-primary)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.backgroundColor = isModeSwitch 
+                              ? 'var(--bg-elevated)' 
+                              : 'transparent';
+                            e.currentTarget.style.color = isModeSwitch 
+                              ? 'var(--color-warning)' 
+                              : 'var(--text-secondary)';
+                          }
+                        }}
+                      >
+                        {item.icon && (
+                          <span className="mr-2" style={{ fontSize: 'var(--font-size-md)' }}>
+                            {item.icon}
+                          </span>
+                        )}
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
         </nav>
       </div>
       
@@ -265,13 +396,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, userRole, viewMode, acti
                 className="hover:underline"
                 style={{ color: 'var(--accent-primary)' }}
               >
-                📧 문의하기
+                문의하기
               </button>
               <button 
                 className="hover:underline"
                 style={{ color: 'var(--accent-primary)' }}
               >
-                📖 도움말
+                도움말
               </button>
             </div>
           </div>
