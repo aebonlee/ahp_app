@@ -64,37 +64,55 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  // 슈퍼관리자 메뉴 구조
+  // 슈퍼관리자 메뉴 구조 - 서비스 메뉴와 동일하게 기본/고급/AI로 구분
   const superAdminCategories: MenuCategory[] = [
     {
-      id: 'system',
-      title: '시스템 관리',
-      icon: '🖥️',
+      id: 'basic',
+      title: '기본 기능',
+      icon: '📌',
       items: [
-        { id: 'dashboard', label: '관리자 대시보드', icon: '👑' },
-        { id: 'django-admin-integration', label: 'Django 관리자', icon: '🔧' },
-        { id: 'system', label: '시스템 정보', icon: '💻' },
-        { id: 'monitoring', label: '시스템 모니터링', icon: '⚡' },
-        { id: 'database', label: 'DB 관리', icon: '🗄️' },
-        { id: 'backup', label: '백업/복원', icon: '💾' }
+        { id: 'dashboard', label: '관리자 대시보드' },
+        { id: 'users', label: '사용자 관리' },
+        { id: 'projects', label: '전체 프로젝트' },
+        { id: 'system', label: '시스템 정보' },
+        { id: 'monitoring', label: '시스템 모니터링' },
+        { id: 'settings', label: '시스템 설정' }
       ]
     },
     {
-      id: 'users',
-      title: '사용자 관리',
-      icon: '👥',
+      id: 'advanced', 
+      title: '고급 기능',
+      icon: '🚀',
       items: [
-        { id: 'users', label: '사용자 관리', icon: '👤' },
-        { id: 'audit', label: '감사 로그', icon: '📝' },
-        { id: 'settings', label: '시스템 설정', icon: '⚙️' }
+        { id: 'database', label: 'DB 관리' },
+        { id: 'backup', label: '백업/복원' },
+        { id: 'audit', label: '감사 로그' },
+        { id: 'connection-test', label: '연결 테스트' },
+        { id: 'django-admin', label: 'Django 관리자' },
+        { id: 'mode-switch', label: '모드 전환' }
       ]
     },
     {
-      id: 'projects',
-      title: '프로젝트 관리',
-      icon: '📋',
+      id: 'ai',
+      title: 'AI 지원',
+      icon: '🤖',
       items: [
-        { id: 'projects', label: '전체 프로젝트', icon: '📂' }
+        { id: 'ai-system-monitor', label: 'AI 시스템 모니터' },
+        { id: 'ai-usage-analytics', label: 'AI 사용 분석' },
+        { id: 'ai-model-management', label: 'AI 모델 관리' },
+        { id: 'ai-training-data', label: '학습 데이터 관리' }
+      ]
+    },
+    {
+      id: 'super-admin',
+      title: '슈퍼 관리자',
+      icon: '👑',
+      items: [
+        { id: 'super-admin-dashboard', label: '슈퍼 관리자 대시보드' },
+        { id: 'role-switch-admin', label: '서비스 관리자로 전환' },
+        { id: 'role-switch-user', label: '서비스 사용자로 전환' },
+        { id: 'role-switch-evaluator', label: '평가자로 전환' },
+        { id: 'system-reset', label: '시스템 초기화' }
       ]
     }
   ];
@@ -228,6 +246,34 @@ const Sidebar: React.FC<SidebarProps> = ({
   const menuCategories = getMenuCategories();
 
   const handleItemClick = (itemId: string) => {
+    // Django 관리자 링크 처리
+    if (itemId === 'django-admin') {
+      window.open('http://localhost:8000/admin/', '_blank');
+      return;
+    }
+    
+    // 슈퍼관리자 역할 전환 처리
+    if (userRole === 'super_admin') {
+      if (itemId === 'role-switch-admin') {
+        // 서비스 관리자 역할로 전환
+        if (onModeSwitch) onModeSwitch('service');
+        // 실제로는 여기서 사용자 역할도 변경해야 함
+        onTabChange('dashboard');
+        return;
+      } else if (itemId === 'role-switch-user') {
+        // 서비스 사용자 역할로 전환  
+        if (onModeSwitch) onModeSwitch('service');
+        onTabChange('dashboard');
+        return;
+      } else if (itemId === 'role-switch-evaluator') {
+        // 평가자 역할로 전환
+        if (onModeSwitch) onModeSwitch('evaluator');
+        onTabChange('dashboard');
+        return;
+      }
+    }
+    
+    // 기존 모드 전환 처리
     if (itemId === 'mode-switch-to-evaluator' && onModeSwitch) {
       onModeSwitch('evaluator');
     } else if (itemId === 'mode-switch-to-service' && onModeSwitch) {
