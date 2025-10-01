@@ -539,7 +539,11 @@ class CleanDataService {
         evaluators_count: updatedEvaluators.length
       };
       
+      // Django 백엔드가 요구하는 필수 필드들을 포함하여 업데이트
       const updateData = {
+        title: currentProject.title,
+        description: currentProject.description,
+        objective: currentProject.objective || '평가자 추가를 위한 업데이트', // objective는 필수 필드
         settings: newSettings // JSON 객체 그대로 전송
       };
       
@@ -612,8 +616,11 @@ class CleanDataService {
         return false;
       }
       
-      // 메타데이터 업데이트
+      // 메타데이터 업데이트 - 필수 필드들 포함
       const updateResponse = await projectApi.updateProject(projectId, {
+        title: currentProject.title,
+        description: currentProject.description,
+        objective: currentProject.objective || '평가자 삭제를 위한 업데이트',
         settings: {
           ...currentProject.settings,
           evaluators: updatedEvaluators,

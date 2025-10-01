@@ -167,11 +167,11 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <Card title="🗂️ 계층구조 일괄 입력">
-          <div className="space-y-6">
-            {/* 탭 메뉴 */}
-            <div className="flex border-b">
+          <div className="flex flex-col h-full max-h-[80vh]">
+            {/* 탭 메뉴 - 고정 */}
+            <div className="flex border-b flex-shrink-0">
               <button
                 className={`px-4 py-2 font-medium ${
                   activeTab === 'input'
@@ -193,6 +193,9 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                 입력 예제
               </button>
             </div>
+
+            {/* 스크롤 가능한 콘텐츠 영역 */}
+            <div className="flex-1 overflow-y-scroll p-6 space-y-6">
 
             {activeTab === 'input' && (
               <div className="space-y-4">
@@ -315,9 +318,10 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                 </div>
               </div>
             )}
+            </div>
 
-            {/* 액션 버튼 */}
-            <div className="flex justify-end space-x-3 pt-4 border-t">
+            {/* 액션 버튼 - 고정 영역 */}
+            <div className="flex justify-end space-x-3 pt-4 px-6 pb-6 border-t flex-shrink-0 bg-white">
               <Button variant="secondary" onClick={onCancel}>
                 취소
               </Button>

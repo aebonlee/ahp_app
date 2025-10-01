@@ -169,6 +169,15 @@ const makeRequest = async <T>(
     }
 
     if (!response.ok) {
+      // 상세 에러 로깅 추가
+      console.error(`🚨 HTTP ${response.status} 에러 [${endpoint}]:`, {
+        status: response.status,
+        statusText: response.statusText,
+        url: url,
+        method: options.method || 'GET',
+        responseData: data
+      });
+      
       // 권한 오류 특별 처리
       if (response.status === 403) {
         console.warn(`권한 오류 [${endpoint}]: 이 API는 인증이 필요하거나 권한이 없습니다.`);
@@ -179,7 +188,17 @@ const makeRequest = async <T>(
           message: '권한 제한됨'
         };
       }
-      throw new Error(data.message || data.error || 'API 요청 실패');
+      
+      // 400 에러 상세 분석
+      if (response.status === 400) {
+        console.error('🔍 400 Bad Request 상세 분석:', {
+          errorData: data,
+          errorType: typeof data,
+          errorKeys: data && typeof data === 'object' ? Object.keys(data) : 'N/A'
+        });
+      }
+      
+      throw new Error(data.message || data.error || `HTTP ${response.status}: API 요청 실패`);
     }
 
     return {
@@ -262,14 +281,14 @@ export const projectApi = {
   updateProject: async (id: string, data: Partial<ProjectData>) => {
     // 프론트엔드 데이터를 Django 형식으로 변환
     const djangoData: any = {};
-    if (data.title) djangoData.title = data.title;
-    if (data.description) djangoData.description = data.description;
-    if (data.objective) djangoData.objective = data.objective;
-    if (data.status) djangoData.status = data.status;
-    if (data.evaluation_mode) djangoData.evaluation_mode = data.evaluation_mode;
-    if (data.workflow_stage) djangoData.workflow_stage = data.workflow_stage;
-    if (data.dueDate) djangoData.deadline = data.dueDate; // dueDate → deadline 매핑
-    if (data.settings) djangoData.settings = data.settings; // settings 필드 추가
+    if (data.title !== undefined) djangoData.title = data.title;
+    if (data.description !== undefined) djangoData.description = data.description;
+    if (data.objective !== undefined) djangoData.objective = data.objective;
+    if (data.status !== undefined) djangoData.status = data.status;
+    if (data.evaluation_mode !== undefined) djangoData.evaluation_mode = data.evaluation_mode;
+    if (data.workflow_stage !== undefined) djangoData.workflow_stage = data.workflow_stage;
+    if (data.dueDate !== undefined) djangoData.deadline = data.dueDate; // dueDate → deadline 매핑
+    if (data.settings !== undefined) djangoData.settings = data.settings; // settings 필드 추가
     
     console.log('🔍 projectApi.updateProject 호출:', {
       projectId: id,
@@ -279,6 +298,18 @@ export const projectApi = {
       settingsStructure: data.settings ? Object.keys(data.settings) : 'none',
       settingsStringified: data.settings ? JSON.stringify(data.settings) : 'none'
     });
+    
+    // 실제 전송되는 JSON 문자열 확인
+    const requestBody = JSON.stringify(djangoData);
+    console.log('📤 실제 전송 JSON:', requestBody);
+    console.log('📊 JSON 길이:', requestBody.length);
+    
+    // 각 필드 개별 확인
+    console.log('🔍 각 필드 상세 분석:');
+    console.log('  - title:', typeof djangoData.title, djangoData.title);
+    console.log('  - description:', typeof djangoData.description, djangoData.description);
+    console.log('  - objective:', typeof djangoData.objective, djangoData.objective);
+    console.log('  - settings:', typeof djangoData.settings, djangoData.settings ? 'exists' : 'null');
     
     const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`, {
       method: 'PUT',
