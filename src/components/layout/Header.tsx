@@ -218,23 +218,6 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
             </button>
           </div>
 
-          {/* 슈퍼 관리자 토글 버튼 - 헤더에 추가 */}
-          {user && (user.role === 'super_admin' || user.role === 'service_admin' || user.email === 'admin@ahp.com') && (
-            <div style={{
-              marginLeft: '20px',
-              padding: '5px 15px',
-              backgroundColor: '#ff0000',
-              color: 'white',
-              borderRadius: '5px',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}
-            onClick={() => {
-              alert('슈퍼 관리자 모드 전환은 사이드바에서 가능합니다');
-            }}>
-              👑 슈퍼 관리자
-            </div>
-          )}
 
           {/* 좌측 핵심 기능 그룹 */}
           {user && (

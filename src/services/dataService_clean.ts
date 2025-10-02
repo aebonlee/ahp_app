@@ -260,8 +260,11 @@ class CleanDataService {
       console.log('🔍 실제 DB에 기준 생성 시작:', {
         name: data.name,
         project_id: data.project_id,
+        project_id_type: typeof data.project_id,
         level: data.level,
-        parent_id: data.parent_id
+        parent_id: data.parent_id,
+        parent_id_type: typeof data.parent_id,
+        description: data.description
       });
       
       if (!data.project_id) {
@@ -270,26 +273,32 @@ class CleanDataService {
       }
       
       // 기존 기준 조회 (중복 검사를 위해)
-      const existingResponse = await criteriaApi.getCriteria(data.project_id);
-      const existingCriteria = existingResponse.success && existingResponse.data ? existingResponse.data : [];
-      
-      // 중복 검사
-      const isDuplicate = existingCriteria.some((c: any) => 
-        c.name.toLowerCase() === data.name.toLowerCase() && 
-        (!c.type || c.type === 'criteria')
-      );
-      if (isDuplicate) {
-        throw new Error(`동일한 기준명이 이미 존재합니다: "${data.name}"`);
+      try {
+        const existingResponse = await criteriaApi.getCriteria(data.project_id);
+        const existingCriteria = existingResponse.success && existingResponse.data ? existingResponse.data : [];
+        
+        // 중복 검사
+        const isDuplicate = existingCriteria.some((c: any) => 
+          c.name.toLowerCase() === data.name.toLowerCase() && 
+          (!c.type || c.type === 'criteria')
+        );
+        if (isDuplicate) {
+          throw new Error(`동일한 기준명이 이미 존재합니다: "${data.name}"`);
+        }
+      } catch (dupError) {
+        console.warn('⚠️ 중복 검사 중 오류 (계속 진행):', dupError);
       }
       
-      // Criteria API를 통해 생성
+      // Criteria API를 통해 생성 - UUID 형식 유지
       const response = await criteriaApi.createCriteria({
         ...data,
         type: 'criteria'
       });
       
+      console.log('📥 기준 생성 API 응답:', response);
+      
       if (response.success && response.data) {
-        console.log('✅ 기준 생성 성공:', response.data.name);
+        console.log('✅ 기준 생성 성공:', response.data);
         
         // 프로젝트의 criteria_count 업데이트
         try {
@@ -304,10 +313,15 @@ class CleanDataService {
         return response.data;
       }
       
-      throw new Error('기준 생성에 실패했습니다.');
+      const errorMsg = response.error || response.message || '기준 생성에 실패했습니다.';
+      console.error('❌ API 응답 실패:', errorMsg);
+      throw new Error(errorMsg);
     } catch (error) {
       console.error('❌ 기준 생성 중 오류:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw new Error(`기준 생성에 실패했습니다: ${error.message}`);
+      }
+      throw new Error('기준 생성에 실패했습니다.');
     }
   }
 

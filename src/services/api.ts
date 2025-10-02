@@ -56,11 +56,13 @@ export interface ProjectData {
 export interface CriteriaData {
   id?: string;
   project_id: string;
+  project?: string;  // Django API에서 요구하는 project 필드 추가
   name: string;
   description?: string;
   position: number;
   weight?: number;
   parent_id?: string | null;
+  parent?: string | null;  // Django API에서 요구하는 parent 필드 추가
   level?: number;
   order?: number;
   type?: 'criteria' | 'alternative'; // Django 모델의 type 필드 추가
@@ -101,9 +103,17 @@ export interface PairwiseComparisonData {
 
 // HTTP 헤더 생성 함수
 const getAuthHeaders = (): HeadersInit => {
-  return {
+  const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
+  
+  // localStorage에서 토큰 확인
+  const accessToken = localStorage.getItem('ahp_access_token') || sessionStorage.getItem('ahp_access_token');
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+  
+  return headers;
 };
 
 // API 기본 요청 함수
@@ -175,8 +185,16 @@ const makeRequest = async <T>(
         statusText: response.statusText,
         url: url,
         method: options.method || 'GET',
+        requestBody: options.body ? JSON.parse(options.body as string) : null,
         responseData: data
       });
+      
+      // 500 에러 특별 처리 - 백엔드 상세 에러 메시지 추출
+      if (response.status === 500) {
+        const errorDetail = data?.detail || data?.error || data?.message || '서버 내부 오류';
+        console.error('🔥 서버 500 에러 상세:', errorDetail);
+        throw new Error(`서버 오류: ${errorDetail}`);
+      }
       
       // 권한 오류 특별 처리
       if (response.status === 403) {
@@ -377,15 +395,74 @@ export const criteriaApi = {
     makeRequest<CriteriaData[]>(`/api/service/projects/projects/${projectId}/criteria/`),
 
   // 기준 생성 (type 필드 포함)
-  createCriteria: (data: Omit<CriteriaData, 'id'>) => {
-    // type 필드가 없으면 기본값 'criteria' 설정
+  createCriteria: async (data: Omit<CriteriaData, 'id'>) => {
+    // UUID 형식의 프로젝트 ID 처리 (백엔드가 UUID ForeignKey 사용)
+    const projectId = data.project_id; // UUID 문자열 그대로 사용
+    
+    // 프로젝트 ID 유효성 검증 (UUID 형식 체크)
+    if (!projectId || typeof projectId !== 'string') {
+      console.error('❌ 잘못된 프로젝트 ID:', projectId);
+      return {
+        success: false,
+        error: '프로젝트 ID가 유효하지 않습니다.'
+      };
+    }
+    
+    // 먼저 ProjectViewSet의 add_criteria 엔드포인트 시도
+    try {
+      const projectCriteriaData = {
+        name: data.name,
+        description: data.description || '',
+        type: data.type || 'criteria',
+        parent: data.parent_id || null, // parent_id도 UUID 문자열 그대로
+        order: data.order || 0,
+        level: data.level || 1,
+        weight: data.weight || 0
+      };
+      
+      console.log('📤 프로젝트 기준 추가 API 시도:', {
+        endpoint: `/api/service/projects/projects/${projectId}/add_criteria/`,
+        data: projectCriteriaData
+      });
+      
+      const response = await makeRequest<CriteriaData>(
+        `/api/service/projects/projects/${projectId}/add_criteria/`, 
+        {
+          method: 'POST',
+          body: JSON.stringify(projectCriteriaData)
+        }
+      );
+      
+      if (response.success) {
+        return response;
+      }
+    } catch (error) {
+      console.log('⚠️ 프로젝트 기준 추가 실패, 일반 기준 생성 시도...', error);
+    }
+    
+    // 실패하면 일반 CriteriaViewSet 엔드포인트 사용
     const requestData = {
-      ...data,
-      type: data.type || 'criteria'
+      project: projectId,  // UUID 문자열 그대로 전송
+      name: data.name,
+      description: data.description || '',
+      type: data.type || 'criteria',
+      parent: data.parent_id || null,  // parent_id도 UUID 문자열 그대로
+      order: data.order || 0,
+      level: data.level || 1,
+      weight: data.weight || 0,
+      is_active: true
     };
-    // project_id를 사용하여 올바른 엔드포인트 생성
-    const endpoint = `/api/service/projects/projects/${data.project_id}/add_criteria/`;
-    return makeRequest<CriteriaData>(endpoint, {
+    
+    console.log('📤 일반 기준 생성 API 요청:', {
+      endpoint: `/api/service/projects/criteria/`,
+      data: requestData,
+      dataTypes: {
+        project: typeof requestData.project,
+        parent: typeof requestData.parent
+      }
+    });
+    
+    return makeRequest<CriteriaData>('/api/service/projects/criteria/', {
       method: 'POST',
       body: JSON.stringify(requestData)
     });

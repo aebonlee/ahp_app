@@ -1991,29 +1991,6 @@ function App() {
   if (user) {
     return (
       <div className="App min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-        {/* 슈퍼 관리자 토글 버튼 - 무조건 표시 (디버깅) */}
-        <div style={{
-            position: 'fixed',
-            top: '10px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 9999,
-            backgroundColor: '#ff0000',
-            color: 'white',
-            padding: '10px 20px',
-            borderRadius: '10px',
-            fontWeight: 'bold',
-            fontSize: '16px',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-            cursor: 'pointer',
-            border: '3px solid yellow'
-          }}
-          onClick={() => {
-            alert(`현재 역할: ${user.role}\n이메일: ${user.email}\n\n토글 기능은 사이드바에서 사용 가능합니다.`);
-          }}>
-            👑 슈퍼 관리자 모드 토글 버튼 👑<br/>
-            <small>Role: {user.role} | Email: {user.email}</small>
-          </div>
         <Layout
           user={user}
           viewMode={viewMode}

@@ -349,69 +349,6 @@ const Sidebar: React.FC<SidebarProps> = ({
            fontFamily: 'Inter, Pretendard, system-ui, sans-serif',
            height: 'calc(100vh - var(--header-height))'
          }}>
-      {/* 슈퍼 어드민 토글 버튼 - admin@ahp.com만 표시 */}
-      {!isCollapsed && (() => {
-        // userRole 체크와 localStorage 체크를 모두 수행
-        const storedUserStr = localStorage.getItem('ahp_user');
-        let isAdminEmail = false;
-        
-        if (storedUserStr) {
-          try {
-            const storedUserData = JSON.parse(storedUserStr);
-            isAdminEmail = storedUserData.email === 'admin@ahp.com' || storedUserData.email?.toLowerCase() === 'admin@ahp.com';
-          } catch (e) {
-            console.error('Failed to parse user data:', e);
-          }
-        }
-        
-        const shouldShowToggle = isAdminEmail || userRole === 'super_admin';
-        
-        console.log('🔍 Toggle button visibility check:', {
-          isAdminEmail,
-          userRole,
-          shouldShowToggle
-        });
-        
-        if (!shouldShowToggle) return null;
-        
-        return (
-          <div style={{
-            padding: 'var(--space-4)', 
-            borderBottom: '1px solid var(--border-light)',
-            backgroundColor: '#fff3cd',
-            border: '2px solid #ffc107'
-          }}>
-            <button
-              onClick={() => {
-                const newMode = !isSuperAdminMode;
-                setIsSuperAdminMode(newMode);
-                localStorage.setItem('ahp_super_mode', newMode.toString());
-                console.log('🔄 토글 버튼 클릭! 새 상태:', newMode);
-                alert(`모드 변경: ${newMode ? '슈퍼 관리자' : '개인 서비스'} 모드로 전환됩니다.`);
-              }}
-              className="w-full p-3 rounded-lg transition-all flex items-center justify-between"
-              style={{
-                backgroundColor: isSuperAdminMode ? '#dc3545' : '#28a745',
-                color: 'white',
-                border: '3px solid',
-                borderColor: isSuperAdminMode ? '#dc3545' : '#28a745',
-                fontSize: 'var(--font-size-lg)',
-                fontWeight: 'var(--font-weight-bold)',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                cursor: 'pointer'
-              }}
-            >
-              <div className="flex items-center">
-                <span className="mr-2 text-2xl">{isSuperAdminMode ? '🔄' : '👑'}</span>
-                <span>{isSuperAdminMode ? '개인 관리자 서비스로 전환' : '슈퍼 어드민 모드로 전환'}</span>
-              </div>
-            </button>
-            <div style={{ marginTop: '10px', fontSize: '12px', color: '#856404', fontWeight: 'bold' }}>
-              현재 모드: {isSuperAdminMode ? '👑 슈퍼 관리자' : '👤 개인 서비스'} | 이메일: {isAdminEmail ? 'admin@ahp.com' : userRole}
-            </div>
-          </div>
-        );
-      })()}
       
       {/* 메뉴 영역 - 스크롤 가능 */}
       <div 
@@ -588,13 +525,59 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* 하단 푸터 영역 */}
       {!isCollapsed && (
         <div 
-          className="border-t p-4"
+          className="border-t"
           style={{
             borderColor: 'var(--border-light)',
             backgroundColor: 'var(--bg-elevated)'
           }}
         >
-          <div className="text-center space-y-2">
+          {/* 슈퍼 어드민 토글 버튼 - 사이드바 하단에 위치 */}
+          {(() => {
+            const storedUserStr = localStorage.getItem('ahp_user');
+            let isAdminEmail = false;
+            
+            if (storedUserStr) {
+              try {
+                const storedUserData = JSON.parse(storedUserStr);
+                isAdminEmail = storedUserData.email === 'admin@ahp.com' || storedUserData.email?.toLowerCase() === 'admin@ahp.com';
+              } catch (e) {
+                console.error('Failed to parse user data:', e);
+              }
+            }
+            
+            const shouldShowToggle = isAdminEmail || userRole === 'super_admin';
+            
+            if (!shouldShowToggle) return null;
+            
+            return (
+              <div style={{
+                padding: 'var(--space-3)', 
+                borderBottom: '1px solid var(--border-light)'
+              }}>
+                <button
+                  onClick={() => {
+                    const newMode = !isSuperAdminMode;
+                    setIsSuperAdminMode(newMode);
+                    localStorage.setItem('ahp_super_mode', newMode.toString());
+                    console.log('🔄 토글 버튼 클릭! 새 상태:', newMode);
+                  }}
+                  className="w-full p-2 rounded-lg transition-all flex items-center justify-center"
+                  style={{
+                    backgroundColor: isSuperAdminMode ? 'var(--gold-primary)' : 'var(--accent-primary)',
+                    color: 'white',
+                    fontSize: 'var(--font-size-sm)',
+                    fontWeight: 'var(--font-weight-bold)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <span className="mr-2">{isSuperAdminMode ? '👤' : '👑'}</span>
+                  <span>{isSuperAdminMode ? '개인 서비스 모드' : '슈퍼 관리자 모드'}</span>
+                </button>
+              </div>
+            );
+          })()}
+          
+          <div className="text-center space-y-2 p-4">
             <div 
               className="text-xs font-semibold"
               style={{ color: 'var(--text-primary)' }}
