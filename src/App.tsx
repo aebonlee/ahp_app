@@ -67,6 +67,11 @@ function App() {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
+        // admin@ahp.com은 슈퍼 관리자로 처리
+        if (parsedUser.email === 'admin@ahp.com') {
+          parsedUser.role = 'super_admin';
+          console.log('🔑 초기 복원 - 슈퍼 관리자 권한 부여:', parsedUser.email);
+        }
         console.log('🚀 초기 사용자 정보 복원:', parsedUser);
         return parsedUser;
       } catch (error) {
@@ -454,6 +459,12 @@ function App() {
       console.log('🎯 로그인 결과 전체:', result);
       console.log('🎯 사용자 역할:', result.user.role);
       console.log('🎯 사용자 이메일:', result.user.email);
+      
+      // admin@ahp.com은 슈퍼 관리자로 처리 (재확인)
+      if (result.user.email === 'admin@ahp.com') {
+        result.user.role = 'super_admin';
+        console.log('🔑 App.tsx - 슈퍼 관리자 권한 강제 부여');
+      }
       
       setUser(result.user);
       // localStorage에 사용자 정보 저장

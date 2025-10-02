@@ -37,8 +37,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
   const [isSuperAdminMode, setIsSuperAdminMode] = useState(false);
   
-  // userRole 확인
-  console.log('🔍 Sidebar - userRole:', userRole, 'isSuperAdminMode:', isSuperAdminMode);
+  // userRole 확인 - 디버깅
+  console.log('🔍 === Sidebar Debug ===');
+  console.log('🔍 userRole:', userRole);
+  console.log('🔍 userRole === "super_admin":', userRole === 'super_admin');
+  console.log('🔍 isSuperAdminMode:', isSuperAdminMode);
+  console.log('🔍 Should show button:', userRole === 'super_admin');
+  console.log('🔍 ==================');
 
   const toggleCategory = (categoryId: string) => {
     // 모든 주요 카테고리 리스트 (슈퍼 관리자 메뉴 포함)
@@ -367,8 +372,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               }
             </h2>
             
-            {/* 슈퍼 어드민 모드 전환 버튼 */}
-            {(userRole === 'super_admin') ? (
+            {/* 슈퍼 어드민 모드 전환 버튼 - 임시로 admin@ahp.com 체크 추가 */}
+            {(userRole === 'super_admin' || userRole === 'service_admin') ? (
               <button
                   onClick={() => setIsSuperAdminMode(!isSuperAdminMode)}
                   className="w-full mb-4 p-3 rounded-lg transition-all flex items-center justify-between"

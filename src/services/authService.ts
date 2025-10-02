@@ -282,6 +282,11 @@ class AuthService {
     const result = await this.apiRequest<User>(API_ENDPOINTS.AUTH.ME);
     
     if (result.success && result.data) {
+      // admin@ahp.com은 슈퍼 관리자로 처리
+      if (result.data.email === 'admin@ahp.com') {
+        result.data.role = 'super_admin';
+        console.log('🔑 getCurrentUser - 슈퍼 관리자 권한 부여:', result.data.email);
+      }
       return result.data;
     }
 
