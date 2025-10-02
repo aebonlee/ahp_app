@@ -24,6 +24,9 @@ const Layout: React.FC<LayoutProps> = ({
   onModeSwitch 
 }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  console.log('🔥 Layout - user:', user);
+  console.log('🔥 Layout - user?.role:', user?.role);
 
   const handleLogoClick = () => {
     if (user) {
@@ -52,8 +55,6 @@ const Layout: React.FC<LayoutProps> = ({
       />
       
       <div className="flex">
-        {console.log('🔥 Layout - user:', user)}
-        {console.log('🔥 Layout - user.role:', user?.role)}
         {user ? (
           <>
             <Sidebar
