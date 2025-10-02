@@ -347,13 +347,13 @@ class CleanDataService {
 
   async deleteCriteria(criteriaId: string, projectId?: string): Promise<boolean> {
     try {
-      console.log('🗑️ 실제 DB에서 기준 삭제 시작:', criteriaId);
+      console.log('🗑️ PostgreSQL DB에서 기준 삭제 시작:', criteriaId);
       
-      // Criteria API를 사용하여 삭제
-      const response = await criteriaApi.deleteCriteria(criteriaId);
+      // Criteria API를 사용하여 삭제 (projectId도 전달)
+      const response = await criteriaApi.deleteCriteria(criteriaId, projectId);
       
       if (response.success) {
-        console.log('✅ 기준 삭제 성공:', criteriaId);
+        console.log('✅ PostgreSQL DB에서 기준 삭제 성공:', criteriaId);
         
         // 프로젝트의 criteria_count 업데이트
         if (projectId) {
@@ -370,10 +370,10 @@ class CleanDataService {
         return true;
       }
       
-      console.error('❌ 기준 삭제 실패');
+      console.error('❌ PostgreSQL DB 기준 삭제 실패');
       return false;
     } catch (error) {
-      console.error('❌ 기준 삭제 중 오류:', error);
+      console.error('❌ PostgreSQL DB 기준 삭제 중 오류:', error);
       return false;
     }
   }

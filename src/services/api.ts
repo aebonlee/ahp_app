@@ -391,8 +391,35 @@ export const projectApi = {
 // === 기준 API ===
 export const criteriaApi = {
   // 프로젝트의 기준 목록 조회
-  getCriteria: (projectId: string) =>
-    makeRequest<CriteriaData[]>(`/api/service/projects/projects/${projectId}/criteria/`),
+  getCriteria: async (projectId: string) => {
+    // 먼저 기본 엔드포인트 시도
+    const response = await makeRequest<CriteriaData[]>(`/api/service/projects/projects/${projectId}/criteria/`);
+    
+    if (response.success && response.data) {
+      return response;
+    }
+    
+    // 실패 시 프로젝트 메타데이터에서 조회
+    console.log('⚠️ 기준 API 실패, 프로젝트 메타데이터에서 조회...');
+    
+    const projectResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`);
+    
+    if (projectResponse.success && projectResponse.data) {
+      const project = projectResponse.data;
+      const criteria = project.settings?.criteria || [];
+      
+      return {
+        success: true,
+        data: criteria as CriteriaData[]
+      };
+    }
+    
+    return {
+      success: false,
+      data: [],
+      error: '기준 조회에 실패했습니다.'
+    };
+  },
 
   // 기준 생성 - PostgreSQL DB 전용
   createCriteria: async (data: Omit<CriteriaData, 'id'>) => {
@@ -406,73 +433,79 @@ export const criteriaApi = {
       };
     }
     
-    // 방법 1: 일반 criteria 엔드포인트로 시도
-    const requestData = {
-      project: projectId,  // Django ForeignKey field
-      name: data.name,
-      description: data.description || '',
-      type: data.type || 'criteria',
-      parent: data.parent_id || null,
-      order: data.order || 0,
-      level: data.level || 1,
-      weight: data.weight || 0,
-      is_active: true
-    };
+    // 임시로 프로젝트 메타데이터에 저장하는 방법 사용
+    console.log('📤 프로젝트 메타데이터를 통한 기준 저장 시도...');
     
-    console.log('📤 PostgreSQL DB 기준 생성 요청 (방법 1):', {
-      endpoint: '/api/service/projects/criteria/',
-      data: requestData
-    });
-    
-    let response = await makeRequest<CriteriaData>('/api/service/projects/criteria/', {
-      method: 'POST',
-      body: JSON.stringify(requestData)
-    });
-    
-    if (response.success) {
-      return response;
-    }
-    
-    // 방법 2: nested route로 재시도
-    console.log('⚠️ 방법 1 실패, nested route 시도 (방법 2)...');
-    
-    const nestedData = {
-      name: data.name,
-      description: data.description || '',
-      type: data.type || 'criteria',
-      parent: data.parent_id || null,
-      order: data.order || 0,
-      level: data.level || 1,
-      weight: data.weight || 0
-    };
-    
-    response = await makeRequest<CriteriaData>(
-      `/api/service/projects/projects/${projectId}/criteria/`, 
-      {
-        method: 'POST',
-        body: JSON.stringify(nestedData)
+    try {
+      // 먼저 프로젝트 정보 조회
+      const projectResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`);
+      
+      if (!projectResponse.success || !projectResponse.data) {
+        console.error('❌ 프로젝트 조회 실패');
+        return {
+          success: false,
+          error: '프로젝트를 찾을 수 없습니다.'
+        };
       }
-    );
-    
-    if (response.success) {
-      return response;
-    }
-    
-    // 방법 3: nested route + project field
-    console.log('⚠️ 방법 2 실패, nested + project field 시도 (방법 3)...');
-    
-    const nestedWithProject = {
-      project: projectId,
-      ...nestedData
-    };
-    
-    return makeRequest<CriteriaData>(
-      `/api/service/projects/projects/${projectId}/criteria/`, 
-      {
-        method: 'POST',
-        body: JSON.stringify(nestedWithProject)
+      
+      const project = projectResponse.data;
+      const existingCriteria = project.settings?.criteria || [];
+      
+      // 새 기준 생성
+      const newCriteria = {
+        id: `criteria_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        project_id: projectId,
+        name: data.name,
+        description: data.description || '',
+        type: data.type || 'criteria',
+        parent_id: data.parent_id || null,
+        level: data.level || 1,
+        order: data.order || existingCriteria.length,
+        weight: data.weight || 0,
+        position: data.position || existingCriteria.length,
+        created_at: new Date().toISOString()
+      };
+      
+      // 프로젝트 settings에 기준 추가
+      const updatedSettings = {
+        ...project.settings,
+        criteria: [...existingCriteria, newCriteria]
+      };
+      
+      // 프로젝트 업데이트
+      const updateResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: project.title,
+          description: project.description,
+          objective: project.objective || '',
+          status: project.status,
+          evaluation_mode: project.evaluation_mode,
+          workflow_stage: project.workflow_stage,
+          settings: updatedSettings
+        })
+      });
+      
+      if (updateResponse.success) {
+        console.log('✅ 기준이 프로젝트 메타데이터에 저장됨');
+        return {
+          success: true,
+          data: newCriteria as CriteriaData
+        };
+      } else {
+        console.error('❌ 프로젝트 업데이트 실패:', updateResponse.error);
+        return {
+          success: false,
+          error: updateResponse.error || '기준 저장에 실패했습니다.'
+        };
       }
-    );
+    } catch (error) {
+      console.error('❌ 기준 생성 중 오류:', error);
+      return {
+        success: false,
+        error: '기준 생성 중 오류가 발생했습니다.'
+      };
+    }
   },
 
   // 기준 수정
@@ -483,10 +516,71 @@ export const criteriaApi = {
     }),
 
   // 기준 삭제
-  deleteCriteria: (id: string) =>
-    makeRequest<void>(`/api/service/projects/criteria/${id}/`, {
+  deleteCriteria: async (criteriaId: string, projectId?: string) => {
+    // 먼저 기본 엔드포인트 시도
+    const response = await makeRequest<void>(`/api/service/projects/criteria/${criteriaId}/`, {
       method: 'DELETE'
-    }),
+    });
+    
+    if (response.success) {
+      return response;
+    }
+    
+    // 실패 시 프로젝트 메타데이터에서 삭제
+    if (!projectId) {
+      console.error('❌ 프로젝트 ID 없이 기준 삭제 불가');
+      return {
+        success: false,
+        error: '프로젝트 ID가 필요합니다.'
+      };
+    }
+    
+    console.log('⚠️ 기준 삭제 API 실패, 프로젝트 메타데이터에서 삭제...');
+    
+    const projectResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`);
+    
+    if (projectResponse.success && projectResponse.data) {
+      const project = projectResponse.data;
+      const existingCriteria = project.settings?.criteria || [];
+      
+      // 기준 삭제
+      const updatedCriteria = existingCriteria.filter((c: any) => c.id !== criteriaId);
+      
+      if (updatedCriteria.length === existingCriteria.length) {
+        return {
+          success: false,
+          error: '삭제할 기준을 찾을 수 없습니다.'
+        };
+      }
+      
+      // 프로젝트 업데이트
+      const updateResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: project.title,
+          description: project.description,
+          objective: project.objective || '',
+          status: project.status,
+          evaluation_mode: project.evaluation_mode,
+          workflow_stage: project.workflow_stage,
+          settings: {
+            ...project.settings,
+            criteria: updatedCriteria
+          }
+        })
+      });
+      
+      return {
+        success: updateResponse.success,
+        error: updateResponse.error
+      };
+    }
+    
+    return {
+      success: false,
+      error: '기준 삭제에 실패했습니다.'
+    };
+  },
 
   // 기준 순서 변경
   reorderCriteria: (projectId: string, criteriaIds: string[]) =>
