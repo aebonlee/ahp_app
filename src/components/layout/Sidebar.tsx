@@ -37,15 +37,18 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
   const [showSuperAdminMenu, setShowSuperAdminMenu] = useState(false);
   
-  // 디버깅: userRole 확인 - v2
-  console.log('🔍 === Sidebar Debug v2 ===');
+  // 디버깅: userRole 확인 - v3
+  console.log('🔍 === Sidebar Debug v3 ===');
   console.log('🔍 userRole received:', userRole);
   console.log('🔍 userRole type:', typeof userRole);
   console.log('🔍 Is super_admin?:', userRole === 'super_admin');
   console.log('🔍 Is service_admin?:', userRole === 'service_admin');
+  console.log('🔍 Should show super button?:', userRole === 'super_admin' || userRole === 'service_admin');
+  console.log('🔍 isCollapsed:', isCollapsed);
+  console.log('🔍 showSuperAdminMenu:', showSuperAdminMenu);
   console.log('🔍 viewMode:', viewMode);
   console.log('🔍 timestamp:', new Date().toISOString());
-  console.log('🔍 ===================');
+  console.log('🔍 ===================')
 
   const toggleCategory = (categoryId: string) => {
     // 모든 주요 카테고리 리스트 (슈퍼 관리자 메뉴 포함)
@@ -362,7 +365,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         {!isCollapsed && (
           <>
             {/* 슈퍼관리자 전용 토글 버튼 */}
-            {(userRole === 'super_admin' || userRole === 'service_admin') && (
+            {console.log('👑 Super button check:', {
+              userRole,
+              isSuper: userRole === 'super_admin',
+              isServiceAdmin: userRole === 'service_admin',
+              shouldShowButton: userRole === 'super_admin' || userRole === 'service_admin',
+              isCollapsed
+            })}
+            {true && /* 임시로 항상 표시 - 디버깅용 */ (
               <button
                 onClick={() => setShowSuperAdminMenu(!showSuperAdminMenu)}
                 className="w-full mb-4 p-4 rounded-lg transition-all flex items-center justify-between"
