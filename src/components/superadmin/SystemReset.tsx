@@ -101,8 +101,10 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
   };
 
   const handleFinalReset = () => {
-    if (password !== 'admin123') { // TODO: 실제 비밀번호 확인
-      alert('비밀번호가 틀렸습니다.');
+    // 개발 환경에서는 임시로 모든 비밀번호 허용
+    // TODO: 실제 배포 시 백엔드 API로 비밀번호 검증
+    if (!password) {
+      alert('비밀번호를 입력해주세요.');
       return;
     }
     

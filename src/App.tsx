@@ -118,7 +118,14 @@ function App() {
     sessionService.setLogoutCallback(() => {
       setUser(null);
       setActiveTab('home');
+      localStorage.removeItem('ahp_temp_role');
     });
+    
+    // 임시 역할 체크
+    const tempRole = localStorage.getItem('ahp_temp_role');
+    if (tempRole && user && user.role === 'super_admin') {
+      setUser({ ...user, role: tempRole as UserRole });
+    }
   }, []);
 
   // URL 파라미터 변경 감지 (로그인 후에만 적용)
@@ -1236,8 +1243,11 @@ function App() {
             currentUser={user}
             targetRole="service_admin"
             onRoleSwitch={(role) => {
-              // TODO: 역할 전환 로직 구현
-              setUser({ ...user, role });
+              // 역할 전환
+              const updatedUser = { ...user, role };
+              setUser(updatedUser);
+              // localStorage에 저장하여 새로고침 후에도 유지
+              localStorage.setItem('ahp_temp_role', role);
               setActiveTab('personal-service');
             }}
             onBack={() => setActiveTab('super-admin-dashboard')}
@@ -1251,7 +1261,9 @@ function App() {
             currentUser={user}
             targetRole="service_user"
             onRoleSwitch={(role) => {
-              setUser({ ...user, role });
+              const updatedUser = { ...user, role };
+              setUser(updatedUser);
+              localStorage.setItem('ahp_temp_role', role);
               setActiveTab('personal-service');
             }}
             onBack={() => setActiveTab('super-admin-dashboard')}
@@ -1265,7 +1277,9 @@ function App() {
             currentUser={user}
             targetRole="evaluator"
             onRoleSwitch={(role) => {
-              setUser({ ...user, role });
+              const updatedUser = { ...user, role };
+              setUser(updatedUser);
+              localStorage.setItem('ahp_temp_role', role);
               setActiveTab('evaluator-mode');
             }}
             onBack={() => setActiveTab('super-admin-dashboard')}

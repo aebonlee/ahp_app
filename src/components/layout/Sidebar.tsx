@@ -180,6 +180,18 @@ const Sidebar: React.FC<SidebarProps> = ({
       ]
     });
   }
+  
+  // 임시 역할로 전환된 경우 원래 역할로 돌아가기 버튼 추가
+  const tempRole = localStorage.getItem('ahp_temp_role');
+  if (tempRole && tempRole !== 'super_admin') {
+    serviceAdminCategories.unshift({
+      id: 'back-to-super',
+      title: '🌟 슈퍼관리자로 돌아가기',
+      items: [
+        { id: 'back-to-super-admin', label: '👑 슈퍼관리자 모드로 복귀' }
+      ]
+    });
+  }
 
   // 모드 전환 가능한 경우 메뉴 추가
   if (canSwitchModes) {
@@ -237,9 +249,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const getMenuCategories = (): MenuCategory[] => {
     console.log('📋 getMenuCategories - userRole:', userRole, 'viewMode:', viewMode);
     
-    // FORCE SHOW SUPER ADMIN MENU FOR DEBUGGING
-    // super_admin 체크를 더 유연하게 변경 - service_admin도 슈퍼관리자 메뉴 표시
-    const isAdminWithSuperPowers = true; // 강제로 true 설정하여 모든 사용자에게 보이도록 임시 처리
+    // super_admin 체크
+    const isAdminWithSuperPowers = userRole === 'super_admin' || userRole?.toLowerCase() === 'super_admin';
     
     console.log('🔐 Admin check:', {
       userRole,
@@ -273,6 +284,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     // Django 관리자 링크 처리
     if (itemId === 'django-admin') {
       window.open('https://ahp-django-backend.onrender.com/admin/', '_blank');
+      return;
+    }
+    
+    // 슈퍼관리자로 복귀
+    if (itemId === 'back-to-super-admin') {
+      localStorage.removeItem('ahp_temp_role');
+      window.location.reload();
       return;
     }
     
@@ -340,10 +358,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                 paddingBottom: 'var(--space-3)',
                 marginBottom: 'var(--space-6)'
               }}>
-            {(userRole === 'super_admin' || userRole === 'service_admin')
+            {userRole === 'super_admin'
               ? '시스템 관리자'
+              : userRole === 'service_admin'
+              ? '개인 관리자 서비스'
               : userRole === 'service_user'
-              ? (viewMode === 'evaluator' ? '개인 관리자 서비스' : '서비스 사용자')
+              ? (viewMode === 'evaluator' ? '평가자 모드' : '서비스 사용자')
+              : userRole === 'evaluator'
+              ? '평가자'
               : '개인 관리자 서비스'
             }
           </h2>
