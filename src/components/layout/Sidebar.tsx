@@ -161,8 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         { id: 'user-guide', label: '사용자 가이드' },
         { id: 'ai-ahp-methodology', label: 'AHP 방법론' },
         { id: 'ai-fuzzy-methodology', label: '퍼지 AHP' },
-        { id: 'ai-paper-generation', label: '논문 작성' },
-        { id: 'ai-materials-generation', label: '학술 자료' }
+        { id: 'ai-paper-generation', label: '논문 작성' }
       ]
     },
     {
@@ -173,6 +172,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         { id: 'ai-paper-assistant', label: 'AI 논문 도우미' },
         { id: 'ai-results-interpretation', label: '결과 해석' },
         { id: 'ai-quality-validation', label: '품질 검증' },
+        { id: 'ai-materials-generation', label: 'AI활용 학술 자료' },
         { id: 'ai-chatbot-assistant', label: 'AI 챗봇' }
       ]
     }
