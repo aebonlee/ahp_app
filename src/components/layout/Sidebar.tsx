@@ -346,6 +346,40 @@ const Sidebar: React.FC<SidebarProps> = ({
            fontFamily: 'Inter, Pretendard, system-ui, sans-serif',
            height: 'calc(100vh - var(--header-height))'
          }}>
+      {/* 슈퍼 어드민 토글 버튼 - 최상단에 고정 표시 */}
+      {!isCollapsed && (
+        <div style={{ 
+          padding: 'var(--space-4)', 
+          borderBottom: '1px solid var(--border-light)',
+          backgroundColor: '#f8f9fa'
+        }}>
+          <button
+            onClick={() => {
+              setIsSuperAdminMode(!isSuperAdminMode);
+              console.log('🔄 토글 버튼 클릭! 새 상태:', !isSuperAdminMode);
+            }}
+            className="w-full p-3 rounded-lg transition-all flex items-center justify-between"
+            style={{
+              backgroundColor: isSuperAdminMode ? 'var(--gold-primary)' : '#ffffff',
+              color: isSuperAdminMode ? 'white' : 'var(--text-primary)',
+              border: '2px solid',
+              borderColor: isSuperAdminMode ? 'var(--gold-primary)' : '#dc3545',
+              fontSize: 'var(--font-size-md)',
+              fontWeight: 'var(--font-weight-bold)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            <div className="flex items-center">
+              <span className="mr-2 text-xl">{isSuperAdminMode ? '↩️' : '👑'}</span>
+              <span>{isSuperAdminMode ? '개인 관리자 서비스로 전환' : '🚨 슈퍼 어드민 모드로 전환 🚨'}</span>
+            </div>
+          </button>
+          <div style={{ marginTop: '10px', fontSize: '11px', color: '#666' }}>
+            현재 Role: {userRole || 'null'} | Email: {localStorage.getItem('ahp_user') ? JSON.parse(localStorage.getItem('ahp_user')!).email : 'unknown'}
+          </div>
+        </div>
+      )}
+      
       {/* 메뉴 영역 - 스크롤 가능 */}
       <div 
         className="flex-1 scrollbar-luxury overflow-y-auto"
@@ -380,63 +414,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               }
             </h2>
             
-            {/* 디버깅 정보 박스 */}
-            <div style={{
-              padding: '10px',
-              marginBottom: '10px',
-              backgroundColor: '#fff3cd',
-              border: '1px solid #ffc107',
-              borderRadius: '5px',
-              fontSize: '12px',
-              color: '#856404'
-            }}>
-              <strong>🔍 디버깅 정보:</strong><br/>
-              - userRole: "{userRole}"<br/>
-              - typeof: {typeof userRole}<br/>
-              - isCollapsed: {String(isCollapsed)}<br/>
-              - isSuperAdminMode: {String(isSuperAdminMode)}<br/>
-              - 조건 체크: {String(userRole === 'super_admin' || userRole === 'service_admin')}
-            </div>
-            
-            {/* 슈퍼 어드민 모드 전환 버튼 - 강제 표시 */}
-            <button
-                  onClick={() => setIsSuperAdminMode(!isSuperAdminMode)}
-                  className="w-full mb-4 p-3 rounded-lg transition-all flex items-center justify-between"
-                style={{
-                  backgroundColor: isSuperAdminMode ? 'var(--gold-primary)' : 'var(--bg-elevated)',
-                  color: isSuperAdminMode ? 'white' : 'var(--text-primary)',
-                  border: '2px solid',
-                  borderColor: isSuperAdminMode ? 'var(--gold-primary)' : 'var(--border-light)',
-                  fontSize: 'var(--font-size-md)',
-                  fontWeight: 'var(--font-weight-bold)'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSuperAdminMode) {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
-                    e.currentTarget.style.borderColor = 'var(--gold-primary)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSuperAdminMode) {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
-                    e.currentTarget.style.borderColor = 'var(--border-light)';
-                  }
-                }}
-              >
-                <div className="flex items-center">
-                  <span className="mr-2 text-xl">{isSuperAdminMode ? '↩️' : '👑'}</span>
-                  <span>{isSuperAdminMode ? '개인 관리자 서비스로 전환' : '슈퍼 어드민 모드로 전환'}</span>
-                </div>
-                <svg 
-                  className="transition-transform"
-                  style={{ width: '16px', height: '16px' }}
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
           </>
         )}
         
