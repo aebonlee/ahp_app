@@ -346,9 +346,9 @@ const Sidebar: React.FC<SidebarProps> = ({
            fontFamily: 'Inter, Pretendard, system-ui, sans-serif',
            height: 'calc(100vh - var(--header-height))'
          }}>
-      {/* 슈퍼 어드민 토글 버튼 - 최상단에 고정 표시 */}
-      {!isCollapsed && (
-        <div style={{ 
+      {/* 슈퍼 어드민 토글 버튼 - 무조건 표시 */}
+      <div style={{
+          display: isCollapsed ? 'none' : 'block', 
           padding: 'var(--space-4)', 
           borderBottom: '1px solid var(--border-light)',
           backgroundColor: '#f8f9fa'
@@ -378,7 +378,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             현재 Role: {userRole || 'null'} | Email: {localStorage.getItem('ahp_user') ? JSON.parse(localStorage.getItem('ahp_user')!).email : 'unknown'}
           </div>
         </div>
-      )}
       
       {/* 메뉴 영역 - 스크롤 가능 */}
       <div 
