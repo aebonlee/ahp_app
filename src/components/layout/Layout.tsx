@@ -52,7 +52,9 @@ const Layout: React.FC<LayoutProps> = ({
       />
       
       <div className="flex">
-        {user && (
+        {console.log('🔥 Layout - user:', user)}
+        {console.log('🔥 Layout - user.role:', user?.role)}
+        {user ? (
           <>
             <Sidebar
               isCollapsed={sidebarCollapsed}
@@ -94,6 +96,16 @@ const Layout: React.FC<LayoutProps> = ({
               </span>
             </button>
           </>
+        ) : (
+          <div style={{
+            width: 'var(--sidebar-width)',
+            backgroundColor: 'var(--bg-secondary)',
+            borderRight: '1px solid var(--border-light)',
+            padding: '20px'
+          }}>
+            <h3>로그인이 필요합니다</h3>
+            <p>user: {JSON.stringify(user)}</p>
+          </div>
         )}
         
         <main className="flex-1 transition-luxury" 
