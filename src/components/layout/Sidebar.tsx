@@ -380,10 +380,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   paddingBottom: 'var(--space-3)',
                   marginBottom: 'var(--space-6)'
                 }}>
-              {showSuperAdminMenu
+              {userRole === 'super_admin'
                 ? '시스템 관리자'
-                : userRole === 'super_admin'
-                ? '개인 관리자 서비스'
                 : userRole === 'service_admin'
                 ? '개인 관리자 서비스'
                 : userRole === 'service_user'
