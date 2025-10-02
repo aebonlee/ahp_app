@@ -60,7 +60,24 @@ function App() {
 
   // GitHub Pages 하위 경로 처리 - 현재는 루트에 배포되므로 빈 문자열
   const basePath = '';
-  const [user, setUser] = useState<User | null>(null);
+  
+  // localStorage에서 초기 사용자 정보 복원
+  const getInitialUser = (): User | null => {
+    const storedUser = localStorage.getItem('ahp_user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        console.log('🚀 초기 사용자 정보 복원:', parsedUser);
+        return parsedUser;
+      } catch (error) {
+        console.error('초기 사용자 정보 복원 실패:', error);
+        localStorage.removeItem('ahp_user');
+      }
+    }
+    return null;
+  };
+  
+  const [user, setUser] = useState<User | null>(getInitialUser());
   const [viewMode, setViewMode] = useState<'service' | 'evaluator'>('service');
   const [activeTab, setActiveTab] = useState(() => {
     // URL 파라미터에서 초기 탭 결정
@@ -121,23 +138,15 @@ function App() {
       localStorage.removeItem('ahp_temp_role');
     });
     
-    // localStorage에서 사용자 정보 복원
-    const storedUser = localStorage.getItem('ahp_user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        console.log('📌 복원된 사용자 정보:', parsedUser);
-        setUser(parsedUser);
-        
-        // 역할에 따른 초기 탭 설정
-        if (parsedUser.role === 'super_admin' || parsedUser.role === 'service_admin') {
-          setActiveTab('personal-service');
-        } else if (parsedUser.role === 'evaluator') {
-          setActiveTab('evaluator-dashboard');
-        }
-      } catch (error) {
-        console.error('사용자 정보 복원 실패:', error);
-        localStorage.removeItem('ahp_user');
+    // 이미 초기 상태에서 사용자 정보를 복원했으므로 여기서는 탭 설정만 처리
+    if (user) {
+      console.log('📌 사용자 역할 확인:', user.role);
+      
+      // 역할에 따른 초기 탭 설정
+      if (user.role === 'super_admin' || user.role === 'service_admin') {
+        setActiveTab('personal-service');
+      } else if (user.role === 'evaluator') {
+        setActiveTab('evaluator-dashboard');
       }
     }
     
@@ -441,6 +450,10 @@ function App() {
       console.log('🔍 백엔드 로그인 시도:', { username });
       
       const result = await authService.login(username, password);
+      
+      console.log('🎯 로그인 결과 전체:', result);
+      console.log('🎯 사용자 역할:', result.user.role);
+      console.log('🎯 사용자 이메일:', result.user.email);
       
       setUser(result.user);
       // localStorage에 사용자 정보 저장

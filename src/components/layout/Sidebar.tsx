@@ -37,13 +37,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
   const [isSuperAdminMode, setIsSuperAdminMode] = useState(false);
   
-  // 디버깅: userRole 확인 - v3
-  console.log('🔍 === Sidebar Debug v3 ===');
+  // 디버깅: userRole 확인 - v4
+  console.log('🔍 === Sidebar Debug v4 ===');
   console.log('🔍 userRole received:', userRole);
   console.log('🔍 userRole type:', typeof userRole);
   console.log('🔍 Is super_admin?:', userRole === 'super_admin');
   console.log('🔍 Is service_admin?:', userRole === 'service_admin');
-  console.log('🔍 Should show super button?:', userRole === 'super_admin' || userRole === 'service_admin');
+  console.log('🔍 Should show toggle button?:', userRole === 'super_admin' || userRole === 'service_admin');
+  console.log('🔍 isSuperAdminMode:', isSuperAdminMode);
   console.log('🔍 isCollapsed:', isCollapsed);
   console.log('🔍 viewMode:', viewMode);
   console.log('🔍 timestamp:', new Date().toISOString());
@@ -390,11 +391,11 @@ const Sidebar: React.FC<SidebarProps> = ({
               }
             </h2>
             
-            {/* 슈퍼 어드민 모드 전환 버튼 */}
-            {(userRole === 'super_admin' || userRole === 'service_admin') && (
+            {/* 슈퍼 어드민 모드 전환 버튼 - 조건 개선 */}
+            {(userRole === 'super_admin' || userRole === 'service_admin') ? (
               <button
-                onClick={() => setIsSuperAdminMode(!isSuperAdminMode)}
-                className="w-full mb-4 p-3 rounded-lg transition-all flex items-center justify-between"
+                  onClick={() => setIsSuperAdminMode(!isSuperAdminMode)}
+                  className="w-full mb-4 p-3 rounded-lg transition-all flex items-center justify-between"
                 style={{
                   backgroundColor: isSuperAdminMode ? 'var(--gold-primary)' : 'var(--bg-elevated)',
                   color: isSuperAdminMode ? 'white' : 'var(--text-primary)',
@@ -430,7 +431,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-            )}
+            ) : null}
           </>
         )}
         

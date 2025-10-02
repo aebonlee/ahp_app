@@ -25,8 +25,10 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
-  console.log('🔥 Layout - user:', user);
-  console.log('🔥 Layout - user?.role:', user?.role);
+  console.log('🔥 Layout v2 - user:', user);
+  console.log('🔥 Layout v2 - user?.role:', user?.role);
+  console.log('🔥 Layout v2 - typeof user?.role:', typeof user?.role);
+  console.log('🔥 Layout v2 - is service_admin?:', user?.role === 'service_admin');
 
   const handleLogoClick = () => {
     if (user) {
