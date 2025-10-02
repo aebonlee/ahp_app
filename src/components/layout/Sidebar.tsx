@@ -37,19 +37,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
   const [isSuperAdminMode, setIsSuperAdminMode] = useState(false);
   
-  // 디버깅: userRole 확인 - v5
-  console.log('🔍 === Sidebar Debug v5 ===');
-  console.log('🔍 userRole received:', userRole);
-  console.log('🔍 userRole type:', typeof userRole);
-  console.log('🔍 userRole JSON:', JSON.stringify(userRole));
-  console.log('🔍 Is super_admin?:', userRole === 'super_admin');
-  console.log('🔍 Is service_admin?:', userRole === 'service_admin');
-  console.log('🔍 Should show toggle button?:', userRole === 'super_admin' || userRole === 'service_admin');
-  console.log('🔍 isSuperAdminMode:', isSuperAdminMode);
-  console.log('🔍 isCollapsed:', isCollapsed);
-  console.log('🔍 viewMode:', viewMode);
-  console.log('🔍 timestamp:', new Date().toISOString());
-  console.log('🔍 ===================')
+  // userRole 확인
+  console.log('🔍 Sidebar - userRole:', userRole, 'isSuperAdminMode:', isSuperAdminMode);
 
   const toggleCategory = (categoryId: string) => {
     // 모든 주요 카테고리 리스트 (슈퍼 관리자 메뉴 포함)
@@ -260,44 +249,30 @@ const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const getMenuCategories = (): MenuCategory[] => {
-    console.log('📋 getMenuCategories - userRole:', userRole, 'viewMode:', viewMode, 'isSuperAdminMode:', isSuperAdminMode);
-    
-    // super_admin 체크 - 임시로 service_admin도 슈퍼관리자 메뉴 보이도록
-    // TODO: 실제 백엔드에서 super_admin 역할이 제대로 전달되면 수정 필요
-    const isAdminWithSuperPowers = userRole === 'super_admin' || 
-                                   userRole?.toLowerCase() === 'super_admin' ||
-                                   userRole === 'service_admin'; // 임시 추가
-    
-    console.log('🔐 Admin check:', {
-      userRole,
-      isAdminWithSuperPowers,
-      isSuperAdminMode
-    });
-    
-    // 슈퍼 어드민 모드일 때는 슈퍼 어드민 메뉴만 표시
-    if (isAdminWithSuperPowers && isSuperAdminMode) {
-      console.log('✅ 슈퍼 어드민 메뉴 표시');
+    // 슈퍼 어드민이고 슈퍼 어드민 모드일 때는 슈퍼 어드민 메뉴만 표시
+    if (userRole === 'super_admin' && isSuperAdminMode) {
       return superAdminCategories;
     }
     
-    // 일반 메뉴 보기 모드
-    if (userRole === 'service_user') {
-      console.log('서비스 사용자 메뉴 로드');
-      if (viewMode === 'evaluator') {
-        return evaluatorCategories;
-      }
-      return serviceAdminCategories;
-    } else if (userRole === 'evaluator') {
-      console.log('평가자 메뉴 로드');
+    // 평가자 모드
+    if (viewMode === 'evaluator') {
       return evaluatorCategories;
     }
-    console.log('기본 메뉴 로드 (fallback)');
+    
+    // 일반 서비스 메뉴 (슈퍼 어드민도 일반 모드일 때는 서비스 메뉴 표시)
+    if (userRole === 'service_user' || userRole === 'service_admin' || userRole === 'super_admin') {
+      return serviceAdminCategories;
+    }
+    
+    // 평가자 전용
+    if (userRole === 'evaluator') {
+      return evaluatorCategories;
+    }
+    
     return serviceAdminCategories;
   };
 
   const menuCategories = getMenuCategories();
-  console.log('최종 메뉴 카테고리:', menuCategories.map(c => `${c.id}(${c.title})`));
-  console.log('super-admin 카테고리 포함?:', menuCategories.some(c => c.id === 'super-admin'));
 
   const handleItemClick = (itemId: string) => {
     // Django 관리자 링크 처리
@@ -392,26 +367,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               }
             </h2>
             
-            {/* 슈퍼 어드민 모드 전환 버튼 - 강제 표시로 테스트 */}
-            {/* 디버깅: userRole 값 직접 표시 */}
-            <div style={{
-              padding: '10px',
-              backgroundColor: '#f0f0f0',
-              borderRadius: '5px',
-              marginBottom: '10px',
-              fontSize: '12px',
-              color: '#333'
-            }}>
-              <strong>Debug Info:</strong><br/>
-              userRole: {JSON.stringify(userRole)}<br/>
-              type: {typeof userRole}<br/>
-              is service_admin? {String(userRole === 'service_admin')}<br/>
-              is super_admin? {String(userRole === 'super_admin')}<br/>
-              should show? {String(userRole === 'super_admin' || userRole === 'service_admin')}
-            </div>
-            
-            {/* 토글 버튼 - 무조건 표시 (테스트용) */}
-            {true ? (
+            {/* 슈퍼 어드민 모드 전환 버튼 */}
+            {(userRole === 'super_admin') ? (
               <button
                   onClick={() => setIsSuperAdminMode(!isSuperAdminMode)}
                   className="w-full mb-4 p-3 rounded-lg transition-all flex items-center justify-between"
@@ -451,24 +408,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </svg>
               </button>
             ) : null}
-            
-            {/* 실제 조건부 토글 버튼 (디버깅용 추가) */}
-            <div style={{
-              marginTop: '10px',
-              padding: '10px',
-              backgroundColor: '#ffe4e4',
-              borderRadius: '5px',
-              marginBottom: '10px',
-              fontSize: '12px',
-              color: '#333'
-            }}>
-              <strong>실제 조건 테스트:</strong><br/>
-              {(userRole === 'super_admin' || userRole === 'service_admin') ? (
-                <span style={{ color: 'green' }}>✅ 버튼이 표시되어야 함</span>
-              ) : (
-                <span style={{ color: 'red' }}>❌ 버튼이 표시되지 않음</span>
-              )}
-            </div>
           </>
         )}
         

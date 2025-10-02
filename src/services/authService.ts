@@ -200,6 +200,13 @@ class AuthService {
 
     if (result.success && result.data) {
       const { access, refresh, user } = result.data;
+      
+      // admin@ahp.com은 슈퍼 관리자로 처리
+      if (user.email === 'admin@ahp.com') {
+        user.role = 'super_admin';
+        console.log('🔑 슈퍼 관리자 권한 부여:', user.email);
+      }
+      
       const tokens = { access, refresh };
       this.saveTokens(tokens);
       this.initTokenRefresh();

@@ -469,7 +469,7 @@ function App() {
       } else if (result.user.role === 'evaluator') {
         targetTab = 'evaluator-dashboard';
       } else if (result.user.role === 'super_admin') {
-        targetTab = 'super-admin';
+        targetTab = 'personal-service'; // 슈퍼 관리자도 기본적으로 개인 서비스 화면으로
       } else {
         targetTab = 'personal-service';
       }
