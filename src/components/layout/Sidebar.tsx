@@ -42,7 +42,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   console.log('🔍 userRole:', userRole);
   console.log('🔍 userRole === "super_admin":', userRole === 'super_admin');
   console.log('🔍 isSuperAdminMode:', isSuperAdminMode);
-  console.log('🔍 Should show button:', userRole === 'super_admin');
+  
+  // localStorage 직접 확인
+  const storedUser = localStorage.getItem('ahp_user');
+  if (storedUser) {
+    const user = JSON.parse(storedUser);
+    console.log('🔍 localStorage user:', user);
+    console.log('🔍 localStorage user.role:', user.role);
+    console.log('🔍 localStorage user.email:', user.email);
+  }
   console.log('🔍 ==================');
 
   const toggleCategory = (categoryId: string) => {
@@ -372,9 +380,26 @@ const Sidebar: React.FC<SidebarProps> = ({
               }
             </h2>
             
-            {/* 슈퍼 어드민 모드 전환 버튼 - 임시로 admin@ahp.com 체크 추가 */}
-            {(userRole === 'super_admin' || userRole === 'service_admin') ? (
-              <button
+            {/* 디버깅 정보 박스 */}
+            <div style={{
+              padding: '10px',
+              marginBottom: '10px',
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffc107',
+              borderRadius: '5px',
+              fontSize: '12px',
+              color: '#856404'
+            }}>
+              <strong>🔍 디버깅 정보:</strong><br/>
+              - userRole: "{userRole}"<br/>
+              - typeof: {typeof userRole}<br/>
+              - isCollapsed: {String(isCollapsed)}<br/>
+              - isSuperAdminMode: {String(isSuperAdminMode)}<br/>
+              - 조건 체크: {String(userRole === 'super_admin' || userRole === 'service_admin')}
+            </div>
+            
+            {/* 슈퍼 어드민 모드 전환 버튼 - 강제 표시 */}
+            <button
                   onClick={() => setIsSuperAdminMode(!isSuperAdminMode)}
                   className="w-full mb-4 p-3 rounded-lg transition-all flex items-center justify-between"
                 style={{
@@ -412,7 +437,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-            ) : null}
           </>
         )}
         
