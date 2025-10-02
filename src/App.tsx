@@ -121,6 +121,26 @@ function App() {
       localStorage.removeItem('ahp_temp_role');
     });
     
+    // localStorage에서 사용자 정보 복원
+    const storedUser = localStorage.getItem('ahp_user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        console.log('📌 복원된 사용자 정보:', parsedUser);
+        setUser(parsedUser);
+        
+        // 역할에 따른 초기 탭 설정
+        if (parsedUser.role === 'super_admin' || parsedUser.role === 'service_admin') {
+          setActiveTab('personal-service');
+        } else if (parsedUser.role === 'evaluator') {
+          setActiveTab('evaluator-dashboard');
+        }
+      } catch (error) {
+        console.error('사용자 정보 복원 실패:', error);
+        localStorage.removeItem('ahp_user');
+      }
+    }
+    
     // 임시 역할 체크
     const tempRole = localStorage.getItem('ahp_temp_role');
     if (tempRole && user && user.role === 'super_admin') {
@@ -423,6 +443,8 @@ function App() {
       const result = await authService.login(username, password);
       
       setUser(result.user);
+      // localStorage에 사용자 정보 저장
+      localStorage.setItem('ahp_user', JSON.stringify(result.user));
       sessionService.startSession();
       
       const urlParams = new URLSearchParams(window.location.search);
@@ -459,6 +481,10 @@ function App() {
     } catch (error) {
       console.error('Logout API call failed:', error);
     }
+    
+    // localStorage 정리
+    localStorage.removeItem('ahp_user');
+    localStorage.removeItem('ahp_temp_role');
     
     // 상태 초기화
     setUser(null);
