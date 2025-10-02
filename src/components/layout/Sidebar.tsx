@@ -160,8 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'user-guide', label: '사용자 가이드' },
         { id: 'ai-ahp-methodology', label: 'AHP 방법론' },
-        { id: 'ai-fuzzy-methodology', label: '퍼지 AHP' },
-        { id: 'ai-paper-generation', label: '논문 작성' }
+        { id: 'ai-fuzzy-methodology', label: '퍼지 AHP' }
       ]
     },
     {
