@@ -79,7 +79,7 @@ function App() {
       'personal-service', 'demographic-survey', 
       'my-projects', 'project-creation', 'project-workflow', 'model-builder',
       'evaluator-management', 'progress-monitoring', 'results-analysis',
-      'paper-management', 'export-reports', 'workshop-management',
+      'ai-paper-assistant', 'export-reports', 'workshop-management',
       'decision-support-system', 'personal-settings', 'landing',
       'ahp-analysis'
     ];
@@ -140,7 +140,7 @@ function App() {
         'home', 'personal-service', 'demographic-survey', 
         'my-projects', 'project-creation', 'project-workflow', 'model-builder',
         'evaluator-management', 'progress-monitoring', 'results-analysis',
-        'paper-management', 'export-reports', 'workshop-management',
+        'ai-paper-assistant', 'export-reports', 'workshop-management',
         'decision-support-system', 'personal-settings'
       ];
       
@@ -517,7 +517,7 @@ function App() {
   const protectedTabs = useMemo(() => [
     'welcome', 'super-admin', 'personal-service', 'my-projects', 
     'project-creation', 'model-builder', 'evaluation-test', 'evaluator-management', 
-    'progress-monitoring', 'results-analysis', 'paper-management', 'export-reports', 
+    'progress-monitoring', 'results-analysis', 'ai-paper-assistant', 'export-reports', 
     'workshop-management', 'decision-support-system', 'personal-settings', 
     'user-guide', 'dashboard', 'users', 'projects', 'monitoring', 'database', 'audit', 
     'settings', 'backup', 'system', 'landing', 'home', 'model-building', 
@@ -1511,7 +1511,7 @@ function App() {
       case 'trash':
       case 'progress-monitoring':
       case 'results-analysis':
-      case 'paper-management':
+      case 'ai-paper-assistant':
       case 'export-reports':
       case 'workshop-management':
       case 'decision-support-system':

@@ -262,7 +262,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     externalActiveTab === 'evaluator-management' ? 'evaluators' :
     externalActiveTab === 'progress-monitoring' ? 'monitoring' :
     externalActiveTab === 'results-analysis' ? 'analysis' :
-    externalActiveTab === 'paper-management' ? 'paper' :
+    externalActiveTab === 'ai-paper-assistant' ? 'paper' :
     externalActiveTab === 'export-reports' ? 'export' :
     externalActiveTab === 'workshop-management' ? 'workshop' :
     externalActiveTab === 'decision-support-system' ? 'decision-support' :
@@ -3532,7 +3532,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         {externalActiveTab === 'evaluator-management' && renderEvaluatorManagementFullPage()}
         {externalActiveTab === 'progress-monitoring' && renderProgressMonitoringFullPage()}
         {externalActiveTab === 'results-analysis' && renderResultsAnalysisFullPage()}
-        {externalActiveTab === 'paper-management' && renderPaperManagementFullPage()}
+        {externalActiveTab === 'ai-paper-assistant' && renderPaperManagementFullPage()}
         {externalActiveTab === 'export-reports' && renderExportReportsFullPage()}
         {externalActiveTab === 'workshop-management' && renderWorkshopManagementFullPage()}
         {externalActiveTab === 'decision-support-system' && renderDecisionSupportSystemFullPage()}

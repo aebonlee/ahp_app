@@ -59,7 +59,7 @@ const EnhancedSidebar: React.FC<SidebarProps> = ({
         { id: 'demographic-survey', label: '인구통계 설문' },
         { id: 'evaluation-test', label: '평가 테스트' },
         { id: 'progress-monitoring', label: '진행률 모니터링' },
-        { id: 'paper-management', label: '논문 작성 관리' },
+        { id: 'ai-paper-assistant', label: '논문 작성 관리' },
         { id: 'workshop-management', label: '워크샵 관리' },
         { id: 'decision-support-system', label: '의사결정 지원' },
         { id: 'personal-settings', label: '개인 설정' },
