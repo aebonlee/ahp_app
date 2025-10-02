@@ -37,10 +37,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
   const [isSuperAdminMode, setIsSuperAdminMode] = useState(false);
   
-  // 디버깅: userRole 확인 - v4
-  console.log('🔍 === Sidebar Debug v4 ===');
+  // 디버깅: userRole 확인 - v5
+  console.log('🔍 === Sidebar Debug v5 ===');
   console.log('🔍 userRole received:', userRole);
   console.log('🔍 userRole type:', typeof userRole);
+  console.log('🔍 userRole JSON:', JSON.stringify(userRole));
   console.log('🔍 Is super_admin?:', userRole === 'super_admin');
   console.log('🔍 Is service_admin?:', userRole === 'service_admin');
   console.log('🔍 Should show toggle button?:', userRole === 'super_admin' || userRole === 'service_admin');
@@ -391,8 +392,26 @@ const Sidebar: React.FC<SidebarProps> = ({
               }
             </h2>
             
-            {/* 슈퍼 어드민 모드 전환 버튼 - 조건 개선 */}
-            {(userRole === 'super_admin' || userRole === 'service_admin') ? (
+            {/* 슈퍼 어드민 모드 전환 버튼 - 강제 표시로 테스트 */}
+            {/* 디버깅: userRole 값 직접 표시 */}
+            <div style={{
+              padding: '10px',
+              backgroundColor: '#f0f0f0',
+              borderRadius: '5px',
+              marginBottom: '10px',
+              fontSize: '12px',
+              color: '#333'
+            }}>
+              <strong>Debug Info:</strong><br/>
+              userRole: {JSON.stringify(userRole)}<br/>
+              type: {typeof userRole}<br/>
+              is service_admin? {String(userRole === 'service_admin')}<br/>
+              is super_admin? {String(userRole === 'super_admin')}<br/>
+              should show? {String(userRole === 'super_admin' || userRole === 'service_admin')}
+            </div>
+            
+            {/* 토글 버튼 - 무조건 표시 (테스트용) */}
+            {true ? (
               <button
                   onClick={() => setIsSuperAdminMode(!isSuperAdminMode)}
                   className="w-full mb-4 p-3 rounded-lg transition-all flex items-center justify-between"
@@ -432,6 +451,24 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </svg>
               </button>
             ) : null}
+            
+            {/* 실제 조건부 토글 버튼 (디버깅용 추가) */}
+            <div style={{
+              marginTop: '10px',
+              padding: '10px',
+              backgroundColor: '#ffe4e4',
+              borderRadius: '5px',
+              marginBottom: '10px',
+              fontSize: '12px',
+              color: '#333'
+            }}>
+              <strong>실제 조건 테스트:</strong><br/>
+              {(userRole === 'super_admin' || userRole === 'service_admin') ? (
+                <span style={{ color: 'green' }}>✅ 버튼이 표시되어야 함</span>
+              ) : (
+                <span style={{ color: 'red' }}>❌ 버튼이 표시되지 않음</span>
+              )}
+            </div>
           </>
         )}
         
