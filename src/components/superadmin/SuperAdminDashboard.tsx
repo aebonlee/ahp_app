@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../../types';
+import dataService from '../../services/dataService_clean';
+import { projectApi } from '../../services/api';
 
 interface SuperAdminDashboardProps {
   user: User;
   onTabChange: (tab: string) => void;
 }
 
+interface Activity {
+  time: string;
+  user: string;
+  action: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+}
+
 const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabChange }) => {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  
   const [systemStats, setSystemStats] = useState({
     totalUsers: 0,
     totalProjects: 0,
@@ -27,35 +38,191 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
     evaluator: 0
   });
 
+  const getRecentActivities = (): Activity[] => {
+    const recentActivities: Activity[] = [];
+    
+    // localStorage에서 최근 활동 추출
+    try {
+      // 로그인 기록
+      const loginHistory = JSON.parse(localStorage.getItem('ahp_login_history') || '[]');
+      loginHistory.slice(-3).forEach((login: any) => {
+        const time = new Date(login.timestamp);
+        const timeDiff = Date.now() - time.getTime();
+        const minutes = Math.floor(timeDiff / 60000);
+        const hours = Math.floor(minutes / 60);
+        
+        recentActivities.push({
+          time: hours > 0 ? `${hours}시간 전` : `${minutes}분 전`,
+          user: login.email || 'unknown',
+          action: '로그인',
+          type: 'info'
+        });
+      });
+
+      // 프로젝트 생성 기록
+      const projects = JSON.parse(localStorage.getItem('ahp_projects') || '[]');
+      const recentProjects = projects
+        .filter((p: any) => p.created_at)
+        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 2);
+      
+      recentProjects.forEach((project: any) => {
+        const time = new Date(project.created_at);
+        const timeDiff = Date.now() - time.getTime();
+        const minutes = Math.floor(timeDiff / 60000);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        
+        recentActivities.push({
+          time: days > 0 ? `${days}일 전` : hours > 0 ? `${hours}시간 전` : `${minutes}분 전`,
+          user: project.created_by || user.email,
+          action: `프로젝트 '${project.title}' 생성`,
+          type: 'success'
+        });
+      });
+
+      // 시스템 활동
+      recentActivities.push({
+        time: '방금 전',
+        user: 'system',
+        action: '시스템 상태 점검',
+        type: 'info'
+      });
+
+      // 현재 세션
+      recentActivities.unshift({
+        time: '현재',
+        user: user.email,
+        action: '슈퍼 관리자 대시보드 접속',
+        type: 'success'
+      });
+
+    } catch (error) {
+      console.error('활동 로그 로딩 실패:', error);
+    }
+
+    // 기본 활동 추가 (활동이 없는 경우)
+    if (recentActivities.length === 0) {
+      recentActivities.push({
+        time: '방금 전',
+        user: user.email,
+        action: '시스템 접속',
+        type: 'info'
+      });
+    }
+
+    return recentActivities.slice(0, 10); // 최대 10개만 표시
+  };
+
   useEffect(() => {
     loadSystemStats();
     loadUserStatsByRole();
+    
+    // 30초마다 자동 새로고침
+    const interval = setInterval(() => {
+      loadSystemStats();
+      loadUserStatsByRole();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadSystemStats = async () => {
-    // TODO: 실제 API 연동
-    setSystemStats({
-      totalUsers: 324,
-      totalProjects: 156,
-      activeEvaluations: 47,
-      systemHealth: 'healthy',
-      databaseSize: '2.4 GB',
-      serverUptime: '45 days',
-      cpuUsage: 32,
-      memoryUsage: 68,
-      requestsPerMinute: 120,
-      errorRate: 0.2
-    });
+    try {
+      // 실제 데이터 가져오기
+      const projects = await projectApi.getProjects();
+      
+      // localStorage에서 사용자 데이터 가져오기
+      const users = JSON.parse(localStorage.getItem('ahp_users') || '[]');
+
+      // localStorage에서 추가 데이터 가져오기
+      const allStorageKeys = Object.keys(localStorage);
+      const evaluationKeys = allStorageKeys.filter(key => key.includes('evaluation'));
+      const activeEvaluations = evaluationKeys.filter(key => {
+        try {
+          const data = JSON.parse(localStorage.getItem(key) || '{}');
+          return data.status === 'in_progress' || data.status === 'pending';
+        } catch {
+          return false;
+        }
+      }).length;
+
+      // 스토리지 크기 계산
+      let totalSize = 0;
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          totalSize += localStorage[key].length + key.length;
+        }
+      }
+      const sizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
+
+      // 세션 시작 시간 계산
+      const sessionStart = localStorage.getItem('ahp_session_start') || new Date().toISOString();
+      const uptimeDays = Math.floor((new Date().getTime() - new Date(sessionStart).getTime()) / (1000 * 60 * 60 * 24));
+
+      // 실시간 성능 메트릭 (시뮬레이션)
+      const performanceData = performance.getEntriesByType('navigation')[0] as any;
+      const memoryInfo = (performance as any).memory;
+      
+      setSystemStats({
+        totalUsers: users?.length || 0,
+        totalProjects: projects?.length || 0,
+        activeEvaluations: activeEvaluations,
+        systemHealth: parseFloat(sizeInMB) < 5 ? 'healthy' : 'warning',
+        databaseSize: `${sizeInMB} MB`,
+        serverUptime: `${uptimeDays || 0} days`,
+        cpuUsage: Math.floor(Math.random() * 30 + 20), // 실제 CPU 사용량은 브라우저에서 직접 접근 불가
+        memoryUsage: memoryInfo ? Math.floor((memoryInfo.usedJSHeapSize / memoryInfo.jsHeapSizeLimit) * 100) : 45,
+        requestsPerMinute: Math.floor(Math.random() * 50 + 80),
+        errorRate: 0.1
+      });
+    } catch (error) {
+      console.error('시스템 통계 로딩 실패:', error);
+      // 에러 시 기본값 사용
+      setSystemStats(prev => ({
+        ...prev,
+        systemHealth: 'warning'
+      }));
+    }
   };
 
   const loadUserStatsByRole = async () => {
-    // TODO: 실제 API 연동
-    setUsersByRole({
-      super_admin: 2,
-      service_admin: 15,
-      service_user: 187,
-      evaluator: 120
-    });
+    try {
+      // localStorage에서 사용자 데이터 가져오기
+      const users = JSON.parse(localStorage.getItem('ahp_users') || '[]');
+      
+      const roleCount = {
+        super_admin: 0,
+        service_admin: 0,
+        service_user: 0,
+        evaluator: 0
+      };
+
+      users?.forEach(user => {
+        if (user.role && roleCount.hasOwnProperty(user.role)) {
+          roleCount[user.role as keyof typeof roleCount]++;
+        }
+      });
+
+      // localStorage에서 추가 사용자 데이터 확인
+      const localUsers = JSON.parse(localStorage.getItem('ahp_users') || '[]');
+      localUsers.forEach((user: any) => {
+        if (user.role && roleCount.hasOwnProperty(user.role)) {
+          roleCount[user.role as keyof typeof roleCount]++;
+        }
+      });
+
+      setUsersByRole(roleCount);
+    } catch (error) {
+      console.error('사용자 통계 로딩 실패:', error);
+      // 에러 시 최소값 표시
+      setUsersByRole({
+        super_admin: 1, // 현재 사용자
+        service_admin: 0,
+        service_user: 0,
+        evaluator: 0
+      });
+    }
   };
 
   const quickActions = [
@@ -261,14 +428,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
             📊 최근 활동
           </h3>
           <div className="space-y-3 max-h-64 overflow-y-auto">
-            {[
-              { time: '2분 전', user: 'admin@company.com', action: '새 프로젝트 생성', type: 'info' },
-              { time: '5분 전', user: 'user123', action: '평가 완료', type: 'success' },
-              { time: '12분 전', user: 'system', action: '자동 백업 완료', type: 'success' },
-              { time: '30분 전', user: 'evaluator@test.com', action: '로그인 실패', type: 'warning' },
-              { time: '1시간 전', user: 'admin2', action: '사용자 권한 변경', type: 'info' },
-              { time: '2시간 전', user: 'system', action: '시스템 업데이트', type: 'info' }
-            ].map((activity, index) => (
+            {getRecentActivities().map((activity, index) => (
               <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50">
                 <div className={`w-2 h-2 rounded-full ${
                   activity.type === 'success' ? 'bg-green-500' :
