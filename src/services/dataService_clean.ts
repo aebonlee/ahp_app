@@ -225,14 +225,12 @@ class CleanDataService {
   // === 기준 관리 ===
   async getCriteria(projectId: string): Promise<CriteriaData[]> {
     try {
-      console.log('🔍 실제 DB에서 기준 조회 시작:', projectId);
+      console.log('🔍 PostgreSQL DB에서 기준 조회 시작:', projectId);
       const response = await criteriaApi.getCriteria(projectId);
-      
-      let dbCriteria: CriteriaData[] = [];
       
       if (response.success && response.data) {
         // type이 'criteria' 또는 없는 항목만 필터링 (alternative 제외)
-        dbCriteria = (response.data || [])
+        const criteria = (response.data || [])
           .filter((item: any) => !item.type || item.type === 'criteria')
           .map((item: any) => ({
             id: item.id,
@@ -246,59 +244,22 @@ class CleanDataService {
             weight: item.weight || 0
           }));
         
-        console.log('✅ DB 기준 조회 성공:', dbCriteria.length, '개');
-      } else {
-        console.warn('⚠️ DB 기준 조회 실패');
+        console.log('✅ PostgreSQL DB 기준 조회 성공:', criteria.length, '개');
+        return criteria;
       }
       
-      // localStorage에서 추가 기준 가져오기
-      try {
-        const localStorageKey = `ahp_criteria_${projectId}`;
-        const localCriteriaStr = localStorage.getItem(localStorageKey);
-        
-        if (localCriteriaStr) {
-          const localCriteria = JSON.parse(localCriteriaStr);
-          console.log('📦 localStorage 기준 발견:', localCriteria.length, '개');
-          
-          // DB 기준과 로컬 기준 병합 (중복 제거)
-          const dbIds = new Set(dbCriteria.map(c => c.id));
-          const uniqueLocalCriteria = localCriteria.filter((c: CriteriaData) => 
-            !dbIds.has(c.id) && c.id?.startsWith('local_')
-          );
-          
-          const mergedCriteria = [...dbCriteria, ...uniqueLocalCriteria];
-          console.log('✅ 병합된 기준 총:', mergedCriteria.length, '개');
-          return mergedCriteria;
-        }
-      } catch (localError) {
-        console.warn('⚠️ localStorage 조회 중 오류:', localError);
-      }
-      
-      return dbCriteria;
+      console.warn('⚠️ PostgreSQL DB 기준 조회 실패');
+      return [];
     } catch (error) {
-      console.error('❌ 기준 조회 중 오류:', error);
-      
-      // DB 조회 실패 시 localStorage만 확인
-      try {
-        const localStorageKey = `ahp_criteria_${projectId}`;
-        const localCriteriaStr = localStorage.getItem(localStorageKey);
-        
-        if (localCriteriaStr) {
-          const localCriteria = JSON.parse(localCriteriaStr);
-          console.log('✅ localStorage에서 기준 로드:', localCriteria.length, '개');
-          return localCriteria;
-        }
-      } catch (localError) {
-        console.error('❌ localStorage 조회도 실패:', localError);
-      }
-      
+      console.error('❌ PostgreSQL DB 기준 조회 중 오류:', error);
+      console.error('🚨 백엔드 PostgreSQL DB 연결을 확인해주세요');
       return [];
     }
   }
 
   async createCriteria(data: Omit<CriteriaData, 'id'>): Promise<CriteriaData | null> {
     try {
-      console.log('🔍 실제 DB에 기준 생성 시작:', {
+      console.log('🔍 PostgreSQL DB에 기준 생성 시작:', {
         name: data.name,
         project_id: data.project_id,
         project_id_type: typeof data.project_id,
@@ -313,7 +274,7 @@ class CleanDataService {
         throw new Error('프로젝트 ID가 필요합니다.');
       }
       
-      // 기존 기준 조회 (중복 검사를 위해)
+      // PostgreSQL DB에서 기존 기준 조회 (중복 검사를 위해)
       try {
         const existingResponse = await criteriaApi.getCriteria(data.project_id);
         const existingCriteria = existingResponse.success && existingResponse.data ? existingResponse.data : [];
@@ -330,16 +291,16 @@ class CleanDataService {
         console.warn('⚠️ 중복 검사 중 오류 (계속 진행):', dupError);
       }
       
-      // Criteria API를 통해 생성 - UUID 형식 유지
+      // PostgreSQL DB에 저장 - Criteria API 사용
       const response = await criteriaApi.createCriteria({
         ...data,
         type: 'criteria'
       });
       
-      console.log('📥 기준 생성 API 응답:', response);
+      console.log('📥 PostgreSQL DB 기준 생성 API 응답:', response);
       
       if (response.success && response.data) {
-        console.log('✅ 기준 생성 성공:', response.data);
+        console.log('✅ PostgreSQL DB에 기준 생성 성공:', response.data);
         
         // 프로젝트의 criteria_count 업데이트
         try {
@@ -355,74 +316,17 @@ class CleanDataService {
       }
       
       const errorMsg = response.error || response.message || '기준 생성에 실패했습니다.';
-      console.error('❌ API 응답 실패:', errorMsg);
-      
-      // 백엔드 실패 시 localStorage에 임시 저장
-      console.log('⚠️ 백엔드 저장 실패, localStorage에 임시 저장 시도...');
-      
-      try {
-        // localStorage에서 기존 기준 가져오기
-        const localStorageKey = `ahp_criteria_${data.project_id}`;
-        const existingCriteriaStr = localStorage.getItem(localStorageKey);
-        const existingCriteria = existingCriteriaStr ? JSON.parse(existingCriteriaStr) : [];
-        
-        // 새 기준 생성
-        const newCriteria: CriteriaData = {
-          id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          project_id: data.project_id,
-          name: data.name,
-          description: data.description || '',
-          position: data.position || existingCriteria.length,
-          weight: data.weight || 0,
-          parent_id: data.parent_id || null,
-          level: data.level || 1,
-          order: data.order || existingCriteria.length
-        };
-        
-        // localStorage에 저장
-        existingCriteria.push(newCriteria);
-        localStorage.setItem(localStorageKey, JSON.stringify(existingCriteria));
-        
-        console.log('✅ localStorage에 기준 임시 저장 성공:', newCriteria);
-        return newCriteria;
-      } catch (localError) {
-        console.error('❌ localStorage 저장도 실패:', localError);
-        throw new Error(errorMsg);
-      }
+      console.error('❌ PostgreSQL DB 저장 실패:', errorMsg);
+      console.error('🚨 백엔드 PostgreSQL DB 연결을 확인해주세요');
+      throw new Error(errorMsg);
     } catch (error) {
-      console.error('❌ 기준 생성 중 오류:', error);
-      
-      // 예외 발생 시에도 localStorage 임시 저장 시도
-      try {
-        const localStorageKey = `ahp_criteria_${data.project_id}`;
-        const existingCriteriaStr = localStorage.getItem(localStorageKey);
-        const existingCriteria = existingCriteriaStr ? JSON.parse(existingCriteriaStr) : [];
-        
-        const newCriteria: CriteriaData = {
-          id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          project_id: data.project_id,
-          name: data.name,
-          description: data.description || '',
-          position: data.position || existingCriteria.length,
-          weight: data.weight || 0,
-          parent_id: data.parent_id || null,
-          level: data.level || 1,
-          order: data.order || existingCriteria.length
-        };
-        
-        existingCriteria.push(newCriteria);
-        localStorage.setItem(localStorageKey, JSON.stringify(existingCriteria));
-        
-        console.log('✅ localStorage에 기준 임시 저장 성공 (fallback):', newCriteria);
-        return newCriteria;
-      } catch (localError) {
-        console.error('❌ localStorage 저장도 실패 (fallback):', localError);
-      }
+      console.error('❌ PostgreSQL DB 기준 생성 중 오류:', error);
+      console.error('🚨 백엔드 PostgreSQL DB가 정상 작동하지 않습니다');
       
       if (error instanceof Error) {
-        throw new Error(`기준 생성에 실패했습니다: ${error.message}`);
+        throw new Error(`PostgreSQL DB 기준 생성 실패: ${error.message}`);
       }
-      throw new Error('기준 생성에 실패했습니다.');
+      throw new Error('PostgreSQL DB 기준 생성에 실패했습니다.');
     }
   }
 
