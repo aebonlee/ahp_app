@@ -67,10 +67,17 @@ function App() {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        // admin@ahp.com은 슈퍼 관리자로 처리
-        if (parsedUser.email === 'admin@ahp.com') {
+        // admin@ahp.com은 무조건 슈퍼 관리자로 처리
+        if (parsedUser.email === 'admin@ahp.com' || parsedUser.email?.toLowerCase() === 'admin@ahp.com') {
           parsedUser.role = 'super_admin';
-          console.log('🔑 초기 복원 - 슈퍼 관리자 권한 부여:', parsedUser.email);
+          // 강제로 localStorage 업데이트
+          localStorage.setItem('ahp_user', JSON.stringify(parsedUser));
+          console.log('🔑🔑🔑 초기 복원 - 슈퍼 관리자 권한 강제 부여!');
+          console.log('🔑 이메일:', parsedUser.email);
+          console.log('🔑 역할:', parsedUser.role);
+          
+          // 전역 변수로도 설정
+          (window as any).__SUPER_ADMIN__ = true;
         }
         console.log('🚀 초기 사용자 정보 복원:', parsedUser);
         return parsedUser;
@@ -1984,9 +1991,8 @@ function App() {
   if (user) {
     return (
       <div className="App min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-        {/* 슈퍼 관리자 토글 버튼 - 화면 최상단 고정 */}
-        {(user.role === 'super_admin' || user.role === 'service_admin' || user.email === 'admin@ahp.com') && (
-          <div style={{
+        {/* 슈퍼 관리자 토글 버튼 - 무조건 표시 (디버깅) */}
+        <div style={{
             position: 'fixed',
             top: '10px',
             left: '50%',
@@ -2008,7 +2014,6 @@ function App() {
             👑 슈퍼 관리자 모드 토글 버튼 👑<br/>
             <small>Role: {user.role} | Email: {user.email}</small>
           </div>
-        )}
         <Layout
           user={user}
           viewMode={viewMode}
