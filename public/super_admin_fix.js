@@ -4,8 +4,12 @@
 function forceSuperAdmin() {
     const user = JSON.parse(localStorage.getItem('ahp_user') || '{}');
     
-    if (user.email === 'admin@ahp.com') {
+    if (user.email === 'admin@ahp.com' || user.id === 1) {
+        // role을 super_admin으로 강제 설정
         user.role = 'super_admin';
+        user.is_super_admin = true;
+        user.admin_type = 'super';
+        
         localStorage.setItem('ahp_user', JSON.stringify(user));
         console.log('✅ 슈퍼 관리자 권한 설정 완료!');
         console.log('현재 user:', user);
@@ -66,14 +70,36 @@ forceSuperAdmin();
 // 전역 함수로 등록
 window.forceSuperAdmin = forceSuperAdmin;
 
+// 슈퍼 관리자 정보 확인 함수
+window.checkSuperAdmin = function() {
+    const user = JSON.parse(localStorage.getItem('ahp_user') || '{}');
+    console.log('=== 현재 사용자 정보 ===');
+    console.log('Email:', user.email);
+    console.log('Role:', user.role);
+    console.log('Is Super Admin:', user.role === 'super_admin');
+    console.log('Admin Type:', user.admin_type);
+    console.log('전체 User 객체:', user);
+    console.log('====================');
+    
+    if (user.email === 'admin@ahp.com' && user.role !== 'super_admin') {
+        console.log('⚠️ 권한 불일치 감지! forceSuperAdmin() 실행 중...');
+        forceSuperAdmin();
+        console.log('✅ 권한 수정 완료. 페이지를 새로고침하세요.');
+    }
+};
+
 console.log(`
 ========================================
-슈퍼 관리자 설정 스크립트 로드 완료!
+🎯 슈퍼 관리자 설정 스크립트 로드 완료!
 ========================================
 
-다음 명령어를 콘솔에 입력하세요:
-1. forceSuperAdmin() - 슈퍼 관리자 권한 설정
-2. 페이지 새로고침 (F5)
+사용 가능한 명령어:
+1. forceSuperAdmin() - 슈퍼 관리자 권한 강제 설정
+2. checkSuperAdmin() - 현재 권한 상태 확인
+3. 페이지 새로고침 (F5) - 변경사항 적용
 
 현재 사용자 정보:
 `, JSON.parse(localStorage.getItem('ahp_user') || '{}'));
+
+// 자동 권한 체크
+window.checkSuperAdmin();
