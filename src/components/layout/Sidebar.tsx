@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const toggleCategory = (categoryId: string) => {
     // 모든 주요 카테고리 리스트 (슈퍼 관리자 메뉴 포함)
-    const mainCategories = ['basic', 'advanced', 'ai', 'super-admin'];
+    const mainCategories = ['basic', 'advanced', 'research', 'ai', 'super-admin'];
     
     // 클릭한 카테고리가 주요 카테고리 중 하나인지 확인
     if (mainCategories.includes(categoryId)) {
@@ -150,8 +150,20 @@ const Sidebar: React.FC<SidebarProps> = ({
         { id: 'paper-management', label: '논문 작성' },
         { id: 'workshop-management', label: '워크숍 관리' },
         { id: 'decision-support-system', label: '의사결정 지원' },
-        { id: 'user-guide', label: '사용자 가이드' },
         { id: 'personal-settings', label: '개인 설정' }
+      ]
+    },
+    {
+      id: 'research',
+      title: '연구 논문을 위한 AHP분석',
+      icon: '📚',
+      items: [
+        { id: 'user-guide', label: '사용자 가이드' },
+        { id: 'ai-ahp-methodology', label: 'AHP 방법론' },
+        { id: 'ai-fuzzy-methodology', label: '퍼지 AHP' },
+        { id: 'ai-paper-assistant', label: 'AI 논문 도우미' },
+        { id: 'ai-paper-generation', label: '논문 작성' },
+        { id: 'ai-materials-generation', label: '학술 자료' }
       ]
     },
     {
@@ -159,13 +171,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       title: 'AI 지원',
       icon: '🤖',
       items: [
-        { id: 'ai-paper-assistant', label: 'AI 논문 도우미' },
-        { id: 'ai-ahp-methodology', label: 'AHP 방법론' },
-        { id: 'ai-fuzzy-methodology', label: '퍼지 AHP' },
-        { id: 'ai-paper-generation', label: '논문 작성' },
         { id: 'ai-results-interpretation', label: '결과 해석' },
         { id: 'ai-quality-validation', label: '품질 검증' },
-        { id: 'ai-materials-generation', label: '학술 자료' },
         { id: 'ai-chatbot-assistant', label: 'AI 챗봇' }
       ]
     }
@@ -483,7 +490,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
               >
                 <div className="flex items-center">
-                  {category.icon && (category.id === 'basic' || category.id === 'advanced' || category.id === 'ai' || category.id === 'super-admin') && (
+                  {category.icon && (category.id === 'basic' || category.id === 'advanced' || category.id === 'research' || category.id === 'ai' || category.id === 'super-admin') && (
                     <span className="mr-2" style={{ fontSize: '1.2rem' }}>
                       {category.icon}
                     </span>
@@ -491,8 +498,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <span style={{ 
                     textTransform: 'uppercase', 
                     letterSpacing: '0.1em', 
-                    fontSize: ['basic', 'advanced', 'ai', 'super-admin'].includes(category.id) ? '1rem' : '0.85rem',
-                    fontWeight: ['basic', 'advanced', 'ai', 'super-admin'].includes(category.id) ? 'bold' : 'semibold',
+                    fontSize: ['basic', 'advanced', 'research', 'ai', 'super-admin'].includes(category.id) ? '1rem' : '0.85rem',
+                    fontWeight: ['basic', 'advanced', 'research', 'ai', 'super-admin'].includes(category.id) ? 'bold' : 'semibold',
                     color: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--text-primary)' 
                   }}>
                     {category.title}
