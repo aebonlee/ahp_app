@@ -249,8 +249,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   const getMenuCategories = (): MenuCategory[] => {
     console.log('📋 getMenuCategories - userRole:', userRole, 'viewMode:', viewMode);
     
-    // super_admin 체크
-    const isAdminWithSuperPowers = userRole === 'super_admin' || userRole?.toLowerCase() === 'super_admin';
+    // super_admin 체크 - 임시로 service_admin도 슈퍼관리자 메뉴 보이도록
+    // TODO: 실제 백엔드에서 super_admin 역할이 제대로 전달되면 수정 필요
+    const isAdminWithSuperPowers = userRole === 'super_admin' || 
+                                   userRole?.toLowerCase() === 'super_admin' ||
+                                   userRole === 'service_admin'; // 임시 추가
     
     console.log('🔐 Admin check:', {
       userRole,

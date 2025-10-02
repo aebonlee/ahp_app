@@ -4,7 +4,7 @@ import './App.css';
 import sessionService from './services/sessionService';
 import authService from './services/authService';
 import cleanDataService from './services/dataService_clean';
-import type { User } from './types';
+import type { User, UserRole } from './types';
 import Layout from './components/layout/Layout';
 import LoginForm from './components/auth/LoginForm';
 import UnifiedAuthPage from './components/auth/UnifiedAuthPage';
