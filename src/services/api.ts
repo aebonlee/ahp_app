@@ -408,64 +408,52 @@ export const criteriaApi = {
       };
     }
     
-    // 먼저 ProjectViewSet의 add_criteria 엔드포인트 시도
-    try {
-      const projectCriteriaData = {
-        name: data.name,
-        description: data.description || '',
-        type: data.type || 'criteria',
-        parent: data.parent_id || null, // parent_id도 UUID 문자열 그대로
-        order: data.order || 0,
-        level: data.level || 1,
-        weight: data.weight || 0
-      };
-      
-      console.log('📤 프로젝트 기준 추가 API 시도:', {
-        endpoint: `/api/service/projects/projects/${projectId}/add_criteria/`,
-        data: projectCriteriaData
-      });
-      
-      const response = await makeRequest<CriteriaData>(
-        `/api/service/projects/projects/${projectId}/add_criteria/`, 
-        {
-          method: 'POST',
-          body: JSON.stringify(projectCriteriaData)
-        }
-      );
-      
-      if (response.success) {
-        return response;
-      }
-    } catch (error) {
-      console.log('⚠️ 프로젝트 기준 추가 실패, 일반 기준 생성 시도...', error);
-    }
-    
-    // 실패하면 일반 CriteriaViewSet 엔드포인트 사용
+    // Django REST Framework nested route 패턴
+    // POST /api/service/projects/projects/{project_id}/criteria/
     const requestData = {
-      project: projectId,  // UUID 문자열 그대로 전송
       name: data.name,
       description: data.description || '',
       type: data.type || 'criteria',
-      parent: data.parent_id || null,  // parent_id도 UUID 문자열 그대로
+      parent: data.parent_id || null,
       order: data.order || 0,
       level: data.level || 1,
-      weight: data.weight || 0,
-      is_active: true
+      weight: data.weight || 0
     };
     
-    console.log('📤 일반 기준 생성 API 요청:', {
-      endpoint: `/api/service/projects/criteria/`,
+    console.log('📤 기준 생성 API 요청:', {
+      endpoint: `/api/service/projects/projects/${projectId}/criteria/`,
       data: requestData,
-      dataTypes: {
-        project: typeof requestData.project,
-        parent: typeof requestData.parent
-      }
+      projectId: projectId
     });
     
-    return makeRequest<CriteriaData>('/api/service/projects/criteria/', {
-      method: 'POST',
-      body: JSON.stringify(requestData)
-    });
+    // nested route로 직접 생성 시도
+    const response = await makeRequest<CriteriaData>(
+      `/api/service/projects/projects/${projectId}/criteria/`, 
+      {
+        method: 'POST',
+        body: JSON.stringify(requestData)
+      }
+    );
+    
+    if (!response.success) {
+      // 실패 시 다른 형식으로 시도
+      console.log('⚠️ Nested route 실패, project 필드 포함하여 재시도...');
+      
+      const requestDataWithProject = {
+        project: projectId,  // project 필드 추가
+        ...requestData
+      };
+      
+      return makeRequest<CriteriaData>(
+        `/api/service/projects/projects/${projectId}/criteria/`, 
+        {
+          method: 'POST',
+          body: JSON.stringify(requestDataWithProject)
+        }
+      );
+    }
+    
+    return response;
   },
 
   // 기준 수정
