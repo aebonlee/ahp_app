@@ -70,11 +70,11 @@ class ConnectionTester {
 
       const endpoints = [
         '/api/v1/projects/',
-        '/api/auth/profile/', 
+        '/api/service/auth/profile/', 
         '/health/',
-        '/api/auth/social/naver/',
-        '/api/auth/social/google/',
-        '/api/auth/social/kakao/',
+        '/api/service/auth/social/naver/',
+        '/api/service/auth/social/google/',
+        '/api/service/auth/social/kakao/',
         '/db-status/',
         '/test-deploy/'
       ];
@@ -181,9 +181,9 @@ class ConnectionTester {
       console.log('🔍 소셜 인증 엔드포인트 테스트 시작...');
 
       const socialEndpoints = [
-        { name: 'Naver OAuth', endpoint: '/api/auth/social/naver/' },
-        { name: 'Google OAuth', endpoint: '/api/auth/social/google/' },
-        { name: 'Kakao OAuth', endpoint: '/api/auth/social/kakao/' }
+        { name: 'Naver OAuth', endpoint: '/api/service/auth/social/naver/' },
+        { name: 'Google OAuth', endpoint: '/api/service/auth/social/google/' },
+        { name: 'Kakao OAuth', endpoint: '/api/service/auth/social/kakao/' }
       ];
 
       const results = [];

@@ -43,7 +43,7 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
 
     try {
       // API 호출로 접속키 검증
-      const response = await fetch(`${API_BASE_URL}/api/auth/validate-access-key`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/auth/validate-access-key/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

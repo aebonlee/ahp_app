@@ -276,7 +276,7 @@ class SessionService {
     
     // 서버에 로그아웃 요청
     try {
-      await fetch('/api/auth/logout', {
+      await fetch(`${API_BASE_URL}/api/service/auth/logout/`, {
         credentials: 'include',
         method: 'POST'
       });
@@ -314,7 +314,7 @@ class SessionService {
         return;
       }
 
-      await fetch(`${API_BASE_URL}/api/auth/profile`, {
+      await fetch(`${API_BASE_URL}/api/service/auth/profile/`, {
         credentials: 'include',
         method: 'GET',
         headers: {

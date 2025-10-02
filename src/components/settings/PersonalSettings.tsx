@@ -124,7 +124,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
   useEffect(() => {
     const loadUserDataFromAPI = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+        const response = await fetch(`${API_BASE_URL}/api/service/auth/profile/`, {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
@@ -228,7 +228,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
 
       console.log('💾 API로 사용자 설정 저장 시작');
       
-      const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/auth/profile/`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -300,7 +300,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/auth/change-password/`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -335,7 +335,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/delete-account`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/auth/delete-account/`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {

@@ -380,7 +380,7 @@ function App() {
 
       console.log('🔄 세션 검증 중... (강력한 새로고침 대응)');
       
-      const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/auth/profile/`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
