@@ -35,6 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onModeSwitch 
 }) => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
+  const [isSuperAdminMode, setIsSuperAdminMode] = useState(false);
   
   // 디버깅: userRole 확인 - v3
   console.log('🔍 === Sidebar Debug v3 ===');
@@ -177,20 +178,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  // 슈퍼관리자 메뉴 추가 (service_admin 역할일 때)
-  if (userRole === 'service_admin' || userRole === 'super_admin') {
-    serviceAdminCategories.push({
-      id: 'super-admin',
-      title: '👑 슈퍼관리자',
-      items: [
-        { id: 'super-admin-dashboard', label: '슈퍼 관리자 대시보드' },
-        { id: 'role-switch-admin', label: '서비스 관리자로 전환' },
-        { id: 'role-switch-user', label: '서비스 사용자로 전환' },
-        { id: 'role-switch-evaluator', label: '평가자로 전환' },
-        { id: 'system-reset', label: '시스템 초기화' }
-      ]
-    });
-  }
+  // 슈퍼관리자 메뉴는 이제 개인 관리자 서비스 메뉴에 추가하지 않음
+  // 슈퍼 어드민 모드에서만 superAdminCategories를 사용
   
   // 슈퍼관리자가 아닌 경우 관리자 메뉴 추가
   if (userRole === 'service_admin') {
@@ -269,7 +258,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const getMenuCategories = (): MenuCategory[] => {
-    console.log('📋 getMenuCategories - userRole:', userRole, 'viewMode:', viewMode);
+    console.log('📋 getMenuCategories - userRole:', userRole, 'viewMode:', viewMode, 'isSuperAdminMode:', isSuperAdminMode);
     
     // super_admin 체크 - 임시로 service_admin도 슈퍼관리자 메뉴 보이도록
     // TODO: 실제 백엔드에서 super_admin 역할이 제대로 전달되면 수정 필요
@@ -279,8 +268,15 @@ const Sidebar: React.FC<SidebarProps> = ({
     
     console.log('🔐 Admin check:', {
       userRole,
-      isAdminWithSuperPowers
+      isAdminWithSuperPowers,
+      isSuperAdminMode
     });
+    
+    // 슈퍼 어드민 모드일 때는 슈퍼 어드민 메뉴만 표시
+    if (isAdminWithSuperPowers && isSuperAdminMode) {
+      console.log('✅ 슈퍼 어드민 메뉴 표시');
+      return superAdminCategories;
+    }
     
     // 일반 메뉴 보기 모드
     if (userRole === 'service_user') {
@@ -380,8 +376,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                   paddingBottom: 'var(--space-3)',
                   marginBottom: 'var(--space-6)'
                 }}>
-              {userRole === 'super_admin'
+              {isSuperAdminMode
                 ? '시스템 관리자'
+                : userRole === 'super_admin'
+                ? '개인 관리자 서비스'
                 : userRole === 'service_admin'
                 ? '개인 관리자 서비스'
                 : userRole === 'service_user'
@@ -391,6 +389,48 @@ const Sidebar: React.FC<SidebarProps> = ({
                 : '개인 관리자 서비스'
               }
             </h2>
+            
+            {/* 슈퍼 어드민 모드 전환 버튼 */}
+            {(userRole === 'super_admin' || userRole === 'service_admin') && (
+              <button
+                onClick={() => setIsSuperAdminMode(!isSuperAdminMode)}
+                className="w-full mb-4 p-3 rounded-lg transition-all flex items-center justify-between"
+                style={{
+                  backgroundColor: isSuperAdminMode ? 'var(--gold-primary)' : 'var(--bg-elevated)',
+                  color: isSuperAdminMode ? 'white' : 'var(--text-primary)',
+                  border: '2px solid',
+                  borderColor: isSuperAdminMode ? 'var(--gold-primary)' : 'var(--border-light)',
+                  fontSize: 'var(--font-size-md)',
+                  fontWeight: 'var(--font-weight-bold)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSuperAdminMode) {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                    e.currentTarget.style.borderColor = 'var(--gold-primary)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSuperAdminMode) {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
+                    e.currentTarget.style.borderColor = 'var(--border-light)';
+                  }
+                }}
+              >
+                <div className="flex items-center">
+                  <span className="mr-2 text-xl">{isSuperAdminMode ? '↩️' : '👑'}</span>
+                  <span>{isSuperAdminMode ? '개인 관리자 서비스로 전환' : '슈퍼 어드민 모드로 전환'}</span>
+                </div>
+                <svg 
+                  className="transition-transform"
+                  style={{ width: '16px', height: '16px' }}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
           </>
         )}
         
