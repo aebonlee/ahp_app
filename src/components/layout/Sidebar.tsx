@@ -117,7 +117,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         { id: 'role-switch-admin', label: '서비스 관리자로 전환' },
         { id: 'role-switch-user', label: '서비스 사용자로 전환' },
         { id: 'role-switch-evaluator', label: '평가자로 전환' },
-        { id: 'django-admin', label: 'Django 관리자' },
         { id: 'system-reset', label: '시스템 초기화' }
       ]
     }
