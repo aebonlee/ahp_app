@@ -475,8 +475,8 @@ ${selectedProject?.title} AHP 분석 연구
         <button
           onClick={() => setActiveTab('settings')}
           disabled={!selectedTemplate}
-          className="px-8 py-3 rounded-lg font-semibold text-white transition-colors disabled:opacity-50"
-          style={{ backgroundColor: 'var(--success-primary)' }}
+          className="px-8 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
+          style={{ backgroundColor: 'var(--success-primary)', color: 'var(--text-primary)' }}
         >
           다음: 생성 설정 →
         </button>
@@ -614,8 +614,8 @@ ${selectedProject?.title} AHP 분석 연구
       <div className="text-center">
         <button
           onClick={startGeneration}
-          className="px-8 py-3 rounded-lg font-semibold text-white transition-colors"
-          style={{ backgroundColor: 'var(--success-primary)' }}
+          className="px-8 py-3 rounded-lg font-semibold transition-colors"
+          style={{ backgroundColor: 'var(--success-primary)', color: 'var(--text-primary)' }}
         >
           🤖 AI 자료 생성 시작
         </button>
@@ -767,8 +767,8 @@ ${selectedProject?.title} AHP 분석 연구
               console.log('PDF 다운로드');
               alert('PDF 파일이 다운로드됩니다. (구현 예정)');
             }}
-            className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
-            style={{ backgroundColor: 'var(--success-primary)' }}
+            className="px-6 py-3 rounded-lg font-semibold transition-colors"
+            style={{ backgroundColor: 'var(--success-primary)', color: 'var(--text-primary)' }}
           >
             📕 PDF로 다운로드
           </button>
@@ -843,7 +843,7 @@ ${selectedProject?.title} AHP 분석 연구
                 }`}
                 style={{
                   backgroundColor: activeTab === tab.id ? 'var(--success-primary)' : 'transparent',
-                  color: activeTab === tab.id ? 'white' : 'var(--text-secondary)',
+                  color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-secondary)',
                   opacity: (
                     (tab.id === 'template' && !selectedProject) ||
                     (tab.id === 'settings' && !selectedTemplate) ||
