@@ -35,7 +35,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   onModeSwitch 
 }) => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
-  const [showSuperAdminMenu, setShowSuperAdminMenu] = useState(false);
   
   // 디버깅: userRole 확인 - v3
   console.log('🔍 === Sidebar Debug v3 ===');
@@ -45,7 +44,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   console.log('🔍 Is service_admin?:', userRole === 'service_admin');
   console.log('🔍 Should show super button?:', userRole === 'super_admin' || userRole === 'service_admin');
   console.log('🔍 isCollapsed:', isCollapsed);
-  console.log('🔍 showSuperAdminMenu:', showSuperAdminMenu);
   console.log('🔍 viewMode:', viewMode);
   console.log('🔍 timestamp:', new Date().toISOString());
   console.log('🔍 ===================')
@@ -179,6 +177,21 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
+  // 슈퍼관리자 메뉴 추가 (service_admin 역할일 때)
+  if (userRole === 'service_admin' || userRole === 'super_admin') {
+    serviceAdminCategories.push({
+      id: 'super-admin',
+      title: '👑 슈퍼관리자',
+      items: [
+        { id: 'super-admin-dashboard', label: '슈퍼 관리자 대시보드' },
+        { id: 'role-switch-admin', label: '서비스 관리자로 전환' },
+        { id: 'role-switch-user', label: '서비스 사용자로 전환' },
+        { id: 'role-switch-evaluator', label: '평가자로 전환' },
+        { id: 'system-reset', label: '시스템 초기화' }
+      ]
+    });
+  }
+  
   // 슈퍼관리자가 아닌 경우 관리자 메뉴 추가
   if (userRole === 'service_admin') {
     serviceAdminCategories.push({
@@ -256,7 +269,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const getMenuCategories = (): MenuCategory[] => {
-    console.log('📋 getMenuCategories - userRole:', userRole, 'viewMode:', viewMode, 'showSuperAdminMenu:', showSuperAdminMenu);
+    console.log('📋 getMenuCategories - userRole:', userRole, 'viewMode:', viewMode);
     
     // super_admin 체크 - 임시로 service_admin도 슈퍼관리자 메뉴 보이도록
     // TODO: 실제 백엔드에서 super_admin 역할이 제대로 전달되면 수정 필요
@@ -266,15 +279,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     
     console.log('🔐 Admin check:', {
       userRole,
-      isAdminWithSuperPowers,
-      willShowSuperAdmin: showSuperAdminMenu
+      isAdminWithSuperPowers
     });
-    
-    // 슈퍼관리자 메뉴 보기 모드일 때
-    if (isAdminWithSuperPowers && showSuperAdminMenu) {
-      console.log('✅ 슈퍼관리자 메뉴 표시!');
-      return superAdminCategories;
-    }
     
     // 일반 메뉴 보기 모드
     if (userRole === 'service_user') {
@@ -364,81 +370,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       >
         {!isCollapsed && (
           <>
-            {/* 슈퍼관리자 전용 토글 버튼 */}
-            {console.log('👑 Super button check:', {
-              userRole,
-              isSuper: userRole === 'super_admin',
-              isServiceAdmin: userRole === 'service_admin',
-              shouldShowButton: userRole === 'super_admin' || userRole === 'service_admin',
-              isCollapsed
-            })}
-            {true && /* 임시로 항상 표시 - 디버깅용 */ (
-              <button
-                onClick={() => setShowSuperAdminMenu(!showSuperAdminMenu)}
-                className="w-full mb-4 p-4 rounded-lg transition-all flex items-center justify-between"
-                style={{
-                  backgroundColor: showSuperAdminMenu ? 'var(--gold-primary)' : 'var(--bg-elevated)',
-                  color: showSuperAdminMenu ? 'white' : 'var(--text-primary)',
-                  border: '2px solid',
-                  borderColor: showSuperAdminMenu ? 'var(--gold-primary)' : 'var(--border-light)',
-                  fontSize: 'var(--font-size-lg)',
-                  fontWeight: 'var(--font-weight-bold)'
-                }}
-                onMouseEnter={(e) => {
-                  if (!showSuperAdminMenu) {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
-                    e.currentTarget.style.borderColor = 'var(--gold-primary)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!showSuperAdminMenu) {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
-                    e.currentTarget.style.borderColor = 'var(--border-light)';
-                  }
-                }}
-              >
-                <div className="flex items-center">
-                  <span className="mr-3 text-2xl">👑</span>
-                  <span>슈퍼관리자</span>
-                </div>
-                <svg 
-                  className={`transition-transform ${showSuperAdminMenu ? 'rotate-180' : ''}`}
-                  style={{ width: '20px', height: '20px' }}
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            )}
-
-            {/* 개인 관리자 서비스로 돌아가기 버튼 (슈퍼관리자 메뉴 표시 중일 때만) */}
-            {showSuperAdminMenu && (
-              <button
-                onClick={() => setShowSuperAdminMenu(false)}
-                className="w-full mb-4 p-3 rounded-lg transition-all flex items-center justify-center"
-                style={{
-                  backgroundColor: 'var(--bg-secondary)',
-                  color: 'var(--accent-primary)',
-                  border: '1px solid var(--accent-primary)',
-                  fontSize: 'var(--font-size-md)',
-                  fontWeight: 'var(--font-weight-semibold)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--accent-primary)';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-                  e.currentTarget.style.color = 'var(--accent-primary)';
-                }}
-              >
-                <span className="mr-2">↩️</span>
-                개인 관리자 서비스로 돌아가기
-              </button>
-            )}
-
             <h2 className="font-bold mb-6"
                 style={{
                   fontSize: 'var(--font-size-lg)',
