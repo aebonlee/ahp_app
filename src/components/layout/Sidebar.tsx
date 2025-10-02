@@ -117,6 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         { id: 'role-switch-admin', label: '서비스 관리자로 전환' },
         { id: 'role-switch-user', label: '서비스 사용자로 전환' },
         { id: 'role-switch-evaluator', label: '평가자로 전환' },
+        { id: 'django-admin', label: 'Django 관리자' },
         { id: 'system-reset', label: '시스템 초기화' }
       ]
     }
@@ -272,7 +273,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const handleItemClick = (itemId: string) => {
     // Django 관리자 링크 처리
     if (itemId === 'django-admin') {
-      window.open('http://localhost:8000/admin/', '_blank');
+      window.open('https://ahp-django-backend.onrender.com/admin/', '_blank');
       return;
     }
     

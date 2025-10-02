@@ -198,7 +198,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
         evaluator: 0
       };
 
-      users?.forEach(user => {
+      users?.forEach((user: any) => {
         if (user.role && roleCount.hasOwnProperty(user.role)) {
           roleCount[user.role as keyof typeof roleCount]++;
         }
@@ -270,7 +270,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
       color: 'var(--accent-quaternary)',
       actions: [
         { label: '연결 테스트', onClick: () => onTabChange('connection-test') },
-        { label: 'Django Admin', onClick: () => window.open('http://localhost:8000/admin/', '_blank') },
+        { label: 'Django Admin', onClick: () => window.open('https://ahp-django-backend.onrender.com/admin/', '_blank') },
         { label: 'API 문서', onClick: () => window.open('/api/docs', '_blank') }
       ]
     }
