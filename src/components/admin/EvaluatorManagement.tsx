@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import { API_BASE_URL } from '../../config/api';
 
 interface Evaluator {
   id: string;
@@ -77,7 +78,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
 
   const loadAllEvaluators = async () => {
     try {
-      const response = await fetch('https://ahp-platform.onrender.com/api/evaluators', {
+      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/`, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -188,8 +189,8 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
 
     try {
       const url = fromProject && projectId 
-        ? `https://ahp-platform.onrender.com/api/evaluators/${evaluatorId}/project/${projectId}`
-        : `https://ahp-platform.onrender.com/api/evaluators/${evaluatorId}`;
+        ? `${API_BASE_URL}/api/service/evaluators/${evaluatorId}/project/${projectId}/`
+        : `${API_BASE_URL}/api/service/evaluators/${evaluatorId}/`;
 
       const response = await fetch(url, {
         method: 'DELETE',
@@ -219,7 +220,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
     if (!validateForm()) return;
     
     try {
-      const response = await fetch('https://ahp-platform.onrender.com/api/evaluators', {
+      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

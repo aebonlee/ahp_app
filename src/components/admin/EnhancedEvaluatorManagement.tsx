@@ -66,7 +66,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
   const loadEvaluators = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/evaluators${projectId ? `?projectId=${projectId}` : ''}`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/${projectId ? `?project=${projectId}` : ''}`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
@@ -135,7 +135,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/evaluators`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -210,7 +210,7 @@ ${inviteData.message}
 
         // 실제 이메일 발송 (백엔드 API 또는 이메일 서비스 사용)
         try {
-          await fetch(`${API_BASE_URL}/api/evaluators/invite`, {
+          await fetch(`${API_BASE_URL}/api/service/evaluators/invite/`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -255,7 +255,7 @@ ${inviteData.message}
   const handleDeleteEvaluator = async (evaluatorId: string) => {
     if (window.confirm('평가자를 삭제하시겠습니까? 배정된 프로젝트에서 제외되며 평가 데이터가 삭제됩니다.')) {
       try {
-        await fetch(`${API_BASE_URL}/api/evaluators/${evaluatorId}`, {
+        await fetch(`${API_BASE_URL}/api/service/evaluators/${evaluatorId}/`, {
           method: 'DELETE',
           credentials: 'include',
           headers: {
