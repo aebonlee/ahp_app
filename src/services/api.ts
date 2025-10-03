@@ -396,11 +396,33 @@ export const criteriaApi = {
     console.log('📤 Django Criteria API 조회:', projectId);
     
     // CriteriaViewSet은 project 필드로 필터링 지원
-    const response = await makeRequest<CriteriaData[]>(`/api/service/projects/criteria/?project=${projectId}`);
+    const response = await makeRequest<any>(`/api/service/projects/criteria/?project=${projectId}`);
+    
+    console.log('📥 Raw API Response:', response);
     
     if (response.success && response.data) {
-      console.log('✅ PostgreSQL DB에서 기준 조회 성공');
-      return response;
+      // Django REST framework의 페이지네이션 응답 처리
+      let criteriaList = [];
+      
+      if (response.data.results) {
+        // 페이지네이션된 응답
+        criteriaList = response.data.results;
+        console.log('📄 페이지네이션된 데이터, count:', response.data.count);
+      } else if (Array.isArray(response.data)) {
+        // 일반 배열 응답
+        criteriaList = response.data;
+        console.log('📋 일반 배열 데이터');
+      } else {
+        console.warn('⚠️ 예상치 못한 데이터 형식:', typeof response.data);
+        criteriaList = [];
+      }
+      
+      console.log('✅ PostgreSQL DB에서 기준 조회 성공, 개수:', criteriaList.length);
+      return {
+        success: true,
+        data: criteriaList,
+        message: response.message
+      };
     }
     
     console.error('❌ Criteria API 조회 실패:', response.error);

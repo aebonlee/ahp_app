@@ -228,7 +228,12 @@ class CleanDataService {
       console.log('🔍 PostgreSQL DB에서 기준 조회 시작:', projectId);
       const response = await criteriaApi.getCriteria(projectId);
       
+      console.log('📡 criteriaApi 응답:', response);
+      
       if (response.success && response.data) {
+        console.log('✅ 원본 데이터 개수:', response.data.length);
+        console.log('✅ 원본 데이터:', response.data);
+        
         // type이 'criteria' 또는 없는 항목만 필터링 (alternative 제외)
         const criteria = (response.data || [])
           .filter((item: any) => !item.type || item.type === 'criteria')
@@ -237,7 +242,7 @@ class CleanDataService {
             project_id: projectId,
             name: item.name,
             description: item.description || '',
-            parent_id: item.parent_id,
+            parent_id: item.parent_id || null,
             level: item.level || 1,
             order: item.order || item.position || 0,
             position: item.position || item.order || 0,
