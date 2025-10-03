@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import './index.css';
 import './App.css';
+// localStorage를 메모리 스토리지로 대체 (로컬 스토리지 사용 금지)
+import './services/memoryStorage';
 import sessionService from './services/sessionService';
 import authService from './services/authService';
 import cleanDataService from './services/dataService_clean';
