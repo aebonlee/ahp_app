@@ -137,6 +137,31 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     return all;
   };
 
+  // 평면 배열을 계층구조로 변환
+  const buildHierarchicalStructure = (flatCriteria: Criterion[]): Criterion[] => {
+    const nodeMap = new Map<string, Criterion>();
+    const rootNodes: Criterion[] = [];
+
+    // 먼저 모든 노드를 맵에 저장
+    flatCriteria.forEach(node => {
+      nodeMap.set(node.id, { ...node, children: [] });
+    });
+
+    // 부모-자식 관계 설정
+    flatCriteria.forEach(node => {
+      const nodeWithChildren = nodeMap.get(node.id)!;
+      if (node.parent_id && nodeMap.has(node.parent_id)) {
+        const parent = nodeMap.get(node.parent_id)!;
+        if (!parent.children) parent.children = [];
+        parent.children.push(nodeWithChildren);
+      } else {
+        rootNodes.push(nodeWithChildren);
+      }
+    });
+
+    return rootNodes;
+  };
+
   // 시각화를 위한 평면 배열 생성
   const getFlatCriteriaForVisualization = (criteriaList: Criterion[]): Criterion[] => {
     const flat: Criterion[] = [];
@@ -152,7 +177,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
           description: item.description,
           parent_id: item.parent_id,
           level: actualLevel,
-          weight: item.weight || 0
+          weight: item.weight || 0,
+          order: item.order
         });
         
         // 하위 항목이 있으면 재귀적으로 처리
@@ -823,7 +849,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
               </div>
             </div>
             <HierarchyTreeVisualization
-              nodes={getFlatCriteriaForVisualization(criteria)}
+              nodes={criteria} // 평면 배열 직접 전달 (HierarchyTreeVisualization 내부에서 계층구조 생성)
               title={`${projectTitle || 'AHP 프로젝트'} 기준 계층구조`}
               showWeights={true}
               interactive={true}
