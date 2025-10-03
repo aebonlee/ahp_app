@@ -551,65 +551,88 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       }
     }
     
-    // 논문 작성 권장: 3개 기준 템플릿 구조
-    const templateCriteria = [
-      {
-        project_id: projectId,
-        name: '프로젝트 목표',
-        description: '최종 달성하고자 하는 목표를 입력하세요',
-        parent_id: null,
-        level: 1,
-        position: 1,
-        order: 1
-      },
-      {
-        project_id: projectId,
-        name: '기준 1',
-        description: '첫 번째 평가 기준',
-        parent_id: null,
-        level: 2,
-        position: 1,
-        order: 1
-      },
-      {
-        project_id: projectId,
-        name: '기준 2', 
-        description: '두 번째 평가 기준',
-        parent_id: null,
-        level: 2,
-        position: 2,
-        order: 2
-      },
-      {
-        project_id: projectId,
-        name: '기준 3',
-        description: '세 번째 평가 기준 (논문 권장 구조)',
-        parent_id: null,
-        level: 2,
-        position: 3,
-        order: 3
-      }
-    ];
-    
     try {
-      // 기존 데이터 삭제 후 템플릿 생성
+      console.log('📦 템플릿 로드 시작');
+      
+      // 기존 데이터 삭제
       for (const criterion of criteria) {
         await dataService.deleteCriteria(criterion.id, projectId);
       }
       
-      // 템플릿 데이터 생성
+      // 논문 작성 권장: 3개 기준 템플릿 구조
+      const templateCriteria = [
+        {
+          name: '품질',
+          description: '제품 또는 서비스의 품질 수준',
+          parent_id: null,
+          level: 1,
+          order: 0
+        },
+        {
+          name: '비용',
+          description: '경제적 비용 및 가격 경쟁력',
+          parent_id: null,
+          level: 1,
+          order: 1
+        },
+        {
+          name: '기술력',
+          description: '기술적 우위 및 혁신성',
+          parent_id: null,
+          level: 1,
+          order: 2
+        }
+      ];
+      
+      // 각 기준에 하위 기준 추가
+      const createdIds: Record<string, string> = {};
+      
+      // 먼저 상위 기준 생성
       for (const criterionData of templateCriteria) {
-        await dataService.createCriteria(criterionData);
+        const created = await dataService.createCriteria({
+          ...convertToCriteriaData(criterionData),
+          project_id: projectId
+        });
+        
+        if (created && created.id) {
+          createdIds[criterionData.name] = created.id;
+          console.log(`✅ 기준 생성: ${criterionData.name}`);
+        }
+      }
+      
+      // 하위 기준 생성 (예시)
+      const subCriteria = [
+        { name: '내구성', description: '제품의 내구성 및 수명', parent_id: createdIds['품질'], level: 2, order: 0 },
+        { name: '성능', description: '기능적 성능 수준', parent_id: createdIds['품질'], level: 2, order: 1 },
+        { name: '디자인', description: '외관 및 사용자 경험', parent_id: createdIds['품질'], level: 2, order: 2 },
+        
+        { name: '초기비용', description: '구매 또는 도입 비용', parent_id: createdIds['비용'], level: 2, order: 0 },
+        { name: '운영비용', description: '유지보수 및 운영 비용', parent_id: createdIds['비용'], level: 2, order: 1 },
+        { name: 'ROI', description: '투자 대비 수익률', parent_id: createdIds['비용'], level: 2, order: 2 },
+        
+        { name: '혁신성', description: '기술적 혁신 수준', parent_id: createdIds['기술력'], level: 2, order: 0 },
+        { name: '호환성', description: '기존 시스템과의 호환성', parent_id: createdIds['기술력'], level: 2, order: 1 },
+        { name: '확장성', description: '향후 확장 가능성', parent_id: createdIds['기술력'], level: 2, order: 2 }
+      ];
+      
+      // 하위 기준 생성
+      for (const subCriterion of subCriteria) {
+        await dataService.createCriteria({
+          ...convertToCriteriaData(subCriterion),
+          project_id: projectId
+        });
+        console.log(`  ✅ 하위 기준 생성: ${subCriterion.name}`);
       }
       
       // 데이터 다시 로드
       const criteriaData = await dataService.getCriteria(projectId);
       const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-      setCriteria(convertedCriteria);
+      const normalizedCriteria = normalizeCriteriaOrder(convertedCriteria);
+      setCriteria(normalizedCriteria);
       
       setNewCriterion({ name: '', description: '', parentId: '' });
       setErrors({});
-      alert('✅ 논문 권장 템플릿(3개 기준)이 저장되었습니다.\n필요시 추가 기준을 입력할 수 있습니다.');
+      alert('✅ 3x3 계층구조 템플릿이 적용되었습니다.\n품질, 비용, 기술력 기준과 각각 3개의 하위 기준이 생성되었습니다.');
     } catch (error) {
       console.error('Failed to load template data:', error);
       alert('❌ 템플릿 로드 중 오류가 발생했습니다.');
@@ -620,27 +643,66 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     try {
       console.log('🔄 일괄 가져오기 시작:', importedCriteria);
       
-      const rootCriteria = importedCriteria.filter(c => c.level === 1);
-      const subCriteria = importedCriteria.filter(c => c.level === 2);
-      
-      if (subCriteria.length > 0) {
-        // 계층구조가 있는 경우 사용자에게 옵션 제공
-        setPendingImport({
-          rootCriteria,
-          subCriteria,
-          allCriteria: importedCriteria
-        });
-        setShowImportDialog(true);
-        setShowBulkInput(false);
-        return;
+      // 기존 데이터가 있는 경우 확인
+      if (criteria.length > 0) {
+        if (!window.confirm('⚠️ 기존 데이터가 있습니다. 덧붙이시겠습니까?\n("취소"를 누르면 기존 데이터를 삭제하고 다시 시도할 수 있습니다)')) {
+          return;
+        }
       }
       
-      // 평면 구조인 경우 바로 저장
-      await processFlatImport(importedCriteria);
+      // 모든 기준을 평면 구조로 저장 (계층구조는 내부에서 처리)
+      const allCriteria = getAllCriteriaFlat(importedCriteria);
+      console.log('📝 저장할 기준 개수:', allCriteria.length);
+      
+      // 각 기준 저장
+      const savedIds = new Map<string, string>(); // old id -> new id mapping
+      
+      for (const criterion of allCriteria) {
+        const criterionData: Omit<CriteriaData, 'id'> = {
+          project_id: projectId,
+          name: criterion.name,
+          description: criterion.description || '',
+          parent_id: criterion.parent_id ? savedIds.get(criterion.parent_id) || null : null,
+          level: criterion.level || 1,
+          position: criterion.order || 0,
+          order: criterion.order || 0
+        };
+        
+        console.log(`💾 기준 저장 중: ${criterion.name} (Level ${criterion.level})`);
+        const created = await dataService.createCriteria(criterionData);
+        
+        if (created && created.id) {
+          savedIds.set(criterion.id, created.id);
+        }
+      }
+      
+      // 데이터 다시 로드
+      const criteriaData = await dataService.getCriteria(projectId);
+      const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+      const normalizedCriteria = normalizeCriteriaOrder(convertedCriteria);
+      setCriteria(normalizedCriteria);
+      
+      setShowBulkInput(false);
+      alert(`✅ ${allCriteria.length}개의 기준이 성공적으로 가져와졌습니다.`);
     } catch (error) {
       console.error('Failed to bulk import criteria:', error);
       alert('❌ 일괄 가져오기 중 오류가 발생했습니다.');
     }
+  };
+  
+  // 계층 구조를 평면 구조로 변환
+  const getAllCriteriaFlat = (criteriaList: Criterion[]): Criterion[] => {
+    const all: Criterion[] = [];
+    const traverse = (items: Criterion[], parentId: string | null = null) => {
+      items.forEach(item => {
+        all.push({ ...item, parent_id: parentId });
+        if (item.children && item.children.length > 0) {
+          traverse(item.children, item.id);
+        }
+      });
+    };
+    traverse(criteriaList);
+    return all;
   };
 
   const handleImportChoice = async (saveOnlyMain: boolean) => {

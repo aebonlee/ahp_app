@@ -259,6 +259,39 @@ const HierarchyTreeBuilder: React.FC<HierarchyTreeBuilderProps> = ({
     setEditValue('');
   };
 
+  // 순서 이동 함수
+  const moveNodeOrder = (nodeId: string, direction: 'up' | 'down') => {
+    const updateOrder = (tree: TreeNode): TreeNode => {
+      const childrenCopy = [...tree.children];
+      const index = childrenCopy.findIndex(child => child.id === nodeId);
+      
+      if (index >= 0) {
+        if (direction === 'up' && index > 0) {
+          [childrenCopy[index - 1], childrenCopy[index]] = [childrenCopy[index], childrenCopy[index - 1]];
+        } else if (direction === 'down' && index < childrenCopy.length - 1) {
+          [childrenCopy[index], childrenCopy[index + 1]] = [childrenCopy[index + 1], childrenCopy[index]];
+        }
+        
+        // order 값 재할당
+        childrenCopy.forEach((child, idx) => {
+          child.order = idx;
+        });
+        
+        return {
+          ...tree,
+          children: childrenCopy
+        };
+      }
+      
+      return {
+        ...tree,
+        children: tree.children.map(updateOrder)
+      };
+    };
+    
+    setHierarchy(updateOrder(hierarchy));
+  };
+  
   // 트리 노드 렌더링
   const renderTreeNode = (node: TreeNode, depth: number = 0) => {
     const isEditing = editingNode === node.id;
@@ -305,30 +338,61 @@ const HierarchyTreeBuilder: React.FC<HierarchyTreeBuilderProps> = ({
             <input
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
-              onBlur={() => editNodeName(node.id, editValue)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  editNodeName(node.id, editValue);
+              onBlur={() => {
+                if (editValue.trim()) {
+                  editNodeName(node.id, editValue.trim());
+                } else {
+                  setEditingNode(null);
+                  setEditValue('');
                 }
               }}
-              className="px-2 py-1 border rounded"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  if (editValue.trim()) {
+                    editNodeName(node.id, editValue.trim());
+                  } else {
+                    setEditingNode(null);
+                    setEditValue('');
+                  }
+                } else if (e.key === 'Escape') {
+                  setEditingNode(null);
+                  setEditValue('');
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="px-2 py-1 border rounded w-full"
               autoFocus
             />
           ) : (
             <span 
-              className="flex-1 font-medium"
-              onDoubleClick={() => {
+              className="flex-1 font-medium cursor-text"
+              onDoubleClick={(e) => {
+                e.stopPropagation();
                 setEditingNode(node.id);
                 setEditValue(node.name);
               }}
+              title="더블클릭하여 편집"
             >
               {node.name}
             </span>
           )}
 
           {/* 액션 버튼 */}
-          {node.id !== 'root' && (
+          {node.id !== 'root' && !isEditing && (
             <div className="flex gap-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newName = prompt('새 하위 기준 이름:', '');
+                  if (newName && newName.trim()) {
+                    addNode(node, newName.trim());
+                  }
+                }}
+                className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+                title="하위 기준 추가"
+              >
+                +
+              </button>
               {node.level > 1 && (
                 <button
                   onClick={(e) => {
