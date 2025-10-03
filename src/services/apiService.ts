@@ -353,7 +353,16 @@ export const apiHelpers = {
   },
 };
 
-export default {
+// apiClient의 메서드들을 직접 export
+const apiService = {
+  // HTTP 메서드들
+  get: apiClient.get.bind(apiClient),
+  post: apiClient.post.bind(apiClient),
+  put: apiClient.put.bind(apiClient),
+  delete: apiClient.delete.bind(apiClient),
+  patch: apiClient.patch.bind(apiClient),
+  
+  // API 모듈들
   authAPI,
   directEvaluationAPI,
   pairwiseEvaluationAPI,
@@ -365,3 +374,5 @@ export default {
   alternativesAPI,
   apiHelpers,
 };
+
+export default apiService;

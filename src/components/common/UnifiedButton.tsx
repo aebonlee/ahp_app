@@ -12,6 +12,8 @@ interface UnifiedButtonProps {
   style?: React.CSSProperties;
   onMouseEnter?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onMouseLeave?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  loading?: boolean;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 const UnifiedButton: React.FC<UnifiedButtonProps> = ({
@@ -25,7 +27,9 @@ const UnifiedButton: React.FC<UnifiedButtonProps> = ({
   title,
   style,
   onMouseEnter,
-  onMouseLeave
+  onMouseLeave,
+  loading = false,
+  type = 'button'
 }) => {
   const baseClasses = 'inline-flex items-center justify-center font-medium transition-luxury focus-luxury disabled:opacity-50 disabled:cursor-not-allowed border';
   
@@ -145,13 +149,23 @@ const UnifiedButton: React.FC<UnifiedButtonProps> = ({
         userSelect: 'none'
       }}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
       title={title}
+      type={type}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {icon && <span className="mr-2 text-lg">{icon}</span>}
-      <span className="font-semibold">{children}</span>
+      {loading ? (
+        <>
+          <span className="mr-2 animate-spin">⏳</span>
+          <span className="font-semibold">로딩중...</span>
+        </>
+      ) : (
+        <>
+          {icon && <span className="mr-2 text-lg">{icon}</span>}
+          <span className="font-semibold">{children}</span>
+        </>
+      )}
     </button>
   );
 };

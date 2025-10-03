@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
 import Input from '../common/Input';
-import LayerPopup from '../common/LayerPopup';
 import apiService from '../../services/apiService';
 import type { UserRole } from '../../types';
 
@@ -26,8 +25,8 @@ interface UserFormData {
   email: string;
   first_name: string;
   last_name: string;
-  password?: string;
-  confirmPassword?: string;
+  password: string;
+  confirmPassword: string;
   is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
@@ -74,12 +73,13 @@ const RealUserManagement: React.FC = () => {
         ...(roleFilter !== 'all' && { role: roleFilter })
       });
 
-      const response = await apiService.get(`/api/users/?${params}`);
+      const response = await apiService.get<any>(`/api/users/?${params}`);
       
       if (response.data) {
-        setUsers(response.data.results || response.data);
-        setTotalCount(response.data.count || response.data.length);
-        setTotalPages(Math.ceil((response.data.count || response.data.length) / pageSize));
+        const data = response.data as any;
+        setUsers(data.results || data);
+        setTotalCount(data.count || (Array.isArray(data) ? data.length : 0));
+        setTotalPages(Math.ceil((data.count || (Array.isArray(data) ? data.length : 0)) / pageSize));
       } else {
         throw new Error('데이터를 불러올 수 없습니다.');
       }
@@ -631,14 +631,21 @@ const RealUserManagement: React.FC = () => {
       </Card>
 
       {/* 사용자 생성/수정 폼 */}
-      <LayerPopup
-        isOpen={showCreateForm}
-        onClose={() => {
-          setShowCreateForm(false);
-          resetForm();
-        }}
-        title={editingUser ? '사용자 정보 수정' : '새 사용자 추가'}
-        content={
+      {showCreateForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">{editingUser ? '사용자 정보 수정' : '새 사용자 추가'}</h3>
+              <button
+                onClick={() => {
+                  setShowCreateForm(false);
+                  resetForm();
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
           <form onSubmit={(e) => {
             e.preventDefault();
             if (editingUser) {
@@ -769,9 +776,9 @@ const RealUserManagement: React.FC = () => {
               </UnifiedButton>
             </div>
           </form>
-        }
-        width="lg"
-      />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
