@@ -315,7 +315,7 @@ class CleanDataService {
         return response.data;
       }
       
-      const errorMsg = response.error || response.message || '기준 생성에 실패했습니다.';
+      const errorMsg = response.error || '기준 생성에 실패했습니다.';
       console.error('❌ PostgreSQL DB 저장 실패:', errorMsg);
       console.error('🚨 백엔드 PostgreSQL DB 연결을 확인해주세요');
       throw new Error(errorMsg);

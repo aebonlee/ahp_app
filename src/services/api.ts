@@ -392,32 +392,22 @@ export const projectApi = {
 export const criteriaApi = {
   // 프로젝트의 기준 목록 조회
   getCriteria: async (projectId: string) => {
-    // 먼저 기본 엔드포인트 시도
-    const response = await makeRequest<CriteriaData[]>(`/api/service/projects/projects/${projectId}/criteria/`);
+    // Django CriteriaViewSet의 filter 사용
+    console.log('📤 Django Criteria API 조회:', projectId);
+    
+    // CriteriaViewSet은 project 필드로 필터링 지원
+    const response = await makeRequest<CriteriaData[]>(`/api/service/projects/criteria/?project=${projectId}`);
     
     if (response.success && response.data) {
+      console.log('✅ PostgreSQL DB에서 기준 조회 성공');
       return response;
     }
     
-    // 실패 시 프로젝트 메타데이터에서 조회
-    console.log('⚠️ 기준 API 실패, 프로젝트 메타데이터에서 조회...');
-    
-    const projectResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`);
-    
-    if (projectResponse.success && projectResponse.data) {
-      const project = projectResponse.data;
-      const criteria = project.settings?.criteria || [];
-      
-      return {
-        success: true,
-        data: criteria as CriteriaData[]
-      };
-    }
-    
+    console.error('❌ Criteria API 조회 실패:', response.error);
     return {
       success: false,
       data: [],
-      error: '기준 조회에 실패했습니다.'
+      error: response.error || '기준 조회에 실패했습니다.'
     };
   },
 
@@ -433,79 +423,37 @@ export const criteriaApi = {
       };
     }
     
-    // 임시로 프로젝트 메타데이터에 저장하는 방법 사용
-    console.log('📤 프로젝트 메타데이터를 통한 기준 저장 시도...');
+    // Django CriteriaViewSet API 사용
+    const requestData = {
+      project: projectId,  // Django ForeignKey expects project ID
+      name: data.name,
+      description: data.description || '',
+      type: data.type || 'criteria',
+      parent: data.parent_id || null,
+      order: data.order || 0,
+      level: data.level || 1,
+      weight: data.weight || 0.0,
+      is_active: true
+    };
     
-    try {
-      // 먼저 프로젝트 정보 조회
-      const projectResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`);
-      
-      if (!projectResponse.success || !projectResponse.data) {
-        console.error('❌ 프로젝트 조회 실패');
-        return {
-          success: false,
-          error: '프로젝트를 찾을 수 없습니다.'
-        };
-      }
-      
-      const project = projectResponse.data;
-      const existingCriteria = project.settings?.criteria || [];
-      
-      // 새 기준 생성
-      const newCriteria = {
-        id: `criteria_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        project_id: projectId,
-        name: data.name,
-        description: data.description || '',
-        type: data.type || 'criteria',
-        parent_id: data.parent_id || null,
-        level: data.level || 1,
-        order: data.order || existingCriteria.length,
-        weight: data.weight || 0,
-        position: data.position || existingCriteria.length,
-        created_at: new Date().toISOString()
-      };
-      
-      // 프로젝트 settings에 기준 추가
-      const updatedSettings = {
-        ...project.settings,
-        criteria: [...existingCriteria, newCriteria]
-      };
-      
-      // 프로젝트 업데이트
-      const updateResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          title: project.title,
-          description: project.description,
-          objective: project.objective || '',
-          status: project.status,
-          evaluation_mode: project.evaluation_mode,
-          workflow_stage: project.workflow_stage,
-          settings: updatedSettings
-        })
-      });
-      
-      if (updateResponse.success) {
-        console.log('✅ 기준이 프로젝트 메타데이터에 저장됨');
-        return {
-          success: true,
-          data: newCriteria as CriteriaData
-        };
-      } else {
-        console.error('❌ 프로젝트 업데이트 실패:', updateResponse.error);
-        return {
-          success: false,
-          error: updateResponse.error || '기준 저장에 실패했습니다.'
-        };
-      }
-    } catch (error) {
-      console.error('❌ 기준 생성 중 오류:', error);
-      return {
-        success: false,
-        error: '기준 생성 중 오류가 발생했습니다.'
-      };
+    console.log('📤 Django Criteria API 요청:', {
+      endpoint: '/api/service/projects/criteria/',
+      data: requestData
+    });
+    
+    // CriteriaViewSet의 create endpoint 사용
+    const response = await makeRequest<CriteriaData>('/api/service/projects/criteria/', {
+      method: 'POST',
+      body: JSON.stringify(requestData)
+    });
+    
+    if (response.success) {
+      console.log('✅ PostgreSQL DB에 기준 저장 성공');
+      return response;
     }
+    
+    console.error('❌ Criteria API 실패:', response.error);
+    return response;
   },
 
   // 기준 수정
@@ -517,69 +465,20 @@ export const criteriaApi = {
 
   // 기준 삭제
   deleteCriteria: async (criteriaId: string, projectId?: string) => {
-    // 먼저 기본 엔드포인트 시도
+    // Django CriteriaViewSet의 delete endpoint 사용
+    console.log('📤 Django Criteria API 삭제:', criteriaId);
+    
     const response = await makeRequest<void>(`/api/service/projects/criteria/${criteriaId}/`, {
       method: 'DELETE'
     });
     
     if (response.success) {
+      console.log('✅ PostgreSQL DB에서 기준 삭제 성공');
       return response;
     }
     
-    // 실패 시 프로젝트 메타데이터에서 삭제
-    if (!projectId) {
-      console.error('❌ 프로젝트 ID 없이 기준 삭제 불가');
-      return {
-        success: false,
-        error: '프로젝트 ID가 필요합니다.'
-      };
-    }
-    
-    console.log('⚠️ 기준 삭제 API 실패, 프로젝트 메타데이터에서 삭제...');
-    
-    const projectResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`);
-    
-    if (projectResponse.success && projectResponse.data) {
-      const project = projectResponse.data;
-      const existingCriteria = project.settings?.criteria || [];
-      
-      // 기준 삭제
-      const updatedCriteria = existingCriteria.filter((c: any) => c.id !== criteriaId);
-      
-      if (updatedCriteria.length === existingCriteria.length) {
-        return {
-          success: false,
-          error: '삭제할 기준을 찾을 수 없습니다.'
-        };
-      }
-      
-      // 프로젝트 업데이트
-      const updateResponse = await makeRequest<any>(`/api/service/projects/projects/${projectId}/`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          title: project.title,
-          description: project.description,
-          objective: project.objective || '',
-          status: project.status,
-          evaluation_mode: project.evaluation_mode,
-          workflow_stage: project.workflow_stage,
-          settings: {
-            ...project.settings,
-            criteria: updatedCriteria
-          }
-        })
-      });
-      
-      return {
-        success: updateResponse.success,
-        error: updateResponse.error
-      };
-    }
-    
-    return {
-      success: false,
-      error: '기준 삭제에 실패했습니다.'
-    };
+    console.error('❌ Criteria API 삭제 실패:', response.error);
+    return response;
   },
 
   // 기준 순서 변경
