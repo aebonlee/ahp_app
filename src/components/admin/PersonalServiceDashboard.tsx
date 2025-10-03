@@ -27,6 +27,7 @@ import SurveyFormBuilder from '../survey/SurveyFormBuilder';
 import UsageManagement from './UsageManagement';
 import ValidityCheck from '../validity/ValidityCheck';
 import TrashBin from './TrashBin';
+import PersonalUserDashboard from '../user/PersonalUserDashboard';
 import dataService from '../../services/dataService_clean';
 import type { ProjectData } from '../../services/api';
 import type { User, UserProject } from '../../types';
@@ -3354,7 +3355,23 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const renderMenuContent = () => {
     switch (activeMenu) {
       case 'dashboard':
-        return renderOverview();
+        // 사용자 역할에 따라 다른 대시보드 표시
+        if (user?.role === 'service_user') {
+          // 일반 사용자용 대시보드 표시
+          return (
+            <PersonalUserDashboard 
+              user={user} 
+              onTabChange={(tab) => {
+                if (externalOnTabChange) {
+                  externalOnTabChange(tab);
+                }
+              }}
+            />
+          );
+        } else {
+          // 관리자용 대시보드 표시
+          return renderOverview();
+        }
       case 'projects':
         return (
           <MyProjects
