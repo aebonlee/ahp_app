@@ -17,9 +17,11 @@ interface HierarchyTreeVisualizationProps {
   interactive?: boolean;
   onNodeClick?: (node: TreeNode) => void;
   onNodeDelete?: (node: TreeNode) => void;
+  onNodeMove?: (node: TreeNode, direction: 'up' | 'down') => void;
   layout?: 'vertical' | 'horizontal';
   onLayoutChange?: (layout: 'vertical' | 'horizontal') => void;
   allowDelete?: boolean;
+  allowMove?: boolean;
 }
 
 const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
@@ -29,9 +31,11 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
   interactive = false,
   onNodeClick,
   onNodeDelete,
+  onNodeMove,
   layout = 'vertical',
   onLayoutChange,
-  allowDelete = false
+  allowDelete = false,
+  allowMove = false
 }) => {
   // 노드를 계층구조로 변환
   const buildHierarchy = (flatNodes: TreeNode[]): TreeNode[] => {
@@ -131,6 +135,30 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
                       {(node.weight * 100).toFixed(1)}%
                     </div>
                   )}
+                  {allowMove && onNodeMove && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNodeMove(node, 'up');
+                        }}
+                        className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-md transition-colors duration-200"
+                        title="위로 이동"
+                      >
+                        <span className="text-sm">⬆️</span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNodeMove(node, 'down');
+                        }}
+                        className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-md transition-colors duration-200"
+                        title="아래로 이동"
+                      >
+                        <span className="text-sm">⬇️</span>
+                      </button>
+                    </>
+                  )}
                   {allowDelete && onNodeDelete && (
                     <button
                       onClick={(e) => {
@@ -185,19 +213,47 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
           `}
           onClick={() => isClickable && onNodeClick!(node)}
         >
-          {allowDelete && onNodeDelete && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (window.confirm(`"${node.name}" 기준을 삭제하시겠습니까?\n\n⚠️ 하위 기준들도 함께 삭제됩니다.`)) {
-                  onNodeDelete(node);
-                }
-              }}
-              className="absolute top-1 right-1 p-1 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-md transition-colors duration-200"
-              title={`${node.name} 삭제`}
-            >
-              <span className="text-xs">🗑️</span>
-            </button>
+          {(allowDelete || allowMove) && (
+            <div className="absolute top-1 right-1 flex space-x-1">
+              {allowMove && onNodeMove && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNodeMove(node, 'up');
+                    }}
+                    className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-md transition-colors duration-200"
+                    title="왼쪽으로 이동"
+                  >
+                    <span className="text-xs">⬅️</span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNodeMove(node, 'down');
+                    }}
+                    className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-md transition-colors duration-200"
+                    title="오른쪽으로 이동"
+                  >
+                    <span className="text-xs">➡️</span>
+                  </button>
+                </>
+              )}
+              {allowDelete && onNodeDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`"${node.name}" 기준을 삭제하시겠습니까?\n\n⚠️ 하위 기준들도 함께 삭제됩니다.`)) {
+                      onNodeDelete(node);
+                    }
+                  }}
+                  className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-md transition-colors duration-200"
+                  title={`${node.name} 삭제`}
+                >
+                  <span className="text-xs">🗑️</span>
+                </button>
+              )}
+            </div>
           )}
           
           <div className="flex flex-col items-center space-y-1">

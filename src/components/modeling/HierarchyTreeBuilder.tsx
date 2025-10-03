@@ -15,23 +15,61 @@ interface TreeNode {
 interface HierarchyTreeBuilderProps {
   projectId: string;
   projectTitle: string;
+  initialCriteria?: any[]; // 기존 기준 데이터
   onComplete: (hierarchy: TreeNode) => void;
 }
 
 const HierarchyTreeBuilder: React.FC<HierarchyTreeBuilderProps> = ({
   projectId,
   projectTitle,
+  initialCriteria,
   onComplete
 }) => {
-  const [hierarchy, setHierarchy] = useState<TreeNode>({
-    id: 'root',
-    name: projectTitle,
-    level: 0,
-    parentId: null,
-    children: [],
-    type: 'goal',
-    order: 0
-  });
+  // 초기 데이터가 있으면 변환하여 사용
+  const buildInitialHierarchy = (): TreeNode => {
+    const root: TreeNode = {
+      id: 'root',
+      name: projectTitle,
+      level: 0,
+      parentId: null,
+      children: [],
+      type: 'goal',
+      order: 0
+    };
+
+    if (initialCriteria && initialCriteria.length > 0) {
+      // 평면 배열을 계층구조로 변환
+      const nodeMap = new Map<string, TreeNode>();
+      
+      // 노드 생성
+      initialCriteria.forEach(criterion => {
+        const node: TreeNode = {
+          id: criterion.id || `node-${Date.now()}-${Math.random()}`,
+          name: criterion.name,
+          level: criterion.level || 1,
+          parentId: criterion.parent_id || 'root',
+          children: [],
+          type: criterion.level === 1 ? 'criteria' : 'subcriteria',
+          order: criterion.order || 0
+        };
+        nodeMap.set(node.id, node);
+      });
+
+      // 계층 관계 설정
+      nodeMap.forEach(node => {
+        if (node.parentId === 'root' || !node.parentId) {
+          root.children.push(node);
+        } else if (nodeMap.has(node.parentId)) {
+          const parent = nodeMap.get(node.parentId)!;
+          parent.children.push(node);
+        }
+      });
+    }
+
+    return root;
+  };
+
+  const [hierarchy, setHierarchy] = useState<TreeNode>(buildInitialHierarchy());
 
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
   const [editingNode, setEditingNode] = useState<string | null>(null);

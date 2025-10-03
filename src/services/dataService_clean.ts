@@ -350,6 +350,24 @@ class CleanDataService {
     this.memoryStorage[key] = data;
   }
 
+  async updateCriteria(id: string, data: Partial<CriteriaData>): Promise<CriteriaData | null> {
+    try {
+      console.log('📝 PostgreSQL DB에서 기준 수정:', id, data);
+      const response = await criteriaApi.updateCriteria(id, data);
+      
+      if (response.success && response.data) {
+        console.log('✅ 기준이 수정되었습니다.');
+        return response.data;
+      }
+      
+      console.error('❌ 기준 수정 실패');
+      return null;
+    } catch (error) {
+      console.error('❌ 기준 수정 중 오류:', error);
+      return null;
+    }
+  }
+
   async deleteCriteria(criteriaId: string, projectId?: string): Promise<boolean> {
     try {
       console.log('🗑️ PostgreSQL DB에서 기준 삭제 시작:', criteriaId);

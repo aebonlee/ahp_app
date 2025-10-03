@@ -297,6 +297,59 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     }
   };
 
+  // 기준 순서 이동 함수
+  const handleMoveCriterion = async (id: string, direction: 'up' | 'down') => {
+    console.log(`기준 ${direction === 'up' ? '위로' : '아래로'} 이동:`, id);
+    
+    try {
+      // 현재 기준 찾기
+      const currentCriterion = criteria.find(c => c.id === id);
+      if (!currentCriterion) return;
+      
+      // 같은 부모를 가진 형제 기준들 찾기
+      const siblings = criteria.filter(c => 
+        c.parent_id === currentCriterion.parent_id && 
+        c.level === currentCriterion.level
+      ).sort((a, b) => (a.order || 0) - (b.order || 0));
+      
+      const currentIndex = siblings.findIndex(c => c.id === id);
+      if (currentIndex === -1) return;
+      
+      // 이동 가능 여부 확인
+      if (direction === 'up' && currentIndex === 0) return;
+      if (direction === 'down' && currentIndex === siblings.length - 1) return;
+      
+      // 순서 교체
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      const targetCriterion = siblings[targetIndex];
+      
+      // API 호출하여 순서 업데이트
+      const currentOrder = currentCriterion.order || 0;
+      const targetOrder = targetCriterion.order || 0;
+      
+      // 두 기준의 순서 교체
+      await dataService.updateCriteria(currentCriterion.id, {
+        ...convertToCriteriaData(currentCriterion),
+        order: targetOrder
+      });
+      
+      await dataService.updateCriteria(targetCriterion.id, {
+        ...convertToCriteriaData(targetCriterion),
+        order: currentOrder
+      });
+      
+      console.log('✅ 기준 순서가 변경되었습니다');
+      
+      // 데이터 다시 로드
+      const updatedCriteriaData = await dataService.getCriteria(projectId);
+      const convertedUpdatedCriteria = (updatedCriteriaData || []).map(convertToCriterion);
+      setCriteria(convertedUpdatedCriteria);
+      
+    } catch (error) {
+      console.error('❌ 기준 순서 변경 실패:', error);
+    }
+  };
+
 
   // 상위 기준으로 선택 가능한 모든 기준 (최대 4레벨까지, 5레벨을 만들기 위해)
   const getAvailableParentCriteria = () => {
@@ -615,25 +668,39 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">시각적 모델 구축</h2>
-          <Button
-            onClick={() => setUseVisualBuilder(false)}
-            variant="outline"
-            size="sm"
-          >
-            ← 기본 모드로 전환
-          </Button>
+          <div className="flex space-x-2">
+            <Button
+              onClick={async () => {
+                // 시각적 빌더로 전환할 때 기존 데이터 로드
+                const criteriaData = await dataService.getCriteria(projectId);
+                const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+                setCriteria(convertedCriteria);
+                setUseVisualBuilder(false);
+              }}
+              variant="outline"
+              size="sm"
+            >
+              ← 기본 모드로 전환
+            </Button>
+          </div>
         </div>
         <HierarchyTreeBuilder
           projectId={projectId}
           projectTitle={projectTitle || 'AHP 프로젝트'}
+          initialCriteria={criteria} // 기존 데이터 전달
           onComplete={async (hierarchy) => {
+            // 기존 데이터 모두 삭제
+            for (const criterion of criteria) {
+              await dataService.deleteCriteria(criterion.id, projectId);
+            }
+            
             // 계층 구조를 평면 구조로 변환하여 저장
             const flattenTree = (node: any, parentId: string | null = null, level: number = 0): any[] => {
               const result: any[] = [];
               if (node.id !== 'root') {
                 result.push({
                   name: node.name,
-                  description: '',
+                  description: node.description || '',
                   parent_id: parentId,
                   level: level,
                   order: node.order || 0
@@ -641,7 +708,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
               }
               if (node.children) {
                 node.children.forEach((child: any, index: number) => {
-                  result.push(...flattenTree(child, node.id === 'root' ? null : node.id, level + 1));
+                  result.push(...flattenTree(child, node.id === 'root' ? null : node.name, level + 1));
                 });
               }
               return result;
@@ -650,8 +717,24 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
             const flatCriteria = flattenTree(hierarchy);
             
             // 각 기준을 백엔드에 저장
-            for (const criterion of flatCriteria) {
+            const createdCriteriaMap = new Map<string, string>(); // name -> id 매핑
+            
+            // 먼저 parent_id가 없는 것들부터 생성
+            for (const criterion of flatCriteria.filter(c => !c.parent_id)) {
               const criterionData = convertToCriteriaData(criterion);
+              const created = await dataService.createCriteria(criterionData);
+              if (created && created.id) {
+                createdCriteriaMap.set(criterion.name, created.id);
+              }
+            }
+            
+            // parent_id가 있는 것들 생성
+            for (const criterion of flatCriteria.filter(c => c.parent_id)) {
+              const parentId = createdCriteriaMap.get(criterion.parent_id);
+              const criterionData = convertToCriteriaData({
+                ...criterion,
+                parent_id: parentId || null
+              });
               await dataService.createCriteria(criterionData);
             }
             
@@ -874,7 +957,12 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
                   // TreeNode를 id로 변환하여 삭제 함수 호출
                   handleDeleteCriterion(node.id);
                 }}
+                onNodeMove={(node, direction) => {
+                  // 순서 이동 함수 호출
+                  handleMoveCriterion(node.id, direction);
+                }}
                 allowDelete={true}
+                allowMove={true}
               />
             ) : (
               <div className="p-8 text-center rounded-lg" style={{ backgroundColor: 'var(--bg-muted)', border: '2px dashed var(--border-light)' }}>

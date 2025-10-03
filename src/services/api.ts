@@ -479,11 +479,29 @@ export const criteriaApi = {
   },
 
   // 기준 수정
-  updateCriteria: (id: string, data: Partial<CriteriaData>) =>
-    makeRequest<CriteriaData>(`/api/service/projects/criteria/${id}/`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    }),
+  updateCriteria: async (id: string, data: Partial<CriteriaData>) => {
+    console.log('📤 Django Criteria 수정 API:', id, data);
+    
+    const response = await makeRequest<CriteriaData>(`/api/service/projects/criteria/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        ...data,
+        project: data.project_id // project_id를 project로 매핑
+      })
+    });
+    
+    if (response.success && response.data) {
+      console.log('✅ 기준 수정 성공');
+      return response;
+    }
+    
+    console.error('❌ 기준 수정 실패:', response.error);
+    return {
+      success: false,
+      data: null,
+      error: response.error || '기준 수정에 실패했습니다.'
+    };
+  },
 
   // 기준 삭제
   deleteCriteria: async (criteriaId: string, projectId?: string) => {
