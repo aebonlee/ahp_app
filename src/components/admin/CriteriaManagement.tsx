@@ -48,6 +48,44 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     position: crit.position || crit.order || 0,
     order: crit.order
   });
+
+  // order 값을 정규화하는 함수
+  const normalizeCriteriaOrder = (criteriaList: Criterion[]): Criterion[] => {
+    // parent_id별로 그룹화
+    const groups = new Map<string | null, Criterion[]>();
+    
+    criteriaList.forEach(criterion => {
+      const parentId = criterion.parent_id || null;
+      if (!groups.has(parentId)) {
+        groups.set(parentId, []);
+      }
+      groups.get(parentId)!.push(criterion);
+    });
+    
+    // 각 그룹 내에서 order 값 재할당
+    const normalized: Criterion[] = [];
+    groups.forEach((group, parentId) => {
+      // 기존 order나 id로 정렬
+      group.sort((a, b) => {
+        if (a.order !== undefined && b.order !== undefined) {
+          return a.order - b.order;
+        }
+        // order가 같으면 생성된 순서(id)로 정렬
+        return parseInt(a.id) - parseInt(b.id);
+      });
+      
+      // 순차적으로 order 재할당
+      group.forEach((criterion, index) => {
+        normalized.push({
+          ...criterion,
+          order: index
+        });
+      });
+    });
+    
+    return normalized;
+  };
+
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
   const [showHelp, setShowHelp] = useState(false);
   const [showBulkInput, setShowBulkInput] = useState(false);
@@ -66,15 +104,19 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         const criteriaData = await dataService.getCriteria(projectId);
         console.log('📥 받은 기준 데이터 원본:', criteriaData);
         
+        // 데이터 변환 후 order 값 정규화
         const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-        console.log('🔄 변환된 기준 데이터:', convertedCriteria);
         
-        setCriteria(convertedCriteria);
-        console.log(`✅ ${convertedCriteria.length}개 기준 로드 완료`, convertedCriteria);
+        // 같은 부모를 가진 기준들끼리 그룹화하고 order 재할당
+        const normalizedCriteria = normalizeCriteriaOrder(convertedCriteria);
+        console.log('🔄 정규화된 기준 데이터:', normalizedCriteria);
+        
+        setCriteria(normalizedCriteria);
+        console.log(`✅ ${normalizedCriteria.length}개 기준 로드 완료`, normalizedCriteria);
         
         // 부모 컴포넌트에 개수 알림
         if (onCriteriaChange) {
-          onCriteriaChange(convertedCriteria.length);
+          onCriteriaChange(normalizedCriteria.length);
         }
       } catch (error) {
         console.error('❌ 기준 데이터 로드 실패:', error);
@@ -299,12 +341,18 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
 
   // 기준 순서 이동 함수
   const handleMoveCriterion = async (id: string, direction: 'up' | 'down') => {
-    console.log(`기준 ${direction === 'up' ? '위로' : '아래로'} 이동:`, id);
+    console.log(`🔄 기준 ${direction === 'up' ? '위로' : '아래로'} 이동 시작:`, id);
+    console.log('현재 criteria 상태:', criteria);
     
     try {
       // 현재 기준 찾기
       const currentCriterion = criteria.find(c => c.id === id);
-      if (!currentCriterion) return;
+      console.log('현재 기준:', currentCriterion);
+      
+      if (!currentCriterion) {
+        console.error('기준을 찾을 수 없습니다:', id);
+        return;
+      }
       
       // 같은 부모를 가진 형제 기준들 찾기
       const siblings = criteria.filter(c => 
@@ -312,31 +360,52 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         c.level === currentCriterion.level
       ).sort((a, b) => (a.order || 0) - (b.order || 0));
       
+      console.log('형제 기준들:', siblings);
+      
       const currentIndex = siblings.findIndex(c => c.id === id);
-      if (currentIndex === -1) return;
+      console.log('현재 인덱스:', currentIndex);
+      
+      if (currentIndex === -1) {
+        console.error('형제 목록에서 현재 기준을 찾을 수 없습니다');
+        return;
+      }
       
       // 이동 가능 여부 확인
-      if (direction === 'up' && currentIndex === 0) return;
-      if (direction === 'down' && currentIndex === siblings.length - 1) return;
+      if (direction === 'up' && currentIndex === 0) {
+        console.log('⚠️ 이미 첫 번째 위치입니다');
+        return;
+      }
+      if (direction === 'down' && currentIndex === siblings.length - 1) {
+        console.log('⚠️ 이미 마지막 위치입니다');
+        return;
+      }
       
       // 순서 교체
       const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
       const targetCriterion = siblings[targetIndex];
+      console.log('대상 기준:', targetCriterion);
       
       // API 호출하여 순서 업데이트
-      const currentOrder = currentCriterion.order || 0;
-      const targetOrder = targetCriterion.order || 0;
+      const currentOrder = currentCriterion.order || currentIndex;
+      const targetOrder = targetCriterion.order || targetIndex;
+      
+      console.log(`순서 교체: ${currentCriterion.name}(order:${currentOrder}) <-> ${targetCriterion.name}(order:${targetOrder})`);
       
       // 두 기준의 순서 교체
-      await dataService.updateCriteria(currentCriterion.id, {
+      const updateData1 = {
         ...convertToCriteriaData(currentCriterion),
         order: targetOrder
-      });
+      };
+      console.log('업데이트 데이터 1:', updateData1);
       
-      await dataService.updateCriteria(targetCriterion.id, {
+      const updateData2 = {
         ...convertToCriteriaData(targetCriterion),
         order: currentOrder
-      });
+      };
+      console.log('업데이트 데이터 2:', updateData2);
+      
+      await dataService.updateCriteria(currentCriterion.id, updateData1);
+      await dataService.updateCriteria(targetCriterion.id, updateData2);
       
       console.log('✅ 기준 순서가 변경되었습니다');
       
@@ -344,9 +413,11 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       const updatedCriteriaData = await dataService.getCriteria(projectId);
       const convertedUpdatedCriteria = (updatedCriteriaData || []).map(convertToCriterion);
       setCriteria(convertedUpdatedCriteria);
+      console.log('📥 업데이트된 기준:', convertedUpdatedCriteria);
       
     } catch (error) {
       console.error('❌ 기준 순서 변경 실패:', error);
+      alert('기준 순서 변경 중 오류가 발생했습니다.');
     }
   };
 
