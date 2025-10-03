@@ -25,6 +25,7 @@ import EvaluationResults from './components/admin/EvaluationResults';
 import ProjectCompletion from './components/admin/ProjectCompletion';
 import ProjectWorkflow from './components/admin/ProjectWorkflow';
 import UserManagement from './components/admin/UserManagement';
+import RealUserManagement from './components/admin/RealUserManagement';
 import ProjectSelection from './components/evaluator/ProjectSelection';
 import PairwiseEvaluation from './components/evaluator/PairwiseEvaluation';
 import DirectInputEvaluation from './components/evaluator/DirectInputEvaluation';
@@ -1420,6 +1421,9 @@ function App() {
         );
 
       case 'users':
+        // 슈퍼 관리자 사용자 관리 페이지 - Django 백엔드 연동
+        return <RealUserManagement />;
+        
       case 'projects':
       case 'monitoring':
       case 'database':
