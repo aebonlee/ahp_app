@@ -339,6 +339,78 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     }
   };
 
+  // 기준 편집 처리 함수
+  const handleEditCriterion = async (node: any, newName: string) => {
+    console.log('📝 기준 이름 편집:', node.id, newName);
+    
+    try {
+      const criterionData: Omit<CriteriaData, 'id'> = {
+        ...convertToCriteriaData(node),
+        name: newName
+      };
+      
+      await dataService.updateCriteria(node.id, criterionData);
+      console.log('✅ 기준 이름이 수정되었습니다');
+      
+      // 데이터 다시 로드
+      const updatedCriteriaData = await dataService.getCriteria(projectId);
+      const convertedUpdatedCriteria = (updatedCriteriaData || []).map(convertToCriterion);
+      setCriteria(convertedUpdatedCriteria);
+    } catch (error) {
+      console.error('❌ 기준 편집 실패:', error);
+      alert('기준 이름 수정 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 기준 레벨 변경 처리 함수
+  const handleLevelChange = async (node: any, direction: 'promote' | 'demote') => {
+    console.log('📊 기준 레벨 변경:', node.id, direction);
+    
+    try {
+      // 현재 기준 찾기
+      const criterion = criteria.find(c => c.id === node.id);
+      if (!criterion) return;
+
+      let newParentId = criterion.parent_id;
+      let newLevel = criterion.level || 1;
+
+      if (direction === 'promote' && criterion.level > 1) {
+        // 상위 레벨로 이동 (부모의 부모로)
+        const parent = criteria.find(c => c.id === criterion.parent_id);
+        if (parent) {
+          newParentId = parent.parent_id || null;
+          newLevel = Math.max(1, criterion.level - 1);
+        }
+      } else if (direction === 'demote' && criterion.level < 5) {
+        // 하위 레벨로 이동 (첫 번째 형제를 부모로)
+        const siblings = criteria.filter(c => 
+          c.parent_id === criterion.parent_id && c.id !== criterion.id
+        );
+        if (siblings.length > 0) {
+          newParentId = siblings[0].id;
+          newLevel = Math.min(5, criterion.level + 1);
+        }
+      }
+
+      const criterionData: Omit<CriteriaData, 'id'> = {
+        ...convertToCriteriaData(criterion),
+        parent_id: newParentId,
+        level: newLevel
+      };
+      
+      await dataService.updateCriteria(criterion.id, criterionData);
+      console.log(`✅ 기준이 ${direction === 'promote' ? '상위' : '하위'} 레벨로 변경되었습니다`);
+      
+      // 데이터 다시 로드
+      const updatedCriteriaData = await dataService.getCriteria(projectId);
+      const convertedUpdatedCriteria = (updatedCriteriaData || []).map(convertToCriterion);
+      setCriteria(convertedUpdatedCriteria);
+    } catch (error) {
+      console.error('❌ 레벨 변경 실패:', error);
+      alert('기준 레벨 변경 중 오류가 발생했습니다.');
+    }
+  };
+
   // 기준 순서 이동 함수
   const handleMoveCriterion = async (id: string, direction: 'up' | 'down') => {
     console.log(`🔄 기준 ${direction === 'up' ? '위로' : '아래로'} 이동 시작:`, id);
@@ -1032,8 +1104,12 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
                   // 순서 이동 함수 호출
                   handleMoveCriterion(node.id, direction);
                 }}
+                onNodeEdit={handleEditCriterion}
+                onNodeLevelChange={handleLevelChange}
                 allowDelete={true}
                 allowMove={true}
+                allowEdit={true}
+                allowLevelChange={true}
               />
             ) : (
               <div className="p-8 text-center rounded-lg" style={{ backgroundColor: 'var(--bg-muted)', border: '2px dashed var(--border-light)' }}>

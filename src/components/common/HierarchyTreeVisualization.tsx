@@ -18,10 +18,14 @@ interface HierarchyTreeVisualizationProps {
   onNodeClick?: (node: TreeNode) => void;
   onNodeDelete?: (node: TreeNode) => void;
   onNodeMove?: (node: TreeNode, direction: 'up' | 'down') => void;
+  onNodeEdit?: (node: TreeNode, newName: string) => void;
+  onNodeLevelChange?: (node: TreeNode, direction: 'promote' | 'demote') => void;
   layout?: 'vertical' | 'horizontal';
   onLayoutChange?: (layout: 'vertical' | 'horizontal') => void;
   allowDelete?: boolean;
   allowMove?: boolean;
+  allowEdit?: boolean;
+  allowLevelChange?: boolean;
 }
 
 const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
@@ -32,11 +36,17 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
   onNodeClick,
   onNodeDelete,
   onNodeMove,
+  onNodeEdit,
+  onNodeLevelChange,
   layout = 'vertical',
   onLayoutChange,
   allowDelete = false,
-  allowMove = false
+  allowMove = false,
+  allowEdit = false,
+  allowLevelChange = false
 }) => {
+  const [editingNodeId, setEditingNodeId] = React.useState<string | null>(null);
+  const [editValue, setEditValue] = React.useState<string>('');
   // 노드를 계층구조로 변환
   const buildHierarchy = (flatNodes: TreeNode[]): TreeNode[] => {
     const nodeMap = new Map<string, TreeNode>();
@@ -86,9 +96,33 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
     }
   };
 
+  const handleStartEdit = (node: TreeNode, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingNodeId(node.id);
+    setEditValue(node.name);
+  };
+
+  const handleEndEdit = (node: TreeNode) => {
+    if (onNodeEdit && editValue.trim() && editValue !== node.name) {
+      onNodeEdit(node, editValue.trim());
+    }
+    setEditingNodeId(null);
+    setEditValue('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, node: TreeNode) => {
+    if (e.key === 'Enter') {
+      handleEndEdit(node);
+    } else if (e.key === 'Escape') {
+      setEditingNodeId(null);
+      setEditValue('');
+    }
+  };
+
   const renderVerticalNode = (node: TreeNode, index: number, isLast: boolean[] = []): React.ReactNode => {
     const hasChildren = node.children && node.children.length > 0;
     const isClickable = interactive && onNodeClick;
+    const isEditing = editingNodeId === node.id;
 
     return (
       <div key={node.id} className="relative">
@@ -123,17 +157,60 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
             <span className="text-lg">{getNodeIcon(node)}</span>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{node.name}</div>
-                  {node.description && (
+                <div className="flex-1">
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      onBlur={() => handleEndEdit(node)}
+                      onKeyDown={(e) => handleKeyPress(e, node)}
+                      className="px-2 py-1 border border-gray-300 rounded-md w-full"
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <div 
+                      className="font-medium cursor-text"
+                      onDoubleClick={(e) => allowEdit && handleStartEdit(node, e)}
+                      title={allowEdit ? "더블클릭하여 편집" : ""}
+                    >
+                      {node.name}
+                    </div>
+                  )}
+                  {node.description && !isEditing && (
                     <div className="text-xs opacity-75 mt-1">{node.description}</div>
                   )}
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
                   {showWeights && node.weight && (
                     <div className="text-xs font-mono bg-white bg-opacity-50 px-2 py-1 rounded">
                       {(node.weight * 100).toFixed(1)}%
                     </div>
+                  )}
+                  {allowLevelChange && onNodeLevelChange && node.level > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNodeLevelChange(node, 'promote');
+                        }}
+                        className="p-1 text-green-500 hover:text-green-700 hover:bg-green-100 rounded-md transition-colors duration-200"
+                        title="상위 기준으로 변경"
+                      >
+                        <span className="text-xs">⏫</span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNodeLevelChange(node, 'demote');
+                        }}
+                        className="p-1 text-orange-500 hover:text-orange-700 hover:bg-orange-100 rounded-md transition-colors duration-200"
+                        title="하위 기준으로 변경"
+                      >
+                        <span className="text-xs">⏬</span>
+                      </button>
+                    </>
                   )}
                   {allowMove && onNodeMove && (
                     <>
@@ -200,6 +277,7 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
   const renderHorizontalNode = (node: TreeNode): React.ReactNode => {
     const hasChildren = node.children && node.children.length > 0;
     const isClickable = interactive && onNodeClick;
+    const isEditing = editingNodeId === node.id;
 
     return (
       <div key={node.id} className="flex flex-col items-center">
@@ -213,8 +291,32 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
           `}
           onClick={() => isClickable && onNodeClick!(node)}
         >
-          {(allowDelete || allowMove) && (
+          {(allowDelete || allowMove || allowLevelChange) && (
             <div className="absolute top-1 right-1 flex space-x-1">
+              {allowLevelChange && onNodeLevelChange && node.level > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNodeLevelChange(node, 'promote');
+                    }}
+                    className="p-1 text-green-500 hover:text-green-700 hover:bg-green-100 rounded-md transition-colors duration-200"
+                    title="상위 기준으로 변경"
+                  >
+                    <span className="text-xs">⏫</span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNodeLevelChange(node, 'demote');
+                    }}
+                    className="p-1 text-orange-500 hover:text-orange-700 hover:bg-orange-100 rounded-md transition-colors duration-200"
+                    title="하위 기준으로 변경"
+                  >
+                    <span className="text-xs">⏬</span>
+                  </button>
+                </>
+              )}
               {allowMove && onNodeMove && (
                 <>
                   <button
@@ -258,8 +360,27 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
           
           <div className="flex flex-col items-center space-y-1">
             <span className="text-lg">{getNodeIcon(node)}</span>
-            <div className="font-medium text-sm">{node.name}</div>
-            {node.description && (
+            {isEditing ? (
+              <input
+                type="text"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={() => handleEndEdit(node)}
+                onKeyDown={(e) => handleKeyPress(e, node)}
+                className="px-2 py-1 border border-gray-300 rounded-md text-center text-sm"
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <div 
+                className="font-medium text-sm cursor-text"
+                onDoubleClick={(e) => allowEdit && handleStartEdit(node, e)}
+                title={allowEdit ? "더블클릭하여 편집" : ""}
+              >
+                {node.name}
+              </div>
+            )}
+            {node.description && !isEditing && (
               <div className="text-xs opacity-75">{node.description}</div>
             )}
             {showWeights && node.weight && (
