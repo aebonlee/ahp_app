@@ -984,37 +984,99 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg p-4" style={{ backgroundColor: 'var(--status-info-bg)', border: '1px solid var(--status-info-border)' }}>
-            <div>
-              <h4 className="font-medium mb-2" style={{ color: 'var(--status-info-text)' }}>📋 프로젝트 기준 설정 가이드</h4>
-              <ul className="text-sm space-y-1" style={{ color: 'var(--status-info-text)' }}>
-                <li>• 프로젝트 목표에 맞는 평가 기준을 계층적으로 구성</li>
-                <li>• 1레벨(목표) → 2레벨(기준) → 3레벨(대안) 순서로 추가</li>
-                <li>• 기준명은 중복될 수 없으며, 최대 5단계까지 세분화 가능</li>
-                <li>• 개별 기준 삭제는 🗑️ 버튼을 클릭하여 수행</li>
-              </ul>
-            </div>
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
+          {/* 상단 컨트롤 버튼 그룹 */}
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>📋 기준 설정 및 관리</h3>
+            <div className="flex gap-2">
+              {/* 주요 기능 버튼들 */}
+              <Button
+                variant="primary"
                 size="sm"
                 onClick={() => setShowHelp(true)}
+                className="flex items-center gap-1 hover:shadow-lg transition-all"
               >
-                📚 도움말
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                가이드
               </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLoadTemplateData}
+                className="flex items-center gap-1"
+                style={{ borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)' }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                템플릿
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBulkInput(true)}
+                className="flex items-center gap-1"
+                style={{ borderColor: 'var(--status-success-border)', color: 'var(--status-success-text)' }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                일괄 입력
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setUseVisualBuilder(true)}
+                className="flex items-center gap-1"
+                style={{ borderColor: 'var(--status-warning-border)', color: 'var(--status-warning-text)' }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                시각적 빌더
+              </Button>
+              
               {criteria.length > 0 && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleClearAllData}
-                  className="transition-all duration-200" 
-                  style={{ color: 'var(--status-danger-text)', borderColor: 'var(--status-danger-border)' }} 
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--status-danger-bg)'} 
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  🗑️ 모든 데이터 삭제
-                </Button>
+                <>
+                  <div className="border-l mx-1" style={{ borderColor: 'var(--border-light)' }} />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearAllData}
+                    className="flex items-center gap-1 hover:bg-red-50"
+                    style={{ color: 'var(--status-danger-text)', borderColor: 'var(--status-danger-border)' }}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    초기화
+                  </Button>
+                </>
               )}
+            </div>
+          </div>
+
+          {/* 가이드 박스 - 언제든 볼 수 있도록 표시 */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 mr-3">
+                <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-semibold text-blue-900 mb-1">프로젝트 기준 설정 가이드</h4>
+                <ul className="text-xs text-blue-800 space-y-0.5">
+                  <li>• 프로젝트 목표에 맞는 평가 기준을 계층적으로 구성</li>
+                  <li>• 1레벨(목표) → 2레벨(기준) → 3레벨(대안) 순서로 추가</li>
+                  <li>• 기준명은 중복될 수 없으며, 최대 5단계까지 세분화 가능</li>
+                  <li>• 개별 기준 삭제는 🗑️ 버튼, 순서 이동은 ↑↓ 버튼 사용</li>
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -1050,94 +1112,42 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
           {/* Current Criteria Tree Visualization */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium" style={{ color: 'var(--text-primary)' }}>🌳 기준 계층구조 시각화</h4>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>표시 방식:</span>
-                <div className="flex rounded-lg p-1" style={{ backgroundColor: 'var(--bg-elevated)' }}>
+              <h4 className="font-medium flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                기준 계층구조 시각화
+              </h4>
+              <div className="flex items-center gap-2">
+                {/* 레이아웃 전환 버튼 */}
+                <div className="flex bg-gray-100 rounded-lg p-0.5">
                   <button
                     onClick={() => setLayoutMode('vertical')}
-                    className="px-3 py-1 text-xs rounded-md transition-colors"
-                    style={{
-                      backgroundColor: layoutMode === 'vertical' ? 'var(--status-info-text)' : 'transparent',
-                      color: layoutMode === 'vertical' ? 'white' : 'var(--text-muted)'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (layoutMode !== 'vertical') {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-muted)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (layoutMode !== 'vertical') {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
+                    className={`px-3 py-1.5 text-xs rounded-md transition-all ${
+                      layoutMode === 'vertical' 
+                        ? 'bg-white shadow-sm text-gray-800 font-medium' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
                   >
-                    📋 세로형
+                    <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    세로형
                   </button>
                   <button
                     onClick={() => setLayoutMode('horizontal')}
-                    className="px-3 py-1 text-xs rounded-md transition-colors"
-                    style={{
-                      backgroundColor: layoutMode === 'horizontal' ? 'var(--status-success-text)' : 'transparent',
-                      color: layoutMode === 'horizontal' ? 'white' : 'var(--text-muted)'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (layoutMode !== 'horizontal') {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-muted)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (layoutMode !== 'horizontal') {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
+                    className={`px-3 py-1.5 text-xs rounded-md transition-all ${
+                      layoutMode === 'horizontal' 
+                        ? 'bg-white shadow-sm text-gray-800 font-medium' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
                   >
-                    📊 가로형
+                    <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                    </svg>
+                    가로형
                   </button>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleLoadTemplateData}
-                  className="transition-all duration-200 ml-2" 
-                  style={{ color: 'var(--status-info-text)', borderColor: 'var(--status-info-border)' }} 
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--status-info-bg)'} 
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  📝 기본 템플릿
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowBulkInput(true)}
-                  className="transition-all duration-200 ml-2" 
-                  style={{ color: 'var(--status-success-text)', borderColor: 'var(--status-success-border)' }} 
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--status-success-bg)'} 
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  🗂️ 일괄 입력
-                </Button>
-                <Button 
-                  variant="primary" 
-                  size="sm"
-                  onClick={() => setUseVisualBuilder(true)}
-                  className="transition-all duration-200 ml-2" 
-                >
-                  🎨 시각적 빌더
-                </Button>
-                {criteria.length > 0 && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleClearAllData}
-                    className="transition-all duration-200" 
-                    style={{ color: 'var(--status-danger-text)', borderColor: 'var(--status-danger-border)' }} 
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--status-danger-bg)'} 
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    🗑️ 초기화
-                  </Button>
-                )}
               </div>
             </div>
             {(() => {
