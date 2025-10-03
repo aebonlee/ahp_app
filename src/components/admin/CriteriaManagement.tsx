@@ -97,39 +97,53 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     allCriteria: Criterion[];
   } | null>(null);
 
-  useEffect(() => {
-    // 백엔드에서 실제 프로젝트별 기준 데이터 로드
-    const loadProjectCriteria = async () => {
-      try {
-        console.log(`🔍 프로젝트 ${projectId}의 기준 데이터 로드 중...`);
-        const criteriaData = await dataService.getCriteria(projectId);
-        console.log('📥 받은 기준 데이터 원본:', criteriaData);
-        
-        // 데이터 변환 후 order 값 정규화
-        const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-        
-        // 같은 부모를 가진 기준들끼리 그룹화하고 order 재할당
-        const normalizedCriteria = normalizeCriteriaOrder(convertedCriteria);
-        console.log('🔄 정규화된 기준 데이터:', normalizedCriteria);
-        
-        setCriteria(normalizedCriteria);
-        console.log(`✅ ${normalizedCriteria.length}개 기준 로드 완료`, normalizedCriteria);
-        
-        // 부모 컴포넌트에 개수 알림
-        if (onCriteriaChange) {
-          onCriteriaChange(normalizedCriteria.length);
+  // DB에서 기준 데이터 로드 함수
+  const loadCriteriaFromDB = async () => {
+    try {
+      console.log(`🔍 프로젝트 ${projectId}의 기준 데이터 로드 중...`);
+      const criteriaData = await dataService.getCriteria(projectId);
+      console.log('📥 받은 기준 데이터 원본:', criteriaData);
+      
+      // 데이터 변환 후 order 값 정규화
+      const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+      
+      // 같은 부모를 가진 기준들끼리 그룹화하고 order 재할당
+      const normalizedCriteria = normalizeCriteriaOrder(convertedCriteria);
+      console.log('🔄 정규화된 기준 데이터:', normalizedCriteria);
+      
+      // 순서 유지를 위해 level과 order로 정렬
+      normalizedCriteria.sort((a, b) => {
+        // 먼저 level로 정렬
+        if (a.level !== b.level) return a.level - b.level;
+        // 같은 level이면 parent_id로 그룹화
+        if (a.parent_id !== b.parent_id) {
+          if (a.parent_id === null) return -1;
+          if (b.parent_id === null) return 1;
+          return (a.parent_id || '').localeCompare(b.parent_id || '');
         }
-      } catch (error) {
-        console.error('❌ 기준 데이터 로드 실패:', error);
-        setCriteria([]);
-        if (onCriteriaChange) {
-          onCriteriaChange(0);
-        }
+        // 같은 parent_id면 order로 정렬
+        return (a.order || 0) - (b.order || 0);
+      });
+      
+      setCriteria(normalizedCriteria);
+      console.log(`✅ ${normalizedCriteria.length}개 기준 로드 완료`);
+      
+      // 부모 컴포넌트에 개수 알림
+      if (onCriteriaChange) {
+        onCriteriaChange(normalizedCriteria.length);
       }
-    };
+    } catch (error) {
+      console.error('❌ 기준 데이터 로드 실패:', error);
+      setCriteria([]);
+      if (onCriteriaChange) {
+        onCriteriaChange(0);
+      }
+    }
+  };
 
+  useEffect(() => {
     if (projectId) {
-      loadProjectCriteria();
+      loadCriteriaFromDB();
     }
   }, [projectId]);
 
@@ -353,10 +367,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       await dataService.updateCriteria(node.id, criterionData);
       console.log('✅ 기준 이름이 수정되었습니다');
       
-      // 데이터 다시 로드
-      const updatedCriteriaData = await dataService.getCriteria(projectId);
-      const convertedUpdatedCriteria = (updatedCriteriaData || []).map(convertToCriterion);
-      setCriteria(convertedUpdatedCriteria);
+      // 데이터 다시 로드 (순서 유지)
+      await loadCriteriaFromDB();
     } catch (error) {
       console.error('❌ 기준 편집 실패:', error);
       alert('기준 이름 수정 중 오류가 발생했습니다.');
