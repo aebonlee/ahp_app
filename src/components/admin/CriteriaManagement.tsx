@@ -7,6 +7,7 @@ import HierarchyTreeBuilder from '../modeling/HierarchyTreeBuilder';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
 import dataService from '../../services/dataService_clean';
 import { CriteriaData } from '../../services/api';
+import api from '../../services/api';
 
 interface Criterion extends Omit<CriteriaData, 'project_id' | 'position' | 'id'> {
   id: string; // required
@@ -589,39 +590,66 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       
       // 먼저 상위 기준 생성
       for (const criterionData of templateCriteria) {
-        const created = await dataService.createCriteria({
-          ...convertToCriteriaData(criterionData),
-          project_id: projectId
-        });
-        
-        if (created && created.id) {
-          createdIds[criterionData.name] = created.id;
-          console.log(`✅ 기준 생성: ${criterionData.name}`);
+        try {
+          const created = await dataService.createCriteria({
+            ...convertToCriteriaData(criterionData),
+            project_id: projectId
+          });
+          
+          if (created && created.id) {
+            createdIds[criterionData.name] = created.id;
+            console.log(`✅ 기준 생성: ${criterionData.name}`);
+          } else {
+            console.warn(`⚠️ 기준 생성 실패: ${criterionData.name}`);
+          }
+        } catch (err) {
+          console.error(`❌ 기준 생성 오류 (${criterionData.name}):`, err);
         }
       }
       
-      // 하위 기준 생성 (예시)
-      const subCriteria = [
-        { name: '내구성', description: '제품의 내구성 및 수명', parent_id: createdIds['품질'], level: 2, order: 0 },
-        { name: '성능', description: '기능적 성능 수준', parent_id: createdIds['품질'], level: 2, order: 1 },
-        { name: '디자인', description: '외관 및 사용자 경험', parent_id: createdIds['품질'], level: 2, order: 2 },
+      // 하위 기준 생성 (상위 기준이 성공적으로 생성된 경우만)
+      if (Object.keys(createdIds).length > 0) {
+        const subCriteria = [];
         
-        { name: '초기비용', description: '구매 또는 도입 비용', parent_id: createdIds['비용'], level: 2, order: 0 },
-        { name: '운영비용', description: '유지보수 및 운영 비용', parent_id: createdIds['비용'], level: 2, order: 1 },
-        { name: 'ROI', description: '투자 대비 수익률', parent_id: createdIds['비용'], level: 2, order: 2 },
+        // 품질 하위 기준
+        if (createdIds['품질']) {
+          subCriteria.push(
+            { name: '내구성', description: '제품의 내구성 및 수명', parent_id: createdIds['품질'], level: 2, order: 0 },
+            { name: '성능', description: '기능적 성능 수준', parent_id: createdIds['품질'], level: 2, order: 1 },
+            { name: '디자인', description: '외관 및 사용자 경험', parent_id: createdIds['품질'], level: 2, order: 2 }
+          );
+        }
         
-        { name: '혁신성', description: '기술적 혁신 수준', parent_id: createdIds['기술력'], level: 2, order: 0 },
-        { name: '호환성', description: '기존 시스템과의 호환성', parent_id: createdIds['기술력'], level: 2, order: 1 },
-        { name: '확장성', description: '향후 확장 가능성', parent_id: createdIds['기술력'], level: 2, order: 2 }
-      ];
-      
-      // 하위 기준 생성
-      for (const subCriterion of subCriteria) {
-        await dataService.createCriteria({
-          ...convertToCriteriaData(subCriterion),
-          project_id: projectId
-        });
-        console.log(`  ✅ 하위 기준 생성: ${subCriterion.name}`);
+        // 비용 하위 기준
+        if (createdIds['비용']) {
+          subCriteria.push(
+            { name: '초기비용', description: '구매 또는 도입 비용', parent_id: createdIds['비용'], level: 2, order: 0 },
+            { name: '운영비용', description: '유지보수 및 운영 비용', parent_id: createdIds['비용'], level: 2, order: 1 },
+            { name: 'ROI', description: '투자 대비 수익률', parent_id: createdIds['비용'], level: 2, order: 2 }
+          );
+        }
+        
+        // 기술력 하위 기준
+        if (createdIds['기술력']) {
+          subCriteria.push(
+            { name: '혁신성', description: '기술적 혁신 수준', parent_id: createdIds['기술력'], level: 2, order: 0 },
+            { name: '호환성', description: '기존 시스템과의 호환성', parent_id: createdIds['기술력'], level: 2, order: 1 },
+            { name: '확장성', description: '향후 확장 가능성', parent_id: createdIds['기술력'], level: 2, order: 2 }
+          );
+        }
+        
+        // 하위 기준 생성
+        for (const subCriterion of subCriteria) {
+          try {
+            await dataService.createCriteria({
+              ...convertToCriteriaData(subCriterion),
+              project_id: projectId
+            });
+            console.log(`  ✅ 하위 기준 생성: ${subCriterion.name}`);
+          } catch (err) {
+            console.error(`  ❌ 하위 기준 생성 오류 (${subCriterion.name}):`, err);
+          }
+        }
       }
       
       // 데이터 다시 로드
