@@ -64,9 +64,13 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       try {
         console.log(`🔍 프로젝트 ${projectId}의 기준 데이터 로드 중...`);
         const criteriaData = await dataService.getCriteria(projectId);
+        console.log('📥 받은 기준 데이터 원본:', criteriaData);
+        
         const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+        console.log('🔄 변환된 기준 데이터:', convertedCriteria);
+        
         setCriteria(convertedCriteria);
-        console.log(`✅ ${convertedCriteria.length}개 기준 로드 완료`);
+        console.log(`✅ ${convertedCriteria.length}개 기준 로드 완료`, convertedCriteria);
         
         // 부모 컴포넌트에 개수 알림
         if (onCriteriaChange) {
@@ -848,23 +852,39 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
                 )}
               </div>
             </div>
-            <HierarchyTreeVisualization
-              nodes={criteria} // 평면 배열 직접 전달 (HierarchyTreeVisualization 내부에서 계층구조 생성)
-              title={`${projectTitle || 'AHP 프로젝트'} 기준 계층구조`}
-              showWeights={true}
-              interactive={true}
-              layout={layoutMode}
-              onLayoutChange={setLayoutMode}
-              onNodeClick={(node) => {
-                console.log('선택된 기준:', node);
-                // 추후 편집 모드 구현 가능
-              }}
-              onNodeDelete={(node) => {
-                // TreeNode를 id로 변환하여 삭제 함수 호출
-                handleDeleteCriterion(node.id);
-              }}
-              allowDelete={true}
-            />
+            {(() => {
+              console.log('🎨 HierarchyTreeVisualization에 전달할 nodes:', criteria);
+              console.log('🎨 criteria 개수:', criteria.length);
+              console.log('🎨 criteria 내용:', JSON.stringify(criteria, null, 2));
+              return null;
+            })()}
+            {criteria.length > 0 ? (
+              <HierarchyTreeVisualization
+                nodes={criteria} // 평면 배열 직접 전달 (HierarchyTreeVisualization 내부에서 계층구조 생성)
+                title={`${projectTitle || 'AHP 프로젝트'} 기준 계층구조`}
+                showWeights={true}
+                interactive={true}
+                layout={layoutMode}
+                onLayoutChange={setLayoutMode}
+                onNodeClick={(node) => {
+                  console.log('선택된 기준:', node);
+                  // 추후 편집 모드 구현 가능
+                }}
+                onNodeDelete={(node) => {
+                  // TreeNode를 id로 변환하여 삭제 함수 호출
+                  handleDeleteCriterion(node.id);
+                }}
+                allowDelete={true}
+              />
+            ) : (
+              <div className="p-8 text-center rounded-lg" style={{ backgroundColor: 'var(--bg-muted)', border: '2px dashed var(--border-light)' }}>
+                <div className="text-4xl mb-4">📋</div>
+                <p className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>기준이 아직 추가되지 않았습니다</p>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  아래 "새 기준 추가" 섹션을 사용하여 첫 번째 기준을 추가해주세요.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Add New Criterion */}
