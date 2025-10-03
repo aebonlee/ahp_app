@@ -24,30 +24,62 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+      with:
+        fetch-depth: 0
+        
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: 'npm'
+        
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
         
     - name: Prepare build environment
       run: |
         echo "Setting up build environment..."
         
+        # Git 설정
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        
         echo "Verifying files..."
-        ls -la src/ | head -5
-        ls -la public/ | head -5
-        ls -la package.json
-        ls -la tsconfig.json
+        if [ -f "src/App.tsx" ]; then echo "✓ App.tsx found"; else echo "✗ App.tsx missing"; fi
+        if [ -f "public/index.html" ]; then echo "✓ index.html found"; else echo "✗ index.html missing"; fi
+        if [ -f "package.json" ]; then echo "✓ package.json found"; else echo "✗ package.json missing"; fi
+        if [ -f "tsconfig.json" ]; then echo "✓ tsconfig.json found"; else echo "✗ tsconfig.json missing"; fi
         
     - name: Install dependencies
-      run: npm install
+      run: |
+        echo "Installing dependencies..."
+        npm ci --prefer-offline --no-audit
       
     - name: Build frontend
-      run: npm run build
+      run: |
+        echo "Building frontend..."
+        npm run build
       env:
         CI: false
         PUBLIC_URL: /ahp_app
+        GENERATE_SOURCEMAP: false
+        
+    - name: Verify build output
+      run: |
+        echo "Verifying build output..."
+        if [ -d "build" ]; then 
+          echo "✓ Build directory created"
+          echo "Build directory contents:"
+          ls -la build/ | head -10
+        else 
+          echo "✗ Build directory missing"
+          exit 1
+        fi
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
@@ -62,3 +94,6 @@ jobs:
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
+      with:
+        timeout: 600000
+        error_count: 10
