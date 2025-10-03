@@ -325,6 +325,36 @@ const Sidebar: React.FC<SidebarProps> = ({
       }
     }
     
+    // 사이드바 "내 대시보드" 클릭 시 역할별 대시보드로 라우팅
+    if (itemId === 'dashboard') {
+      const storedUserStr = localStorage.getItem('ahp_user');
+      const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
+      let isAdminEmail = false;
+      
+      if (storedUserStr) {
+        try {
+          const storedUser = JSON.parse(storedUserStr);
+          isAdminEmail = storedUser.email === 'admin@ahp.com';
+        } catch (e) {
+          console.error('Failed to parse user:', e);
+        }
+      }
+      
+      if ((userRole === 'super_admin' || isAdminEmail) && isSuperMode) {
+        // 슈퍼 관리자 모드일 때 -> 슈퍼 관리자 대시보드
+        onTabChange('super-admin-dashboard');
+        return;
+      } else if (userRole === 'evaluator') {
+        // 평가자 -> 평가자 대시보드
+        onTabChange('evaluator-dashboard');
+        return;
+      } else {
+        // 개인 서비스 모드 (서비스 관리자, 서비스 사용자, 개인 모드의 슈퍼 관리자)
+        onTabChange('personal-service');
+        return;
+      }
+    }
+    
     // 기존 모드 전환 처리
     if (itemId === 'mode-switch-to-evaluator' && onModeSwitch) {
       onModeSwitch('evaluator');

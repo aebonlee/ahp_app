@@ -327,6 +327,32 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     academic: { name: '연구 분석', desc: '학술 연구용 템플릿' }
   };
 
+  // 슈퍼 관리자 모드 체크 및 리다이렉트
+  useEffect(() => {
+    const storedUserStr = localStorage.getItem('ahp_user');
+    const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
+    let isAdminEmail = false;
+    
+    if (storedUserStr) {
+      try {
+        const storedUser = JSON.parse(storedUserStr);
+        isAdminEmail = storedUser.email === 'admin@ahp.com';
+      } catch (e) {
+        console.error('Failed to parse user:', e);
+      }
+    }
+    
+    // 슈퍼 관리자 모드이고 personal-service로 접근한 경우
+    if ((user?.role === 'super_admin' || isAdminEmail) && isSuperMode && 
+        (externalActiveTab === 'personal-service' || externalActiveTab === 'admin-dashboard' || externalActiveTab === 'user-home')) {
+      console.log('🚀 슈퍼 관리자 모드 감지 - super-admin-dashboard로 리다이렉트');
+      if (externalOnTabChange) {
+        externalOnTabChange('super-admin-dashboard');
+      }
+      return;
+    }
+  }, [user, externalActiveTab, externalOnTabChange]);
+
   // 외부에서 activeTab이 변경되면 내부 activeMenu도 업데이트
   useEffect(() => {
     if (externalActiveTab) {
@@ -3353,6 +3379,28 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   );
 
   const renderMenuContent = () => {
+    // 슈퍼 관리자 모드 체크
+    const storedUserStr = localStorage.getItem('ahp_user');
+    const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
+    let isAdminEmail = false;
+    
+    if (storedUserStr) {
+      try {
+        const storedUser = JSON.parse(storedUserStr);
+        isAdminEmail = storedUser.email === 'admin@ahp.com';
+      } catch (e) {
+        console.error('Failed to parse user:', e);
+      }
+    }
+    
+    // 슈퍼 관리자 모드일 때는 슈퍼 관리자 대시보드로 리다이렉트
+    if ((user?.role === 'super_admin' || isAdminEmail) && isSuperMode && activeMenu === 'dashboard') {
+      if (externalOnTabChange) {
+        externalOnTabChange('super-admin-dashboard');
+      }
+      return null;
+    }
+    
     switch (activeMenu) {
       case 'dashboard':
         // 사용자 역할에 따라 다른 대시보드 표시

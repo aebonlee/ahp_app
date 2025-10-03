@@ -1262,9 +1262,58 @@ function App() {
     switch (activeTab) {
       case 'home':
       case 'register':
-      case 'personal-service':
       case 'welcome':
-        // 로그인 후에는 모두 personal-service로 통합 - 개선된 버전 사용
+        // 로그인 전 또는 일반 홈
+        return (
+          <PersonalServiceDashboard 
+            user={user}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onUserUpdate={setUser}
+            projects={projects}
+            onCreateProject={createProject}
+            onDeleteProject={deleteProject}
+            onFetchCriteria={fetchCriteria}
+            onCreateCriteria={createCriteria}
+            onFetchAlternatives={fetchAlternatives}
+            onCreateAlternative={createAlternative}
+            onSaveEvaluation={saveEvaluation}
+            onFetchTrashedProjects={fetchTrashedProjects}
+            onRestoreProject={restoreProject}
+            onPermanentDeleteProject={permanentDeleteProject}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={setSelectedProjectId}
+          />
+        );
+        
+      case 'personal-service':
+      case 'admin-dashboard':  
+      case 'user-home':
+        // 개인 서비스 모드 대시보드 (일반 사용자, 서비스 관리자)
+        const storedUserStr = localStorage.getItem('ahp_user');
+        const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
+        let isAdminEmail = false;
+        
+        if (storedUserStr) {
+          try {
+            const storedUser = JSON.parse(storedUserStr);
+            isAdminEmail = storedUser.email === 'admin@ahp.com';
+          } catch (e) {
+            console.error('Failed to parse user:', e);
+          }
+        }
+        
+        // 슈퍼 관리자 모드가 켜져 있으면 슈퍼 관리자 대시보드로
+        if ((user?.role === 'super_admin' || isAdminEmail) && isSuperMode) {
+          return (
+            <SuperAdminDashboard 
+              user={user}
+              onTabChange={setActiveTab}
+            />
+          );
+        }
+        
+        // 아니면 개인 서비스 대시보드로
         return (
           <PersonalServiceDashboard 
             user={user}

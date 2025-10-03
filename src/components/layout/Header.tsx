@@ -119,12 +119,29 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
       onLogoClick();
     } else if (user) {
       if (onTabChange) {
-        if (user.role === 'super_admin' && (user as any).admin_type === 'super') {
-          onTabChange('super-admin');
-        } else if ((user as any).admin_type === 'personal') {
-          onTabChange('personal-service');
+        // 로고 클릭 시 역할별 메인 페이지로 이동
+        const storedUserStr = localStorage.getItem('ahp_user');
+        const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
+        let isAdminEmail = false;
+        
+        if (storedUserStr) {
+          try {
+            const storedUser = JSON.parse(storedUserStr);
+            isAdminEmail = storedUser.email === 'admin@ahp.com';
+          } catch (e) {
+            console.error('Failed to parse user:', e);
+          }
+        }
+        
+        if ((user.role === 'super_admin' || isAdminEmail) && isSuperMode) {
+          // 슈퍼 관리자 모드일 때 -> 슈퍼 관리자 대시보드
+          onTabChange('super-admin-dashboard');
+        } else if (user.role === 'evaluator') {
+          // 평가자 -> 평가자 대시보드
+          onTabChange('evaluator-dashboard');
         } else {
-          onTabChange('welcome');
+          // 개인 서비스 모드 (서비스 관리자, 서비스 사용자, 슈퍼 관리자의 개인 모드)
+          onTabChange('personal-service');
         }
       }
     } else {
@@ -223,9 +240,36 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
           {user && (
             <div className="flex-1 flex items-center space-x-4 ml-8">
               <UnifiedButton
-                variant={activeTab === 'personal-service' ? 'primary' : 'secondary'}
+                variant={activeTab?.includes('dashboard') || activeTab === 'personal-service' ? 'primary' : 'secondary'}
                 size="sm"
-                onClick={() => onTabChange && onTabChange('personal-service')}
+                onClick={() => {
+                  if (onTabChange) {
+                    // 상단 대시보드 버튼 클릭 시 역할별 전체 대시보드로 이동
+                    const storedUserStr = localStorage.getItem('ahp_user');
+                    const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
+                    let isAdminEmail = false;
+                    
+                    if (storedUserStr) {
+                      try {
+                        const storedUser = JSON.parse(storedUserStr);
+                        isAdminEmail = storedUser.email === 'admin@ahp.com';
+                      } catch (e) {
+                        console.error('Failed to parse user:', e);
+                      }
+                    }
+                    
+                    if ((user.role === 'super_admin' || isAdminEmail) && isSuperMode) {
+                      // 슈퍼 관리자 모드 -> 슈퍼 관리자 대시보드
+                      onTabChange('super-admin-dashboard');
+                    } else if (user.role === 'evaluator') {
+                      // 평가자 -> 평가자 대시보드
+                      onTabChange('evaluator-dashboard');
+                    } else {
+                      // 개인 서비스 모드 -> 개인 서비스 대시보드
+                      onTabChange('personal-service');
+                    }
+                  }
+                }}
                 icon="🏠"
                 className="font-medium"
               >
