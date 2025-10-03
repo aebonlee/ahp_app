@@ -41,6 +41,10 @@ import DjangoAdminIntegration from './components/admin/DjangoAdminIntegration';
 import SuperAdminDashboard from './components/superadmin/SuperAdminDashboard';
 import RoleSwitcher from './components/superadmin/RoleSwitcher';
 import SystemReset from './components/superadmin/SystemReset';
+import AllProjectsManagement from './components/superadmin/AllProjectsManagement';
+import SystemInfo from './components/superadmin/SystemInfo';
+import SystemMonitoring from './components/superadmin/SystemMonitoring';
+import SystemSettings from './components/superadmin/SystemSettings';
 import AHPMethodologyPage from './components/methodology/AHPMethodologyPage';
 import FuzzyAHPMethodologyPage from './components/methodology/FuzzyAHPMethodologyPage';
 import AIPaperGenerationPage from './components/ai-paper/AIPaperGenerationPage';
@@ -1424,6 +1428,22 @@ function App() {
         // 슈퍼 관리자 사용자 관리 페이지 - Django 백엔드 연동
         return <RealUserManagement />;
         
+      case 'all-projects':
+        // 전체 프로젝트 관리
+        return <AllProjectsManagement />;
+      
+      case 'system-info':
+        // 시스템 정보
+        return <SystemInfo />;
+      
+      case 'system-monitoring':
+        // 시스템 모니터링
+        return <SystemMonitoring />;
+      
+      case 'system-settings':
+        // 시스템 설정
+        return <SystemSettings />;
+
       case 'projects':
       case 'monitoring':
       case 'database':

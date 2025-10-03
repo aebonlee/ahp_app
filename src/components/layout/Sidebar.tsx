@@ -88,10 +88,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'dashboard', label: '관리자 대시보드' },
         { id: 'users', label: '사용자 관리' },
-        { id: 'projects', label: '전체 프로젝트' },
-        { id: 'system', label: '시스템 정보' },
-        { id: 'monitoring', label: '시스템 모니터링' },
-        { id: 'settings', label: '시스템 설정' }
+        { id: 'all-projects', label: '전체 프로젝트' },
+        { id: 'system-info', label: '시스템 정보' },
+        { id: 'system-monitoring', label: '시스템 모니터링' },
+        { id: 'system-settings', label: '시스템 설정' }
       ]
     },
     {

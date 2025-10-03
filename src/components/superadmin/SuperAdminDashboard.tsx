@@ -245,8 +245,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
       icon: '⚙️',
       color: 'var(--accent-secondary)',
       actions: [
-        { label: 'DB 관리', onClick: () => onTabChange('database') },
-        { label: '백업/복원', onClick: () => onTabChange('backup') },
+        { label: '시스템 정보', onClick: () => onTabChange('system-info') },
+        { label: '시스템 설정', onClick: () => onTabChange('system-settings') },
         { label: '시스템 초기화', onClick: () => onTabChange('system-reset') }
       ]
     },
@@ -257,9 +257,9 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
       icon: '📊',
       color: 'var(--accent-tertiary)',
       actions: [
-        { label: '시스템 로그', onClick: () => onTabChange('audit') },
-        { label: '성능 분석', onClick: () => onTabChange('monitoring') },
-        { label: '오류 추적', onClick: () => onTabChange('error-tracking') }
+        { label: '시스템 모니터링', onClick: () => onTabChange('system-monitoring') },
+        { label: '전체 프로젝트', onClick: () => onTabChange('all-projects') },
+        { label: '사용자 관리', onClick: () => onTabChange('users') }
       ]
     },
     {
