@@ -5,6 +5,7 @@ import CriteriaManagement from './CriteriaManagement';
 import AlternativeManagement from './AlternativeManagement';
 import EvaluatorAssignment from './EvaluatorAssignment';
 import ModelFinalization from './ModelFinalization';
+import QRCodeEvaluatorAssignment from '../evaluation/QRCodeEvaluatorAssignment';
 
 interface ModelBuildingProps {
   projectId: string;
@@ -19,39 +20,49 @@ const ModelBuilding: React.FC<ModelBuildingProps> = ({
   onModelFinalized,
   onBack 
 }) => {
-  const [activeStep, setActiveStep] = useState<'criteria' | 'alternatives' | 'evaluators' | 'finalize'>('criteria');
+  const [activeStep, setActiveStep] = useState<'criteria' | 'alternatives' | 'evaluators' | 'qrcode' | 'finalize'>('criteria');
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
+  const [evaluationMethod, setEvaluationMethod] = useState<'traditional' | 'qrcode'>('qrcode');
 
   const steps = [
     {
       id: 'criteria',
-      label: '2-1 기준추가',
-      title: '2-1단계 — 기준추가',
+      label: '1️⃣ 기준 정의',
+      title: '1단계 — 평가 기준 정의',
       icon: '🎯',
       description: '계층구조와 평가기준을 설정합니다'
     },
     {
       id: 'alternatives',
-      label: '2-2 대안추가',
-      title: '2-2단계 — 대안추가',
+      label: '2️⃣ 대안 설정',
+      title: '2단계 — 대안 설정',
       icon: '📝',
       description: '평가할 대안들을 정의합니다'
     },
     {
       id: 'evaluators',
-      label: '2-3 평가자배정',
-      title: '2-3단계 — 평가자 배정',
+      label: '3️⃣ 평가자 배정',
+      title: '3단계 — 평가자 배정',
       icon: '👥',
-      description: '평가에 참여할 사용자를 배정합니다'
+      description: '평가에 참여할 사용자를 배정합니다',
+      optional: evaluationMethod === 'qrcode'
+    },
+    {
+      id: 'qrcode',
+      label: '4️⃣ QR코드 생성',
+      title: '4단계 — QR코드 평가 설정',
+      icon: '📱',
+      description: 'QR코드로 즉시 평가를 시작합니다',
+      show: evaluationMethod === 'qrcode'
     },
     {
       id: 'finalize',
-      label: '2-4 모델구축',
-      title: '2-4단계 — 모델 구축',
+      label: '5️⃣ 모델 구축',
+      title: '5단계 — 모델 구축 완료',
       icon: '🏗️',
       description: '모델을 확정하고 평가를 시작합니다'
     }
-  ];
+  ].filter(step => step.show !== false);
 
   const handleStepComplete = (stepId: string) => {
     setCompletedSteps(prev => new Set([...Array.from(prev), stepId]));
@@ -83,9 +94,46 @@ const ModelBuilding: React.FC<ModelBuildingProps> = ({
         );
       case 'evaluators':
         return (
-          <EvaluatorAssignment
+          <>
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-blue-900">평가 방식 선택</h4>
+                  <p className="text-sm text-blue-700 mt-1">원하는 평가 방식을 선택하세요</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={evaluationMethod === 'traditional' ? 'primary' : 'secondary'}
+                    onClick={() => setEvaluationMethod('traditional')}
+                  >
+                    📧 이메일 초대
+                  </Button>
+                  <Button
+                    variant={evaluationMethod === 'qrcode' ? 'primary' : 'secondary'}
+                    onClick={() => {
+                      setEvaluationMethod('qrcode');
+                      setActiveStep('qrcode');
+                      handleStepComplete('evaluators');
+                    }}
+                  >
+                    📱 QR코드 평가
+                  </Button>
+                </div>
+              </div>
+            </div>
+            {evaluationMethod === 'traditional' && (
+              <EvaluatorAssignment
+                projectId={projectId}
+                onComplete={() => handleStepComplete('evaluators')}
+              />
+            )}
+          </>
+        );
+      case 'qrcode':
+        return (
+          <QRCodeEvaluatorAssignment
             projectId={projectId}
-            onComplete={() => handleStepComplete('evaluators')}
+            onComplete={() => handleStepComplete('qrcode')}
           />
         );
       case 'finalize':

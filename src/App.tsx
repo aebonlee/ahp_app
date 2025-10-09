@@ -35,6 +35,8 @@ import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
 import DemographicSurvey from './components/survey/DemographicSurvey';
 import EvaluationTest from './components/evaluation/EvaluationTest';
 import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
+import QRCodeEvaluatorAssignment from './components/evaluation/QRCodeEvaluatorAssignment';
+import AnonymousEvaluator from './components/evaluation/AnonymousEvaluator';
 import ConnectionTestPage from './components/demo/ConnectionTestPage';
 import RoleBasedDashboard from './components/common/RoleBasedDashboard';
 import DjangoAdminIntegration from './components/admin/DjangoAdminIntegration';
@@ -1230,6 +1232,21 @@ function App() {
             );
           } else {
             // 프로젝트 ID가 없으면 홈으로 리다이렉트
+            return <HomePage onLoginClick={handleLoginClick} />;
+          }
+        
+        case 'anonymous-evaluation':
+        case 'qr-evaluation':
+          // QR 코드 기반 익명 평가 (로그인 불필요)
+          const qrUrlParams = new URLSearchParams(window.location.search);
+          const qrProjectId = qrUrlParams.get('p');
+          const sessionId = qrUrlParams.get('s');
+          
+          if (qrProjectId && sessionId) {
+            return (
+              <AnonymousEvaluator />
+            );
+          } else {
             return <HomePage onLoginClick={handleLoginClick} />;
           }
         
