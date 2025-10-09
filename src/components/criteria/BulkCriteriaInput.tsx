@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import TextParser from '../../utils/textParser';
+import HierarchyVisualEditor from './HierarchyVisualEditor';
 
 interface Criterion {
   id: string;
@@ -26,9 +27,10 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
   existingCriteria
 }) => {
   const [inputText, setInputText] = useState('');
-  const [activeTab, setActiveTab] = useState<'input' | 'examples'>('input');
+  const [activeTab, setActiveTab] = useState<'input' | 'examples' | 'visual'>('input');
   const [parseResult, setParseResult] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showVisualEditor, setShowVisualEditor] = useState(false);
 
   const handleParse = () => {
     if (!inputText.trim()) {
@@ -216,6 +218,16 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
               </button>
               <button
                 className={`px-4 py-2 font-medium ${
+                  activeTab === 'visual'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                onClick={() => setActiveTab('visual')}
+              >
+                시각적 편집
+              </button>
+              <button
+                className={`px-4 py-2 font-medium ${
                   activeTab === 'examples'
                     ? 'border-b-2 border-blue-500 text-blue-600'
                     : 'text-gray-500 hover:text-gray-700'
@@ -317,6 +329,87 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
               </div>
             )}
 
+            {activeTab === 'visual' && (
+              <div className="space-y-6">
+                <div className="text-center py-12">
+                  <h3 className="text-xl font-medium text-gray-900 mb-4">
+                    🎨 시각적 계층구조 편집기
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    계층구조를 시각적으로 편집하고 관리할 수 있습니다.
+                  </p>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowVisualEditor(true)}
+                  >
+                    편집기 열기
+                  </Button>
+                </div>
+
+                {/* 템플릿 빠른 선택 */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      setInputText(`기업 평가 기준
+    재무 성과
+        수익성
+        안정성
+        성장성
+    운영 효율성
+        생산성
+        품질 관리
+        혁신 역량
+    지속가능성
+        환경 경영
+        사회적 책임
+        거버넌스`);
+                      setActiveTab('input');
+                    }}>
+                    <h4 className="font-medium mb-2">3×3 구조</h4>
+                    <p className="text-xs text-gray-600">
+                      상위 3개 × 하위 3개<br/>
+                      총 12개 기준
+                    </p>
+                  </div>
+                  <div className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      setInputText(`평가 목표
+    카테고리 1
+        세부항목 1-1
+        세부항목 1-2
+        세부항목 1-3
+    카테고리 2
+        세부항목 2-1
+        세부항목 2-2
+        세부항목 2-3
+    카테고리 3
+        세부항목 3-1
+        세부항목 3-2
+        세부항목 3-3
+    카테고리 4
+        세부항목 4-1
+        세부항목 4-2
+        세부항목 4-3`);
+                      setActiveTab('input');
+                    }}>
+                    <h4 className="font-medium mb-2">4×3 구조</h4>
+                    <p className="text-xs text-gray-600">
+                      상위 4개 × 하위 3개<br/>
+                      총 16개 기준
+                    </p>
+                  </div>
+                  <div className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setShowVisualEditor(true)}>
+                    <h4 className="font-medium mb-2">사용자 정의</h4>
+                    <p className="text-xs text-gray-600">
+                      자유롭게 구성<br/>
+                      최대 5단계
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'examples' && (
               <div className="space-y-6 pb-8">
                 <div className="text-center">
@@ -370,6 +463,25 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
           </div>
         </Card>
       </div>
+      
+      {/* Visual Editor Modal */}
+      {showVisualEditor && (
+        <HierarchyVisualEditor
+          initialData={parseResult?.criteria || []}
+          onUpdate={(data) => {
+            // Visual Editor에서 받은 데이터를 처리
+            const convertedData = data.map((item, index) => ({
+              ...item,
+              id: item.id || `criterion-${Date.now()}-${index}`,
+              order: index + 1
+            }));
+            onImport(convertedData);
+            setShowVisualEditor(false);
+          }}
+          onClose={() => setShowVisualEditor(false)}
+          templateType="3x3"
+        />
+      )}
     </div>
   );
 };
