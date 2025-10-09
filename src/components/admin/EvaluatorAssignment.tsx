@@ -5,6 +5,7 @@ import Input from '../common/Input';
 import cleanDataService from '../../services/dataService_clean';
 import { evaluatorApi } from '../../services/api';
 import { EvaluatorData } from '../../services/api';
+import { QRCodeSVG as QRCode } from 'qrcode.react';
 
 interface Evaluator {
   id?: string;
@@ -18,6 +19,10 @@ interface Evaluator {
   department?: string;
   experience?: string;
   code?: string;
+  showQR?: boolean;
+  completedAt?: string;
+  totalComparisons?: number;
+  completedComparisons?: number;
 }
 
 interface EvaluatorAssignmentProps {
@@ -27,6 +32,13 @@ interface EvaluatorAssignmentProps {
 
 const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, onComplete }) => {
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
+  const [showBulkQR, setShowBulkQR] = useState(false);
+  const [evaluationStats, setEvaluationStats] = useState<{
+    total: number;
+    pending: number;
+    active: number;
+    completed: number;
+  }>({ total: 0, pending: 0, active: 0, completed: 0 });
 
   useEffect(() => {
     // 실제 DB에서 평가자 데이터 로드
@@ -50,6 +62,9 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
         
         setEvaluators(convertedEvaluators);
         console.log(`✅ Loaded ${convertedEvaluators.length} evaluators from DB for project ${projectId}`);
+        
+        // 통계 업데이트
+        updateEvaluationStats(convertedEvaluators);
       } catch (error) {
         console.error('❌ Failed to load evaluators from DB:', error);
         setEvaluators([]);
@@ -72,7 +87,23 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
   // };
 
   const generateAccessKey = (): string => {
-    return Math.random().toString(36).substring(2, 10).toUpperCase();
+    return 'KEY_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+  };
+
+  const updateEvaluationStats = (evaluatorList: Evaluator[]) => {
+    const stats = {
+      total: evaluatorList.length,
+      pending: evaluatorList.filter(e => e.status === 'pending').length,
+      active: evaluatorList.filter(e => e.status === 'active').length,
+      completed: evaluatorList.filter(e => e.status === 'completed').length
+    };
+    setEvaluationStats(stats);
+  };
+
+  const toggleQRCode = (evaluatorId: string) => {
+    setEvaluators(prev => prev.map(e => 
+      e.id === evaluatorId ? { ...e, showQR: !e.showQR } : e
+    ));
   };
 
   const validateEvaluator = (evaluator: { name: string; email: string }): boolean => {
@@ -223,9 +254,30 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
             <h4 className="font-medium text-purple-900 mb-2">👥 평가자 배정 가이드</h4>
             <ul className="text-sm text-purple-700 space-y-1">
               <li>• 각 평가자에게 고유한 코드와 초대 링크가 부여됩니다</li>
+              <li>• QR코드를 통해 모바일에서도 쉽게 평가에 참여할 수 있습니다</li>
               <li>• 이메일을 통해 평가 참여 초대를 보낼 수 있습니다</li>
               <li>• 평가자별 진행률을 실시간으로 모니터링할 수 있습니다</li>
             </ul>
+          </div>
+
+          {/* 평가 진행 현황 통계 */}
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-white border rounded-lg p-3">
+              <div className="text-2xl font-bold text-gray-900">{evaluationStats.total}</div>
+              <div className="text-sm text-gray-500">전체 평가자</div>
+            </div>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <div className="text-2xl font-bold text-yellow-800">{evaluationStats.pending}</div>
+              <div className="text-sm text-yellow-700">대기중</div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="text-2xl font-bold text-blue-800">{evaluationStats.active}</div>
+              <div className="text-sm text-blue-700">진행중</div>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="text-2xl font-bold text-green-800">{evaluationStats.completed}</div>
+              <div className="text-sm text-green-700">완료</div>
+            </div>
           </div>
 
           {/* Current Evaluators List */}
@@ -292,7 +344,26 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
                               >
                                 📋 링크 복사
                               </button>
+                              <button
+                                onClick={() => toggleQRCode(evaluator.id!)}
+                                className="text-xs bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition-colors"
+                              >
+                                {evaluator.showQR ? '🔒 QR 숨기기' : '📱 QR 보기'}
+                              </button>
                             </div>
+                            {evaluator.showQR && evaluator.inviteLink && (
+                              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                                <QRCode 
+                                  value={evaluator.inviteLink} 
+                                  size={128}
+                                  level="M"
+                                  includeMargin={true}
+                                />
+                                <p className="text-xs text-gray-500 mt-2">
+                                  모바일 기기로 스캔하여 평가 시작
+                                </p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

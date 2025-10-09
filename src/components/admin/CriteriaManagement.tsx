@@ -639,6 +639,12 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
 
   const processHierarchicalImport = async (allCriteria: Criterion[]) => {
     console.log('🔄 계층구조 유지하여 저장 시작:', allCriteria);
+    console.log('🎯 상세 계층 분석:', {
+      전체: allCriteria.length,
+      레벨1: allCriteria.filter(c => c.level === 1).length,
+      레벨2: allCriteria.filter(c => c.level === 2).length,
+      레벨3: allCriteria.filter(c => c.level === 3).length
+    });
     
     try {
       // 레벨 순서대로 정렬하여 부모부터 먼저 저장
@@ -650,12 +656,17 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       
       const idMapping = new Map<string, string>(); // 임시 ID를 실제 저장된 ID로 매핑
       const savedCriteria: any[] = [];
+      const criteriaToSave: any[] = []; // 대량 저장을 위한 배열
       
+      // 먼저 모든 데이터를 준비하고 ID 매핑만 처리
       for (const criterion of sortedCriteria) {
         // 부모 ID 매핑
         let mappedParentId: string | null = null;
         if (criterion.parent_id && idMapping.has(criterion.parent_id)) {
           mappedParentId = idMapping.get(criterion.parent_id)!;
+        } else if (criterion.parent_id) {
+          // 부모 ID가 있지만 매핑이 안 된 경우 경고
+          console.warn(`⚠️ 부모 ID 매핑 실패: ${criterion.name}의 부모 ${criterion.parent_id}를 찾을 수 없음`);
         }
         
         const criterionData = {
@@ -665,13 +676,15 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
           parent_id: mappedParentId,
           level: criterion.level,
           position: criterion.order || 1,
-          order: criterion.order || 1
+          order: criterion.order || 1,
+          tempId: criterion.id // 임시 ID 저장
         };
         
-        console.log(`💾 기준 저장 시도 (레벨 ${criterion.level}):`, {
+        criteriaToSave.push(criterionData);
+        console.log(`📦 준비된 기준 (레벨 ${criterion.level}):`, {
           name: criterion.name,
           parent_id: mappedParentId,
-          level: criterion.level
+          tempId: criterion.id
         });
         
         try {
