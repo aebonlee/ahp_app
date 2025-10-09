@@ -240,7 +240,7 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
 
   return (
     <div className="space-y-6">
-      <Card title="2-2단계 — 대안추가">
+      <Card title="대안 추가">
         <div className="space-y-6">
           {/* 논문 작성 권장 구조 안내 */}
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 p-4 rounded-r-lg mb-4">

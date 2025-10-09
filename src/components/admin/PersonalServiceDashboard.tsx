@@ -3316,7 +3316,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             {(() => {
               const project = projects.find(p => p.id === selectedProjectId);
               return project ? (
-                <Card title={`2-4단계 — 모델 구축: ${project.title}`}>
+                <Card title={`모델 구축: ${project.title}`}>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
                       <h4 className="font-medium mb-3">프로젝트 정보</h4>

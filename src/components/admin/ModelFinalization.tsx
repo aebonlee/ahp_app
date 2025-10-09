@@ -107,7 +107,7 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
   if (loading) {
     return (
       <div className="space-y-6">
-        <Card title="2-4단계 — 모델 구축">
+        <Card title="모델 구축">
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>

@@ -261,7 +261,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
 
   return (
     <div className="space-y-6">
-      <Card title="2-3단계 — 평가자 배정">
+      <Card title="평가자 배정">
         <div className="space-y-6">
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
             <h4 className="font-medium text-purple-900 mb-2">👥 평가자 배정 가이드</h4>

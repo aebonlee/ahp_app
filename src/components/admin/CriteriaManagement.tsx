@@ -384,7 +384,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
 
   return (
     <div className="space-y-6">
-      <Card title="2-1단계 — 평가 기준 설정">
+      <Card title="평가 기준 설정">
         <div className="space-y-6">
           {/* 상단 안내 메시지 */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
