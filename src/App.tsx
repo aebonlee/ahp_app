@@ -111,6 +111,21 @@ function App() {
       return 'evaluator-workflow';
     }
     
+    // URL 파라미터 매핑 (URL에서 사용되는 짧은 이름 -> 내부 탭 이름)
+    const tabMapping: { [key: string]: string } = {
+      'evaluators': 'evaluator-management',  // evaluators -> evaluator-management 매핑
+      'monitoring': 'progress-monitoring',
+      'analysis': 'results-analysis',
+      'ai-paper': 'ai-paper-assistant',
+      'export': 'export-reports',
+      'workshop': 'workshop-management',
+      'dss': 'decision-support-system',
+      'settings': 'personal-settings'
+    };
+    
+    // URL 파라미터를 내부 탭 이름으로 변환
+    const mappedTab = tabParam && tabMapping[tabParam] ? tabMapping[tabParam] : tabParam;
+    
     // tab 파라미터가 있고 유효한 탭이면 해당 탭으로, 아니면 'home'
     const validTabs = [
       'home', 'user-guide', 'evaluator-mode', 'evaluator-workflow',
@@ -122,8 +137,8 @@ function App() {
       'ahp-analysis'
     ];
     
-    if (tabParam && validTabs.includes(tabParam)) {
-      return tabParam;
+    if (mappedTab && validTabs.includes(mappedTab)) {
+      return mappedTab;
     }
     
     return 'home';
@@ -195,6 +210,21 @@ function App() {
       
       // 로그인한 사용자의 경우에만 다른 탭 처리
       if (user) {
+        // URL 파라미터 매핑 (URL에서 사용되는 짧은 이름 -> 내부 탭 이름)
+        const tabMapping: { [key: string]: string } = {
+          'evaluators': 'evaluator-management',  // evaluators -> evaluator-management 매핑
+          'monitoring': 'progress-monitoring',
+          'analysis': 'results-analysis',
+          'ai-paper': 'ai-paper-assistant',
+          'export': 'export-reports',
+          'workshop': 'workshop-management',
+          'dss': 'decision-support-system',
+          'settings': 'personal-settings'
+        };
+        
+        // URL 파라미터를 내부 탭 이름으로 변환
+        const mappedTab = tabParam && tabMapping[tabParam] ? tabMapping[tabParam] : tabParam;
+        
         const validTabs = [
           'home', 'personal-service', 'demographic-survey', 
           'my-projects', 'project-creation', 'project-workflow', 'model-builder',
@@ -203,8 +233,8 @@ function App() {
           'decision-support-system', 'personal-settings'
         ];
         
-        if (tabParam && validTabs.includes(tabParam)) {
-          setActiveTab(tabParam);
+        if (mappedTab && validTabs.includes(mappedTab)) {
+          setActiveTab(mappedTab);
         }
       }
     };

@@ -45,6 +45,20 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     try {
       const result = TextParser.parseText(inputText);
       
+      // 파싱 결과 디버깅
+      console.log('📝 파싱 결과:', {
+        total: result.criteria.length,
+        byLevel: result.criteria.reduce((acc, c) => {
+          acc[c.level] = (acc[c.level] || 0) + 1;
+          return acc;
+        }, {} as Record<number, number>),
+        details: result.criteria.map(c => ({
+          name: c.name,
+          level: c.level,
+          description: c.description
+        }))
+      });
+      
       // 기존 기준과의 중복 검사
       const existingNames = getAllCriteria(existingCriteria).map(c => c.name.toLowerCase());
       const duplicates = result.criteria.filter(c => 
@@ -76,36 +90,33 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     // 파싱된 기준을 실제 Criterion 객체로 변환
     const convertedCriteria = convertParsedCriteria(parseResult.criteria);
     
+    console.log('✅ 변환된 기준:', {
+      total: convertedCriteria.length,
+      hierarchy: convertedCriteria
+    });
+    
     // 전체 계층 구조를 유지하면서 import
     onImport(convertedCriteria);
   };
 
   const convertParsedCriteria = (parsedCriteria: any[]): Criterion[] => {
-    const criteria: Criterion[] = [];
-    const levelStack: Criterion[] = []; // 각 레벨의 최근 부모를 추적하는 스택
-
-    // 원본 순서 유지 (정렬하지 않음)
+    const allCriteria: Criterion[] = [];
+    const levelParentMap: Map<number, Criterion> = new Map();
+    
+    // 원본 순서대로 처리
     parsedCriteria.forEach((parsed, index) => {
-      const id = `criterion-${Date.now()}-${index}`;
-
-      // 부모 ID 찾기
+      const id = `criterion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // 부모 찾기: 현재 레벨보다 1 낮은 레벨의 마지막 노드
       let parent_id: string | null = null;
       if (parsed.level > 1) {
-        // 현재 레벨보다 높은 레벨들을 스택에서 제거
-        while (levelStack.length > 0 && levelStack[levelStack.length - 1].level >= parsed.level) {
-          levelStack.pop();
-        }
-        
-        // 스택에서 가장 최근의 부모 찾기 (현재 레벨보다 1 낮은 레벨)
-        if (levelStack.length > 0) {
-          // 스택의 마지막 항목이 직접적인 부모여야 함
-          const potentialParent = levelStack[levelStack.length - 1];
-          if (potentialParent.level === parsed.level - 1) {
-            parent_id = potentialParent.id;
-          }
+        const parentLevel = parsed.level - 1;
+        const parentNode = levelParentMap.get(parentLevel);
+        if (parentNode) {
+          parent_id = parentNode.id;
         }
       }
-
+      
       const criterion: Criterion = {
         id,
         name: parsed.name,
@@ -116,15 +127,20 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
         weight: 1,
         order: index + 1
       };
-
-      criteria.push(criterion);
       
-      // 현재 기준을 스택에 추가 (잠재적 부모가 될 수 있음)
-      levelStack.push(criterion);
+      allCriteria.push(criterion);
+      
+      // 현재 레벨의 마지막 노드로 업데이트 (다음 같은/낮은 레벨의 부모가 될 수 있음)
+      levelParentMap.set(parsed.level, criterion);
+      
+      // 더 높은 레벨들은 제거 (더 이상 부모가 될 수 없음)
+      for (let level = parsed.level + 1; level <= 5; level++) {
+        levelParentMap.delete(level);
+      }
     });
-
+    
     // 계층구조 구성
-    return buildHierarchy(criteria);
+    return buildHierarchy(allCriteria);
   };
 
   const buildHierarchy = (flatCriteria: Criterion[]): Criterion[] => {
@@ -139,10 +155,8 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
       });
     });
 
-    // 계층구조 구성 - 레벨 순서대로 처리
-    const sortedCriteria = [...flatCriteria].sort((a, b) => a.level - b.level);
-    
-    sortedCriteria.forEach(criterion => {
+    // 계층구조 구성
+    flatCriteria.forEach(criterion => {
       const criterionObj = criteriaMap.get(criterion.id)!;
       
       if (criterion.parent_id && criteriaMap.has(criterion.parent_id)) {
@@ -158,24 +172,21 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
       }
     });
 
+    // 정렬
+    const sortByOrder = (items: Criterion[]) => {
+      items.sort((a, b) => (a.order || 0) - (b.order || 0));
+      items.forEach(item => {
+        if (item.children && item.children.length > 0) {
+          sortByOrder(item.children);
+        }
+      });
+    };
+    
+    sortByOrder(rootCriteria);
     return rootCriteria;
   };
 
   const getAllCriteria = (criteriaList: Criterion[]): Criterion[] => {
-    const all: Criterion[] = [];
-    const traverse = (items: Criterion[]) => {
-      items.forEach(item => {
-        all.push(item);
-        if (item.children && item.children.length > 0) {
-          traverse(item.children);
-        }
-      });
-    };
-    traverse(criteriaList);
-    return all;
-  };
-
-  const getAllFlatCriteria = (criteriaList: Criterion[]): Criterion[] => {
     const all: Criterion[] = [];
     const traverse = (items: Criterion[]) => {
       items.forEach(item => {
@@ -231,16 +242,40 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 
             {activeTab === 'input' && (
               <div className="space-y-4">
-                {/* 안내 메시지 */}
+                {/* 안내 메시지 - 더 자세하게 */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-2">📋 지원하는 입력 형식</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• <strong>마크다운 리스트:</strong> - 또는 * 로 시작, 들여쓰기로 레벨 구분</li>
-                    <li>• <strong>번호 매기기:</strong> 1., 1.1., 1-1. 등의 형식</li>
-                    <li>• <strong>들여쓰기:</strong> 탭 또는 공백으로 계층 구분</li>
-                    <li>• <strong>설명 추가:</strong> "기준명 - 설명", "기준명: 설명", "기준명 (설명)" 형식</li>
-                    <li>• <strong>Excel 복사:</strong> 셀에서 복사한 내용을 그대로 붙여넣기 가능</li>
-                  </ul>
+                  <h4 className="font-medium text-blue-900 mb-3">📋 계층구조 입력 가이드</h4>
+                  <div className="text-sm text-blue-700 space-y-3">
+                    <div>
+                      <strong>📝 마크다운 리스트 형식</strong>
+                      <div className="ml-4 mt-1 font-mono text-xs bg-white p-2 rounded">
+                        - 상위기준<br/>
+                        &nbsp;&nbsp;- 하위기준 (2칸 들여쓰기)<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;- 세부기준 (4칸 들여쓰기)
+                      </div>
+                    </div>
+                    <div>
+                      <strong>🔢 번호 매기기 형식</strong>
+                      <div className="ml-4 mt-1 font-mono text-xs bg-white p-2 rounded">
+                        1. 상위기준<br/>
+                        &nbsp;&nbsp;1.1. 하위기준<br/>
+                        &nbsp;&nbsp;1.2. 하위기준
+                      </div>
+                    </div>
+                    <div>
+                      <strong>📐 들여쓰기 형식</strong>
+                      <div className="ml-4 mt-1 font-mono text-xs bg-white p-2 rounded">
+                        상위기준<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;하위기준 (4칸 들여쓰기)<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;세부기준 (8칸 들여쓰기)
+                      </div>
+                    </div>
+                    <div className="text-yellow-700 bg-yellow-50 p-2 rounded">
+                      💡 <strong>중요:</strong> 들여쓰기는 정확한 공백 수가 중요합니다!<br/>
+                      • 마크다운: 2칸씩 증가<br/>
+                      • 들여쓰기: 4칸씩 증가
+                    </div>
+                  </div>
                 </div>
 
                 {/* 텍스트 입력 영역 */}
@@ -281,25 +316,42 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                   <div className="space-y-4">
                     {parseResult.success ? (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <h4 className="font-medium text-green-900 mb-2">
+                        <h4 className="font-medium text-green-900 mb-3">
                           ✅ 분석 완료 ({parseResult.criteria.length}개 기준)
                         </h4>
-                        <div className="text-sm text-green-700 space-y-1">
-                          {parseResult.criteria.map((criterion: any, index: number) => (
-                            <div key={index} className="flex items-center">
-                              <span className="mr-2">
-                                {'  '.repeat(criterion.level - 1)}
-                                {criterion.level === 1 ? '📁' : 
-                                 criterion.level === 2 ? '📂' : 
-                                 criterion.level === 3 ? '📄' : 
-                                 criterion.level === 4 ? '📝' : '🔹'}
-                              </span>
-                              <span className="font-medium">{criterion.name}</span>
-                              {criterion.description && (
-                                <span className="ml-2 text-green-600">- {criterion.description}</span>
-                              )}
-                            </div>
-                          ))}
+                        <div className="space-y-2">
+                          {/* 레벨별 요약 */}
+                          <div className="text-sm text-green-700 mb-3">
+                            {(() => {
+                              const levelCounts = parseResult.criteria.reduce((acc: any, c: any) => {
+                                acc[c.level] = (acc[c.level] || 0) + 1;
+                                return acc;
+                              }, {});
+                              return Object.entries(levelCounts).map(([level, count]) => (
+                                <span key={level} className="inline-block mr-4">
+                                  {`레벨 ${level}: ${count}개`}
+                                </span>
+                              ));
+                            })()}
+                          </div>
+                          {/* 계층구조 표시 */}
+                          <div className="bg-white rounded p-3 text-sm">
+                            {parseResult.criteria.map((criterion: any, index: number) => (
+                              <div key={index} className="py-1">
+                                <span style={{ paddingLeft: `${(criterion.level - 1) * 20}px` }}>
+                                  {criterion.level === 1 && '📁 '}
+                                  {criterion.level === 2 && '📂 '}
+                                  {criterion.level === 3 && '📄 '}
+                                  {criterion.level === 4 && '📝 '}
+                                  {criterion.level >= 5 && '🔹 '}
+                                  <span className="font-medium">{criterion.name}</span>
+                                  {criterion.description && (
+                                    <span className="ml-2 text-gray-600">- {criterion.description}</span>
+                                  )}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -331,9 +383,9 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                     <div key={key} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium text-gray-900">
-                          {key === 'markdown' && '📝 마크다운 리스트 형식'}
+                          {key === 'markdown' && '📝 마크다운 리스트 형식 (2칸씩 들여쓰기)'}
                           {key === 'numbered' && '🔢 번호 매기기 형식'}
-                          {key === 'indented' && '📐 들여쓰기 형식'}
+                          {key === 'indented' && '📐 들여쓰기 형식 (4칸씩 들여쓰기)'}
                         </h4>
                         <Button
                           size="sm"
@@ -343,7 +395,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                           사용하기
                         </Button>
                       </div>
-                      <pre className="text-xs bg-gray-50 p-3 rounded border overflow-x-auto">
+                      <pre className="text-xs bg-gray-50 p-3 rounded border overflow-x-auto whitespace-pre">
                         {text}
                       </pre>
                     </div>

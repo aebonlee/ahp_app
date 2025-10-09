@@ -223,7 +223,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           name: criterion.name,
           description: criterion.description || '',
           parent_id: criterion.parent_id,
-          parent: criterion.parent_id,
+          parent: criterion.parent_id || undefined,  // parent는 parent_id가 있을 때만 전달
           level: criterion.level || 1,
           order: criterion.order || 0,
           position: criterion.order || 0,
