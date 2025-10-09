@@ -282,13 +282,25 @@ class CleanDataService {
         const existingResponse = await criteriaApi.getCriteria(data.project_id);
         const existingCriteria = existingResponse.success && existingResponse.data ? existingResponse.data : [];
         
-        // 중복 검사
+        // 중복 검사 - 동일한 레벨과 부모를 가진 경우만 체크
+        // parent_id 비교 시 null, undefined, 빈 문자열 모두 동일하게 처리
+        const normalizeParentId = (id: any) => (!id || id === '') ? null : id;
         const isDuplicate = existingCriteria.some((c: any) => 
           c.name.toLowerCase() === data.name.toLowerCase() && 
+          c.level === data.level &&
+          normalizeParentId(c.parent_id) === normalizeParentId(data.parent_id) &&
           (!c.type || c.type === 'criteria')
         );
         if (isDuplicate) {
-          throw new Error(`동일한 기준명이 이미 존재합니다: "${data.name}"`);
+          console.warn(`⚠️ 동일한 기준명이 이미 존재합니다: "${data.name}" (레벨: ${data.level}, parent: ${data.parent_id})`);
+          // 일괄 입력의 경우 중복을 무시하고 기존 데이터 반환
+          console.log('🔄 일괄 입력 중 중복 감지 - 기존 데이터 반환');
+          const existingItem = existingCriteria.find((c: any) => 
+            c.name.toLowerCase() === data.name.toLowerCase() && 
+            c.level === data.level &&
+            normalizeParentId(c.parent_id) === normalizeParentId(data.parent_id)
+          );
+          return existingItem || null;
         }
       } catch (dupError) {
         console.warn('⚠️ 중복 검사 중 오류 (계속 진행):', dupError);
@@ -300,7 +312,12 @@ class CleanDataService {
         type: 'criteria'
       });
       
-      console.log('📥 PostgreSQL DB 기준 생성 API 응답:', response);
+      console.log('📥 PostgreSQL DB 기준 생성 API 응답:', {
+        success: response.success,
+        error: response.error,
+        hasData: !!response.data,
+        dataId: response.data?.id
+      });
       
       if (response.success && response.data) {
         console.log('✅ PostgreSQL DB에 기준 생성 성공:', response.data);
@@ -320,7 +337,11 @@ class CleanDataService {
       
       const errorMsg = response.error || '기준 생성에 실패했습니다.';
       console.error('❌ PostgreSQL DB 저장 실패:', errorMsg);
-      console.error('🚨 백엔드 PostgreSQL DB 연결을 확인해주세요');
+      console.error('🚨 백엔드 API 응답 상세:', {
+        requestData: data,
+        responseError: response.error,
+        responseMessage: response.message
+      });
       throw new Error(errorMsg);
     } catch (error) {
       console.error('❌ PostgreSQL DB 기준 생성 중 오류:', error);

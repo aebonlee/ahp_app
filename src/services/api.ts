@@ -456,7 +456,12 @@ export const criteriaApi = {
     
     console.log('📤 Django Criteria API 요청:', {
       endpoint: '/api/service/projects/criteria/',
-      data: requestData
+      data: requestData,
+      projectId: projectId,
+      projectIdType: typeof projectId,
+      name: data.name,
+      level: data.level,
+      parent_id: data.parent_id
     });
     
     // CriteriaViewSet의 create endpoint 사용
@@ -465,12 +470,24 @@ export const criteriaApi = {
       body: JSON.stringify(requestData)
     });
     
+    console.log('📥 Django Criteria API 응답:', {
+      success: response.success,
+      error: response.error,
+      message: response.message,
+      hasData: !!response.data,
+      dataId: response.data?.id
+    });
+    
     if (response.success) {
-      console.log('✅ PostgreSQL DB에 기준 저장 성공');
+      console.log('✅ PostgreSQL DB에 기준 저장 성공:', response.data);
       return response;
     }
     
-    console.error('❌ Criteria API 실패:', response.error);
+    console.error('❌ Criteria API 실패 상세:', {
+      error: response.error,
+      message: response.message,
+      requestData: requestData
+    });
     return response;
   },
 

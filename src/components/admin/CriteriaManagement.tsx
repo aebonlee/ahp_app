@@ -552,7 +552,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
           order: criterion.order || 1
         };
         
-        console.log(`💾 기준 저장 (레벨 ${criterion.level}):`, {
+        console.log(`💾 기준 저장 시도 (레벨 ${criterion.level}):`, {
           name: criterion.name,
           parent_id: mappedParentId,
           level: criterion.level
@@ -564,10 +564,18 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
             // 임시 ID를 실제 저장된 ID로 매핑
             idMapping.set(criterion.id, savedCriterion.id);
             savedCriteria.push(savedCriterion);
+            console.log(`✅ 기준 "${criterion.name}" 저장 성공 (ID: ${savedCriterion.id})`);
+          } else if (savedCriterion) {
+            // 이미 존재하는 기준이 반환된 경우
+            console.log(`♾️ 기준 "${criterion.name}"은 이미 존재함 (ID: ${savedCriterion.id})`);
+            idMapping.set(criterion.id, savedCriterion.id);
+            savedCriteria.push(savedCriterion);
           }
-        } catch (saveError) {
+        } catch (saveError: any) {
           console.error(`기준 저장 실패 (${criterion.name}):`, saveError);
-          throw new Error(`기준 "${criterion.name}" 저장 실패`);
+          const errorMessage = saveError.message || saveError.error || '알 수 없는 오류';
+          // 중복 메시지인 경우 처리를 변경하지 않고 오류를 던짐
+          throw new Error(`기준 "${criterion.name}" 저장 실패: ${errorMessage}`);
         }
       }
       
