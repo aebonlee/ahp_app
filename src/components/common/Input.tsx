@@ -14,6 +14,8 @@ interface InputProps {
   rows?: number;
   icon?: React.ReactNode;
   variant?: 'default' | 'filled' | 'bordered';
+  min?: string | number;
+  max?: string | number;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -29,7 +31,9 @@ const Input: React.FC<InputProps> = ({
   className = '',
   rows = 3,
   icon,
-  variant = 'default'
+  variant = 'default',
+  min,
+  max
 }) => {
   // Blocksy 스타일 기본 클래스
   const baseClasses = 'block w-full px-4 py-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-1 sm:text-sm font-medium rounded-blocksy';
@@ -94,6 +98,8 @@ const Input: React.FC<InputProps> = ({
             disabled={disabled}
             required={required}
             className={inputClasses}
+            min={min}
+            max={max}
           />
         )}
       </div>
