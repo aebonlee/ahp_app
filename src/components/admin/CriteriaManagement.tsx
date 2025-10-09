@@ -470,35 +470,36 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         }
         
         // 기존 데이터 삭제
+        console.log('🗑️ 기존 기준 삭제 중...');
         for (const criterion of criteria) {
-          if (criterion.id) {
-            await dataService.deleteCriteria(criterion.id, projectId);
+          if (criterion.id && criterion.id !== 'temp') {
+            try {
+              await dataService.deleteCriteria(criterion.id, projectId);
+            } catch (deleteError) {
+              console.error('기준 삭제 실패:', deleteError);
+            }
           }
         }
+        
+        // 상태 초기화
+        setCriteria([]);
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
       
       // 계층구조 분석
       const rootCriteria = importedCriteria.filter(c => c.level === 1);
       const hierarchicalCriteria = importedCriteria.filter(c => c.level > 1);
       
-      if (hierarchicalCriteria.length > 0) {
-        // 계층구조가 있는 경우 사용자에게 옵션 제공
-        setPendingImport({
-          rootCriteria,
-          subCriteria: hierarchicalCriteria,
-          allCriteria: importedCriteria
-        });
-        setShowImportDialog(true);
-        setShowBulkInput(false);
-        return;
-      }
+      console.log(`📊 가져올 기준 분석: 총 ${importedCriteria.length}개 (레벨1: ${rootCriteria.length}개, 하위: ${hierarchicalCriteria.length}개)`);
       
-      // 평면 구조인 경우 바로 저장
+      // 직접 계층구조 저장 처리
       await processHierarchicalImport(importedCriteria);
       setShowBulkInput(false);
+      
     } catch (error) {
       console.error('Failed to bulk import criteria:', error);
       alert(`❌ 일괄 가져오기 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      setShowBulkInput(false);
     }
   };
 
