@@ -4,6 +4,8 @@
 
 전문가급 의사결정 지원을 위한 완전한 웹 애플리케이션
 
+test@test.com / test123!
+
 [![Deploy Status](https://img.shields.io/badge/deploy-success-brightgreen)](https://aebonlee.github.io/ahp_app/)
 [![Backend Status](https://img.shields.io/badge/backend-online-brightgreen)](https://ahp-django-backend.onrender.com)
 [![Database](https://img.shields.io/badge/database-postgresql-blue)](https://ahp-django-backend.onrender.com/db-status/)
