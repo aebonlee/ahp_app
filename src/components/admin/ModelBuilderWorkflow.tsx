@@ -203,6 +203,7 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
         return (
           <CriteriaManagement
             projectId={projectId}
+            projectTitle={projectTitle}
             onCriteriaChange={handleCriteriaChange}
             onComplete={() => handleStepChange('alternatives')}
           />

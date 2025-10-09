@@ -7,1322 +7,563 @@ import HierarchyTreeBuilder from '../modeling/HierarchyTreeBuilder';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
 import CriteriaTemplates from '../criteria/CriteriaTemplates';
 import VisualCriteriaBuilder from '../criteria/VisualCriteriaBuilder';
-import dataService from '../../services/dataService_clean';
-import { CriteriaData } from '../../services/api';
+import cleanDataService from '../../services/dataService_clean';
 
-interface Criterion extends Omit<CriteriaData, 'project_id' | 'position' | 'id'> {
-  id: string; // required
-  level: number; // override to make required
+interface Criterion {
+  id: string;
+  name: string;
+  description?: string;
+  parent_id?: string | null;
+  level: number;
+  order?: number;
   children?: Criterion[];
   weight?: number;
+  type?: 'criteria';
 }
 
 interface CriteriaManagementProps {
   projectId: string;
   projectTitle?: string;
-  onComplete: () => void;
-  onCriteriaChange?: (criteriaCount: number) => void;
+  onCriteriaChange: (count: number) => void;
+  onComplete?: () => void;
 }
 
-const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, projectTitle, onComplete, onCriteriaChange }) => {
+const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ 
+  projectId, 
+  onCriteriaChange, 
+  onComplete 
+}) => {
+  // 현재 작업 중인 기준 (화면 표시용)
   const [criteria, setCriteria] = useState<Criterion[]>([]);
-  const [useVisualBuilder, setUseVisualBuilder] = useState(false);
+  // 백엔드에 저장된 기준
+  const [savedCriteria, setSavedCriteria] = useState<Criterion[]>([]);
+  // 임시 저장된 기준 (템플릿/일괄입력 등에서 온 데이터)
+  const [tempCriteria, setTempCriteria] = useState<Criterion[]>([]);
+  // 임시 변경사항 있는지 여부
+  const [hasTempChanges, setHasTempChanges] = useState(false);
 
-  // CriteriaData를 Criterion으로 변환
-  const convertToCriterion = (data: CriteriaData): Criterion => ({
-    id: data.id || `crit_${Date.now()}_${Math.random()}`,
-    name: data.name,
-    description: data.description,
-    parent_id: data.parent_id,
-    level: data.level || 1,
-    order: data.order,
-    children: [],
-    weight: 0
-  });
-
-  // Criterion을 CriteriaData로 변환
-  const convertToCriteriaData = (crit: Partial<Criterion & { position?: number }>): Omit<CriteriaData, 'id'> => ({
-    project_id: projectId,
-    name: crit.name || '',
-    description: crit.description || '',
-    parent_id: crit.parent_id,
-    level: crit.level || 1,
-    position: crit.position || crit.order || 0,
-    order: crit.order
-  });
-  const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
-  const [showHelp, setShowHelp] = useState(false);
-  const [showBulkInput, setShowBulkInput] = useState(false);
-  const [showImportDialog, setShowImportDialog] = useState(false);
+  // UI 상태
   const [showTemplates, setShowTemplates] = useState(false);
-  const [showVisualBuilder, setShowVisualBuilder] = useState(false);
-  const [pendingImport, setPendingImport] = useState<{
-    rootCriteria: Criterion[];
-    subCriteria: Criterion[];
-    allCriteria: Criterion[];
-  } | null>(null);
+  const [showBulkInput, setShowBulkInput] = useState(false);
+  const [activeInputMode, setActiveInputMode] = useState<'template' | 'bulk' | 'visual' | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    // 백엔드에서 실제 프로젝트별 기준 데이터 로드
-    const loadProjectCriteria = async () => {
-      try {
-        console.log(`🔍 프로젝트 ${projectId}의 기준 데이터 로드 중...`);
-        const criteriaData = await dataService.getCriteria(projectId);
-        const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-        setCriteria(convertedCriteria);
-        console.log(`✅ ${convertedCriteria.length}개 기준 로드 완료`);
-        
-        // 부모 컴포넌트에 개수 알림
-        if (onCriteriaChange) {
-          onCriteriaChange(convertedCriteria.length);
+  // 백엔드에서 기준 로드
+  const loadCriteria = async () => {
+    try {
+      setIsLoading(true);
+      const loadedCriteria = await cleanDataService.getCriteria(projectId);
+      
+      // parent_id, level, order 필드 정규화
+      const normalizedCriteria = (loadedCriteria || []).map((c, index) => ({
+        id: c.id || `criterion_${Date.now()}_${index}`,
+        name: c.name,
+        description: c.description,
+        parent_id: c.parent_id || null,
+        level: c.level || 1,
+        order: c.order || index + 1,
+        weight: c.weight || 1,
+        type: 'criteria' as const,
+        children: []
+      }));
+      
+      // 계층 구조 구성
+      const hierarchicalCriteria = buildHierarchy(normalizedCriteria);
+      
+      setCriteria(hierarchicalCriteria);
+      setSavedCriteria(hierarchicalCriteria);
+      setTempCriteria([]);
+      setHasTempChanges(false);
+    } catch (error) {
+      console.error('기준 로드 실패:', error);
+      setCriteria([]);
+      setSavedCriteria([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 계층 구조 구성
+  const buildHierarchy = (flatCriteria: Criterion[]): Criterion[] => {
+    const criteriaMap = new Map<string, Criterion>();
+    const rootCriteria: Criterion[] = [];
+
+    // 모든 기준을 맵에 저장
+    flatCriteria.forEach(criterion => {
+      criteriaMap.set(criterion.id, { ...criterion, children: [] });
+    });
+
+    // 계층 구조 구성
+    flatCriteria.forEach(criterion => {
+      const criterionObj = criteriaMap.get(criterion.id)!;
+      
+      if (criterion.parent_id && criteriaMap.has(criterion.parent_id)) {
+        const parent = criteriaMap.get(criterion.parent_id);
+        if (parent) {
+          parent.children = parent.children || [];
+          parent.children.push(criterionObj);
         }
-      } catch (error) {
-        console.error('❌ 기준 데이터 로드 실패:', error);
-        setCriteria([]);
-        if (onCriteriaChange) {
-          onCriteriaChange(0);
-        }
+      } else {
+        // 부모가 없거나 레벨 1인 경우 루트로 처리
+        rootCriteria.push(criterionObj);
       }
-    };
+    });
 
+    // 각 레벨에서 order로 정렬
+    const sortByOrder = (items: Criterion[]) => {
+      items.sort((a, b) => (a.order || 0) - (b.order || 0));
+      items.forEach(item => {
+        if (item.children && item.children.length > 0) {
+          sortByOrder(item.children);
+        }
+      });
+    };
+    
+    sortByOrder(rootCriteria);
+    return rootCriteria;
+  };
+
+  // 평면 구조로 변환
+  const flattenCriteria = (hierarchicalCriteria: Criterion[]): Criterion[] => {
+    const result: Criterion[] = [];
+    
+    const traverse = (items: Criterion[], parentId: string | null = null, level: number = 1) => {
+      items.forEach((item, index) => {
+        result.push({
+          ...item,
+          parent_id: parentId,
+          level: level,
+          order: index + 1,
+          children: undefined // children 필드 제거
+        });
+        
+        if (item.children && item.children.length > 0) {
+          traverse(item.children, item.id, level + 1);
+        }
+      });
+    };
+    
+    traverse(hierarchicalCriteria);
+    return result;
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
     if (projectId) {
-      loadProjectCriteria();
+      loadCriteria();
     }
   }, [projectId]);
 
-  // 기준이 변경될 때마다 부모 컴포넌트에 개수 알림
+  // 저장된 기준 개수가 변경되면 부모 컴포넌트에 알림
   useEffect(() => {
-    const totalCount = getAllCriteria(criteria).length;
-    if (onCriteriaChange) {
-      onCriteriaChange(totalCount);
-    }
-  }, [criteria, onCriteriaChange]);
+    const count = flattenCriteria(savedCriteria).length;
+    onCriteriaChange(count);
+  }, [savedCriteria, onCriteriaChange]);
 
-  const [evaluationMethod, setEvaluationMethod] = useState<'pairwise' | 'direct'>('pairwise');
-  const [newCriterion, setNewCriterion] = useState({ name: '', description: '', parentId: '' });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // 프로젝트별 기준 데이터 저장 (현재 미사용 - localStorage 제거됨)
-  // const saveProjectCriteria = (criteriaData: Criterion[]) => {
-  //   // localStorage 제거됨 - PostgreSQL로 데이터 저장
-  //   console.log(`Saved ${getAllCriteria(criteriaData).length} criteria for project ${projectId}`);
-  // };
-
-  const validateCriterion = (name: string): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!name.trim()) {
-      newErrors.name = '기준명을 입력해주세요.';
-    } else if (name.length < 2) {
-      newErrors.name = '기준명은 2자 이상이어야 합니다.';
-    } else {
-      // Check for duplicate names
-      const allCriteria = getAllCriteria(criteria);
-      if (allCriteria.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-        newErrors.name = '동일한 기준명이 이미 존재합니다.';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const getAllCriteria = (criteriaList: Criterion[]): Criterion[] => {
-    const all: Criterion[] = [];
-    const traverse = (items: Criterion[]) => {
-      items.forEach(item => {
-        all.push(item);
-        if (item.children) {
-          traverse(item.children);
-        }
-      });
-    };
-    traverse(criteriaList);
-    return all;
-  };
-
-  // 시각화를 위한 평면 배열 생성
-  const getFlatCriteriaForVisualization = (criteriaList: Criterion[]): Criterion[] => {
-    const flat: Criterion[] = [];
-    const traverse = (items: Criterion[], parentLevel: number = 0) => {
-      items.forEach(item => {
-        // 아이템의 실제 레벨 사용 (저장된 레벨이 있으면 사용, 없으면 부모 레벨 + 1)
-        const actualLevel = item.level || (parentLevel + 1);
-        
-        // 평면 배열에 추가 (children 제거)
-        flat.push({
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          parent_id: item.parent_id,
-          level: actualLevel,
-          weight: item.weight || 0
-        });
-        
-        // 하위 항목이 있으면 재귀적으로 처리
-        if (item.children && item.children.length > 0) {
-          traverse(item.children, actualLevel);
-        }
-      });
-    };
-    traverse(criteriaList);
-    return flat;
-  };
-
-  const handleAddCriterion = async () => {
-    console.log('🚀 CriteriaManagement handleAddCriterion 시작:', {
-      projectId,
-      criterionName: newCriterion.name,
-      criterionDescription: newCriterion.description,
-      parentId: newCriterion.parentId
-    });
-    
-    if (!validateCriterion(newCriterion.name)) {
-      console.log('❌ 유효성 검사 실패');
-      return;
-    }
-
-    // 부모가 있으면 부모 레벨 + 1, 없으면 1레벨
-    let level = 1;
-    if (newCriterion.parentId) {
-      const parent = getAllCriteria(criteria).find(c => c.id === newCriterion.parentId);
-      level = parent ? (parent.level || 1) + 1 : 2;
-    }
-    
-    // 최대 5레벨까지만 허용
-    if (level > 5) {
-      setErrors({ name: '최대 5단계까지만 기준을 생성할 수 있습니다.' });
-      return;
-    }
-
-    try {
-      const criterionData = convertToCriteriaData({
-        name: newCriterion.name,
-        description: newCriterion.description || '',
-        parent_id: newCriterion.parentId || null,
-        level,
-        order: getAllCriteria(criteria).filter(c => (c.level || 1) === level).length + 1
-      });
-
-      console.log('🔄 CriteriaManagement 기준 추가 중...', {
-        criterionData,
-        projectIdFromProps: projectId,
-        hasProjectId: !!criterionData.project_id
-      });
-      const createdCriterion = await dataService.createCriteria(criterionData);
-      
-      if (!createdCriterion) {
-        setErrors({ name: '기준 추가에 실패했습니다.' });
-        return;
-      }
-
-      console.log('✅ 기준이 성공적으로 추가되었습니다:', createdCriterion);
-      
-      // 데이터 다시 로드
-      const updatedCriteriaData = await dataService.getCriteria(projectId);
-      const convertedUpdatedCriteria = (updatedCriteriaData || []).map(convertToCriterion);
-      setCriteria(convertedUpdatedCriteria);
-      
-      setNewCriterion({ name: '', description: '', parentId: '' });
-      setErrors({});
-      
-      // 기준 개수 변경 콜백 호출
-      if (onCriteriaChange) {
-        onCriteriaChange(convertedUpdatedCriteria.length);
-      }
-    } catch (error) {
-      console.error('❌ CriteriaManagement 기준 추가 실패:', {
-        error,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-        errorStack: error instanceof Error ? error.stack : undefined,
-        projectId,
-        criterionName: newCriterion.name
-      });
-      
-      const errorMessage = error instanceof Error ? error.message : '기준 추가 중 알 수 없는 오류가 발생했습니다.';
-      setErrors({ name: `오류: ${errorMessage}` });
-    }
-  };
-
-  const handleMoveUp = async (id: string) => {
-    const criterion = criteria.find(c => c.id === id);
-    if (!criterion) return;
-    
-    // 같은 부모의 같은 레벨 기준들 찾기
-    const siblings = criteria.filter(c => 
-      c.parent_id === criterion.parent_id && 
-      c.level === criterion.level
-    ).sort((a, b) => (a.order || 0) - (b.order || 0));
-    
-    const currentIndex = siblings.findIndex(s => s.id === id);
-    if (currentIndex <= 0) return; // 이미 첫 번째
-    
-    // 순서 교환 (로컬 상태만 업데이트)
-    const updatedCriteria = [...criteria];
-    const currentIdx = updatedCriteria.findIndex(c => c.id === id);
-    const prevIdx = updatedCriteria.findIndex(c => c.id === siblings[currentIndex - 1].id);
-    
-    if (currentIdx >= 0 && prevIdx >= 0) {
-      const temp = updatedCriteria[currentIdx].order;
-      updatedCriteria[currentIdx].order = updatedCriteria[prevIdx].order;
-      updatedCriteria[prevIdx].order = temp;
-      setCriteria(updatedCriteria);
-    }
-  };
-
-  const handleMoveDown = async (id: string) => {
-    const criterion = criteria.find(c => c.id === id);
-    if (!criterion) return;
-    
-    // 같은 부모의 같은 레벨 기준들 찾기
-    const siblings = criteria.filter(c => 
-      c.parent_id === criterion.parent_id && 
-      c.level === criterion.level
-    ).sort((a, b) => (a.order || 0) - (b.order || 0));
-    
-    const currentIndex = siblings.findIndex(s => s.id === id);
-    if (currentIndex >= siblings.length - 1) return; // 이미 마지막
-    
-    // 순서 교환 (로컬 상태만 업데이트)
-    const updatedCriteria = [...criteria];
-    const currentIdx = updatedCriteria.findIndex(c => c.id === id);
-    const nextIdx = updatedCriteria.findIndex(c => c.id === siblings[currentIndex + 1].id);
-    
-    if (currentIdx >= 0 && nextIdx >= 0) {
-      const temp = updatedCriteria[currentIdx].order;
-      updatedCriteria[currentIdx].order = updatedCriteria[nextIdx].order;
-      updatedCriteria[nextIdx].order = temp;
-      setCriteria(updatedCriteria);
-    }
-  };
-
-  const handleDeleteCriterion = async (id: string) => {
-    console.log('기준 삭제:', id);
-    
-    try {
-      const success = await dataService.deleteCriteria(id, projectId);
-      
-      if (!success) {
-        console.error('❌ 기준 삭제 실패');
-        return;
-      }
-
-      console.log('✅ 기준이 삭제되었습니다:', id);
-      
-      // 데이터 다시 로드
-      const updatedCriteriaData = await dataService.getCriteria(projectId);
-      const convertedUpdatedCriteria = (updatedCriteriaData || []).map(convertToCriterion);
-      setCriteria(convertedUpdatedCriteria);
-      
-      // 기준 개수 변경 콜백 호출
-      if (onCriteriaChange) {
-        onCriteriaChange(convertedUpdatedCriteria.length);
-      }
-    } catch (error) {
-      console.error('❌ 기준 삭제 실패:', error);
-    }
-  };
-
-
-  // 상위 기준으로 선택 가능한 모든 기준 (최대 4레벨까지, 5레벨을 만들기 위해)
-  const getAvailableParentCriteria = () => {
-    const flatCriteria = getAllCriteria(criteria);
-    // 최대 4레벨까지만 상위 기준으로 선택 가능 (5레벨까지 지원)
-    return flatCriteria.filter(c => (c.level || 1) <= 4);
-  };
-
-  // 레벨별 표시 아이콘 (최소화)
-  const getLevelIcon = (level: number) => {
-    switch (level) {
-      case 1: return 'G'; // Goal
-      case 2: return 'C'; // Criteria
-      case 3: return 'A'; // Alternatives
-      case 4: return 'S'; // Sub-criteria
-      case 5: return 'D'; // Detailed criteria
-      default: return 'L';
-    }
-  };
-
-  // 레벨별 명칭 반환
-  const getLevelName = (level: number) => {
-    switch (level) {
-      case 1: return '목표(Goal)';
-      case 2: return '기준(Criteria)';
-      case 3: return '대안(Alternatives)';
-      case 4: return '하위기준(Sub-criteria)';
-      case 5: return '세부기준(Detailed)';
-      default: return `레벨 ${level}`;
-    }
-  };
-
-  const handleClearAllData = async () => {
-    if (window.confirm('경고: 모든 모델 데이터(기준 + 대안)를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+  // 초기화
+  const handleReset = async () => {
+    if (window.confirm('모든 기준을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
       try {
-        console.log('🗑️ 모델 데이터 완전 초기화 시작...');
+        setIsLoading(true);
         
-        // 1. 먼저 DB에서 모든 기준과 대안 조회
-        const [existingCriteria, existingAlternatives] = await Promise.all([
-          dataService.getCriteria(projectId),
-          dataService.getAlternatives(projectId)
-        ]);
-        
-        console.log(`📋 삭제할 데이터: 기준 ${existingCriteria.length}개, 대안 ${existingAlternatives.length}개`);
-        
-        // 2. 모든 대안 삭제 (먼저)
-        for (const alternative of existingAlternatives) {
-          if (alternative.id) {
-            try {
-              console.log(`🗑️ 대안 삭제: ${alternative.name}`);
-              await dataService.deleteAlternative(alternative.id, projectId);
-            } catch (deleteError) {
-              console.error(`대안 삭제 실패 (${alternative.name}):`, deleteError);
-            }
-          }
-        }
-        
-        // 3. 모든 기준 삭제 (레벨 역순 - 하위부터)
-        const sortedForDeletion = [...existingCriteria].sort((a, b) => (b.level || 0) - (a.level || 0));
-        for (const criterion of sortedForDeletion) {
+        // Django 백엔드에서 모든 기준 삭제
+        const existingCriteria = await cleanDataService.getCriteria(projectId);
+        for (const criterion of existingCriteria) {
           if (criterion.id) {
-            try {
-              console.log(`🗑️ 기준 삭제: ${criterion.name} (L${criterion.level})`);
-              await dataService.deleteCriteria(criterion.id, projectId);
-            } catch (deleteError) {
-              console.error(`기준 삭제 실패 (${criterion.name}):`, deleteError);
-            }
+            await cleanDataService.deleteCriteria(projectId, criterion.id);
           }
         }
         
-        // 4. 삭제 완료 후 대기 및 최종 확인
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const [finalCriteria, finalAlternatives] = await Promise.all([
-          dataService.getCriteria(projectId),
-          dataService.getAlternatives(projectId)
-        ]);
-        
-        if (finalCriteria.length > 0 || finalAlternatives.length > 0) {
-          console.warn(`⚠️ 아직 남은 데이터: 기준 ${finalCriteria.length}개, 대안 ${finalAlternatives.length}개`);
-          // 남은 데이터 강제 삭제 시도
-          await Promise.all([
-            ...finalCriteria.map(c => c.id ? dataService.deleteCriteria(c.id, projectId) : Promise.resolve()),
-            ...finalAlternatives.map(a => a.id ? dataService.deleteAlternative(a.id, projectId) : Promise.resolve())
-          ]);
-        }
-        
-        // 5. 상태 초기화
+        // 로컬 상태 초기화
         setCriteria([]);
-        setNewCriterion({ name: '', description: '', parentId: '' });
-        setErrors({});
+        setSavedCriteria([]);
+        setTempCriteria([]);
+        setHasTempChanges(false);
+        setEditingIds(new Set());
         
-        // 6. 부모 컴포넌트에 변경 사항 알림
-        if (onCriteriaChange) {
-          onCriteriaChange(0);
-        }
-        
-        console.log('✅ 모델 데이터가 완전히 초기화되었습니다.');
-        alert('✅ 모델 데이터(기준 + 대안)가 완전히 삭제되었습니다.');
-        
+        alert('모든 기준이 초기화되었습니다.');
       } catch (error) {
-        console.error('Failed to clear all model data:', error);
-        alert('❌ 모델 데이터 삭제 중 오류가 발생했습니다.');
+        console.error('기준 초기화 실패:', error);
+        alert('기준 초기화 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
       }
     }
   };
 
-
-  const handleBulkImport = async (importedCriteria: Criterion[]) => {
-    try {
-      console.log('🔄 일괄 가져오기 시작:', importedCriteria);
-      
-      if (!importedCriteria || importedCriteria.length === 0) {
-        alert('⚠️ 가져올 기준이 없습니다.');
-        return;
-      }
-      
-      // 기존 데이터가 있으면 확인
-      if (criteria.length > 0) {
-        const confirm = window.confirm('기존 기준을 모두 삭제하고 새로운 기준으로 교체하시겠습니까?');
-        if (!confirm) {
-          setShowBulkInput(false);
-          return;
-        }
-        
-        // 기존 데이터 완전 삭제 (기준 + 대안)
-        console.log('🗑️ 기존 모델 데이터 삭제 중...');
-        
-        // 1. 먼저 DB에서 모든 기준과 대안 조회
-        const [existingCriteria, existingAlternatives] = await Promise.all([
-          dataService.getCriteria(projectId),
-          dataService.getAlternatives(projectId)
-        ]);
-        
-        console.log(`📋 삭제할 데이터: 기준 ${existingCriteria.length}개, 대안 ${existingAlternatives.length}개`);
-        
-        // 2. 모든 대안 삭제 (먼저)
-        for (const alternative of existingAlternatives) {
-          if (alternative.id) {
-            try {
-              console.log(`🗑️ 대안 삭제: ${alternative.name}`);
-              await dataService.deleteAlternative(alternative.id, projectId);
-            } catch (deleteError) {
-              console.error(`대안 삭제 실패 (${alternative.name}):`, deleteError);
-            }
-          }
-        }
-        
-        // 3. 모든 기준 삭제 (레벨 역순 - 하위부터)
-        const sortedForDeletion = [...existingCriteria].sort((a, b) => (b.level || 0) - (a.level || 0));
-        for (const criterion of sortedForDeletion) {
-          if (criterion.id) {
-            try {
-              console.log(`🗑️ 기준 삭제: ${criterion.name} (L${criterion.level})`);
-              await dataService.deleteCriteria(criterion.id, projectId);
-            } catch (deleteError) {
-              console.error(`기준 삭제 실패 (${criterion.name}):`, deleteError);
-            }
-          }
-        }
-        
-        // 4. 삭제 완료 후 대기 및 최종 확인
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const [finalCriteria, finalAlternatives] = await Promise.all([
-          dataService.getCriteria(projectId),
-          dataService.getAlternatives(projectId)
-        ]);
-        
-        if (finalCriteria.length > 0 || finalAlternatives.length > 0) {
-          console.warn(`⚠️ 아직 남은 데이터: 기준 ${finalCriteria.length}개, 대안 ${finalAlternatives.length}개`);
-          
-          // 남은 데이터 강제 삭제
-          const deletePromises = [
-            ...finalCriteria.map(c => 
-              c.id ? dataService.deleteCriteria(c.id, projectId).catch(e => 
-                console.error(`강제 삭제 실패 (${c.name}):`, e)
-              ) : Promise.resolve()
-            ),
-            ...finalAlternatives.map(a => 
-              a.id ? dataService.deleteAlternative(a.id, projectId).catch(e => 
-                console.error(`강제 삭제 실패 (${a.name}):`, e)
-              ) : Promise.resolve()
-            )
-          ];
-          
-          await Promise.all(deletePromises);
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        
-        // 5. 상태 초기화
-        setCriteria([]);
-        
-        // 6. 부모 컴포넌트에 변경 사항 알림
-        if (onCriteriaChange) {
-          onCriteriaChange(0);
-        }
-        
-        console.log('✅ 기존 모델 데이터가 완전히 삭제되었습니다.');
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-      
-      // 계층구조 분석
-      const rootCriteria = importedCriteria.filter(c => c.level === 1);
-      const hierarchicalCriteria = importedCriteria.filter(c => c.level > 1);
-      
-      console.log(`📊 가져올 기준 분석: 총 ${importedCriteria.length}개 (레벨1: ${rootCriteria.length}개, 하위: ${hierarchicalCriteria.length}개)`);
-      
-      // 직접 계층구조 저장 처리
-      await processHierarchicalImport(importedCriteria);
-      setShowBulkInput(false);
-      
-    } catch (error) {
-      console.error('Failed to bulk import criteria:', error);
-      alert(`❌ 일괄 가져오기 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
-      setShowBulkInput(false);
-    }
-  };
-
-  const handleImportChoice = async (saveOnlyMain: boolean) => {
-    if (!pendingImport) return;
+  // 기준 저장
+  const handleSaveCriteria = async () => {
+    // 임시 변경사항이 있으면 임시 기준을 저장, 아니면 현재 기준을 저장
+    const criteriaToSave = hasTempChanges ? tempCriteria : criteria;
+    const flatCriteria = flattenCriteria(criteriaToSave);
     
-    try {
-      if (saveOnlyMain) {
-        await processMainCriteriaOnly(pendingImport.rootCriteria, pendingImport.subCriteria);
-      } else {
-        await processHierarchicalImport(pendingImport.allCriteria);
-      }
-    } catch (error) {
-      console.error('Failed to process import choice:', error);
-      alert('❌ 가져오기 처리 중 오류가 발생했습니다.');
-    } finally {
-      setShowImportDialog(false);
-      setPendingImport(null);
+    if (flatCriteria.length === 0) {
+      alert('저장할 기준이 없습니다.');
+      return;
     }
-  };
 
-  const processHierarchicalImport = async (allCriteria: Criterion[]) => {
-    console.log('🔄 계층구조 유지하여 저장 시작:', allCriteria);
-    console.log('🎯 상세 계층 분석:', {
-      전체: allCriteria.length,
-      레벨1: allCriteria.filter(c => c.level === 1).length,
-      레벨2: allCriteria.filter(c => c.level === 2).length,
-      레벨3: allCriteria.filter(c => c.level === 3).length
-    });
-    
+    setIsSaving(true);
     try {
-      // 레벨 순서대로 정렬하여 부모부터 먼저 저장
-      const sortedCriteria = [...allCriteria].sort((a, b) => {
-        // 먼저 레벨로 정렬, 같은 레벨이면 order로 정렬
-        if (a.level !== b.level) return a.level - b.level;
-        return (a.order || 0) - (b.order || 0);
-      });
-      
-      const idMapping = new Map<string, string>(); // 임시 ID를 실제 저장된 ID로 매핑
-      const savedCriteria: any[] = [];
-      const criteriaToSave: any[] = []; // 대량 저장을 위한 배열
-      
-      // 먼저 모든 데이터를 준비하고 ID 매핑만 처리
-      for (const criterion of sortedCriteria) {
-        // 부모 ID 매핑
-        let mappedParentId: string | null = null;
-        if (criterion.parent_id && idMapping.has(criterion.parent_id)) {
-          mappedParentId = idMapping.get(criterion.parent_id)!;
-        } else if (criterion.parent_id) {
-          // 부모 ID가 있지만 매핑이 안 된 경우 경고
-          console.warn(`⚠️ 부모 ID 매핑 실패: ${criterion.name}의 부모 ${criterion.parent_id}를 찾을 수 없음`);
+      // 기존 기준 모두 삭제
+      const existingCriteria = await cleanDataService.getCriteria(projectId);
+      for (const criterion of existingCriteria) {
+        if (criterion.id) {
+          await cleanDataService.deleteCriteria(projectId, criterion.id);
         }
-        
-        const criterionData = {
+      }
+      
+      // 새로운 기준 저장
+      let success = true;
+      for (const criterion of flatCriteria) {
+        const criteriaData = {
           project_id: projectId,
+          project: projectId,
           name: criterion.name,
           description: criterion.description || '',
-          parent_id: mappedParentId,
-          level: criterion.level,
-          position: criterion.order || 1,
-          order: criterion.order || 1,
-          tempId: criterion.id // 임시 ID 저장
+          parent_id: criterion.parent_id,
+          parent: criterion.parent_id,
+          level: criterion.level || 1,
+          order: criterion.order || 0,
+          position: criterion.order || 0,
+          weight: criterion.weight || 1,
+          type: 'criteria' as const
         };
         
-        criteriaToSave.push(criterionData);
-        console.log(`📦 준비된 기준 (레벨 ${criterion.level}):`, {
-          name: criterion.name,
-          parent_id: mappedParentId,
-          tempId: criterion.id
-        });
-        
-        try {
-          const savedCriterion = await dataService.createCriteria(criterionData);
-          if (savedCriterion && savedCriterion.id) {
-            // 임시 ID를 실제 저장된 ID로 매핑
-            idMapping.set(criterion.id, savedCriterion.id);
-            savedCriteria.push(savedCriterion);
-            console.log(`✅ 기준 "${criterion.name}" 저장 성공 (ID: ${savedCriterion.id})`);
-          } else if (savedCriterion && savedCriterion.id) {
-            // 이미 존재하는 기준이 반환된 경우 (id가 있는 경우만)
-            console.log(`♾️ 기준 "${criterion.name}"은 이미 존재함 (ID: ${savedCriterion.id})`);
-            idMapping.set(criterion.id, savedCriterion.id);
-            savedCriteria.push(savedCriterion);
-          } else if (savedCriterion) {
-            // ID가 없는 경우 경고만 표시
-            console.warn(`⚠️ 기준 "${criterion.name}"이 저장되었으나 ID가 없습니다.`);
-          }
-        } catch (saveError: any) {
-          console.error(`기준 저장 실패 (${criterion.name}):`, saveError);
-          const errorMessage = saveError.message || saveError.error || '알 수 없는 오류';
-          
-          // 백엔드에서 중복 에러인 경우
-          if (errorMessage.includes('already exists') || errorMessage.includes('이미 존재')) {
-            console.warn(`⚠️ 기준 "${criterion.name}"은 이미 DB에 존재합니다. 건너뛰고 계속 진행합니다.`);
-            
-            // 기존 기준을 찾아서 ID 매핑
-            try {
-              const existingCriteria = await dataService.getCriteria(projectId);
-              const existing = existingCriteria.find((c: any) => 
-                c.name === criterion.name && 
-                c.level === criterion.level
-              );
-              if (existing && existing.id) {
-                idMapping.set(criterion.id, existing.id);
-                console.log(`🔗 기존 기준 ID 매핑: ${criterion.name} -> ${existing.id}`);
-              }
-            } catch (findError) {
-              console.error('기존 기준 찾기 실패:', findError);
-            }
-            continue; // 다음 기준으로 계속
-          }
-          
-          // 다른 오류의 경우 에러를 던짐
-          throw new Error(`기준 "${criterion.name}" 저장 실패: ${errorMessage}`);
+        const result = await cleanDataService.createCriteria(criteriaData);
+        if (!result) {
+          success = false;
+          break;
         }
       }
       
-      // 데이터 다시 로드
-      const criteriaData = await dataService.getCriteria(projectId);
-      const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-      setCriteria(convertedCriteria);
-      
-      alert(`✅ ${savedCriteria.length}개의 기준이 계층구조를 유지하여 저장되었습니다.`);
-    } catch (error) {
-      console.error('계층구조 저장 실패:', error);
-      throw error;
-    }
-  };
-
-  const processMainCriteriaOnly = async (rootCriteria: Criterion[], subCriteria: Criterion[]) => {
-    // 최상위 기준만 저장하고 하위 기준은 메타데이터로 포함
-    for (const rootCriterion of rootCriteria) {
-      const relatedSubCriteria = subCriteria.filter(c => c.parent_id === rootCriterion.id);
-      
-      console.log(`📋 "${rootCriterion.name}" 기준의 하위 기준 ${relatedSubCriteria.length}개:`, 
-        relatedSubCriteria.map(s => s.name));
-      
-      const criterionData = convertToCriteriaData({
-        name: rootCriterion.name,
-        description: rootCriterion.description || '',
-        parent_id: null,
-        level: 1,
-        order: rootCriterion.order || 1
-      });
-      
-      // 하위 기준 정보를 설명에 추가
-      if (relatedSubCriteria.length > 0) {
-        const subCriteriaText = relatedSubCriteria.map(sub => 
-          sub.description ? `${sub.name}: ${sub.description}` : sub.name
-        ).join(', ');
+      if (success) {
+        console.log('✅ 기준 저장 성공');
         
-        criterionData.description = criterionData.description 
-          ? `${criterionData.description} [하위 기준: ${subCriteriaText}]`
-          : `[하위 기준: ${subCriteriaText}]`;
+        // 저장 후 다시 로드하여 동기화
+        await loadCriteria();
+        
+        alert('기준이 성공적으로 저장되었습니다.');
+      } else {
+        throw new Error('일부 기준 저장 실패');
       }
-      
-      console.log('💾 주 기준 저장:', criterionData);
-      await dataService.createCriteria(criterionData);
+    } catch (error) {
+      console.error('❌ 기준 저장 실패:', error);
+      alert(`기준 저장 중 오류가 발생했습니다: ${error}`);
+    } finally {
+      setIsSaving(false);
     }
-    
-    // 데이터 다시 로드
-    const criteriaData = await dataService.getCriteria(projectId);
-    const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-    setCriteria(convertedCriteria);
-    
-    alert(`✅ ${rootCriteria.length}개의 주 기준이 저장되었습니다.\n하위 기준들은 각 기준의 설명에 포함되었습니다.`);
   };
 
-  const processFlatImport = async (criteria: Criterion[]) => {
-    // 모든 기준을 평면 구조로 저장 (레벨 1로 변환)
-    for (const criterion of criteria) {
-      const criterionData = convertToCriteriaData({
-        name: criterion.name,
-        description: criterion.description || '',
-        parent_id: null, // AHP에서는 평면 구조 사용
-        level: 1,
-        order: criterion.order || 1
+  // 템플릿 선택 처리
+  const handleTemplateSelect = (template: any) => {
+    const convertTemplateStructure = (items: any[], parentId: string | null = null, level: number = 1): Criterion[] => {
+      const result: Criterion[] = [];
+      
+      items.forEach((item, index) => {
+        const id = `criterion_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const criterion: Criterion = {
+          id,
+          name: item.name,
+          description: item.description,
+          parent_id: parentId,
+          level,
+          order: index + 1,
+          weight: 1,
+          type: 'criteria',
+          children: []
+        };
+        
+        if (item.children && item.children.length > 0) {
+          criterion.children = convertTemplateStructure(item.children, id, level + 1);
+        }
+        
+        result.push(criterion);
       });
       
-      console.log('💾 평면 기준 저장:', criterionData);
-      await dataService.createCriteria(criterionData);
-    }
+      return result;
+    };
     
-    // 데이터 다시 로드
-    const criteriaData = await dataService.getCriteria(projectId);
-    const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+    const newCriteria = convertTemplateStructure(template.structure);
+    
+    // 임시 저장소에 저장
+    setTempCriteria(newCriteria);
+    setCriteria(newCriteria);
+    setHasTempChanges(true);
+    setShowTemplates(false);
+    setActiveInputMode(null);
+    
+    alert(`'${template.name}' 템플릿이 적용되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+  };
+
+  // 일괄 입력 처리
+  const handleBulkImport = (importedCriteria: Criterion[]) => {
+    // parent_id, level, order 필드 정규화
+    const normalizedCriteria = importedCriteria.map((criterion, index) => ({
+      ...criterion,
+      id: criterion.id || `criterion_${Date.now()}_${index}`,
+      level: criterion.level || 1,
+      order: criterion.order || index + 1,
+      parent_id: criterion.parent_id || null,
+      type: 'criteria' as const
+    }));
+    
+    const hierarchicalCriteria = buildHierarchy(normalizedCriteria);
+    
+    // 임시 저장소에 저장
+    setTempCriteria(hierarchicalCriteria);
+    setCriteria(hierarchicalCriteria);
+    setHasTempChanges(true);
+    setShowBulkInput(false);
+    setActiveInputMode(null);
+    
+    alert(`${normalizedCriteria.length}개의 기준이 추가되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+  };
+
+  // 시각적 빌더 데이터 변환
+  const convertVisualBuilderData = (builderCriteria: any[]): Criterion[] => {
+    const result: Criterion[] = [];
+    
+    const traverse = (nodes: any[], parentId: string | null = null, level: number = 1) => {
+      nodes.forEach((node, index) => {
+        const criterion: Criterion = {
+          id: node.id || `criterion_${Date.now()}_${index}`,
+          name: node.name,
+          description: node.description,
+          parent_id: parentId,
+          level,
+          order: index + 1,
+          weight: 1,
+          type: 'criteria',
+          children: []
+        };
+        
+        if (node.children && node.children.length > 0) {
+          criterion.children = traverse(node.children, criterion.id, level + 1);
+        }
+        
+        result.push(criterion);
+      });
+      
+      return result;
+    };
+    
+    return traverse(builderCriteria);
+  };
+
+  // Criterion을 CriteriaNode로 변환 (재귀적)
+  const convertToVisualNode = (criteria: Criterion[]): any[] => {
+    return criteria.map(c => ({
+      id: c.id,
+      name: c.name,
+      description: c.description,
+      level: c.level,
+      parent_id: c.parent_id || null,
+      children: c.children ? convertToVisualNode(c.children) : [],
+      isExpanded: true
+    }));
+  };
+
+  // 시각적 빌더 저장 처리
+  const handleVisualBuilderSave = (builderCriteria: any[]) => {
+    const convertedCriteria = convertVisualBuilderData(builderCriteria);
+    
+    // 임시 저장소에 저장
+    setTempCriteria(convertedCriteria);
     setCriteria(convertedCriteria);
+    setHasTempChanges(true);
     
-    alert(`✅ ${criteria.length}개의 기준이 평면 구조로 저장되었습니다.`);
+    alert(`${convertedCriteria.length}개의 기준이 시각적 빌더에서 추가되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
   };
 
-  const renderHelpModal = () => {
-    if (!showHelp) return null;
-    
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'var(--modal-backdrop)' }}>
-        <div className="rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-y-auto" style={{ backgroundColor: 'var(--modal-bg)', boxShadow: 'var(--shadow-2xl)' }}>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>📚 기준 설정 도움말</h3>
-            <button
-              onClick={() => setShowHelp(false)}
-              className="text-xl transition-colors" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-secondary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-            >
-              ×
-            </button>
-          </div>
-          
-          <div className="space-y-4 text-sm">
-            <div>
-              <h4 className="font-semibold mb-2" style={{ color: 'var(--status-info-text)' }}>🎯 AHP 기준 계층구조란?</h4>
-              <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                AHP(Analytic Hierarchy Process)에서 기준 계층구조는 의사결정 문제를 체계적으로 분해하여 
-                상위 목표부터 세부 기준까지 단계별로 구성하는 구조입니다.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-2" style={{ color: 'var(--status-success-text)' }}>📊 AHP 5단계 계층구조</h4>
-              <ul className="list-disc list-inside space-y-1" style={{ color: 'var(--text-secondary)' }}>
-                <li><strong>🎯 Level 1 (목표):</strong> 최종 의사결정 목표</li>
-                <li><strong>📋 Level 2 (기준):</strong> 주요 평가 영역 (<span className="text-yellow-700 font-semibold">3개 권장</span>, 최대 7개)</li>
-                <li><strong>🎪 Level 3 (대안):</strong> 선택 가능한 대안들 (표준 AHP)</li>
-                <li><strong>📝 Level 4 (하위기준):</strong> 세분화된 평가 기준</li>
-                <li><strong>🔹 Level 5 (세부기준):</strong> 최상세 수준 기준</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-2" style={{ color: 'var(--accent-secondary)' }}>🔄 레이아웃 모드</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded" style={{ backgroundColor: 'var(--status-info-bg)', border: '1px solid var(--status-info-border)' }}>
-                  <div className="font-medium" style={{ color: 'var(--status-info-text)' }}>📋 세로형</div>
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>계층구조를 세로로 표시, 상세 정보 확인에 적합</div>
-                </div>
-                <div className="p-3 rounded" style={{ backgroundColor: 'var(--status-success-bg)', border: '1px solid var(--status-success-border)' }}>
-                  <div className="font-medium" style={{ color: 'var(--status-success-text)' }}>📊 가로형</div>
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>계층구조를 가로로 표시, 전체 구조 파악에 적합</div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-2" style={{ color: 'var(--status-danger-text)' }}>⚠️ 주의사항</h4>
-              <ul className="list-disc list-inside space-y-1" style={{ color: 'var(--text-secondary)' }}>
-                <li>기준명은 중복될 수 없습니다</li>
-                <li>기존 데이터를 삭제하면 복구할 수 없습니다</li>
-                <li><strong>논문 작성 시 3-5개 기준 권장</strong> (7개 초과 시 일관성 저하)</li>
-                <li>평가방법(쌍대비교/직접입력)은 신중히 선택하세요</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-2" style={{ color: 'var(--status-warning-text)' }}>💡 실무 팁</h4>
-              <ul className="list-disc list-inside space-y-1" style={{ color: 'var(--text-secondary)' }}>
-                <li>기준 설명을 명확히 작성하여 평가자의 이해를 돕습니다</li>
-                <li>비슷한 성격의 기준들은 하나의 상위 기준으로 그룹화하세요</li>
-                <li>측정 가능한 기준과 주관적 기준을 적절히 균형있게 구성하세요</li>
-                <li>🗑️ 버튼으로 개별 기준을 삭제할 수 있습니다</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-6 flex justify-end">
-            <Button variant="primary" onClick={() => setShowHelp(false)}>
-              확인
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+  // 모든 기준 가져오기 (평면 구조)
+  const getAllCriteria = (criteriaList: Criterion[]): Criterion[] => {
+    return flattenCriteria(criteriaList);
   };
-
-  // 시각적 빌더 모드일 때 HierarchyTreeBuilder 렌더링
-  if (useVisualBuilder) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">시각적 모델 구축</h2>
-          <Button
-            onClick={() => setUseVisualBuilder(false)}
-            variant="outline"
-            size="sm"
-          >
-            ← 기본 모드로 전환
-          </Button>
-        </div>
-        <HierarchyTreeBuilder
-          projectId={projectId}
-          projectTitle={projectTitle || 'AHP 프로젝트'}
-          onComplete={async (hierarchy) => {
-            // 계층 구조를 평면 구조로 변환하여 저장
-            const flattenTree = (node: any, parentId: string | null = null, level: number = 0): any[] => {
-              const result: any[] = [];
-              if (node.id !== 'root') {
-                result.push({
-                  name: node.name,
-                  description: '',
-                  parent_id: parentId,
-                  level: level,
-                  order: node.order || 0
-                });
-              }
-              if (node.children) {
-                node.children.forEach((child: any, index: number) => {
-                  result.push(...flattenTree(child, node.id === 'root' ? null : node.id, level + 1));
-                });
-              }
-              return result;
-            };
-
-            const flatCriteria = flattenTree(hierarchy);
-            
-            // 각 기준을 백엔드에 저장
-            for (const criterion of flatCriteria) {
-              const criterionData = convertToCriteriaData(criterion);
-              await dataService.createCriteria(criterionData);
-            }
-            
-            // 데이터 다시 로드
-            const criteriaData = await dataService.getCriteria(projectId);
-            const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-            setCriteria(convertedCriteria);
-            
-            alert(`✅ ${flatCriteria.length}개의 기준이 저장되었습니다.`);
-            setUseVisualBuilder(false);
-            onComplete();
-          }}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
-      {renderHelpModal()}
-      <Card title="2-1단계 — 기준추가">
+      <Card title="2-1단계 — 평가 기준 설정">
         <div className="space-y-6">
-          {/* 논문 작성 권장 구조 안내 */}
-          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mb-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
+          {/* 상단 안내 메시지 */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-900 mb-2">📊 평가 기준 설정</h4>
+            <p className="text-sm text-blue-700">
+              평가 목표를 달성하기 위한 계층구조의 기준을 설정합니다.
+              템플릿을 사용하거나 직접 입력할 수 있습니다.
+            </p>
+            {hasTempChanges && (
+              <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded">
+                <p className="text-sm text-yellow-800">
+                  ⚠️ 저장되지 않은 변경사항이 있습니다. '저장하기' 버튼을 눌러 저장하세요.
+                </p>
               </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-semibold text-yellow-800">📄 논문 작성 권장: 기본 3개 기준</h3>
-                <div className="mt-2 text-sm text-yellow-700">
-                  <p className="mb-2">학술 논문을 위해 <strong>3개 기준</strong>으로 시작하는 것을 권장합니다. (필요시 최대 7개까지 추가 가능)</p>
-                  <ul className="list-disc list-inside space-y-1 text-xs">
-                    <li>쌍대비교 횟수: 3개 기준 = 3회, 5개 기준 = 10회, 7개 기준 = 21회</li>
-                    <li>일관성 검증(CR ≤ 0.1) 통과 확률이 높아집니다</li>
-                    <li>기준이 많을수록 평가자의 피로도 증가 및 응답률 저하</li>
-                  </ul>
-                </div>
-              </div>
+            )}
+          </div>
+
+          {/* 입력 방법 선택 버튼 */}
+          <div className="border-b pb-4">
+            <h4 className="font-medium text-gray-900 mb-3">입력 방법 선택</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Button
+                variant={activeInputMode === 'template' ? 'primary' : 'outline'}
+                onClick={() => {
+                  setActiveInputMode('template');
+                  setShowTemplates(true);
+                  setShowBulkInput(false);
+                }}
+                className="flex items-center justify-center"
+              >
+                <span className="mr-2">📋</span>
+                기본 템플릿 사용
+              </Button>
+              
+              <Button
+                variant={activeInputMode === 'bulk' ? 'primary' : 'outline'}
+                onClick={() => {
+                  setActiveInputMode('bulk');
+                  setShowBulkInput(true);
+                  setShowTemplates(false);
+                }}
+                className="flex items-center justify-center"
+              >
+                <span className="mr-2">📝</span>
+                텍스트 일괄 입력
+              </Button>
+              
+              <Button
+                variant={activeInputMode === 'visual' ? 'primary' : 'outline'}
+                onClick={() => {
+                  setActiveInputMode(activeInputMode === 'visual' ? null : 'visual');
+                  setShowTemplates(false);
+                  setShowBulkInput(false);
+                }}
+                className="flex items-center justify-center"
+              >
+                <span className="mr-2">🎨</span>
+                시각적 빌더
+              </Button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg p-4" style={{ backgroundColor: 'var(--status-info-bg)', border: '1px solid var(--status-info-border)' }}>
-            <div>
-              <h4 className="font-medium mb-2" style={{ color: 'var(--status-info-text)' }}>📋 프로젝트 기준 설정 가이드</h4>
-              <ul className="text-sm space-y-1" style={{ color: 'var(--status-info-text)' }}>
-                <li>• 프로젝트 목표에 맞는 평가 기준을 계층적으로 구성</li>
-                <li>• 1레벨(목표) → 2레벨(기준) → 3레벨(대안) 순서로 추가</li>
-                <li>• 기준명은 중복될 수 없으며, 최대 5단계까지 세분화 가능</li>
-                <li>• 개별 기준 삭제는 🗑️ 버튼을 클릭하여 수행</li>
-              </ul>
+          {/* 현재 계층구조 표시 또는 시각적 빌더 */}
+          <div className="min-h-[300px]">
+            {activeInputMode === 'visual' ? (
+              // 인라인 시각적 빌더
+              <div className="border border-gray-200 rounded-lg p-4">
+                <VisualCriteriaBuilder
+                  initialCriteria={convertToVisualNode(criteria)}
+                  onSave={handleVisualBuilderSave}
+                  onClose={() => setActiveInputMode(null)}
+                />
+              </div>
+            ) : criteria.length > 0 ? (
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">현재 계층구조</h4>
+                <HierarchyTreeVisualization 
+                  nodes={getAllCriteria(criteria)}
+                  title=""
+                  showWeights={false}
+                  interactive={true}
+                />
+              </div>
+            ) : (
+              <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
+                <div className="text-gray-500">
+                  <div className="text-4xl mb-3">🌳</div>
+                  <p className="text-lg font-medium">계층구조가 비어있습니다</p>
+                  <p className="text-sm mt-2">위의 입력 방법 중 하나를 선택하여 기준을 추가하세요</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 요약 정보 */}
+          {criteria.length > 0 && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {getAllCriteria(criteria).length}
+                  </div>
+                  <div className="text-sm text-gray-600">전체 기준</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {criteria.filter(c => c.level === 1).length}
+                  </div>
+                  <div className="text-sm text-gray-600">상위 기준</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {getAllCriteria(criteria).filter(c => c.level > 1).length}
+                  </div>
+                  <div className="text-sm text-gray-600">하위 기준</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {Math.max(...getAllCriteria(criteria).map(c => c.level), 0)}
+                  </div>
+                  <div className="text-sm text-gray-600">최대 깊이</div>
+                </div>
+              </div>
             </div>
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowHelp(true)}
-              >
-                📚 도움말
-              </Button>
-              {criteria.length > 0 && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleClearAllData}
-                  className="transition-all duration-200" 
-                  style={{ color: 'var(--status-danger-text)', borderColor: 'var(--status-danger-border)' }} 
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--status-danger-bg)'} 
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          )}
+
+          {/* 액션 버튼 */}
+          <div className="flex justify-between items-center pt-4 border-t">
+            <Button
+              variant="secondary"
+              onClick={handleReset}
+              disabled={isLoading || criteria.length === 0}
+            >
+              초기화
+            </Button>
+            
+            <div className="flex space-x-3">
+              {onComplete && (
+                <Button
+                  variant="outline"
+                  onClick={onComplete}
+                  disabled={isLoading || savedCriteria.length === 0}
                 >
-                  🗑️ 모든 데이터 삭제
+                  다음 단계
                 </Button>
               )}
-            </div>
-          </div>
-
-          {/* Evaluation Method Selection */}
-          <div>
-            <label className="block text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
-              평가방법 선택
-            </label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="pairwise"
-                  checked={evaluationMethod === 'pairwise'}
-                  onChange={(e) => setEvaluationMethod(e.target.value as 'pairwise')}
-                  className="mr-2"
-                />
-                <span className="text-sm" style={{ color: 'var(--text-primary)' }}>쌍대비교</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="direct"
-                  checked={evaluationMethod === 'direct'}
-                  onChange={(e) => setEvaluationMethod(e.target.value as 'direct')}
-                  className="mr-2"
-                />
-                <span className="text-sm" style={{ color: 'var(--text-primary)' }}>직접입력</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Current Criteria Tree Visualization */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium" style={{ color: 'var(--text-primary)' }}>🌳 기준 계층구조 시각화</h4>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>표시 방식:</span>
-                <div className="flex rounded-lg p-1" style={{ backgroundColor: 'var(--bg-elevated)' }}>
-                  <button
-                    onClick={() => setLayoutMode('vertical')}
-                    className="px-3 py-1 text-xs rounded-md transition-colors"
-                    style={{
-                      backgroundColor: layoutMode === 'vertical' ? 'var(--status-info-text)' : 'transparent',
-                      color: layoutMode === 'vertical' ? 'white' : 'var(--text-muted)'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (layoutMode !== 'vertical') {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-muted)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (layoutMode !== 'vertical') {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    📋 세로형
-                  </button>
-                  <button
-                    onClick={() => setLayoutMode('horizontal')}
-                    className="px-3 py-1 text-xs rounded-md transition-colors"
-                    style={{
-                      backgroundColor: layoutMode === 'horizontal' ? 'var(--status-success-text)' : 'transparent',
-                      color: layoutMode === 'horizontal' ? 'white' : 'var(--text-muted)'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (layoutMode !== 'horizontal') {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-muted)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (layoutMode !== 'horizontal') {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    📊 가로형
-                  </button>
-                </div>
-                <Button 
-                  variant="primary" 
-                  size="sm"
-                  onClick={() => setShowTemplates(true)}
-                  className="transition-all duration-200 ml-2" 
-                >
-                  📋 기본 템플릿
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowBulkInput(true)}
-                  className="transition-all duration-200 ml-2" 
-                  style={{ color: 'var(--status-success-text)', borderColor: 'var(--status-success-border)' }} 
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--status-success-bg)'} 
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  🗂️ 일괄 입력
-                </Button>
-                <Button 
-                  variant="primary" 
-                  size="sm"
-                  onClick={() => setShowVisualBuilder(true)}
-                  className="transition-all duration-200 ml-2" 
-                >
-                  🎨 시각적 빌더
-                </Button>
-                {criteria.length > 0 && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleClearAllData}
-                    className="transition-all duration-200" 
-                    style={{ color: 'var(--status-danger-text)', borderColor: 'var(--status-danger-border)' }} 
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--status-danger-bg)'} 
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    🗑️ 초기화
-                  </Button>
-                )}
-              </div>
-            </div>
-            <HierarchyTreeVisualization
-              nodes={getFlatCriteriaForVisualization(criteria)}
-              title={`${projectTitle || 'AHP 프로젝트'} 기준 계층구조`}
-              showWeights={true}
-              interactive={true}
-              layout={layoutMode}
-              onLayoutChange={setLayoutMode}
-              onNodeClick={(node) => {
-                console.log('선택된 기준:', node);
-                // 추후 편집 모드 구현 가능
-              }}
-              onNodeDelete={(node) => {
-                // TreeNode를 id로 변환하여 삭제 함수 호출
-                handleDeleteCriterion(node.id);
-              }}
-              allowDelete={true}
-            />
-          </div>
-
-          {/* Add New Criterion */}
-          <div className="pt-6" style={{ borderTop: '1px solid var(--border-light)' }}>
-            <h4 className="font-medium mb-4" style={{ color: 'var(--text-primary)' }}>➕ 새 기준 추가</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  상위 기준
-                </label>
-                <select
-                  value={newCriterion.parentId}
-                  onChange={(e) => setNewCriterion(prev => ({ ...prev, parentId: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2"
-                  style={{ 
-                    backgroundColor: 'var(--input-bg)', 
-                    color: 'var(--text-primary)', 
-                    border: '1px solid var(--input-border)',
-                    borderRadius: 'var(--radius-md)'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = 'var(--accent-primary)';
-                    e.target.style.boxShadow = '0 0 0 2px var(--accent-focus)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'var(--input-border)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  <option value="">🎯 최상위 기준 (목표)</option>
-                  {getAvailableParentCriteria().map(criterion => (
-                    <option key={criterion.id} value={criterion.id}>
-                      {getLevelIcon(criterion.level || 1)} {criterion.name} ({getLevelName(criterion.level || 1)})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <Input
-                id="criterionName"
-                label="기준명"
-                placeholder="기준명을 입력하세요"
-                value={newCriterion.name}
-                onChange={(value) => setNewCriterion(prev => ({ ...prev, name: value }))}
-                error={errors.name}
-                required
-              />
-
-              <Input
-                id="criterionDescription"
-                label="기준 설명 (선택)"
-                placeholder="기준에 대한 설명"
-                value={newCriterion.description}
-                onChange={(value) => setNewCriterion(prev => ({ ...prev, description: value }))}
-              />
-            </div>
-
-            <div className="flex justify-end mt-4">
-              <Button onClick={handleAddCriterion} variant="primary">
-                기준 추가
-              </Button>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-between items-center pt-6" style={{ borderTop: '1px solid var(--border-light)' }}>
-            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              총 {getAllCriteria(criteria).length}개 기준 (
-              {[1,2,3,4,5].map(level => {
-                const count = getAllCriteria(criteria).filter(c => (c.level || 1) === level).length;
-                return count > 0 ? `L${level}: ${count}개` : null;
-              }).filter(Boolean).join(', ') || '없음'}
-              ) | 평가방법: {evaluationMethod === 'pairwise' ? '쌍대비교' : '직접입력'}
-            </div>
-            <div className="flex space-x-3">
-              <Button variant="secondary">
-                저장
-              </Button>
               <Button
                 variant="primary"
-                onClick={onComplete}
-                disabled={criteria.length === 0}
+                onClick={handleSaveCriteria}
+                disabled={isLoading || isSaving || criteria.length === 0}
               >
-                다음 단계로
+                {isSaving ? '저장 중...' : '저장하기'}
               </Button>
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Bulk Criteria Input Modal */}
+      {/* 템플릿 선택 모달 */}
+      {showTemplates && (
+        <CriteriaTemplates
+          onSelectTemplate={handleTemplateSelect}
+          onClose={() => {
+            setShowTemplates(false);
+            setActiveInputMode(null);
+          }}
+        />
+      )}
+
+      {/* 일괄 입력 모달 */}
       {showBulkInput && (
         <BulkCriteriaInput
           onImport={handleBulkImport}
-          onCancel={() => setShowBulkInput(false)}
+          onCancel={() => {
+            setShowBulkInput(false);
+            setActiveInputMode(null);
+          }}
           existingCriteria={criteria}
         />
-      )}
-
-      {/* 기본 템플릿 선택 모달 */}
-      {showTemplates && (
-        <CriteriaTemplates
-          onSelectTemplate={(template) => {
-            // 템플릿 구조를 기준으로 변환
-            const convertTemplate = (items: any[], parentId: string | null = null, level: number = 1): Criterion[] => {
-              const result: Criterion[] = [];
-              items.forEach((item, index) => {
-                const id = `template_${Date.now()}_${Math.random()}`;
-                const criterion: Criterion = {
-                  id: id,
-                  name: item.name,
-                  description: item.description,
-                  parent_id: parentId,
-                  level: level,
-                  children: [],
-                  order: index + 1,
-                  weight: 0
-                };
-                
-                if (item.children && item.children.length > 0) {
-                  criterion.children = convertTemplate(item.children, id, level + 1);
-                }
-                
-                result.push(criterion);
-              });
-              return result;
-            };
-            
-            const templateCriteria = convertTemplate(template.structure);
-            setCriteria(templateCriteria);
-            setShowTemplates(false);
-            alert(`"${template.name}" 템플릿이 적용되었습니다.`);
-          }}
-          onClose={() => setShowTemplates(false)}
-        />
-      )}
-
-      {/* 시각적 빌더 모달 */}
-      {showVisualBuilder && (
-        <VisualCriteriaBuilder
-          initialCriteria={(() => {
-            const convertToNode = (items: Criterion[]): any[] => {
-              return items.map(c => ({
-                id: c.id,
-                name: c.name,
-                description: c.description,
-                level: c.level,
-                parent_id: c.parent_id || null,
-                children: c.children ? convertToNode(c.children) : [],
-                isExpanded: true
-              }));
-            };
-            return convertToNode(criteria);
-          })()}
-          onSave={(updatedCriteria) => {
-            const convertToCriterion = (nodes: any[]): Criterion[] => {
-              return nodes.map(node => ({
-                id: node.id,
-                name: node.name,
-                description: node.description,
-                level: node.level,
-                parent_id: node.parent_id,
-                children: node.children ? convertToCriterion(node.children) : [],
-                weight: 0,
-                order: 0
-              }));
-            };
-            setCriteria(convertToCriterion(updatedCriteria));
-            setShowVisualBuilder(false);
-            alert('계층구조가 저장되었습니다.');
-          }}
-          onClose={() => setShowVisualBuilder(false)}
-        />
-      )}
-
-      {/* Import Choice Modal */}
-      {showImportDialog && pendingImport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div className="p-6">
-              <div className="flex items-center mb-4">
-                <div className="flex-shrink-0">
-                  <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="ml-3 text-lg font-medium text-gray-900">
-                  계층구조 가져오기 방식 선택
-                </h3>
-              </div>
-              
-              <div className="mb-6">
-                <p className="text-sm text-gray-600 mb-4">
-                  계층구조가 감지되었습니다:
-                </p>
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <div className="text-sm">
-                    <div className="flex justify-between mb-2">
-                      <span className="font-medium">주 기준:</span>
-                      <span className="text-blue-600">{pendingImport.rootCriteria.length}개</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">하위 기준:</span>
-                      <span className="text-green-600">{pendingImport.subCriteria.length}개</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3 text-sm text-gray-600">
-                  <div className="border-l-4 border-blue-500 pl-3">
-                    <p className="font-medium text-gray-900">옵션 1: 주 기준만 저장 (권장)</p>
-                    <p>하위 기준들은 각 주 기준의 설명에 포함됩니다.</p>
-                    <p className="text-blue-600">→ AHP 평가에 적합한 {pendingImport.rootCriteria.length}개 기준 생성</p>
-                  </div>
-                  <div className="border-l-4 border-gray-400 pl-3">
-                    <p className="font-medium text-gray-900">옵션 2: 모든 기준을 개별 저장</p>
-                    <p>모든 항목을 별도의 기준으로 저장합니다.</p>
-                    <p className="text-gray-600">→ 총 {pendingImport.allCriteria.length}개 기준 생성</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-3">
-                <Button
-                  variant="primary"
-                  onClick={() => handleImportChoice(true)}
-                  className="flex-1"
-                >
-                  주 기준만 저장
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => handleImportChoice(false)}
-                  className="flex-1"
-                >
-                  모든 기준 저장
-                </Button>
-              </div>
-              
-              <div className="mt-4 text-center">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowImportDialog(false);
-                    setPendingImport(null);
-                    setShowBulkInput(true);
-                  }}
-                  size="sm"
-                >
-                  취소
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

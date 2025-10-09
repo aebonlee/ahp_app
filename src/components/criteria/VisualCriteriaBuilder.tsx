@@ -1,6 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import Button from '../common/Button';
-import Input from '../common/Input';
 
 interface CriteriaNode {
   id: string;
@@ -16,13 +15,15 @@ interface CriteriaNode {
 interface VisualCriteriaBuilderProps {
   initialCriteria?: CriteriaNode[];
   onSave: (criteria: CriteriaNode[]) => void;
-  onClose: () => void;
+  onClose?: () => void;
+  isInline?: boolean; // 인라인 모드 여부
 }
 
 const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
   initialCriteria = [],
   onSave,
-  onClose
+  onClose,
+  isInline = true // 기본값을 인라인으로 설정
 }) => {
   const [criteria, setCriteria] = useState<CriteriaNode[]>(() => {
     if (initialCriteria.length > 0) {
@@ -339,6 +340,72 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
 
   const stats = getStats();
 
+  // 인라인 모드일 때 렌더링
+  if (isInline) {
+    return (
+      <div className="w-full">
+        {/* 헤더 */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">시각적 계층구조 빌더</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              드래그 앤 드롭으로 구조를 조정하고, 더블클릭하여 편집하세요
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-600">
+              전체 기준: <span className="font-semibold">{stats.total}개</span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => addNode(null)}
+            >
+              ➕ 최상위 기준 추가
+            </Button>
+          </div>
+        </div>
+
+        {/* 트리 편집 영역 */}
+        <div className="border border-gray-200 rounded-lg p-4 bg-white max-h-[500px] overflow-y-auto">
+          <div className="space-y-2">
+            {criteria.map(node => renderNode(node))}
+          </div>
+
+          {criteria.length === 0 && (
+            <div className="text-center py-12 text-gray-500">
+              위 버튼을 클릭하여 첫 번째 기준을 추가하세요
+            </div>
+          )}
+        </div>
+
+        {/* 액션 버튼 */}
+        <div className="flex justify-end mt-4 space-x-2">
+          {onClose && (
+            <Button variant="secondary" onClick={onClose}>
+              취소
+            </Button>
+          )}
+          <Button 
+            variant="primary" 
+            onClick={() => onSave(criteria)}
+            disabled={stats.total === 0}
+          >
+            적용하기
+          </Button>
+        </div>
+
+        {/* 도움말 */}
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs text-gray-600">
+          <strong>💡 사용 팁:</strong> 
+          ➕ 하위 기준 추가 | ✏️ 이름과 설명 편집 | 🗑️ 삭제 (하위 포함) | 
+          더블클릭으로 직접 편집 | ▼/▶ 접기/펼치기
+        </div>
+      </div>
+    );
+  }
+
+  // 팝업 모드일 때 렌더링 (이전 코드)
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col">
@@ -353,12 +420,14 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
                 드래그 앤 드롭으로 구조를 조정하고, 클릭하여 편집하세요
               </p>
             </div>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-xl"
-            >
-              ✕
-            </button>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700 text-xl"
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 
@@ -442,9 +511,11 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
               {stats.total}개 기준 구성됨
             </div>
             <div className="flex space-x-2">
-              <Button variant="secondary" onClick={onClose}>
-                취소
-              </Button>
+              {onClose && (
+                <Button variant="secondary" onClick={onClose}>
+                  취소
+                </Button>
+              )}
               <Button 
                 variant="primary" 
                 onClick={() => onSave(criteria)}

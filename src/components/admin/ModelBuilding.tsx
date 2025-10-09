@@ -82,6 +82,7 @@ const ModelBuilding: React.FC<ModelBuildingProps> = ({
           <CriteriaManagement
             projectId={projectId}
             projectTitle={projectTitle}
+            onCriteriaChange={() => {}}
             onComplete={() => handleStepComplete('criteria')}
           />
         );
