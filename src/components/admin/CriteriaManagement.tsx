@@ -240,6 +240,58 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     }
   };
 
+  const handleMoveUp = async (id: string) => {
+    const criterion = criteria.find(c => c.id === id);
+    if (!criterion) return;
+    
+    // 같은 부모의 같은 레벨 기준들 찾기
+    const siblings = criteria.filter(c => 
+      c.parent_id === criterion.parent_id && 
+      c.level === criterion.level
+    ).sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    const currentIndex = siblings.findIndex(s => s.id === id);
+    if (currentIndex <= 0) return; // 이미 첫 번째
+    
+    // 순서 교환 (로컬 상태만 업데이트)
+    const updatedCriteria = [...criteria];
+    const currentIdx = updatedCriteria.findIndex(c => c.id === id);
+    const prevIdx = updatedCriteria.findIndex(c => c.id === siblings[currentIndex - 1].id);
+    
+    if (currentIdx >= 0 && prevIdx >= 0) {
+      const temp = updatedCriteria[currentIdx].order;
+      updatedCriteria[currentIdx].order = updatedCriteria[prevIdx].order;
+      updatedCriteria[prevIdx].order = temp;
+      setCriteria(updatedCriteria);
+    }
+  };
+
+  const handleMoveDown = async (id: string) => {
+    const criterion = criteria.find(c => c.id === id);
+    if (!criterion) return;
+    
+    // 같은 부모의 같은 레벨 기준들 찾기
+    const siblings = criteria.filter(c => 
+      c.parent_id === criterion.parent_id && 
+      c.level === criterion.level
+    ).sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    const currentIndex = siblings.findIndex(s => s.id === id);
+    if (currentIndex >= siblings.length - 1) return; // 이미 마지막
+    
+    // 순서 교환 (로컬 상태만 업데이트)
+    const updatedCriteria = [...criteria];
+    const currentIdx = updatedCriteria.findIndex(c => c.id === id);
+    const nextIdx = updatedCriteria.findIndex(c => c.id === siblings[currentIndex + 1].id);
+    
+    if (currentIdx >= 0 && nextIdx >= 0) {
+      const temp = updatedCriteria[currentIdx].order;
+      updatedCriteria[currentIdx].order = updatedCriteria[nextIdx].order;
+      updatedCriteria[nextIdx].order = temp;
+      setCriteria(updatedCriteria);
+    }
+  };
+
   const handleDeleteCriterion = async (id: string) => {
     console.log('기준 삭제:', id);
     
@@ -329,19 +381,10 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     const templateCriteria = [
       {
         project_id: projectId,
-        name: '프로젝트 목표',
-        description: '최종 달성하고자 하는 목표를 입력하세요',
-        parent_id: null,
-        level: 1,
-        position: 1,
-        order: 1
-      },
-      {
-        project_id: projectId,
         name: '기준 1',
         description: '첫 번째 평가 기준',
         parent_id: null,
-        level: 2,
+        level: 1,
         position: 1,
         order: 1
       },
@@ -350,7 +393,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         name: '기준 2', 
         description: '두 번째 평가 기준',
         parent_id: null,
-        level: 2,
+        level: 1,
         position: 2,
         order: 2
       },
@@ -359,26 +402,43 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         name: '기준 3',
         description: '세 번째 평가 기준 (논문 권장 구조)',
         parent_id: null,
-        level: 2,
+        level: 1,
         position: 3,
         order: 3
       }
     ];
     
     try {
-      // 기존 데이터 삭제 후 템플릿 생성
-      for (const criterion of criteria) {
-        if (criterion.id) {
-          await dataService.deleteCriteria(criterion.id, projectId);
+      // 기존 데이터 삭제
+      if (criteria.length > 0) {
+        console.log('🗑️ 기존 기준 삭제 중...');
+        for (const criterion of criteria) {
+          if (criterion.id && criterion.id !== 'temp') {
+            try {
+              await dataService.deleteCriteria(criterion.id, projectId);
+            } catch (deleteError) {
+              console.error('기준 삭제 실패:', deleteError);
+            }
+          }
         }
       }
       
+      // 잠시 대기 (DB 삭제 완료 대기)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // 템플릿 데이터 생성
+      console.log('📝 템플릿 데이터 생성 중...');
       for (const criterionData of templateCriteria) {
-        await dataService.createCriteria(criterionData);
+        try {
+          const result = await dataService.createCriteria(criterionData);
+          console.log('✅ 템플릿 기준 생성:', result);
+        } catch (createError) {
+          console.error('템플릿 기준 생성 실패:', createError);
+        }
       }
       
       // 데이터 다시 로드
+      await new Promise(resolve => setTimeout(resolve, 500));
       const criteriaData = await dataService.getCriteria(projectId);
       const convertedCriteria = (criteriaData || []).map(convertToCriterion);
       setCriteria(convertedCriteria);
@@ -388,13 +448,34 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       alert('✅ 논문 권장 템플릿(3개 기준)이 저장되었습니다.\n필요시 추가 기준을 입력할 수 있습니다.');
     } catch (error) {
       console.error('Failed to load template data:', error);
-      alert('❌ 템플릿 로드 중 오류가 발생했습니다.');
+      alert(`❌ 템플릿 로드 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
   };
 
   const handleBulkImport = async (importedCriteria: Criterion[]) => {
     try {
       console.log('🔄 일괄 가져오기 시작:', importedCriteria);
+      
+      if (!importedCriteria || importedCriteria.length === 0) {
+        alert('⚠️ 가져올 기준이 없습니다.');
+        return;
+      }
+      
+      // 기존 데이터가 있으면 확인
+      if (criteria.length > 0) {
+        const confirm = window.confirm('기존 기준을 모두 삭제하고 새로운 기준으로 교체하시겠습니까?');
+        if (!confirm) {
+          setShowBulkInput(false);
+          return;
+        }
+        
+        // 기존 데이터 삭제
+        for (const criterion of criteria) {
+          if (criterion.id) {
+            await dataService.deleteCriteria(criterion.id, projectId);
+          }
+        }
+      }
       
       // 계층구조 분석
       const rootCriteria = importedCriteria.filter(c => c.level === 1);
@@ -414,9 +495,10 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       
       // 평면 구조인 경우 바로 저장
       await processHierarchicalImport(importedCriteria);
+      setShowBulkInput(false);
     } catch (error) {
       console.error('Failed to bulk import criteria:', error);
-      alert('❌ 일괄 가져오기 중 오류가 발생했습니다.');
+      alert(`❌ 일괄 가져오기 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
   };
 
@@ -441,44 +523,63 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
   const processHierarchicalImport = async (allCriteria: Criterion[]) => {
     console.log('🔄 계층구조 유지하여 저장 시작:', allCriteria);
     
-    // 레벨 순서대로 정렬하여 부모부터 먼저 저장
-    const sortedCriteria = [...allCriteria].sort((a, b) => a.level - b.level);
-    const idMapping = new Map<string, string>(); // 임시 ID를 실제 저장된 ID로 매핑
-    
-    for (const criterion of sortedCriteria) {
-      // 부모 ID 매핑
-      let mappedParentId: string | null = null;
-      if (criterion.parent_id && idMapping.has(criterion.parent_id)) {
-        mappedParentId = idMapping.get(criterion.parent_id)!;
-      }
-      
-      const criterionData = convertToCriteriaData({
-        name: criterion.name,
-        description: criterion.description || '',
-        parent_id: mappedParentId,
-        level: criterion.level,
-        order: criterion.order || 1
+    try {
+      // 레벨 순서대로 정렬하여 부모부터 먼저 저장
+      const sortedCriteria = [...allCriteria].sort((a, b) => {
+        // 먼저 레벨로 정렬, 같은 레벨이면 order로 정렬
+        if (a.level !== b.level) return a.level - b.level;
+        return (a.order || 0) - (b.order || 0);
       });
       
-      console.log(`💾 기준 저장 (레벨 ${criterion.level}):`, {
-        name: criterion.name,
-        parent_id: mappedParentId,
-        level: criterion.level
-      });
+      const idMapping = new Map<string, string>(); // 임시 ID를 실제 저장된 ID로 매핑
+      const savedCriteria: any[] = [];
       
-      const savedCriterion = await dataService.createCriteria(criterionData);
-      if (savedCriterion && savedCriterion.id) {
-        // 임시 ID를 실제 저장된 ID로 매핑
-        idMapping.set(criterion.id, savedCriterion.id);
+      for (const criterion of sortedCriteria) {
+        // 부모 ID 매핑
+        let mappedParentId: string | null = null;
+        if (criterion.parent_id && idMapping.has(criterion.parent_id)) {
+          mappedParentId = idMapping.get(criterion.parent_id)!;
+        }
+        
+        const criterionData = {
+          project_id: projectId,
+          name: criterion.name,
+          description: criterion.description || '',
+          parent_id: mappedParentId,
+          level: criterion.level,
+          position: criterion.order || 1,
+          order: criterion.order || 1
+        };
+        
+        console.log(`💾 기준 저장 (레벨 ${criterion.level}):`, {
+          name: criterion.name,
+          parent_id: mappedParentId,
+          level: criterion.level
+        });
+        
+        try {
+          const savedCriterion = await dataService.createCriteria(criterionData);
+          if (savedCriterion && savedCriterion.id) {
+            // 임시 ID를 실제 저장된 ID로 매핑
+            idMapping.set(criterion.id, savedCriterion.id);
+            savedCriteria.push(savedCriterion);
+          }
+        } catch (saveError) {
+          console.error(`기준 저장 실패 (${criterion.name}):`, saveError);
+          throw new Error(`기준 "${criterion.name}" 저장 실패`);
+        }
       }
+      
+      // 데이터 다시 로드
+      const criteriaData = await dataService.getCriteria(projectId);
+      const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+      setCriteria(convertedCriteria);
+      
+      alert(`✅ ${savedCriteria.length}개의 기준이 계층구조를 유지하여 저장되었습니다.`);
+    } catch (error) {
+      console.error('계층구조 저장 실패:', error);
+      throw error;
     }
-    
-    // 데이터 다시 로드
-    const criteriaData = await dataService.getCriteria(projectId);
-    const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-    setCriteria(convertedCriteria);
-    
-    alert(`✅ ${allCriteria.length}개의 기준이 계층구조를 유지하여 저장되었습니다.`);
   };
 
   const processMainCriteriaOnly = async (rootCriteria: Criterion[], subCriteria: Criterion[]) => {

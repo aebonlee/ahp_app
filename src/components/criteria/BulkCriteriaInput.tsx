@@ -467,7 +467,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
       {/* Visual Editor Modal */}
       {showVisualEditor && (
         <HierarchyVisualEditor
-          initialData={parseResult?.criteria || []}
+          initialData={existingCriteria.length > 0 ? existingCriteria : (parseResult?.criteria || [])}
           onUpdate={(data) => {
             // Visual Editor에서 받은 데이터를 처리
             const convertedData = data.map((item, index) => ({
@@ -475,8 +475,10 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
               id: item.id || `criterion-${Date.now()}-${index}`,
               order: index + 1
             }));
+            // 즉시 적용
             onImport(convertedData);
             setShowVisualEditor(false);
+            onCancel(); // 모달 닫기
           }}
           onClose={() => setShowVisualEditor(false)}
           templateType="3x3"
