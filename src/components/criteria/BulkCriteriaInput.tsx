@@ -11,6 +11,7 @@ interface Criterion {
   level: number;
   children?: Criterion[];
   weight?: number;
+  order?: number;
 }
 
 interface BulkCriteriaInputProps {
@@ -81,7 +82,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 
   const convertParsedCriteria = (parsedCriteria: any[]): Criterion[] => {
     const criteria: Criterion[] = [];
-    const parentStack: Criterion[] = []; // 각 레벨의 현재 부모를 추적
+    const levelStack: Criterion[] = []; // 각 레벨의 최근 부모를 추적하는 스택
 
     // 원본 순서 유지 (정렬하지 않음)
     parsedCriteria.forEach((parsed, index) => {
@@ -90,17 +91,17 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
       // 부모 ID 찾기
       let parent_id: string | null = null;
       if (parsed.level > 1) {
-        // 현재 레벨보다 낮은 레벨들만 스택에 유지
-        while (parentStack.length > 0 && parentStack[parentStack.length - 1].level >= parsed.level) {
-          parentStack.pop();
+        // 현재 레벨보다 높은 레벨들을 스택에서 제거
+        while (levelStack.length > 0 && levelStack[levelStack.length - 1].level >= parsed.level) {
+          levelStack.pop();
         }
         
-        // 스택에서 가장 최근의 부모(현재 레벨보다 1 낮은 레벨) 찾기
-        const targetParentLevel = parsed.level - 1;
-        for (let i = parentStack.length - 1; i >= 0; i--) {
-          if (parentStack[i].level === targetParentLevel) {
-            parent_id = parentStack[i].id;
-            break;
+        // 스택에서 가장 최근의 부모 찾기 (현재 레벨보다 1 낮은 레벨)
+        if (levelStack.length > 0) {
+          // 스택의 마지막 항목이 직접적인 부모여야 함
+          const potentialParent = levelStack[levelStack.length - 1];
+          if (potentialParent.level === parsed.level - 1) {
+            parent_id = potentialParent.id;
           }
         }
       }
@@ -112,13 +113,14 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
         parent_id,
         level: parsed.level,
         children: [],
-        weight: 1
+        weight: 1,
+        order: index + 1
       };
 
       criteria.push(criterion);
       
       // 현재 기준을 스택에 추가 (잠재적 부모가 될 수 있음)
-      parentStack.push(criterion);
+      levelStack.push(criterion);
     });
 
     // 계층구조 구성
@@ -129,23 +131,29 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     const criteriaMap = new Map<string, Criterion>();
     const rootCriteria: Criterion[] = [];
 
-    // 모든 기준을 맵에 저장
+    // 모든 기준을 맵에 저장 (children 배열 초기화)
     flatCriteria.forEach(criterion => {
-      criteriaMap.set(criterion.id, { ...criterion, children: [] });
+      criteriaMap.set(criterion.id, { 
+        ...criterion, 
+        children: [] 
+      });
     });
 
-    // 계층구조 구성
-    flatCriteria.forEach(criterion => {
+    // 계층구조 구성 - 레벨 순서대로 처리
+    const sortedCriteria = [...flatCriteria].sort((a, b) => a.level - b.level);
+    
+    sortedCriteria.forEach(criterion => {
       const criterionObj = criteriaMap.get(criterion.id)!;
       
       if (criterion.parent_id && criteriaMap.has(criterion.parent_id)) {
+        // 부모가 있는 경우 부모의 children에 추가
         const parent = criteriaMap.get(criterion.parent_id);
         if (parent) {
           parent.children = parent.children || [];
           parent.children.push(criterionObj);
         }
-      } else if (criterion.level === 1 || !criterion.parent_id) {
-        // 레벨 1이거나 부모가 없는 경우 루트로 처리
+      } else {
+        // 부모가 없거나 레벨 1인 경우 루트로 처리
         rootCriteria.push(criterionObj);
       }
     });

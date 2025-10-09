@@ -160,7 +160,7 @@ class DataService {
     throw new Error('Backend API 기준 업데이트 실패');
   }
 
-  async deleteCriteria(id: string): Promise<boolean> {
+  async deleteCriteria(id: string, projectId?: string): Promise<boolean> {
     try {
       const response = await criteriaApi.deleteCriteria(id);
       if (response.success) {

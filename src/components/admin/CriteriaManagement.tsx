@@ -394,14 +394,15 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     try {
       console.log('🔄 일괄 가져오기 시작:', importedCriteria);
       
+      // 계층구조 분석
       const rootCriteria = importedCriteria.filter(c => c.level === 1);
-      const subCriteria = importedCriteria.filter(c => c.level === 2);
+      const hierarchicalCriteria = importedCriteria.filter(c => c.level > 1);
       
-      if (subCriteria.length > 0) {
+      if (hierarchicalCriteria.length > 0) {
         // 계층구조가 있는 경우 사용자에게 옵션 제공
         setPendingImport({
           rootCriteria,
-          subCriteria,
+          subCriteria: hierarchicalCriteria,
           allCriteria: importedCriteria
         });
         setShowImportDialog(true);
@@ -410,7 +411,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       }
       
       // 평면 구조인 경우 바로 저장
-      await processFlatImport(importedCriteria);
+      await processHierarchicalImport(importedCriteria);
     } catch (error) {
       console.error('Failed to bulk import criteria:', error);
       alert('❌ 일괄 가져오기 중 오류가 발생했습니다.');
@@ -422,9 +423,9 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     
     try {
       if (saveOnlyMain) {
-        await processHierarchicalImport(pendingImport.rootCriteria, pendingImport.subCriteria);
+        await processMainCriteriaOnly(pendingImport.rootCriteria, pendingImport.subCriteria);
       } else {
-        await processFlatImport(pendingImport.allCriteria);
+        await processHierarchicalImport(pendingImport.allCriteria);
       }
     } catch (error) {
       console.error('Failed to process import choice:', error);
@@ -435,7 +436,50 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     }
   };
 
-  const processHierarchicalImport = async (rootCriteria: Criterion[], subCriteria: Criterion[]) => {
+  const processHierarchicalImport = async (allCriteria: Criterion[]) => {
+    console.log('🔄 계층구조 유지하여 저장 시작:', allCriteria);
+    
+    // 레벨 순서대로 정렬하여 부모부터 먼저 저장
+    const sortedCriteria = [...allCriteria].sort((a, b) => a.level - b.level);
+    const idMapping = new Map<string, string>(); // 임시 ID를 실제 저장된 ID로 매핑
+    
+    for (const criterion of sortedCriteria) {
+      // 부모 ID 매핑
+      let mappedParentId: string | null = null;
+      if (criterion.parent_id && idMapping.has(criterion.parent_id)) {
+        mappedParentId = idMapping.get(criterion.parent_id)!;
+      }
+      
+      const criterionData = convertToCriteriaData({
+        name: criterion.name,
+        description: criterion.description || '',
+        parent_id: mappedParentId,
+        level: criterion.level,
+        order: criterion.order || 1
+      });
+      
+      console.log(`💾 기준 저장 (레벨 ${criterion.level}):`, {
+        name: criterion.name,
+        parent_id: mappedParentId,
+        level: criterion.level
+      });
+      
+      const savedCriterion = await dataService.createCriteria(criterionData);
+      if (savedCriterion && savedCriterion.id) {
+        // 임시 ID를 실제 저장된 ID로 매핑
+        idMapping.set(criterion.id, savedCriterion.id);
+      }
+    }
+    
+    // 데이터 다시 로드
+    const criteriaData = await dataService.getCriteria(projectId);
+    const convertedCriteria = (criteriaData || []).map(convertToCriterion);
+    setCriteria(convertedCriteria);
+    
+    alert(`✅ ${allCriteria.length}개의 기준이 계층구조를 유지하여 저장되었습니다.`);
+  };
+
+  const processMainCriteriaOnly = async (rootCriteria: Criterion[], subCriteria: Criterion[]) => {
     // 최상위 기준만 저장하고 하위 기준은 메타데이터로 포함
     for (const rootCriterion of rootCriteria) {
       const relatedSubCriteria = subCriteria.filter(c => c.parent_id === rootCriterion.id);
@@ -475,7 +519,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
   };
 
   const processFlatImport = async (criteria: Criterion[]) => {
-    // 모든 기준을 개별적으로 저장
+    // 모든 기준을 평면 구조로 저장 (레벨 1로 변환)
     for (const criterion of criteria) {
       const criterionData = convertToCriteriaData({
         name: criterion.name,
@@ -485,7 +529,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         order: criterion.order || 1
       });
       
-      console.log('💾 개별 기준 저장:', criterionData);
+      console.log('💾 평면 기준 저장:', criterionData);
       await dataService.createCriteria(criterionData);
     }
     
@@ -494,7 +538,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     const convertedCriteria = (criteriaData || []).map(convertToCriterion);
     setCriteria(convertedCriteria);
     
-    alert(`✅ ${criteria.length}개의 기준이 저장되었습니다.`);
+    alert(`✅ ${criteria.length}개의 기준이 평면 구조로 저장되었습니다.`);
   };
 
   const renderHelpModal = () => {
