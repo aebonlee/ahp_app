@@ -109,19 +109,12 @@ export class TextParser {
       const [, indent, number, content] = numberedMatch;
       
       // 번호 형식으로 레벨 계산
+      // "1." = 레벨 1, "1.1." 또는 "1-1." = 레벨 2, etc.
       const numberLevel = (number.match(/[.-]/g) || []).length + 1;
       
-      // 들여쓰기로 레벨 계산
-      let indentLevel = 1;
-      if (indent.length > 0) {
-        const spaces = indent.replace(/\t/g, '    ').length;
-        if (spaces >= 2) {
-          indentLevel = Math.floor((spaces - 1) / 2) + 1;
-        }
-      }
-      
-      // 번호 형식과 들여쓰기 중 더 큰 값 사용
-      const level = Math.max(numberLevel, indentLevel);
+      // 번호 형식을 기준으로 레벨 결정
+      // 들여쓰기는 무시하고 번호 형식만으로 레벨 결정
+      const level = numberLevel;
       
       const [name, description] = this.extractNameAndDescription(content);
       return { name: name.trim(), description, level };
