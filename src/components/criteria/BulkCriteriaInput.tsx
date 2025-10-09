@@ -317,63 +317,6 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
               </div>
             )}
 
-
-                {/* 템플릿 빠른 선택 */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => {
-                      setInputText(`기업 평가 기준
-    재무 성과
-        수익성
-        안정성
-        성장성
-    운영 효율성
-        생산성
-        품질 관리
-        혁신 역량
-    지속가능성
-        환경 경영
-        사회적 책임
-        거버넌스`);
-                      setActiveTab('input');
-                    }}>
-                    <h4 className="font-medium mb-2">3×3 구조</h4>
-                    <p className="text-xs text-gray-600">
-                      상위 3개 × 하위 3개<br/>
-                      총 12개 기준
-                    </p>
-                  </div>
-                  <div className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => {
-                      setInputText(`평가 목표
-    카테고리 1
-        세부항목 1-1
-        세부항목 1-2
-        세부항목 1-3
-    카테고리 2
-        세부항목 2-1
-        세부항목 2-2
-        세부항목 2-3
-    카테고리 3
-        세부항목 3-1
-        세부항목 3-2
-        세부항목 3-3
-    카테고리 4
-        세부항목 4-1
-        세부항목 4-2
-        세부항목 4-3`);
-                      setActiveTab('input');
-                    }}>
-                    <h4 className="font-medium mb-2">4×3 구조</h4>
-                    <p className="text-xs text-gray-600">
-                      상위 4개 × 하위 3개<br/>
-                      총 16개 기준
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {activeTab === 'examples' && (
               <div className="space-y-6 pb-8">
                 <div className="text-center">
