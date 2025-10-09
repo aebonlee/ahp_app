@@ -183,14 +183,13 @@ export const CRITERIA_TEMPLATES: CriteriaTemplate[] = [
   {
     id: 'it_project',
     name: 'IT 프로젝트 평가',
-    description: 'SW/시스템 도입 평가',
+    description: 'SW/시스템 도입 평가 (3×3 구조)',
     icon: '💻',
     structure: [
       {
         name: '기술적 요구사항',
         description: '기술 스펙 충족도',
         children: [
-          { name: '기능 완성도', description: '요구 기능 구현 수준' },
           { name: '성능', description: '처리 속도와 용량' },
           { name: '보안', description: '보안 요구사항 충족' },
           { name: '호환성', description: '기존 시스템과의 연동' }

@@ -1002,10 +1002,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           <ModelFinalization 
             projectId={selectedProjectId} 
             onFinalize={() => {
+              // 모델 확정 후 평가자 관리 페이지로 이동
+              console.log('✅ 모델 구축 완료, 평가자 관리로 이동:', selectedProjectId);
+              if (externalOnTabChange) {
+                externalOnTabChange('evaluators');
+              } else {
+                setActiveMenu('evaluators');
+              }
               setCurrentStep('overview');
-              // 프로젝트 상태를 활성화로 변경
-              // 프로젝트 상태 변경은 App.tsx에서 관리됨
-              console.log('✅ 프로젝트 활성화됨:', selectedProjectId);
             }}
             isReadyToFinalize={true}
           />
@@ -3275,7 +3279,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             {(() => {
               const project = projects.find(p => p.id === selectedProjectId);
               return project ? (
-                <Card title={`모델 구축: ${project.title}`}>
+                <Card title={`2-4단계 — 모델 구축: ${project.title}`}>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
                       <h4 className="font-medium mb-3">프로젝트 정보</h4>

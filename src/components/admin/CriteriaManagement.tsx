@@ -430,87 +430,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     }
   };
 
-  const handleLoadTemplateData = async () => {
-    if (criteria.length > 0) {
-      if (!window.confirm('⚠️ 기존 데이터가 있습니다. 템플릿으로 교체하시겠습니까?')) {
-        return;
-      }
-    }
-    
-    // 논문 작성 권장: 3개 기준 템플릿 구조
-    const templateCriteria = [
-      {
-        project_id: projectId,
-        name: '기준 1',
-        description: '첫 번째 평가 기준',
-        parent_id: null,
-        level: 1,
-        position: 1,
-        order: 1
-      },
-      {
-        project_id: projectId,
-        name: '기준 2', 
-        description: '두 번째 평가 기준',
-        parent_id: null,
-        level: 1,
-        position: 2,
-        order: 2
-      },
-      {
-        project_id: projectId,
-        name: '기준 3',
-        description: '세 번째 평가 기준 (논문 권장 구조)',
-        parent_id: null,
-        level: 1,
-        position: 3,
-        order: 3
-      }
-    ];
-    
-    try {
-      // 기존 데이터 삭제
-      if (criteria.length > 0) {
-        console.log('🗑️ 기존 기준 삭제 중...');
-        for (const criterion of criteria) {
-          if (criterion.id && criterion.id !== 'temp') {
-            try {
-              await dataService.deleteCriteria(criterion.id, projectId);
-            } catch (deleteError) {
-              console.error('기준 삭제 실패:', deleteError);
-            }
-          }
-        }
-      }
-      
-      // 잠시 대기 (DB 삭제 완료 대기)
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // 템플릿 데이터 생성
-      console.log('📝 템플릿 데이터 생성 중...');
-      for (const criterionData of templateCriteria) {
-        try {
-          const result = await dataService.createCriteria(criterionData);
-          console.log('✅ 템플릿 기준 생성:', result);
-        } catch (createError) {
-          console.error('템플릿 기준 생성 실패:', createError);
-        }
-      }
-      
-      // 데이터 다시 로드
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const criteriaData = await dataService.getCriteria(projectId);
-      const convertedCriteria = (criteriaData || []).map(convertToCriterion);
-      setCriteria(convertedCriteria);
-      
-      setNewCriterion({ name: '', description: '', parentId: '' });
-      setErrors({});
-      alert('✅ 논문 권장 템플릿(3개 기준)이 저장되었습니다.\n필요시 추가 기준을 입력할 수 있습니다.');
-    } catch (error) {
-      console.error('Failed to load template data:', error);
-      alert(`❌ 템플릿 로드 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
-    }
-  };
 
   const handleBulkImport = async (importedCriteria: Criterion[]) => {
     try {
@@ -878,7 +797,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
                 <li>비슷한 성격의 기준들은 하나의 상위 기준으로 그룹화하세요</li>
                 <li>측정 가능한 기준과 주관적 기준을 적절히 균형있게 구성하세요</li>
                 <li>🗑️ 버튼으로 개별 기준을 삭제할 수 있습니다</li>
-                <li>📝 기본 템플릿을 활용하여 빠르게 시작할 수 있습니다</li>
               </ul>
             </div>
           </div>
@@ -1091,17 +1009,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
                     📊 가로형
                   </button>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleLoadTemplateData}
-                  className="transition-all duration-200 ml-2" 
-                  style={{ color: 'var(--status-info-text)', borderColor: 'var(--status-info-border)' }} 
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--status-info-bg)'} 
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  📝 기본 템플릿
-                </Button>
                 <Button 
                   variant="primary" 
                   size="sm"
