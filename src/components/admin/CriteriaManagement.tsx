@@ -368,7 +368,9 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
     try {
       // 기존 데이터 삭제 후 템플릿 생성
       for (const criterion of criteria) {
-        await dataService.deleteCriteria(criterion.id, projectId);
+        if (criterion.id) {
+          await dataService.deleteCriteria(criterion.id, projectId);
+        }
       }
       
       // 템플릿 데이터 생성

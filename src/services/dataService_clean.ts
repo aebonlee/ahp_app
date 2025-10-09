@@ -229,8 +229,11 @@ class CleanDataService {
       const response = await criteriaApi.getCriteria(projectId);
       
       if (response.success && response.data) {
+        // response.data가 이미 배열로 처리되어 옴
+        const dataArray = Array.isArray(response.data) ? response.data : [];
+        
         // type이 'criteria' 또는 없는 항목만 필터링 (alternative 제외)
-        const criteria = (response.data || [])
+        const criteria = dataArray
           .filter((item: any) => !item.type || item.type === 'criteria')
           .map((item: any) => ({
             id: item.id,
@@ -387,8 +390,11 @@ class CleanDataService {
       // Criteria API를 사용하여 type='alternative'인 항목 조회
       const response = await criteriaApi.getCriteria(projectId);
       if (response.success && response.data) {
+        // response.data가 이미 배열로 처리되어 옴
+        const dataArray = Array.isArray(response.data) ? response.data : [];
+        
         // type이 'alternative'인 항목만 필터링하고 AlternativeData 형식으로 변환
-        const alternatives = (response.data || [])
+        const alternatives = dataArray
           .filter((item: any) => item.type === 'alternative')
           .map((item: any) => ({
             id: item.id,

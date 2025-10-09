@@ -397,7 +397,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
           <div className="flex justify-between items-center pt-6 border-t">
             <div className="text-sm text-gray-600">
               {evaluators.length === 0 && (
-                <span className="text-orange-600">⚠️ 최소 1명 이상의 평가자를 배정해주세요.</span>
+                <span className="text-blue-600">👥 평가자 없이 연구자가 직접 테스트할 수 있습니다.</span>
               )}
             </div>
             <div className="flex space-x-3">
@@ -413,7 +413,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
               <Button
                 variant="primary"
                 onClick={onComplete}
-                disabled={evaluators.length === 0}
+                disabled={false}
               >
                 다음 단계로
               </Button>
