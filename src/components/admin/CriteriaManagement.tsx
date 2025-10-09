@@ -49,6 +49,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
+  const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
 
   // 백엔드에서 기준 로드
   const loadCriteria = async () => {
@@ -406,44 +407,53 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           <div className="border-b pb-4">
             <h4 className="font-medium text-gray-900 mb-3">입력 방법 선택</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Button
-                variant={activeInputMode === 'template' ? 'primary' : 'outline'}
-                onClick={() => {
-                  setActiveInputMode('template');
-                  setShowTemplates(true);
-                  setShowBulkInput(false);
-                }}
-                className="flex items-center justify-center"
-              >
-                <span className="mr-2">📋</span>
-                기본 템플릿 사용
-              </Button>
+              <div className="relative">
+                <Button
+                  variant={activeInputMode === 'template' ? 'primary' : 'outline'}
+                  onClick={() => {
+                    setActiveInputMode('template');
+                    setShowTemplates(true);
+                    setShowBulkInput(false);
+                  }}
+                  className="flex items-center justify-center w-full"
+                  title="미리 정의된 템플릿을 사용하여 빠르게 계층구조를 설정할 수 있습니다."
+                >
+                  <span className="mr-2">📋</span>
+                  기본 템플릿 사용
+                </Button>
+              </div>
               
-              <Button
-                variant={activeInputMode === 'bulk' ? 'primary' : 'outline'}
-                onClick={() => {
-                  setActiveInputMode('bulk');
-                  setShowBulkInput(true);
-                  setShowTemplates(false);
-                }}
-                className="flex items-center justify-center"
-              >
-                <span className="mr-2">📝</span>
-                텍스트 일괄 입력
-              </Button>
+              <div className="relative">
+                <Button
+                  variant={activeInputMode === 'bulk' ? 'primary' : 'outline'}
+                  onClick={() => {
+                    setActiveInputMode('bulk');
+                    setShowBulkInput(true);
+                    setShowTemplates(false);
+                  }}
+                  className="flex items-center justify-center w-full"
+                  title="텍스트로 작성된 계층구조를 한 번에 입력할 수 있습니다. 마크다운, 번호, 들여쓰기 형식을 지원합니다."
+                >
+                  <span className="mr-2">📝</span>
+                  텍스트 일괄 입력
+                </Button>
+              </div>
               
-              <Button
-                variant={activeInputMode === 'visual' ? 'primary' : 'outline'}
-                onClick={() => {
-                  setActiveInputMode(activeInputMode === 'visual' ? null : 'visual');
-                  setShowTemplates(false);
-                  setShowBulkInput(false);
-                }}
-                className="flex items-center justify-center"
-              >
-                <span className="mr-2">🎨</span>
-                시각적 빌더
-              </Button>
+              <div className="relative">
+                <Button
+                  variant={activeInputMode === 'visual' ? 'primary' : 'outline'}
+                  onClick={() => {
+                    setActiveInputMode(activeInputMode === 'visual' ? null : 'visual');
+                    setShowTemplates(false);
+                    setShowBulkInput(false);
+                  }}
+                  className="flex items-center justify-center w-full"
+                  title="드래그 앤 드롭으로 계층구조를 시각적으로 설계할 수 있습니다."
+                >
+                  <span className="mr-2">🎨</span>
+                  시각적 빌더
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -460,12 +470,38 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
               </div>
             ) : criteria.length > 0 ? (
               <div>
-                <h4 className="font-medium text-gray-900 mb-3">현재 계층구조</h4>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900">현재 계층구조</h4>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setLayoutMode('vertical')}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        layoutMode === 'vertical' 
+                          ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      📋 세로형
+                    </button>
+                    <button
+                      onClick={() => setLayoutMode('horizontal')}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        layoutMode === 'horizontal' 
+                          ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      📊 가로형
+                    </button>
+                  </div>
+                </div>
                 <HierarchyTreeVisualization 
                   nodes={getAllCriteria(criteria)}
                   title=""
                   showWeights={false}
                   interactive={true}
+                  layout={layoutMode}
+                  onLayoutChange={setLayoutMode}
                 />
               </div>
             ) : (
@@ -517,8 +553,9 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
               variant="secondary"
               onClick={handleReset}
               disabled={isLoading || criteria.length === 0}
+              className="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
             >
-              초기화
+              🗑️ 초기화
             </Button>
             
             <div className="flex space-x-3">

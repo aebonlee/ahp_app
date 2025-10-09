@@ -59,17 +59,19 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
         }))
       });
       
-      // 기존 기준과의 중복 검사
-      const existingNames = getAllCriteria(existingCriteria).map(c => c.name.toLowerCase());
-      const duplicates = result.criteria.filter(c => 
-        existingNames.includes(c.name.toLowerCase())
-      );
-      
-      if (duplicates.length > 0) {
-        result.errors.push(
-          `기존 기준과 중복: ${duplicates.map(d => d.name).join(', ')}`
+      // 기존 기준과의 중복 검사 (기존 기준이 있을 때만)
+      if (existingCriteria && existingCriteria.length > 0) {
+        const existingNames = getAllCriteria(existingCriteria).map(c => c.name.toLowerCase());
+        const duplicates = result.criteria.filter(c => 
+          existingNames.includes(c.name.toLowerCase())
         );
-        result.success = false;
+        
+        if (duplicates.length > 0) {
+          result.errors.push(
+            `기존 기준과 중복: ${duplicates.map(d => d.name).join(', ')}`
+          );
+          result.success = false;
+        }
       }
       
       setParseResult(result);
