@@ -34,9 +34,21 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
           apiService.evaluatorAPI.fetchByProject(projectId)
         ]);
         
-        setCriteria((criteriaResponse.data as any)?.criteria || (criteriaResponse.data as any) || []);
-        setAlternatives((alternativesResponse.data as any)?.alternatives || (alternativesResponse.data as any) || []);
-        setEvaluators((evaluatorsResponse.data as any)?.evaluators || (evaluatorsResponse.data as any) || []);
+        // 데이터 타입 확인 및 안전한 배열 변환
+        console.log('🔍 ModelFinalization - API 응답:', {
+          criteriaResponse: criteriaResponse.data,
+          alternativesResponse: alternativesResponse.data,
+          evaluatorsResponse: evaluatorsResponse.data
+        });
+        
+        const criteriaData = (criteriaResponse.data as any)?.criteria || (criteriaResponse.data as any) || [];
+        const alternativesData = (alternativesResponse.data as any)?.alternatives || (alternativesResponse.data as any) || [];
+        const evaluatorsData = (evaluatorsResponse.data as any)?.evaluators || (evaluatorsResponse.data as any) || [];
+        
+        // 배열인지 확인하고 설정
+        setCriteria(Array.isArray(criteriaData) ? criteriaData : []);
+        setAlternatives(Array.isArray(alternativesData) ? alternativesData : []);
+        setEvaluators(Array.isArray(evaluatorsData) ? evaluatorsData : []);
         
       } catch (error) {
         console.error('Failed to load project data:', error);
@@ -67,9 +79,14 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
   };
 
   const getModelSummary = () => {
-    const criteriaCount = criteria.length;
-    const alternativesCount = alternatives.length;
-    const evaluatorsCount = evaluators.length;
+    // 배열 검증
+    const safeCriteria = Array.isArray(criteria) ? criteria : [];
+    const safeAlternatives = Array.isArray(alternatives) ? alternatives : [];
+    const safeEvaluators = Array.isArray(evaluators) ? evaluators : [];
+    
+    const criteriaCount = safeCriteria.length;
+    const alternativesCount = safeAlternatives.length;
+    const evaluatorsCount = safeEvaluators.length;
     
     // 실제 데이터 기반으로 예상 비교 횟수 계산
     const criteriaComparisons = criteriaCount > 1 ? (criteriaCount * (criteriaCount - 1)) / 2 : 0;
@@ -78,7 +95,7 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
     
     return {
       criteria: criteriaCount,
-      subCriteria: criteria.filter(c => c.level > 1).length,
+      subCriteria: safeCriteria.filter(c => c && typeof c === 'object' && c.level > 1).length,
       alternatives: alternativesCount,
       evaluators: evaluatorsCount,
       estimatedComparisons: estimatedComparisons
