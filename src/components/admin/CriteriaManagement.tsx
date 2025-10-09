@@ -352,20 +352,76 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
   };
 
   const handleClearAllData = async () => {
-    if (window.confirm('경고: 모든 기준 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+    if (window.confirm('경고: 모든 모델 데이터(기준 + 대안)를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
       try {
-        // 모든 기준을 PostgreSQL에서 삭제
-        for (const criterion of criteria) {
-          await dataService.deleteCriteria(criterion.id, projectId);
+        console.log('🗑️ 모델 데이터 완전 초기화 시작...');
+        
+        // 1. 먼저 DB에서 모든 기준과 대안 조회
+        const [existingCriteria, existingAlternatives] = await Promise.all([
+          dataService.getCriteria(projectId),
+          dataService.getAlternatives(projectId)
+        ]);
+        
+        console.log(`📋 삭제할 데이터: 기준 ${existingCriteria.length}개, 대안 ${existingAlternatives.length}개`);
+        
+        // 2. 모든 대안 삭제 (먼저)
+        for (const alternative of existingAlternatives) {
+          if (alternative.id) {
+            try {
+              console.log(`🗑️ 대안 삭제: ${alternative.name}`);
+              await dataService.deleteAlternative(alternative.id, projectId);
+            } catch (deleteError) {
+              console.error(`대안 삭제 실패 (${alternative.name}):`, deleteError);
+            }
+          }
         }
         
+        // 3. 모든 기준 삭제 (레벨 역순 - 하위부터)
+        const sortedForDeletion = [...existingCriteria].sort((a, b) => (b.level || 0) - (a.level || 0));
+        for (const criterion of sortedForDeletion) {
+          if (criterion.id) {
+            try {
+              console.log(`🗑️ 기준 삭제: ${criterion.name} (L${criterion.level})`);
+              await dataService.deleteCriteria(criterion.id, projectId);
+            } catch (deleteError) {
+              console.error(`기준 삭제 실패 (${criterion.name}):`, deleteError);
+            }
+          }
+        }
+        
+        // 4. 삭제 완료 후 대기 및 최종 확인
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const [finalCriteria, finalAlternatives] = await Promise.all([
+          dataService.getCriteria(projectId),
+          dataService.getAlternatives(projectId)
+        ]);
+        
+        if (finalCriteria.length > 0 || finalAlternatives.length > 0) {
+          console.warn(`⚠️ 아직 남은 데이터: 기준 ${finalCriteria.length}개, 대안 ${finalAlternatives.length}개`);
+          // 남은 데이터 강제 삭제 시도
+          await Promise.all([
+            ...finalCriteria.map(c => c.id ? dataService.deleteCriteria(c.id, projectId) : Promise.resolve()),
+            ...finalAlternatives.map(a => a.id ? dataService.deleteAlternative(a.id, projectId) : Promise.resolve())
+          ]);
+        }
+        
+        // 5. 상태 초기화
         setCriteria([]);
         setNewCriterion({ name: '', description: '', parentId: '' });
         setErrors({});
-        console.log('✅ 모든 기준이 PostgreSQL에서 삭제되었습니다.');
+        
+        // 6. 부모 컴포넌트에 변경 사항 알림
+        if (onCriteriaChange) {
+          onCriteriaChange(0);
+        }
+        
+        console.log('✅ 모델 데이터가 완전히 초기화되었습니다.');
+        alert('✅ 모델 데이터(기준 + 대안)가 완전히 삭제되었습니다.');
+        
       } catch (error) {
-        console.error('Failed to clear all criteria:', error);
-        alert('❌ 데이터 삭제 중 오류가 발생했습니다.');
+        console.error('Failed to clear all model data:', error);
+        alert('❌ 모델 데이터 삭제 중 오류가 발생했습니다.');
       }
     }
   };
@@ -469,19 +525,35 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
           return;
         }
         
-        // 기존 데이터 삭제
-        console.log('🗑️ 기존 기준 삭제 중...');
+        // 기존 데이터 완전 삭제 (기준 + 대안)
+        console.log('🗑️ 기존 모델 데이터 삭제 중...');
         
-        // 먼저 DB에서 모든 기준 조회
-        const existingCriteria = await dataService.getCriteria(projectId);
-        console.log('📋 삭제할 기존 기준:', existingCriteria.length, '개');
+        // 1. 먼저 DB에서 모든 기준과 대안 조회
+        const [existingCriteria, existingAlternatives] = await Promise.all([
+          dataService.getCriteria(projectId),
+          dataService.getAlternatives(projectId)
+        ]);
         
-        // 모든 기존 기준 삭제 (레벨 역순으로 삭제 - 하위부터)
+        console.log(`📋 삭제할 데이터: 기준 ${existingCriteria.length}개, 대안 ${existingAlternatives.length}개`);
+        
+        // 2. 모든 대안 삭제 (먼저)
+        for (const alternative of existingAlternatives) {
+          if (alternative.id) {
+            try {
+              console.log(`🗑️ 대안 삭제: ${alternative.name}`);
+              await dataService.deleteAlternative(alternative.id, projectId);
+            } catch (deleteError) {
+              console.error(`대안 삭제 실패 (${alternative.name}):`, deleteError);
+            }
+          }
+        }
+        
+        // 3. 모든 기준 삭제 (레벨 역순 - 하위부터)
         const sortedForDeletion = [...existingCriteria].sort((a, b) => (b.level || 0) - (a.level || 0));
         for (const criterion of sortedForDeletion) {
           if (criterion.id) {
             try {
-              console.log(`🗑️ 기준 삭제 중: ${criterion.name} (ID: ${criterion.id})`);
+              console.log(`🗑️ 기준 삭제: ${criterion.name} (L${criterion.level})`);
               await dataService.deleteCriteria(criterion.id, projectId);
             } catch (deleteError) {
               console.error(`기준 삭제 실패 (${criterion.name}):`, deleteError);
@@ -489,28 +561,44 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
           }
         }
         
-        // 삭제 완료 확인을 위해 잠시 대기 (백엔드 동기화 시간)
+        // 4. 삭제 완료 후 대기 및 최종 확인
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // 삭제 후 다시 확인
-        const remainingCriteria = await dataService.getCriteria(projectId);
-        if (remainingCriteria.length > 0) {
-          console.warn(`⚠️ 아직 ${remainingCriteria.length}개의 기준이 남아있습니다. 다시 삭제 시도...`);
-          // 남은 기준 다시 삭제
-          for (const criterion of remainingCriteria) {
-            if (criterion.id) {
-              try {
-                await dataService.deleteCriteria(criterion.id, projectId);
-              } catch (e) {
-                console.error(`재삭제 실패: ${criterion.name}`);
-              }
-            }
-          }
+        const [finalCriteria, finalAlternatives] = await Promise.all([
+          dataService.getCriteria(projectId),
+          dataService.getAlternatives(projectId)
+        ]);
+        
+        if (finalCriteria.length > 0 || finalAlternatives.length > 0) {
+          console.warn(`⚠️ 아직 남은 데이터: 기준 ${finalCriteria.length}개, 대안 ${finalAlternatives.length}개`);
+          
+          // 남은 데이터 강제 삭제
+          const deletePromises = [
+            ...finalCriteria.map(c => 
+              c.id ? dataService.deleteCriteria(c.id, projectId).catch(e => 
+                console.error(`강제 삭제 실패 (${c.name}):`, e)
+              ) : Promise.resolve()
+            ),
+            ...finalAlternatives.map(a => 
+              a.id ? dataService.deleteAlternative(a.id, projectId).catch(e => 
+                console.error(`강제 삭제 실패 (${a.name}):`, e)
+              ) : Promise.resolve()
+            )
+          ];
+          
+          await Promise.all(deletePromises);
           await new Promise(resolve => setTimeout(resolve, 500));
         }
         
-        // 상태 초기화
+        // 5. 상태 초기화
         setCriteria([]);
+        
+        // 6. 부모 컴포넌트에 변경 사항 알림
+        if (onCriteriaChange) {
+          onCriteriaChange(0);
+        }
+        
+        console.log('✅ 기존 모델 데이터가 완전히 삭제되었습니다.');
         await new Promise(resolve => setTimeout(resolve, 500));
       }
       

@@ -277,31 +277,49 @@ class CleanDataService {
         throw new Error('프로젝트 ID가 필요합니다.');
       }
       
-      // PostgreSQL DB에서 기존 기준 조회 (중복 검사를 위해)
+      // 사전 중복 검사 - 백엔드 에러 방지
       try {
         const existingResponse = await criteriaApi.getCriteria(data.project_id);
         const existingCriteria = existingResponse.success && existingResponse.data ? existingResponse.data : [];
         
-        // 중복 검사 - 동일한 레벨과 부모를 가진 경우만 체크
-        // parent_id 비교 시 null, undefined, 빈 문자열 모두 동일하게 처리
+        // 정규화 함수
         const normalizeParentId = (id: any) => (!id || id === '') ? null : id;
-        const isDuplicate = existingCriteria.some((c: any) => 
+        
+        // 중복 검사 1: 동일한 이름과 레벨, 부모
+        const exactDuplicate = existingCriteria.find((c: any) => 
           c.name.toLowerCase() === data.name.toLowerCase() && 
           c.level === data.level &&
           normalizeParentId(c.parent_id) === normalizeParentId(data.parent_id) &&
           (!c.type || c.type === 'criteria')
         );
-        if (isDuplicate) {
-          console.warn(`⚠️ 동일한 기준명이 이미 존재합니다: "${data.name}" (레벨: ${data.level}, parent: ${data.parent_id})`);
-          // 일괄 입력의 경우 중복을 무시하고 기존 데이터 반환
-          console.log('🔄 일괄 입력 중 중복 감지 - 기존 데이터 반환');
-          const existingItem = existingCriteria.find((c: any) => 
-            c.name.toLowerCase() === data.name.toLowerCase() && 
-            c.level === data.level &&
-            normalizeParentId(c.parent_id) === normalizeParentId(data.parent_id)
-          );
-          return existingItem || null;
+        
+        if (exactDuplicate) {
+          console.warn(`⚠️ 완전 중복 발견: "${data.name}" (레벨: ${data.level}, parent: ${data.parent_id})`);
+          console.log(`🔗 기존 데이터 사용: ID ${exactDuplicate.id}`);
+          return exactDuplicate;
         }
+        
+        // 중복 검사 2: 동일한 이름만 (서로 다른 레벨이나 부모)
+        const nameDuplicate = existingCriteria.find((c: any) => 
+          c.name.toLowerCase() === data.name.toLowerCase() &&
+          (!c.type || c.type === 'criteria')
+        );
+        
+        if (nameDuplicate) {
+          console.warn(`⚠️ 이름 중복 발견: "${data.name}" - 기존: L${nameDuplicate.level}, 새로운: L${data.level}`);
+          // 다른 레벨이나 부모인 경우 경고만 하고 계속 진행
+          if (nameDuplicate.level !== data.level || 
+              normalizeParentId(nameDuplicate.parent_id) !== normalizeParentId(data.parent_id)) {
+            console.log('🔄 다른 레벨/부모이므로 생성 계속');
+          } else {
+            // 완전히 동일한 경우
+            console.log(`🔗 동일한 기준 발견 - 기존 데이터 사용: ID ${nameDuplicate.id}`);
+            return nameDuplicate;
+          }
+        }
+        
+        console.log(`✅ 중복 없음 - 새 기준 생성 가능: "${data.name}"`);
+        
       } catch (dupError) {
         console.warn('⚠️ 중복 검사 중 오류 (계속 진행):', dupError);
       }
@@ -342,6 +360,27 @@ class CleanDataService {
         responseError: response.error,
         responseMessage: response.message
       });
+      
+      // 백엔드에서 already exists 에러가 발생한 경우 기존 데이터 찾기 시도
+      if (errorMsg.includes('already exists') || errorMsg.includes('이미 존재')) {
+        console.log('🔗 백엔드 중복 에러 - 기존 데이터 찾기 시도');
+        try {
+          const retryResponse = await criteriaApi.getCriteria(data.project_id);
+          if (retryResponse.success && retryResponse.data) {
+            const existing = retryResponse.data.find((c: any) => 
+              c.name.toLowerCase() === data.name.toLowerCase() &&
+              (!c.type || c.type === 'criteria')
+            );
+            if (existing) {
+              console.log(`🎆 기존 데이터 발견 및 반환: ${existing.name} (ID: ${existing.id})`);
+              return existing;
+            }
+          }
+        } catch (retryError) {
+          console.error('기존 데이터 찾기 실패:', retryError);
+        }
+      }
+      
       throw new Error(errorMsg);
     } catch (error) {
       console.error('❌ PostgreSQL DB 기준 생성 중 오류:', error);
