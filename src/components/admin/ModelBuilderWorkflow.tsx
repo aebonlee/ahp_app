@@ -201,6 +201,7 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
           <CriteriaManagement
             projectId={projectId}
             onCriteriaChange={handleCriteriaChange}
+            onComplete={() => handleStepChange('alternatives')}
           />
         );
 
@@ -209,6 +210,7 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
           <AlternativeManagement
             projectId={projectId}
             onAlternativesChange={handleAlternativesChange}
+            onComplete={() => handleStepChange('evaluators')}
           />
         );
 
