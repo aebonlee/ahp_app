@@ -94,9 +94,10 @@ export class TextParser {
       if (indent.length > 0) {
         // 탭은 4칸으로 계산
         const spaces = indent.replace(/\t/g, '    ').length;
-        // 2칸당 1레벨 증가 (더 유연하게 처리)
+        // 2칸 또는 4칸당 1레벨 증가
+        // 2칸 = 레벨 2, 4칸 = 레벨 2 or 3, 6칸 = 레벨 3, 8칸 = 레벨 4
         if (spaces >= 2) {
-          level = Math.floor((spaces - 1) / 2) + 1;
+          level = Math.floor(spaces / 2) + 1;
         }
       }
       const [name, description] = this.extractNameAndDescription(content);
