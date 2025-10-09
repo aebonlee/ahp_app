@@ -57,7 +57,7 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
         objective: projectData.objective,
         ahp_type: projectData.ahpType,
         status: 'active',
-        evaluation_mode: 'practical',
+        evaluation_mode: projectData.evaluationMode || 'practical',
         workflow_stage: 'creating'
       });
 
