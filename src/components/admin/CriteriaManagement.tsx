@@ -565,11 +565,14 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
             idMapping.set(criterion.id, savedCriterion.id);
             savedCriteria.push(savedCriterion);
             console.log(`✅ 기준 "${criterion.name}" 저장 성공 (ID: ${savedCriterion.id})`);
-          } else if (savedCriterion) {
-            // 이미 존재하는 기준이 반환된 경우
+          } else if (savedCriterion && savedCriterion.id) {
+            // 이미 존재하는 기준이 반환된 경우 (id가 있는 경우만)
             console.log(`♾️ 기준 "${criterion.name}"은 이미 존재함 (ID: ${savedCriterion.id})`);
             idMapping.set(criterion.id, savedCriterion.id);
             savedCriteria.push(savedCriterion);
+          } else if (savedCriterion) {
+            // ID가 없는 경우 경고만 표시
+            console.warn(`⚠️ 기준 "${criterion.name}"이 저장되었으나 ID가 없습니다.`);
           }
         } catch (saveError: any) {
           console.error(`기준 저장 실패 (${criterion.name}):`, saveError);
