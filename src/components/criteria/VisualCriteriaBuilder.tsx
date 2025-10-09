@@ -387,7 +387,7 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
                 {Object.entries(stats.levels).map(([level, count]) => (
                   <div key={level} className="flex justify-between text-sm">
                     <span className="text-gray-500">레벨 {level}</span>
-                    <span>{count}개</span>
+                    <span>{String(count)}개</span>
                   </div>
                 ))}
               </div>

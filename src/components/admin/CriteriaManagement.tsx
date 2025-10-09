@@ -1301,21 +1301,34 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
       {/* 시각적 빌더 모달 */}
       {showVisualBuilder && (
         <VisualCriteriaBuilder
-          initialCriteria={criteria.map(c => ({
-            id: c.id,
-            name: c.name,
-            description: c.description,
-            level: c.level,
-            parent_id: c.parent_id || null,
-            children: c.children || [],
-            isExpanded: true
-          }))}
+          initialCriteria={(() => {
+            const convertToNode = (items: Criterion[]): any[] => {
+              return items.map(c => ({
+                id: c.id,
+                name: c.name,
+                description: c.description,
+                level: c.level,
+                parent_id: c.parent_id || null,
+                children: c.children ? convertToNode(c.children) : [],
+                isExpanded: true
+              }));
+            };
+            return convertToNode(criteria);
+          })()}
           onSave={(updatedCriteria) => {
-            const converted = updatedCriteria.map(c => ({
-              ...c,
-              parent_id: c.parent_id as string | null | undefined
-            })) as Criterion[];
-            setCriteria(converted);
+            const convertToCriterion = (nodes: any[]): Criterion[] => {
+              return nodes.map(node => ({
+                id: node.id,
+                name: node.name,
+                description: node.description,
+                level: node.level,
+                parent_id: node.parent_id,
+                children: node.children ? convertToCriterion(node.children) : [],
+                weight: 0,
+                order: 0
+              }));
+            };
+            setCriteria(convertToCriterion(updatedCriteria));
             setShowVisualBuilder(false);
             alert('계층구조가 저장되었습니다.');
           }}
