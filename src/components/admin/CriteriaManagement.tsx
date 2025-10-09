@@ -5,6 +5,8 @@ import Input from '../common/Input';
 import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
 import HierarchyTreeBuilder from '../modeling/HierarchyTreeBuilder';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
+import CriteriaTemplates from '../criteria/CriteriaTemplates';
+import VisualCriteriaBuilder from '../criteria/VisualCriteriaBuilder';
 import dataService from '../../services/dataService_clean';
 import { CriteriaData } from '../../services/api';
 
@@ -52,6 +54,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
   const [showHelp, setShowHelp] = useState(false);
   const [showBulkInput, setShowBulkInput] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showVisualBuilder, setShowVisualBuilder] = useState(false);
   const [pendingImport, setPendingImport] = useState<{
     rootCriteria: Criterion[];
     subCriteria: Criterion[];
@@ -1099,6 +1103,14 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
                   📝 기본 템플릿
                 </Button>
                 <Button 
+                  variant="primary" 
+                  size="sm"
+                  onClick={() => setShowTemplates(true)}
+                  className="transition-all duration-200 ml-2" 
+                >
+                  📋 기본 템플릿
+                </Button>
+                <Button 
                   variant="outline" 
                   size="sm"
                   onClick={() => setShowBulkInput(true)}
@@ -1112,7 +1124,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
                 <Button 
                   variant="primary" 
                   size="sm"
-                  onClick={() => setUseVisualBuilder(true)}
+                  onClick={() => setShowVisualBuilder(true)}
                   className="transition-all duration-200 ml-2" 
                 >
                   🎨 시각적 빌더
@@ -1245,6 +1257,69 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
           onImport={handleBulkImport}
           onCancel={() => setShowBulkInput(false)}
           existingCriteria={criteria}
+        />
+      )}
+
+      {/* 기본 템플릿 선택 모달 */}
+      {showTemplates && (
+        <CriteriaTemplates
+          onSelectTemplate={(template) => {
+            // 템플릿 구조를 기준으로 변환
+            const convertTemplate = (items: any[], parentId: string | null = null, level: number = 1): Criterion[] => {
+              const result: Criterion[] = [];
+              items.forEach((item, index) => {
+                const id = `template_${Date.now()}_${Math.random()}`;
+                const criterion: Criterion = {
+                  id: id,
+                  name: item.name,
+                  description: item.description,
+                  parent_id: parentId,
+                  level: level,
+                  children: [],
+                  order: index + 1,
+                  weight: 0
+                };
+                
+                if (item.children && item.children.length > 0) {
+                  criterion.children = convertTemplate(item.children, id, level + 1);
+                }
+                
+                result.push(criterion);
+              });
+              return result;
+            };
+            
+            const templateCriteria = convertTemplate(template.structure);
+            setCriteria(templateCriteria);
+            setShowTemplates(false);
+            alert(`"${template.name}" 템플릿이 적용되었습니다.`);
+          }}
+          onClose={() => setShowTemplates(false)}
+        />
+      )}
+
+      {/* 시각적 빌더 모달 */}
+      {showVisualBuilder && (
+        <VisualCriteriaBuilder
+          initialCriteria={criteria.map(c => ({
+            id: c.id,
+            name: c.name,
+            description: c.description,
+            level: c.level,
+            parent_id: c.parent_id || null,
+            children: c.children || [],
+            isExpanded: true
+          }))}
+          onSave={(updatedCriteria) => {
+            const converted = updatedCriteria.map(c => ({
+              ...c,
+              parent_id: c.parent_id as string | null | undefined
+            })) as Criterion[];
+            setCriteria(converted);
+            setShowVisualBuilder(false);
+            alert('계층구조가 저장되었습니다.');
+          }}
+          onClose={() => setShowVisualBuilder(false)}
         />
       )}
 
