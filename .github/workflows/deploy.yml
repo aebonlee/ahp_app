@@ -1,99 +1,39 @@
-name: Deploy to GitHub Pages
+name: Simple Deploy
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages-${{ github.ref }}"
-  cancel-in-progress: true
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        
+      
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
         
-    - name: Cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-        
-    - name: Prepare build environment
-      run: |
-        echo "Setting up build environment..."
-        
-        # Git 설정
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        
-        echo "Verifying files..."
-        if [ -f "src/App.tsx" ]; then echo "✓ App.tsx found"; else echo "✗ App.tsx missing"; fi
-        if [ -f "public/index.html" ]; then echo "✓ index.html found"; else echo "✗ index.html missing"; fi
-        if [ -f "package.json" ]; then echo "✓ package.json found"; else echo "✗ package.json missing"; fi
-        if [ -f "tsconfig.json" ]; then echo "✓ tsconfig.json found"; else echo "✗ tsconfig.json missing"; fi
-        
     - name: Install dependencies
-      run: |
-        echo "Installing dependencies..."
-        npm ci --prefer-offline --no-audit
+      run: npm ci --legacy-peer-deps
       
-    - name: Build frontend
-      run: |
-        echo "Building frontend..."
-        npm run build
+    - name: Build
+      run: npm run build
       env:
         CI: false
         PUBLIC_URL: /ahp_app
-        GENERATE_SOURCEMAP: false
-        
-    - name: Verify build output
-      run: |
-        echo "Verifying build output..."
-        if [ -d "build" ]; then 
-          echo "✓ Build directory created"
-          echo "Build directory contents:"
-          ls -la build/ | head -10
-        else 
-          echo "✗ Build directory missing"
-          exit 1
-        fi
-        
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-      
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: ./build
-        name: github-pages
-        retention-days: 1
         
     - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        timeout: 600000
-        error_count: 10
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./build
+        force_orphan: true
