@@ -212,34 +212,47 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
           <div className="flex-1">
             {node.isEditing ? (
               <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                <Input
+                <input
                   value={node.name}
-                  onChange={(value) => updateNodeName(node.id, value)}
+                  onChange={(e) => updateNodeName(node.id, e.target.value)}
                   placeholder="기준 이름"
-                  className="text-sm"
+                  className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-blue-500"
+                  autoFocus
                 />
-                <Input
+                <input
                   value={node.description || ''}
-                  onChange={(value) => updateNodeDescription(node.id, value)}
+                  onChange={(e) => updateNodeDescription(node.id, e.target.value)}
                   placeholder="설명 (선택사항)"
-                  className="text-xs"
+                  className="w-full px-2 py-1 text-xs border rounded focus:outline-none focus:border-blue-500"
                 />
                 <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="primary"
+                  <button
+                    className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
                     onClick={() => toggleEditMode(node.id)}
                   >
                     확인
-                  </Button>
+                  </button>
+                  <button
+                    className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                    onClick={() => {
+                      toggleEditMode(node.id);
+                      // 원래 값으로 되돌리기
+                    }}
+                  >
+                    취소
+                  </button>
                 </div>
               </div>
             ) : (
-              <div>
+              <div 
+                className="cursor-pointer"
+                onDoubleClick={() => toggleEditMode(node.id)}
+              >
                 <div className="font-medium text-gray-900">{node.name}</div>
                 {node.description && (
                   <div className="text-xs text-gray-500">{node.description}</div>
                 )}
+                <div className="text-xs text-blue-500 mt-1">더블클릭으로 편집</div>
               </div>
             )}
           </div>
