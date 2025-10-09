@@ -58,9 +58,17 @@ interface PersonalServiceProps {
 // 요금제별 할당량 정의
 const PLAN_QUOTAS = {
   'basic': { projects: 3, evaluators: 30 },
-  'standard': { projects: 3, evaluators: 50 },
-  'premium': { projects: 3, evaluators: 100 },
-  'enterprise': { projects: 3, evaluators: 100 } // + 10명 단위 추가 가능
+  'standard': { projects: 5, evaluators: 50 },
+  'premium': { projects: 10, evaluators: 100 },
+  'enterprise': { projects: 999, evaluators: 999 } // 무제한
+};
+
+// 사용자별 요금제 매핑 (이메일 기반)
+const USER_PLANS: Record<string, 'basic' | 'standard' | 'premium' | 'enterprise'> = {
+  'test@test.com': 'basic',  // 테스트 계정은 basic (3개 프로젝트, 30명 평가자)
+  'admin@ahp.com': 'enterprise', // 관리자는 enterprise (무제한)
+  'premium@test.com': 'premium',
+  'default': 'basic' // 기본값
 };
 
 const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({ 
@@ -85,15 +93,30 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   // 사용자 정보 내부 상태 관리
   const [user, setUser] = useState(initialUser);
   
+  // 사용자 이메일에 따른 요금제 결정
+  const getUserPlanType = (): 'basic' | 'standard' | 'premium' | 'enterprise' => {
+    const email = initialUser.email?.toLowerCase() || '';
+    return USER_PLANS[email] || USER_PLANS['default'];
+  };
+  
   // 요금제 정보 관리
   const [userPlan, setUserPlan] = useState<{
     planType: 'basic' | 'standard' | 'premium' | 'enterprise';
     additionalEvaluators: number; // 10명 단위 추가 구매
     planName: string;
-  }>({
-    planType: 'standard',
-    additionalEvaluators: 0,
-    planName: 'Standard Plan'
+  }>(() => {
+    const planType = getUserPlanType();
+    const planNames = {
+      'basic': 'Basic Plan',
+      'standard': 'Standard Plan',
+      'premium': 'Premium Plan',
+      'enterprise': 'Enterprise Plan'
+    };
+    return {
+      planType,
+      additionalEvaluators: 0,
+      planName: planNames[planType]
+    };
   });
 
   // 프로젝트 자동 로딩 로직 (빈 상태일 때만)
@@ -498,6 +521,15 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     if (!projectForm.title.trim()) {
       setError('프로젝트명을 입력해주세요.');
       return;
+    }
+
+    // 새 프로젝트 생성 시 할당량 체크
+    if (!editingProject) {
+      const quotas = getCurrentQuotas();
+      if (projects.length >= quotas.maxProjects) {
+        alert(`프로젝트 생성 한도(${quotas.maxProjects}개)에 도달했습니다.\n${quotas.planName}에서는 최대 ${quotas.maxProjects}개의 프로젝트만 생성할 수 있습니다.`);
+        return;
+      }
     }
 
     setLoading(true);
@@ -986,7 +1018,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       case 'evaluators':
         return (
           <div className="space-y-4">
-            <EvaluatorAssignment projectId={selectedProjectId} onComplete={() => setCurrentStep('finalize')} />
+            <EvaluatorAssignment 
+              projectId={selectedProjectId} 
+              onComplete={() => setCurrentStep('finalize')} 
+              maxEvaluators={getCurrentQuotas().maxEvaluators}
+              currentPlan={userPlan.planName}
+            />
             <div className="flex justify-between">
               <Button variant="secondary" className="p-4 lg:p-5 text-lg lg:text-xl" onClick={() => setCurrentStep('alternatives')}>
                 이전

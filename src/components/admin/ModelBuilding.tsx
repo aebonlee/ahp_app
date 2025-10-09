@@ -12,13 +12,17 @@ interface ModelBuildingProps {
   projectTitle: string;
   onModelFinalized: () => void;
   onBack: () => void;
+  maxEvaluators?: number;
+  currentPlan?: string;
 }
 
 const ModelBuilding: React.FC<ModelBuildingProps> = ({ 
   projectId, 
   projectTitle, 
   onModelFinalized,
-  onBack 
+  onBack,
+  maxEvaluators = 50,
+  currentPlan = 'Standard Plan'
 }) => {
   const [activeStep, setActiveStep] = useState<'criteria' | 'alternatives' | 'evaluators' | 'qrcode' | 'finalize'>('criteria');
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
@@ -126,6 +130,8 @@ const ModelBuilding: React.FC<ModelBuildingProps> = ({
               <EvaluatorAssignment
                 projectId={projectId}
                 onComplete={() => handleStepComplete('evaluators')}
+                maxEvaluators={maxEvaluators}
+                currentPlan={currentPlan}
               />
             )}
           </>

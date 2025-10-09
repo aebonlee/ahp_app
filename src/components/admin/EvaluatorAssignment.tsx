@@ -28,9 +28,16 @@ interface Evaluator {
 interface EvaluatorAssignmentProps {
   projectId: string;
   onComplete: () => void;
+  maxEvaluators?: number; // 최대 평가자 수 제한
+  currentPlan?: string; // 현재 요금제
 }
 
-const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, onComplete }) => {
+const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ 
+  projectId, 
+  onComplete,
+  maxEvaluators = 50, // 기본값: Standard Plan
+  currentPlan = 'Standard Plan'
+}) => {
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
   const [showBulkQR, setShowBulkQR] = useState(false);
   const [evaluationStats, setEvaluationStats] = useState<{
@@ -134,6 +141,12 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ projectId, on
   // };
 
   const handleAddEvaluator = async () => {
+    // 평가자 수 제한 체크
+    if (evaluators.length >= maxEvaluators) {
+      alert(`평가자 배정 한도(${maxEvaluators}명)에 도달했습니다.\n${currentPlan}에서는 프로젝트당 최대 ${maxEvaluators}명까지 배정할 수 있습니다.`);
+      return;
+    }
+
     if (!validateEvaluator(newEvaluator)) {
       return;
     }
