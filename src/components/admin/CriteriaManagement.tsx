@@ -471,14 +471,42 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         
         // 기존 데이터 삭제
         console.log('🗑️ 기존 기준 삭제 중...');
-        for (const criterion of criteria) {
-          if (criterion.id && criterion.id !== 'temp') {
+        
+        // 먼저 DB에서 모든 기준 조회
+        const existingCriteria = await dataService.getCriteria(projectId);
+        console.log('📋 삭제할 기존 기준:', existingCriteria.length, '개');
+        
+        // 모든 기존 기준 삭제 (레벨 역순으로 삭제 - 하위부터)
+        const sortedForDeletion = [...existingCriteria].sort((a, b) => (b.level || 0) - (a.level || 0));
+        for (const criterion of sortedForDeletion) {
+          if (criterion.id) {
             try {
+              console.log(`🗑️ 기준 삭제 중: ${criterion.name} (ID: ${criterion.id})`);
               await dataService.deleteCriteria(criterion.id, projectId);
             } catch (deleteError) {
-              console.error('기준 삭제 실패:', deleteError);
+              console.error(`기준 삭제 실패 (${criterion.name}):`, deleteError);
             }
           }
+        }
+        
+        // 삭제 완료 확인을 위해 잠시 대기 (백엔드 동기화 시간)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 삭제 후 다시 확인
+        const remainingCriteria = await dataService.getCriteria(projectId);
+        if (remainingCriteria.length > 0) {
+          console.warn(`⚠️ 아직 ${remainingCriteria.length}개의 기준이 남아있습니다. 다시 삭제 시도...`);
+          // 남은 기준 다시 삭제
+          for (const criterion of remainingCriteria) {
+            if (criterion.id) {
+              try {
+                await dataService.deleteCriteria(criterion.id, projectId);
+              } catch (e) {
+                console.error(`재삭제 실패: ${criterion.name}`);
+              }
+            }
+          }
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
         
         // 상태 초기화
@@ -577,7 +605,29 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({ projectId, proj
         } catch (saveError: any) {
           console.error(`기준 저장 실패 (${criterion.name}):`, saveError);
           const errorMessage = saveError.message || saveError.error || '알 수 없는 오류';
-          // 중복 메시지인 경우 처리를 변경하지 않고 오류를 던짐
+          
+          // 백엔드에서 중복 에러인 경우
+          if (errorMessage.includes('already exists') || errorMessage.includes('이미 존재')) {
+            console.warn(`⚠️ 기준 "${criterion.name}"은 이미 DB에 존재합니다. 건너뛰고 계속 진행합니다.`);
+            
+            // 기존 기준을 찾아서 ID 매핑
+            try {
+              const existingCriteria = await dataService.getCriteria(projectId);
+              const existing = existingCriteria.find((c: any) => 
+                c.name === criterion.name && 
+                c.level === criterion.level
+              );
+              if (existing && existing.id) {
+                idMapping.set(criterion.id, existing.id);
+                console.log(`🔗 기존 기준 ID 매핑: ${criterion.name} -> ${existing.id}`);
+              }
+            } catch (findError) {
+              console.error('기존 기준 찾기 실패:', findError);
+            }
+            continue; // 다음 기준으로 계속
+          }
+          
+          // 다른 오류의 경우 에러를 던짐
           throw new Error(`기준 "${criterion.name}" 저장 실패: ${errorMessage}`);
         }
       }
