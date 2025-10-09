@@ -103,9 +103,11 @@ function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
     const evalParam = urlParams.get('eval'); // 평가자 모드 확인
+    const projectParam = urlParams.get('project'); // 프로젝트 ID 확인
     
-    // 평가자 모드가 있으면 우선 처리
-    if (evalParam) {
+    // /evaluator 경로 또는 project 파라미터가 있으면 평가자 워크플로우로 이동
+    if (evalParam || projectParam || window.location.pathname.includes('/evaluator')) {
+      console.log('🎯 평가자 워크플로우 탭 활성화:', { evalParam, projectParam, pathname: window.location.pathname });
       return 'evaluator-workflow';
     }
     
@@ -176,24 +178,34 @@ function App() {
     }
   }, []);
 
-  // URL 파라미터 변경 감지 (로그인 후에만 적용)
+  // URL 파라미터 변경 감지 (로그인 여부와 관계없이 처리)
   useEffect(() => {
-    if (!user) return; // 로그인하지 않은 경우 URL 파라미터 무시
-    
     const handlePopState = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab');
+      const projectParam = urlParams.get('project');
+      const evalParam = urlParams.get('eval');
       
-      const validTabs = [
-        'home', 'personal-service', 'demographic-survey', 
-        'my-projects', 'project-creation', 'project-workflow', 'model-builder',
-        'evaluator-management', 'progress-monitoring', 'results-analysis',
-        'ai-paper-assistant', 'export-reports', 'workshop-management',
-        'decision-support-system', 'personal-settings'
-      ];
+      // /evaluator 경로 또는 project/eval 파라미터가 있으면 평가자 워크플로우로
+      if (window.location.pathname.includes('/evaluator') || projectParam || evalParam) {
+        console.log('🔄 URL 변경으로 평가자 워크플로우 활성화:', { pathname: window.location.pathname, projectParam, evalParam });
+        setActiveTab('evaluator-workflow');
+        return;
+      }
       
-      if (tabParam && validTabs.includes(tabParam)) {
-        setActiveTab(tabParam);
+      // 로그인한 사용자의 경우에만 다른 탭 처리
+      if (user) {
+        const validTabs = [
+          'home', 'personal-service', 'demographic-survey', 
+          'my-projects', 'project-creation', 'project-workflow', 'model-builder',
+          'evaluator-management', 'progress-monitoring', 'results-analysis',
+          'ai-paper-assistant', 'export-reports', 'workshop-management',
+          'decision-support-system', 'personal-settings'
+        ];
+        
+        if (tabParam && validTabs.includes(tabParam)) {
+          setActiveTab(tabParam);
+        }
       }
     };
 
@@ -1220,8 +1232,8 @@ function App() {
         case 'evaluator-workflow':
           // 평가자 워크플로우는 로그인 없이도 접근 가능
           const urlParams = new URLSearchParams(window.location.search);
-          const projectId = urlParams.get('eval');
-          const evaluatorToken = urlParams.get('token');
+          const projectId = urlParams.get('eval') || urlParams.get('project'); // eval 또는 project 파라미터 지원
+          const evaluatorToken = urlParams.get('token') || urlParams.get('key'); // token 또는 key 파라미터 지원
           
           if (projectId) {
             return (
@@ -1491,8 +1503,8 @@ function App() {
       case 'evaluator-workflow':
         // 로그인한 상태에서도 평가자 워크플로우 접근 가능
         const urlParams2 = new URLSearchParams(window.location.search);
-        const projectId2 = urlParams2.get('eval');
-        const evaluatorToken2 = urlParams2.get('token');
+        const projectId2 = urlParams2.get('eval') || urlParams2.get('project'); // eval 또는 project 파라미터 지원
+        const evaluatorToken2 = urlParams2.get('token') || urlParams2.get('key'); // token 또는 key 파라미터 지원
         
         if (projectId2) {
           return (

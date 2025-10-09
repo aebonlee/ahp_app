@@ -49,6 +49,13 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
     try {
       setLoading(true);
       
+      // evaluatorToken이 있는 경우 별도 처리 (익명 접근)
+      if (evaluatorToken) {
+        console.log('🔑 평가자 토큰을 사용한 익명 접근:', evaluatorToken);
+        // TODO: 익명 평가자용 API 엔드포인트 구현 필요
+        // 현재는 기본 API를 사용하되 에러 처리 개선
+      }
+      
       // 프로젝트 기본 정보 로드
       const projectResponse = await apiService.projectAPI.fetchById(projectId);
       if (projectResponse.error) {
