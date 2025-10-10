@@ -89,19 +89,20 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
   const handleImport = () => {
     if (!parseResult || !parseResult.success) return;
 
-    // 파싱된 기준을 실제 Criterion 객체로 변환
-    const convertedCriteria = convertParsedCriteria(parseResult.criteria);
+    // 파싱된 기준을 실제 Criterion 객체로 변환 (평면 구조로)
+    const convertedCriteria = convertParsedCriteriaFlat(parseResult.criteria);
     
     console.log('✅ 변환된 기준:', {
       total: convertedCriteria.length,
-      hierarchy: convertedCriteria
+      flatList: convertedCriteria
     });
     
-    // 전체 계층 구조를 유지하면서 import
+    // 평면 구조의 전체 기준 리스트를 import
     onImport(convertedCriteria);
   };
 
-  const convertParsedCriteria = (parsedCriteria: any[]): Criterion[] => {
+  // 평면 구조로 변환 (CriteriaManagement에서 기대하는 형식)
+  const convertParsedCriteriaFlat = (parsedCriteria: any[]): Criterion[] => {
     const allCriteria: Criterion[] = [];
     const levelParentMap: Map<number, Criterion> = new Map();
     
@@ -125,7 +126,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
         description: parsed.description,
         parent_id,
         level: parsed.level,
-        children: [],
+        children: undefined, // 평면 구조이므로 children 없음
         weight: 1,
         order: index + 1
       };
@@ -141,8 +142,14 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
       }
     });
     
-    // 계층구조 구성
-    return buildHierarchy(allCriteria);
+    // 평면 구조 그대로 반환
+    return allCriteria;
+  };
+
+  // 계층구조로 변환 (미리보기용)
+  const convertParsedCriteria = (parsedCriteria: any[]): Criterion[] => {
+    const flatCriteria = convertParsedCriteriaFlat(parsedCriteria);
+    return buildHierarchy(flatCriteria);
   };
 
   const buildHierarchy = (flatCriteria: Criterion[]): Criterion[] => {
