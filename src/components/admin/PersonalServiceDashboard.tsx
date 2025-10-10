@@ -5,6 +5,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import exportService from '../../services/exportService';
 import MyProjects from './MyProjects';
 import ProjectCreation from './ProjectCreation';
 import CriteriaManagement from './CriteriaManagement';
@@ -1055,6 +1056,124 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         return renderOverview();
     }
   };
+
+  const [projectData, setProjectData] = useState<{
+    criteria: any[];
+    alternatives: any[];
+    results: any[];
+  }>({
+    criteria: [],
+    alternatives: [],
+    results: []
+  });
+
+  useEffect(() => {
+    const loadProjectData = async () => {
+      if (!selectedProjectId) return;
+      try {
+        const [criteria, alternatives] = await Promise.all([
+          onFetchCriteria?.(selectedProjectId) || Promise.resolve([]),
+          onFetchAlternatives?.(selectedProjectId) || Promise.resolve([])
+        ]);
+        setProjectData({
+          criteria,
+          alternatives,
+          results: [] // 결과 데이터는 아직 API가 없어서 빈 배열로 설정
+        });
+      } catch (error) {
+        console.error('프로젝트 데이터 로드 실패:', error);
+      }
+    };
+    loadProjectData();
+  }, [selectedProjectId]);
+
+  const handleExport = async (format: 'csv' | 'excel', type: 'criteria' | 'alternatives' | 'results') => {
+    if (!selectedProjectId || !projectData) return;
+    try {
+      switch (type) {
+        case 'criteria':
+          await exportService.exportCriteria(selectedProjectId, projectData.criteria, {
+            format,
+            includeWeights: true,
+            includeDescriptions: true
+          });
+          break;
+        case 'alternatives':
+          await exportService.exportAlternatives(selectedProjectId, projectData.alternatives, format);
+          break;
+        case 'results':
+          await exportService.exportResults(selectedProjectId, format, projectData.results);
+          break;
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('내보내기 중 오류가 발생했습니다.');
+    }
+  };
+
+  const renderExportReportsFullPage = () => (
+    <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
+      <h2 className="text-2xl font-bold">보고서 내보내기</h2>
+      
+      <Card>
+        <div className="p-4 space-y-6">
+          <div>
+            <h3 className="text-lg font-medium mb-4">CSV 형식으로 내보내기</h3>
+            <div className="space-y-3">
+              <Button
+                variant="secondary"
+                onClick={() => handleExport('csv', 'criteria')}
+                className="w-full"
+              >
+                평가 기준 내보내기
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => handleExport('csv', 'alternatives')}
+                className="w-full"
+              >
+                대안 내보내기
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => handleExport('csv', 'results')}
+                className="w-full"
+              >
+                평가 결과 내보내기
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-medium mb-4">Excel 형식으로 내보내기</h3>
+            <div className="space-y-3">
+              <Button
+                variant="secondary"
+                onClick={() => handleExport('excel', 'criteria')}
+                className="w-full"
+              >
+                평가 기준 내보내기
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => handleExport('excel', 'alternatives')}
+                className="w-full"
+              >
+                대안 내보내기
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => handleExport('excel', 'results')}
+                className="w-full"
+              >
+                평가 결과 내보내기
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
 
   const getStepProgress = () => {
     const steps = ['overview', 'projects', 'criteria', 'alternatives', 'evaluators', 'finalize'];
