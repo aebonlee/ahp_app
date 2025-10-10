@@ -7,6 +7,7 @@ import HierarchyTreeBuilder from '../modeling/HierarchyTreeBuilder';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
 import CriteriaTemplates from '../criteria/CriteriaTemplates';
 import VisualCriteriaBuilder from '../criteria/VisualCriteriaBuilder';
+import InteractiveCriteriaEditor from '../criteria/InteractiveCriteriaEditor';
 import cleanDataService from '../../services/dataService_clean';
 
 interface Criterion {
@@ -50,6 +51,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
+  const [editMode, setEditMode] = useState(false);
 
   // 백엔드에서 기준 로드
   const loadCriteria = async () => {
@@ -474,35 +476,62 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
                   <h4 className="font-medium text-gray-900">현재 계층구조</h4>
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => setLayoutMode('vertical')}
+                      onClick={() => setEditMode(!editMode)}
                       className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        layoutMode === 'vertical' 
-                          ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                        editMode 
+                          ? 'bg-green-100 text-green-700 border border-green-300' 
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
-                      📋 세로형
+                      {editMode ? '✅ 편집 모드' : '✏️ 편집하기'}
                     </button>
-                    <button
-                      onClick={() => setLayoutMode('horizontal')}
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        layoutMode === 'horizontal' 
-                          ? 'bg-blue-100 text-blue-700 border border-blue-300' 
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      📊 가로형
-                    </button>
+                    {!editMode && (
+                      <>
+                        <button
+                          onClick={() => setLayoutMode('vertical')}
+                          className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                            layoutMode === 'vertical' 
+                              ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          📋 세로형
+                        </button>
+                        <button
+                          onClick={() => setLayoutMode('horizontal')}
+                          className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                            layoutMode === 'horizontal' 
+                              ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          📊 가로형
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-                <HierarchyTreeVisualization 
-                  nodes={getAllCriteria(criteria)}
-                  title=""
-                  showWeights={false}
-                  interactive={true}
-                  layout={layoutMode}
-                  onLayoutChange={setLayoutMode}
-                />
+                {editMode ? (
+                  <InteractiveCriteriaEditor
+                    criteria={criteria}
+                    onUpdate={(updatedCriteria) => {
+                      setCriteria(updatedCriteria);
+                      setTempCriteria(updatedCriteria);
+                      setHasTempChanges(true);
+                    }}
+                    allowEdit={true}
+                    layoutMode={layoutMode}
+                  />
+                ) : (
+                  <HierarchyTreeVisualization 
+                    nodes={getAllCriteria(criteria)}
+                    title=""
+                    showWeights={false}
+                    interactive={true}
+                    layout={layoutMode}
+                    onLayoutChange={setLayoutMode}
+                  />
+                )}
               </div>
             ) : (
               <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
