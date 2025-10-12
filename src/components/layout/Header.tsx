@@ -127,8 +127,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
     const items = [];
     
     items.push(
-      { label: '연구자 가이드', tab: 'researcher-guide', icon: '🔬' },
-      { label: '평가자 가이드', tab: 'evaluator-guide', icon: '👤' },
+      { label: 'AHP 가이드', tab: 'user-guide', icon: '📚' },
       { label: '평가자 체험', tab: 'evaluator-mode', icon: '👨‍💼' }
     );
     
@@ -358,21 +357,11 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                 <UnifiedButton
                   variant={['researcher-guide', 'evaluator-guide', 'user-guide'].includes(activeTab || '') ? 'primary' : 'secondary'}
                   size="sm"
-                  onClick={() => onTabChange && onTabChange('researcher-guide')}
-                  icon="🔬"
+                  onClick={() => onTabChange && onTabChange('user-guide')}
+                  icon="📚"
                   className="font-medium"
                 >
-                  연구자 가이드
-                </UnifiedButton>
-                
-                <UnifiedButton
-                  variant={activeTab === 'evaluator-guide' ? 'primary' : 'secondary'}
-                  size="sm"
-                  onClick={() => onTabChange && onTabChange('evaluator-guide')}
-                  icon="👤"
-                  className="font-medium"
-                >
-                  평가자 가이드
+                  AHP 가이드
                 </UnifiedButton>
                 
                 <UnifiedButton

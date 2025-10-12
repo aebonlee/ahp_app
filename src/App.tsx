@@ -30,6 +30,8 @@ import ProjectSelection from './components/evaluator/ProjectSelection';
 import PairwiseEvaluation from './components/evaluator/PairwiseEvaluation';
 import DirectInputEvaluation from './components/evaluator/DirectInputEvaluation';
 import ComprehensiveUserGuide from './components/guide/ComprehensiveUserGuide';
+import ResearcherGuidePage from './components/guide/ResearcherGuidePage';
+import EvaluatorGuidePage from './components/guide/EvaluatorGuidePage';
 import EvaluatorDashboard from './components/evaluator/EvaluatorDashboard';
 import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
 import DemographicSurvey from './components/survey/DemographicSurvey';
@@ -1574,26 +1576,10 @@ function App() {
         );
 
       case 'researcher-guide':
-        return (
-          <ComprehensiveUserGuide 
-            onNavigateToService={() => setActiveTab('personal-service')}
-            onNavigateToEvaluator={() => setActiveTab('evaluator-mode')}
-            userRole={user?.role}
-            isLoggedIn={!!user}
-            initialMode="researcher"
-          />
-        );
+        return <ResearcherGuidePage />;
 
       case 'evaluator-guide':
-        return (
-          <ComprehensiveUserGuide 
-            onNavigateToService={() => setActiveTab('personal-service')}
-            onNavigateToEvaluator={() => setActiveTab('evaluator-mode')}
-            userRole={user?.role}
-            isLoggedIn={!!user}
-            initialMode="evaluator"
-          />
-        );
+        return <EvaluatorGuidePage />;
 
       case 'evaluation-test':
         return <EvaluationTest />;

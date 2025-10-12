@@ -166,7 +166,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       title: '연구 논문을 위한 AHP분석',
       icon: '📚',
       items: [
-        { id: 'user-guide', label: '사용자 가이드' },
+        { id: 'researcher-guide', label: '연구자 가이드' },
+        { id: 'evaluator-guide', label: '평가자 가이드' },
         { id: 'ai-ahp-methodology', label: 'AHP 방법론' },
         { id: 'ai-fuzzy-methodology', label: '퍼지 AHP' }
       ]
