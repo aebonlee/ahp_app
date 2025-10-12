@@ -17,6 +17,7 @@ permissions:
   id-token: write
   actions: read
   security-events: write
+  checks: write
 
 jobs:
   # 1. 코드 품질 검사
@@ -27,6 +28,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -58,6 +61,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -93,6 +98,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -140,6 +147,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -184,6 +193,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
     
     - name: Download build artifacts
       uses: actions/download-artifact@v4
@@ -229,6 +240,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
     
     - name: Download build artifacts
       uses: actions/download-artifact@v4
