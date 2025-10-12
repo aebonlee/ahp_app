@@ -247,8 +247,8 @@ ${exportOptions.includeSensitivity ? '✅ 민감도 분석\n' : ''}
                 <label key={key} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={exportOptions[key as keyof ExportOptions] || false}
-                    onChange={(e) => updateExportOption(key, e.target.checked)}
+                    checked={Boolean(exportOptions[key as keyof ExportOptions])}
+                    onChange={(e) => updateExportOption(key as keyof ExportOptions, e.target.checked)}
                     className="mr-2"
                   />
                   <span className="text-sm">{label}</span>
