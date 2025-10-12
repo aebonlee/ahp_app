@@ -744,7 +744,7 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
                       }`}>
                         {rank.rank}
                       </span>
-                      {rank.name}
+                      {currentProblem?.alternatives.find(a => a.id === rank.alternativeId)?.name || rank.alternativeId}
                     </span>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium">{rank.score.toFixed(3)}</span>
