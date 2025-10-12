@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+// Excel functionality temporarily disabled for security
 
 interface ExportOptions {
   format: 'csv' | 'excel';
@@ -66,10 +66,22 @@ const exportService = {
       a.click();
       window.URL.revokeObjectURL(url);
     } else {
-      const ws = XLSX.utils.json_to_sheet(flatData, { header: fields });
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Criteria');
-      XLSX.writeFile(wb, `criteria_${projectId}.xlsx`);
+      // Excel functionality temporarily disabled for security
+      console.warn('Excel export is temporarily disabled for security reasons. Falling back to CSV.');
+      const csvContent = [
+        fields.join(','),
+        ...flatData.map(row => 
+          fields.map(field => `"${row[field]}"`).join(',')
+        )
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `criteria_${projectId}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     }
   },
 
@@ -96,24 +108,35 @@ const exportService = {
       a.click();
       window.URL.revokeObjectURL(url);
     } else {
-      const ws = XLSX.utils.json_to_sheet(flatData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Results');
-      XLSX.writeFile(wb, `results_${projectId}.xlsx`);
+      // Excel functionality temporarily disabled for security
+      console.warn('Excel export is temporarily disabled for security reasons. Falling back to CSV.');
+      const csvContent = [
+        'Alternative,Score,Rank',
+        ...flatData.map(result => `"${result.alternative}","${result.score}","${result.rank}"`)
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `results_${projectId}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     }
   },
 
   async exportAlternatives(projectId: string, alternatives: any[], format: 'csv' | 'excel') {
-    const flatData = alternatives.map(alt => ({
+    const flatData = alternatives.map((alt, index) => ({
+      id: alt.id || `alt_${index + 1}`,
       name: alt.name,
       description: alt.description || ''
     }));
 
     if (format === 'csv') {
       const csvContent = [
-        'Name,Description',
+        'ID,Name,Description',
         ...flatData.map(row => 
-          `"${row.name}","${row.description}"`
+          `"${row.id}","${row.name}","${row.description}"`
         )
       ].join('\n');
 
@@ -125,10 +148,20 @@ const exportService = {
       a.click();
       window.URL.revokeObjectURL(url);
     } else {
-      const ws = XLSX.utils.json_to_sheet(flatData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Alternatives');
-      XLSX.writeFile(wb, `alternatives_${projectId}.xlsx`);
+      // Excel functionality temporarily disabled for security
+      console.warn('Excel export is temporarily disabled for security reasons. Falling back to CSV.');
+      const csvContent = [
+        'ID,Name,Description',
+        ...flatData.map(alt => `"${alt.id}","${alt.name}","${alt.description}"`)
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `alternatives_${projectId}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     }
   }
 };

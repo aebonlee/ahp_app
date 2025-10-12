@@ -696,7 +696,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
         <Card title="📊 내보내기 관리">
           <ExportManager 
             projectId="demo-export" 
-            projectData={{}} 
+            projectTitle="데모 프로젝트"
           />
         </Card>
 

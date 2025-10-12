@@ -11,7 +11,7 @@ interface UserGuideOverviewProps {
 }
 
 const UserGuideOverview: React.FC<UserGuideOverviewProps> = ({ onNavigateToService }) => {
-  const [activeGuide, setActiveGuide] = useState<'basic' | 'advanced'>('basic');
+  const [activeGuide, setActiveGuide] = useState<'researcher' | 'evaluator'>('researcher');
   const [activeSection, setActiveSection] = useState<string>('overview');
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
 
@@ -35,73 +35,76 @@ const UserGuideOverview: React.FC<UserGuideOverviewProps> = ({ onNavigateToServi
     }))
   ];
 
-  // 기초 가이드 섹션들
-  const basicSections = [
-    { id: 'overview', title: '시작하기', icon: '🚀' },
-    { id: 'project-creation', title: '프로젝트 생성', icon: '📋' },
-    { id: 'criteria-setup', title: '기준 설정', icon: '🎯' },
-    { id: 'alternatives-setup', title: '대안 설정', icon: '🔀' },
-    { id: 'evaluation', title: '평가 수행', icon: '⚖️' },
-    { id: 'results', title: '결과 확인', icon: '📊' }
+  // 연구자 모드 섹션들
+  const researcherSections = [
+    { id: 'overview', title: 'AHP 방법론 개요', icon: '🎯' },
+    { id: 'methodology', title: '방법론 이론', icon: '📚' },
+    { id: 'project-setup', title: '연구 설계', icon: '🔬' },
+    { id: 'hierarchy-design', title: '계층구조 설계', icon: '🌲' },
+    { id: 'data-collection', title: '데이터 수집', icon: '📊' },
+    { id: 'analysis', title: '결과 분석', icon: '📈' },
+    { id: 'validation', title: '타당성 검증', icon: '✅' },
+    { id: 'reporting', title: '연구 보고서', icon: '📋' }
   ];
 
-  // 고급 가이드 섹션들
-  const advancedSections = [
-    { id: 'overview', title: '고급 기능 개요', icon: '🎓' },
-    { id: 'collaboration', title: '실시간 협업', icon: '👥' },
-    { id: 'sensitivity', title: '민감도 분석', icon: '📈' },
-    { id: 'export', title: '보고서 내보내기', icon: '📤' },
-    { id: 'automation', title: '자동화 기능', icon: '🤖' },
-    { id: 'integration', title: '외부 연동', icon: '🔗' }
+  // 평가자 모드 섹션들
+  const evaluatorSections = [
+    { id: 'overview', title: '평가자 가이드 개요', icon: '👤' },
+    { id: 'getting-started', title: '평가 시작하기', icon: '🚀' },
+    { id: 'understanding-ahp', title: 'AHP 이해하기', icon: '💡' },
+    { id: 'pairwise-comparison', title: '쌍대비교 수행', icon: '⚖️' },
+    { id: 'consistency-check', title: '일관성 검토', icon: '🎯' },
+    { id: 'evaluation-tips', title: '평가 요령', icon: '💫' },
+    { id: 'common-issues', title: '문제 해결', icon: '🔧' },
+    { id: 'completion', title: '평가 완료', icon: '🏁' }
   ];
 
   const getCurrentSections = () => {
-    return activeGuide === 'basic' ? basicSections : advancedSections;
+    return activeGuide === 'researcher' ? researcherSections : evaluatorSections;
   };
 
-  const renderBasicContent = () => {
+  const renderResearcherContent = () => {
     switch (activeSection) {
       case 'overview':
         return (
           <div className="space-y-6">
             <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
               <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-                🚀 AHP 플랫폼 시작하기
+                🎯 AHP 연구방법론 완전 가이드
               </h2>
               <p className="text-lg mb-4" style={{ color: 'var(--text-secondary)' }}>
-                이 기초 가이드는 AHP 플랫폼을 처음 사용하는 분들을 위한 <strong>단계별 입문 가이드</strong>입니다. 
-                프로젝트 생성부터 결과 분석까지 전체 과정을 차근차근 따라하며 AHP 의사결정 분석을 
-                쉽게 배워보세요.
+                이 연구자 가이드는 <strong>Analytic Hierarchy Process (AHP)</strong>를 활용한 학술 연구 및 
+                전문 의사결정 분석을 수행하고자 하는 연구자들을 위한 완전한 방법론 매뉴얼입니다.
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-light)' }}>
-                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>🎯 학습 목표</h3>
+                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>🔬 연구 목표</h3>
                   <ul className="space-y-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <li>• AHP 프로젝트 생성 방법</li>
-                    <li>• 평가 기준과 대안 설정</li>
-                    <li>• 쌍대비교 평가 수행</li>
-                    <li>• 결과 해석 및 활용</li>
+                    <li>• 체계적 의사결정 연구 설계</li>
+                    <li>• 정량적 평가체계 구축</li>
+                    <li>• 다기준 의사결정 분석</li>
+                    <li>• 학술적 신뢰성 확보</li>
                   </ul>
                 </div>
                 
                 <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-light)' }}>
-                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>⏱️ 소요 시간</h3>
+                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>📚 이론적 기반</h3>
                   <ul className="space-y-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <li>• 전체 가이드: 약 30분</li>
-                    <li>• 각 단계별: 5-10분</li>
-                    <li>• 실습 포함: 1시간</li>
-                    <li>• 자유롭게 건너뛰기 가능</li>
+                    <li>• Thomas L. Saaty의 AHP 이론</li>
+                    <li>• 계층적 의사결정 모델</li>
+                    <li>• 쌍대비교 매트릭스 분석</li>
+                    <li>• 일관성 비율 검증</li>
                   </ul>
                 </div>
 
                 <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-light)' }}>
-                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>📋 준비사항</h3>
+                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>🎓 적용 분야</h3>
                   <ul className="space-y-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <li>• 의사결정 문제 정의</li>
-                    <li>• 비교할 대안들 목록</li>
-                    <li>• 평가 기준 아이디어</li>
-                    <li>• 약간의 집중력 😊</li>
+                    <li>• 정책 우선순위 결정</li>
+                    <li>• 기술 대안 평가</li>
+                    <li>• 투자 의사결정 분석</li>
+                    <li>• 공급업체 선정 연구</li>
                   </ul>
                 </div>
               </div>
@@ -440,49 +443,49 @@ const UserGuideOverview: React.FC<UserGuideOverviewProps> = ({ onNavigateToServi
     }
   };
 
-  const renderAdvancedContent = () => {
+  const renderEvaluatorContent = () => {
     switch (activeSection) {
       case 'overview':
         return (
           <div className="space-y-6">
             <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
               <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-                🎓 고급 기능 활용 가이드
+                👤 AHP 평가자 완전 가이드
               </h2>
               <p className="text-lg mb-4" style={{ color: 'var(--text-secondary)' }}>
-                이 고급 가이드는 AHP 플랫폼의 <strong>전문 기능들을 심화 활용</strong>하고자 하는 분들을 위한 
-                상세 매뉴얼입니다. 실시간 협업, 민감도 분석, 자동화 등 고급 기능들을 마스터하여 
-                더욱 정교하고 효율적인 의사결정 분석을 수행해보세요.
+                이 평가자 가이드는 <strong>AHP 의사결정 프로세스에 참여하는 평가자</strong>들을 위한 
+                실용적이고 직관적인 평가 수행 매뉴얼입니다. 정확하고 일관성 있는 평가를 통해 
+                신뢰할 수 있는 의사결정에 기여해보세요.
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-light)' }}>
-                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>🎯 고급 기능</h3>
+                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>🎯 평가 목표</h3>
                   <ul className="space-y-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <li>• 실시간 다중 사용자 협업</li>
-                    <li>• 민감도 및 시나리오 분석</li>
-                    <li>• 고급 보고서 생성</li>
-                    <li>• 자동화 및 외부 연동</li>
+                    <li>• 정확한 쌍대비교 평가 수행</li>
+                    <li>• 일관성 있는 판단 유지</li>
+                    <li>• 객관적 기준 적용</li>
+                    <li>• 신뢰할 수 있는 결과 기여</li>
                   </ul>
                 </div>
                 
                 <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-light)' }}>
-                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>⏱️ 활용 수준</h3>
+                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>⏱️ 평가 과정</h3>
                   <ul className="space-y-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <li>• 중급-고급 사용자 대상</li>
-                    <li>• 대규모 프로젝트 최적화</li>
-                    <li>• 조직 차원의 의사결정</li>
-                    <li>• 전문 연구 및 분석</li>
+                    <li>• 평가 방법 이해: 5-10분</li>
+                    <li>• 실제 평가 수행: 15-30분</li>
+                    <li>• 일관성 검토: 5분</li>
+                    <li>• 결과 확인: 3분</li>
                   </ul>
                 </div>
 
                 <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-light)' }}>
-                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>🎁 추가 혜택</h3>
+                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>💡 평가 요령</h3>
                   <ul className="space-y-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <li>• 업무 효율성 대폭 향상</li>
-                    <li>• 전문 수준의 분석 역량</li>
-                    <li>• 다양한 형태의 결과물</li>
-                    <li>• 기업 및 연구 활용 가능</li>
+                    <li>• 직관적 판단보다 논리적 사고</li>
+                    <li>• 상대적 중요도에 집중</li>
+                    <li>• 일관된 기준 적용</li>
+                    <li>• 불확실하면 재평가</li>
                   </ul>
                 </div>
               </div>
@@ -807,7 +810,23 @@ const UserGuideOverview: React.FC<UserGuideOverviewProps> = ({ onNavigateToServi
         );
 
       default:
-        return <div>선택된 섹션의 내용을 준비 중입니다.</div>;
+        return (
+          <div className="space-y-6">
+            <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+                📚 평가자 가이드 준비 중
+              </h2>
+              <p className="text-lg mb-4" style={{ color: 'var(--text-secondary)' }}>
+                선택하신 평가자 가이드 섹션의 상세 내용을 준비 중입니다. 다른 섹션을 먼저 확인해보세요.
+              </p>
+              <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-light)' }}>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  ✨ 곧 더 많은 실용적인 평가자 가이드가 추가될 예정입니다!
+                </p>
+              </div>
+            </div>
+          </div>
+        );
     }
   };
 
@@ -864,55 +883,55 @@ const UserGuideOverview: React.FC<UserGuideOverviewProps> = ({ onNavigateToServi
         {/* Guide Selection */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div 
-            onClick={() => {setActiveGuide('basic'); setActiveSection('overview');}}
+            onClick={() => {setActiveGuide('researcher'); setActiveSection('overview');}}
             className={`cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 ${
-              activeGuide === 'basic' 
+              activeGuide === 'researcher' 
                 ? 'border-blue-500 shadow-lg' 
                 : 'border-gray-200 hover:border-gray-300'
             }`}
             style={{ 
-              backgroundColor: activeGuide === 'basic' ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)',
+              backgroundColor: activeGuide === 'researcher' ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)',
             }}
           >
             <div className="text-center space-y-4">
-              <div className="text-6xl">🚀</div>
+              <div className="text-6xl">🔬</div>
               <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                기초 가이드
+                연구자 모드
               </h3>
               <p style={{ color: 'var(--text-secondary)' }}>
-                AHP 플랫폼을 처음 사용하는 분들을 위한 단계별 입문 가이드
+                AHP 방법론 기반 학술 연구 및 전문 분석을 위한 완전 가이드
               </p>
               <ul className="text-sm space-y-1" style={{ color: 'var(--text-secondary)' }}>
-                <li>• 프로젝트 생성부터 결과 분석까지</li>
-                <li>• 실제 예제와 함께 학습</li>
-                <li>• 초보자도 쉽게 따라할 수 있는 설명</li>
+                <li>• 체계적 연구 설계 및 방법론</li>
+                <li>• 계층구조 모델링 및 타당성 검증</li>
+                <li>• 학술적 신뢰성을 갖춘 결과 도출</li>
               </ul>
             </div>
           </div>
 
           <div 
-            onClick={() => {setActiveGuide('advanced'); setActiveSection('overview');}}
+            onClick={() => {setActiveGuide('evaluator'); setActiveSection('overview');}}
             className={`cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 ${
-              activeGuide === 'advanced' 
-                ? 'border-purple-500 shadow-lg' 
+              activeGuide === 'evaluator' 
+                ? 'border-green-500 shadow-lg' 
                 : 'border-gray-200 hover:border-gray-300'
             }`}
             style={{ 
-              backgroundColor: activeGuide === 'advanced' ? 'rgba(147, 51, 234, 0.05)' : 'var(--bg-primary)',
+              backgroundColor: activeGuide === 'evaluator' ? 'rgba(34, 197, 94, 0.05)' : 'var(--bg-primary)',
             }}
           >
             <div className="text-center space-y-4">
-              <div className="text-6xl">🎓</div>
+              <div className="text-6xl">👤</div>
               <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                고급 가이드
+                평가자 모드
               </h3>
               <p style={{ color: 'var(--text-secondary)' }}>
-                전문 기능들을 활용한 고급 분석 및 협업 기능 마스터
+                AHP 평가 참여자를 위한 직관적이고 실용적인 평가 가이드
               </p>
               <ul className="text-sm space-y-1" style={{ color: 'var(--text-secondary)' }}>
-                <li>• 실시간 협업 및 민감도 분석</li>
-                <li>• 고급 보고서 생성 및 자동화</li>
-                <li>• 대규모 프로젝트 관리 노하우</li>
+                <li>• 쌍대비교 평가 방법 완전 이해</li>
+                <li>• 일관성 있는 평가 수행 요령</li>
+                <li>• 효과적인 의사결정 참여 방법</li>
               </ul>
             </div>
           </div>
@@ -931,7 +950,7 @@ const UserGuideOverview: React.FC<UserGuideOverviewProps> = ({ onNavigateToServi
                 }}
               >
                 <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-                  {activeGuide === 'basic' ? '🚀 기초 가이드' : '🎓 고급 가이드'}
+                  {activeGuide === 'researcher' ? '🔬 연구자 모드' : '👤 평가자 모드'}
                 </h3>
                 <nav className="space-y-2">
                   {getCurrentSections().map((section) => (
@@ -940,9 +959,9 @@ const UserGuideOverview: React.FC<UserGuideOverviewProps> = ({ onNavigateToServi
                       onClick={() => setActiveSection(section.id)}
                       className={`w-full text-left p-3 rounded-lg flex items-center space-x-3 transition-all duration-200 ${
                         activeSection === section.id
-                          ? activeGuide === 'basic'
+                          ? activeGuide === 'researcher'
                             ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                            : 'bg-purple-50 text-purple-700 border border-purple-200'
+                            : 'bg-green-50 text-green-700 border border-green-200'
                           : 'hover:bg-gray-50 text-gray-600 hover:text-gray-900'
                       }`}
                     >
@@ -973,7 +992,7 @@ const UserGuideOverview: React.FC<UserGuideOverviewProps> = ({ onNavigateToServi
                 borderColor: 'var(--border-light)'
               }}
             >
-              {activeGuide === 'basic' ? renderBasicContent() : renderAdvancedContent()}
+              {activeGuide === 'researcher' ? renderResearcherContent() : renderEvaluatorContent()}
             </div>
           </div>
         </div>
