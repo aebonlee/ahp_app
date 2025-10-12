@@ -8,15 +8,19 @@ interface ComprehensiveUserGuideProps {
   onNavigateToEvaluator?: () => void;
   userRole?: UserRole | null;
   isLoggedIn?: boolean;
+  initialMode?: 'researcher' | 'evaluator';
 }
 
 const ComprehensiveUserGuide: React.FC<ComprehensiveUserGuideProps> = ({ 
   onNavigateToService, 
   onNavigateToEvaluator,
   userRole,
-  isLoggedIn = false
+  isLoggedIn = false,
+  initialMode
 }) => {
-  const [activeSection, setActiveSection] = useState<'overview' | 'researcher' | 'evaluator' | 'demo'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'researcher' | 'evaluator' | 'demo'>(
+    initialMode || 'overview'
+  );
 
   const renderOverview = () => (
     <div className="space-y-8">

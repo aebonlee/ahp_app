@@ -128,7 +128,7 @@ function App() {
     
     // tab 파라미터가 있고 유효한 탭이면 해당 탭으로, 아니면 'home'
     const validTabs = [
-      'home', 'user-guide', 'evaluator-mode', 'evaluator-workflow',
+      'home', 'user-guide', 'researcher-guide', 'evaluator-guide', 'evaluator-mode', 'evaluator-workflow',
       'personal-service', 'demographic-survey', 
       'my-projects', 'project-creation', 'project-workflow', 'model-builder',
       'evaluator-management', 'progress-monitoring', 'results-analysis',
@@ -226,7 +226,7 @@ function App() {
         const mappedTab = tabParam && tabMapping[tabParam] ? tabMapping[tabParam] : tabParam;
         
         const validTabs = [
-          'home', 'personal-service', 'demographic-survey', 
+          'home', 'user-guide', 'researcher-guide', 'evaluator-guide', 'personal-service', 'demographic-survey', 
           'my-projects', 'project-creation', 'project-workflow', 'model-builder',
           'evaluator-management', 'progress-monitoring', 'results-analysis',
           'ai-paper-assistant', 'export-reports', 'workshop-management',
@@ -629,7 +629,7 @@ function App() {
     'project-creation', 'model-builder', 'evaluation-test', 'evaluator-management', 
     'progress-monitoring', 'results-analysis', 'ai-paper-assistant', 'export-reports', 
     'workshop-management', 'decision-support-system', 'personal-settings', 
-    'user-guide', 'dashboard', 'users', 'projects', 'monitoring', 'database', 'audit', 
+    'user-guide', 'researcher-guide', 'evaluator-guide', 'dashboard', 'users', 'projects', 'monitoring', 'database', 'audit', 
     'settings', 'backup', 'system', 'landing', 'home', 'model-building', 
     'evaluation-results', 'project-completion', 'personal-projects', 
     'personal-users', 'results', 'evaluator-dashboard', 'pairwise-evaluation', 
@@ -1570,6 +1570,28 @@ function App() {
             onNavigateToEvaluator={() => setActiveTab('evaluator-mode')}
             userRole={user?.role}
             isLoggedIn={!!user}
+          />
+        );
+
+      case 'researcher-guide':
+        return (
+          <ComprehensiveUserGuide 
+            onNavigateToService={() => setActiveTab('personal-service')}
+            onNavigateToEvaluator={() => setActiveTab('evaluator-mode')}
+            userRole={user?.role}
+            isLoggedIn={!!user}
+            initialMode="researcher"
+          />
+        );
+
+      case 'evaluator-guide':
+        return (
+          <ComprehensiveUserGuide 
+            onNavigateToService={() => setActiveTab('personal-service')}
+            onNavigateToEvaluator={() => setActiveTab('evaluator-mode')}
+            userRole={user?.role}
+            isLoggedIn={!!user}
+            initialMode="evaluator"
           />
         );
 
