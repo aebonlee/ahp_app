@@ -4,6 +4,9 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { getAIService } from '../../services/aiService';
+import { getCurrentAISettings } from '../../utils/aiInitializer';
+import AIConfiguration from '../settings/AIConfiguration';
 import type { User } from '../../types';
 
 interface ChatMessage {
@@ -40,6 +43,7 @@ const AIChatbotAssistantPage: React.FC<AIChatbotAssistantPageProps> = ({ user })
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isAssistantTyping, setIsAssistantTyping] = useState<boolean>(false);
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
+  const [showAIConfig, setShowAIConfig] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -208,8 +212,27 @@ const AIChatbotAssistantPage: React.FC<AIChatbotAssistantPageProps> = ({ user })
     }, 1500 + Math.random() * 2000); // 1.5~3.5초 지연
   };
 
-  // AI 응답 생성 (시뮬레이션)
+  // AI 응답 생성
   const generateAIResponse = async (userMessage: string): Promise<string> => {
+    // 실제 AI 서비스 호출 시도
+    const aiService = getAIService();
+    
+    if (aiService) {
+      try {
+        // 대화 기록을 AI 서비스에 전달
+        const conversationHistory = currentSession?.messages.slice(-10).map(msg => ({
+          role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
+          content: msg.content
+        })) || [];
+        
+        const aiResponse = await aiService.getChatbotResponse(userMessage, conversationHistory);
+        return aiResponse;
+      } catch (error) {
+        console.error('AI 응답 생성 실패:', error);
+      }
+    }
+    
+    // AI 서비스가 없거나 실패한 경우 기본 응답 사용
     const message = userMessage.toLowerCase();
 
     // 키워드 기반 응답 시뮬레이션
@@ -534,9 +557,21 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>온라인</span>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setShowAIConfig(true)}
+              className="p-2 rounded transition-colors"
+              style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-secondary)' }}
+              title="AI 설정"
+            >
+              ⚙️
+            </button>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${getCurrentAISettings().hasApiKey ? 'bg-green-500' : 'bg-orange-500'}`}></div>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {getCurrentAISettings().hasApiKey ? 'AI 연결됨' : 'AI 설정 필요'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -677,6 +712,15 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
           </div>
         </div>
       </div>
+
+      {/* AI 설정 모달 */}
+      {showAIConfig && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <AIConfiguration onClose={() => setShowAIConfig(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

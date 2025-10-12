@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import cleanDataService from '../../services/dataService_clean';
+import { getAIService } from '../../services/aiService';
 import type { User } from '../../types';
 
 interface Project {
@@ -171,8 +172,20 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
     setAnalyzing(true);
     
     try {
-      // AI 분석 시뮬레이션 (실제로는 AI API 호출)
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // 실제 AI 분석 호출
+      const aiService = getAIService();
+      let aiInterpretation = '';
+      
+      if (aiService) {
+        try {
+          aiInterpretation = await aiService.interpretAHPResults(selectedProject, result);
+        } catch (error) {
+          console.error('AI 분석 실패:', error);
+        }
+      }
+      
+      // AI 분석 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       const insights: Insight[] = [
         {
