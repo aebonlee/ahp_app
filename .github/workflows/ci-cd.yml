@@ -167,14 +167,11 @@ jobs:
     - name: Check for sensitive files
       run: |
         echo "Checking for sensitive files..."
-        if find . -name "*.env*" -not -path "./node_modules/*" | grep -v ".env.example" | head -5; then
-          echo "⚠️ Environment files found - ensure they're in .gitignore"
-        fi
-        if grep -r "sk-" src/ 2>/dev/null | head -3; then
-          echo "🚨 Potential API keys found in source code"
-        else
-          echo "✅ No obvious API keys in source code"
-        fi
+        echo "🔍 Scanning for environment files..."
+        find . -name "*.env*" -not -path "./node_modules/*" | grep -v ".env.example" || echo "✅ No problematic env files found"
+        echo "🔍 Scanning for API keys..."
+        grep -r "sk-" src/ 2>/dev/null || echo "✅ No obvious API keys in source code"
+        echo "🔍 Security scan completed"
 
   # 5. 성능 테스트
   performance:

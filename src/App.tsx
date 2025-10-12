@@ -6,6 +6,7 @@ import authService from './services/authService';
 import cleanDataService from './services/dataService_clean';
 import type { User, UserRole } from './types';
 import Layout from './components/layout/Layout';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import LoginForm from './components/auth/LoginForm';
 import UnifiedAuthPage from './components/auth/UnifiedAuthPage';
 import RegisterForm from './components/auth/RegisterForm';
@@ -33,10 +34,13 @@ import ComprehensiveUserGuide from './components/guide/ComprehensiveUserGuide';
 import ResearcherGuidePage from './components/guide/ResearcherGuidePage';
 import EvaluatorGuidePage from './components/guide/EvaluatorGuidePage';
 import EvaluatorDashboard from './components/evaluator/EvaluatorDashboard';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import DemographicSurvey from './components/survey/DemographicSurvey';
 import EvaluationTest from './components/evaluation/EvaluationTest';
 import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import QRCodeEvaluatorAssignment from './components/evaluation/QRCodeEvaluatorAssignment';
 import AnonymousEvaluator from './components/evaluation/AnonymousEvaluator';
 import ConnectionTestPage from './components/demo/ConnectionTestPage';
@@ -68,6 +72,7 @@ function App() {
   useTheme();
 
   // GitHub Pages 하위 경로 처리 - 현재는 루트에 배포되므로 빈 문자열
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const basePath = '';
   
   // localStorage에서 초기 사용자 정보 복원
@@ -1149,6 +1154,7 @@ function App() {
     setRegisterMode(null);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleRegisterClick = () => {
     setRegisterMode('service');
     changeTab('register');

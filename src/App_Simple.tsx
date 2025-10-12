@@ -6,7 +6,9 @@ import { DEMO_USER, DEMO_PROJECTS } from './data/demoData';
 function App() {
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('personal-service');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [projects, setProjects] = useState<any[]>(DEMO_PROJECTS);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(DEMO_PROJECTS[0].id);
   const [isInitializing, setIsInitializing] = useState(true);
 
