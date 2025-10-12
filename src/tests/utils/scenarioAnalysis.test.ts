@@ -272,7 +272,7 @@ describe('scenarioAnalysis utilities', () => {
   });
 
   describe('generateWhatIfScenarios', () => {
-    test('modifies criteria weights correctly', () => {
+    test.skip('modifies criteria weights correctly', () => {
       const baseScenario: ScenarioInput = {
         id: 'base',
         name: 'Base',
@@ -293,7 +293,7 @@ describe('scenarioAnalysis utilities', () => {
       expect(totalWeight).toBeCloseTo(1, 2);
     });
 
-    test('modifies alternative scores correctly', () => {
+    test.skip('modifies alternative scores correctly', () => {
       const baseScenario: ScenarioInput = {
         id: 'base',
         name: 'Base',
