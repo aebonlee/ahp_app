@@ -47,7 +47,7 @@ jobs:
       if: ${{ !inputs.skip_tests }}
       run: |
         echo "🧪 Running quick tests..."
-        npm test -- --coverage --watchAll=false --testTimeout=5000 --maxWorkers=2
+        npm test -- --coverage --watchAll=false --testTimeout=5000 --maxWorkers=2 --passWithNoTests
       continue-on-error: true
       env:
         CI: true

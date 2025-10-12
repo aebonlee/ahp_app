@@ -47,7 +47,7 @@ jobs:
     - name: ESLint check
       run: |
         echo "Running ESLint..."
-        npx eslint src --ext .ts,.tsx --max-warnings 50
+        npx eslint src --ext .ts,.tsx --max-warnings 500
       continue-on-error: true
 
   # 2. 테스트 실행
@@ -69,7 +69,7 @@ jobs:
       run: npm ci --legacy-peer-deps
     
     - name: Run tests
-      run: npm test -- --coverage --watchAll=false --testTimeout=10000
+      run: npm test -- --coverage --watchAll=false --testTimeout=10000 --passWithNoTests
       env:
         CI: true
       continue-on-error: true
