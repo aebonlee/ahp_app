@@ -683,10 +683,10 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
     // 멘션 감지
     const mentionRegex = /@([\w가-힣]+)/g;
     const mentions: string[] = [];
-    let match;
+    let match: RegExpExecArray | null;
     
     while ((match = mentionRegex.exec(newMessage)) !== null) {
-      const mentionedUser = users.find(u => u.name === match[1]);
+      const mentionedUser = users.find(u => u.name === match![1]);
       if (mentionedUser) {
         mentions.push(mentionedUser.id);
       }
@@ -1119,6 +1119,76 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
     );
   };
 
+  // 알림 렌더링
+  const renderNotifications = () => {
+    if (notifications.length === 0) return null;
+
+    return (
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {notifications.map(notification => (
+          <div
+            key={notification.id}
+            className={`max-w-sm p-4 rounded-lg shadow-lg border ${
+              notification.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+              notification.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+              notification.type === 'warning' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
+              'bg-blue-50 border-blue-200 text-blue-800'
+            }`}
+          >
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h4 className="font-medium text-sm">{notification.title}</h4>
+                <p className="text-xs mt-1">{notification.message}</p>
+              </div>
+              <button
+                onClick={() => dismissNotification(notification.id)}
+                className="ml-2 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // 사용자 커서 렌더링
+  const renderUserCursors = () => {
+    return (
+      <>
+        {Object.entries(cursorPositions).map(([userId, position]) => {
+          const user = users.find(u => u.id === userId);
+          if (!user || !user.isOnline || userId === currentUser.id) return null;
+
+          return (
+            <div
+              key={userId}
+              data-testid={`user-cursor-${userId}`}
+              className="fixed pointer-events-none z-40"
+              style={{
+                left: position.x,
+                top: position.y,
+                transform: 'translate(-50%, -100%)'
+              }}
+            >
+              <div
+                className="w-3 h-3 rounded-full border-2 border-white shadow-md"
+                style={{ backgroundColor: user.color }}
+              ></div>
+              <div
+                className="mt-1 px-2 py-1 rounded text-xs text-white font-medium shadow-md whitespace-nowrap"
+                style={{ backgroundColor: user.color }}
+              >
+                {user.name}
+              </div>
+            </div>
+          );
+        })}
+      </>
+    );
+  };
+
   return (
     <div className={`space-y-4 ${className}`}>
       {/* 연결 상태 표시 */}
@@ -1203,6 +1273,13 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
           <div className="mt-2 flex items-center space-x-2 text-xs text-gray-600">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
             <span>자동 저장 활성화</span>
+            <input
+              type="checkbox"
+              checked={autoSaveEnabled}
+              onChange={(e) => setAutoSaveEnabled(e.target.checked)}
+              className="ml-2"
+            />
+            <label className="text-xs">자동 저장</label>
           </div>
         )}
         
@@ -1217,7 +1294,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
             </div>
             {offlineState.queuedEvents.length > 0 && (
               <div className="text-orange-700 text-sm mt-1">
-                대기 중인 변경사항: {offlineState.queuedEvents.length}개
+                {offlineState.queuedEvents.length}개 변경사항이 큐에 대기중입니다
               </div>
             )}
           </div>
@@ -1238,74 +1315,5 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
     </div>
   );
 };
-
-  // 알림 렌더링
-  const renderNotifications = () => {
-    if (notifications.length === 0) return null;
-
-    return (
-      <div className="fixed top-4 right-4 z-50 space-y-2">
-        {notifications.map(notification => (
-          <div
-            key={notification.id}
-            className={`max-w-sm p-4 rounded-lg shadow-lg border ${
-              notification.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
-              notification.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
-              notification.type === 'warning' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
-              'bg-blue-50 border-blue-200 text-blue-800'
-            }`}
-          >
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <h4 className="font-medium text-sm">{notification.title}</h4>
-                <p className="text-xs mt-1">{notification.message}</p>
-              </div>
-              <button
-                onClick={() => dismissNotification(notification.id)}
-                className="ml-2 text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // 사용자 커서 렌더링
-  const renderUserCursors = () => {
-    return (
-      <>
-        {Object.entries(cursorPositions).map(([userId, position]) => {
-          const user = users.find(u => u.id === userId);
-          if (!user || !user.isOnline || userId === currentUser.id) return null;
-
-          return (
-            <div
-              key={userId}
-              className="fixed pointer-events-none z-40"
-              style={{
-                left: position.x,
-                top: position.y,
-                transform: 'translate(-50%, -100%)'
-              }}
-            >
-              <div
-                className="w-3 h-3 rounded-full border-2 border-white shadow-md"
-                style={{ backgroundColor: user.color }}
-              ></div>
-              <div
-                className="mt-1 px-2 py-1 rounded text-xs text-white font-medium shadow-md whitespace-nowrap"
-                style={{ backgroundColor: user.color }}
-              >
-                {user.name}
-              </div>
-            </div>
-          );
-        })}
-      </>
-    );
-  };
 
 export default RealTimeCollaboration;

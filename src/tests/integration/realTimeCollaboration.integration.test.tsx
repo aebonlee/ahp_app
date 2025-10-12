@@ -329,7 +329,8 @@ describe('RealTimeCollaboration Integration Tests', () => {
       { nodeId: 'node-2', name: 'Node 2', action: 'create' }
     ];
 
-    for (const [index, update] of updates.entries()) {
+    for (let index = 0; index < updates.length; index++) {
+      const update = updates[index];
       await syncManager.sendEvent({
         type: 'node_update',
         data: {
@@ -361,9 +362,8 @@ describe('RealTimeCollaboration Integration Tests', () => {
       <RealTimeCollaboration
         modelId={testModelId}
         currentUser={user1}
-        onModelUpdate={onModelUpdate}
-        onUserJoin={jest.fn()}
-        onUserLeave={jest.fn()}
+        onModelChange={onModelUpdate}
+        onUserPresenceChange={jest.fn()}
       />
     );
 
