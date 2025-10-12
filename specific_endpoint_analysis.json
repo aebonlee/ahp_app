@@ -1,0 +1,95 @@
+{
+  "timestamp": "2025-10-12T00:59:00.774Z",
+  "baseUrl": "https://ahp-django-backend.onrender.com",
+  "summary": {
+    "total": 5,
+    "successful": 1,
+    "failed": 4,
+    "successRate": "20.00",
+    "averageResponseTime": "327.20"
+  },
+  "detailedResults": [
+    {
+      "name": "사용자 프로필",
+      "url": "/api/service/auth/profile/",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 670,
+      "responseSize": 179,
+      "contentType": "text/html; charset=utf-8",
+      "cors": null,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      }
+    },
+    {
+      "name": "프로젝트 목록",
+      "url": "/api/service/projects/",
+      "method": "GET",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "duration": 191,
+      "responseSize": 255,
+      "contentType": "application/json",
+      "cors": null,
+      "response": {
+        "projects": "https://ahp-django-backend.onrender.com/api/service/projects/projects/",
+        "criteria": "https://ahp-django-backend.onrender.com/api/service/projects/criteria/",
+        "templates": "https://ahp-django-backend.onrender.com/api/service/projects/templates/"
+      }
+    },
+    {
+      "name": "평가자 관리",
+      "url": "/api/service/evaluators/",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 178,
+      "responseSize": 179,
+      "contentType": "text/html; charset=utf-8",
+      "cors": null,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      }
+    },
+    {
+      "name": "대안 관리",
+      "url": "/api/service/alternatives/",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 355,
+      "responseSize": 179,
+      "contentType": "text/html; charset=utf-8",
+      "cors": null,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      }
+    },
+    {
+      "name": "기준 관리",
+      "url": "/api/service/criteria/",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 242,
+      "responseSize": 179,
+      "contentType": "text/html; charset=utf-8",
+      "cors": null,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      }
+    }
+  ],
+  "recommendations": {
+    "authErrors": 0,
+    "notFoundErrors": 4,
+    "serverErrors": 0
+  }
+}

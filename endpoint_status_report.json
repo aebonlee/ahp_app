@@ -1,0 +1,382 @@
+{
+  "timestamp": "2025-10-12T00:56:25.854Z",
+  "baseUrl": "https://ahp-django-backend.onrender.com",
+  "summary": {
+    "total": 12,
+    "successful": 1,
+    "failed": 11,
+    "successRate": "8.33",
+    "averageResponseTime": "257.92"
+  },
+  "results": [
+    {
+      "name": "사용자 프로필",
+      "url": "/api/service/auth/profile/",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 377,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      },
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a2f15bdf2916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "114",
+        "content-type": "text/html; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:17 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "b9039c78-1521-4905",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "로그인",
+      "url": "/api/service/auth/login/",
+      "method": "POST",
+      "status": 400,
+      "statusText": "Bad Request",
+      "success": false,
+      "duration": 181,
+      "response": {
+        "non_field_errors": [
+          "\"email\"과 \"password\"를 반드시 포함해야 합니다."
+        ]
+      },
+      "headers": {
+        "allow": "POST, OPTIONS",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a2f5cc332916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "88",
+        "content-type": "application/json",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:17 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "016038c5-800e-47ab",
+        "server": "cloudflare",
+        "vary": "Cookie, origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "프로젝트 목록",
+      "url": "/api/service/projects/",
+      "method": "GET",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "duration": 185,
+      "response": {
+        "projects": "https://ahp-django-backend.onrender.com/api/service/projects/projects/",
+        "criteria": "https://ahp-django-backend.onrender.com/api/service/projects/criteria/",
+        "templates": "https://ahp-django-backend.onrender.com/api/service/projects/templates/"
+      },
+      "headers": {
+        "allow": "GET, HEAD, OPTIONS",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a2fa1d6a2916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "90",
+        "content-type": "application/json",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:18 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "61bcee9e-886b-4162",
+        "server": "cloudflare",
+        "vary": "Cookie, origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "프로젝트 상세",
+      "url": "/api/service/projects/projects/1/",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 199,
+      "response": {
+        "detail": "찾을 수 없습니다."
+      },
+      "headers": {
+        "allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a2fe6ea42916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "41",
+        "content-type": "application/json",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:19 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "5292018e-1b4c-4b67",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "평가자 목록",
+      "url": "/api/service/evaluators/?project=1",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 516,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      },
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a302d9632916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "114",
+        "content-type": "text/html; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:20 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "8f7323fa-9e0f-4997",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "평가자 추가",
+      "url": "/api/service/evaluators/",
+      "method": "POST",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 165,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      },
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a3093f4c2916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "114",
+        "content-type": "text/html; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:20 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "0629044e-0878-4657",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "대안 목록",
+      "url": "/api/v1/alternatives/?project=1",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 229,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      },
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a30d7fe92916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "114",
+        "content-type": "text/html; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:21 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "aa557fa2-245e-4278",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "대안 생성",
+      "url": "/api/v1/alternatives/",
+      "method": "POST",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 384,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      },
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a31299252916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "114",
+        "content-type": "text/html; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:22 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "6af20785-8074-468e",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "기준 목록",
+      "url": "/api/service/projects/projects/1/criteria/",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 262,
+      "response": {
+        "detail": "찾을 수 없습니다."
+      },
+      "headers": {
+        "allow": "GET, HEAD, OPTIONS",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a3182bb32916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "41",
+        "content-type": "application/json",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:23 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "c62132ac-c67b-48ec",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "기준 추가",
+      "url": "/api/service/projects/projects/1/add_criteria/",
+      "method": "POST",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 252,
+      "response": {
+        "detail": "찾을 수 없습니다."
+      },
+      "headers": {
+        "allow": "POST, OPTIONS",
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a31cdbef2916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "41",
+        "content-type": "application/json",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:23 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "400534fe-5000-410d",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "서비스 상태",
+      "url": "/api/service/status/",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 171,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      },
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a3211be12916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "114",
+        "content-type": "text/html; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:24 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "f1b1a041-cabc-4d8b",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    },
+    {
+      "name": "데이터 서비스",
+      "url": "/api/service/data/",
+      "method": "GET",
+      "status": 404,
+      "statusText": "Not Found",
+      "success": false,
+      "duration": 174,
+      "response": {
+        "message": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      },
+      "headers": {
+        "alt-svc": "h3=\":443\"; ma=86400",
+        "cf-cache-status": "DYNAMIC",
+        "cf-ray": "98d2a3255bf42916-ICN",
+        "connection": "keep-alive",
+        "content-encoding": "br",
+        "content-length": "114",
+        "content-type": "text/html; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "date": "Sun, 12 Oct 2025 00:56:25 GMT",
+        "referrer-policy": "same-origin",
+        "rndr-id": "ba776318-6c43-4829",
+        "server": "cloudflare",
+        "vary": "origin, Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-render-origin-server": "gunicorn"
+      }
+    }
+  ]
+}
