@@ -256,6 +256,9 @@ describe('RealTimeCollaboration', () => {
         'user_join',
         expect.any(Function)
       );
+    });
+    
+    await waitFor(() => {
       expect(mockSyncManager.addEventListener).toHaveBeenCalledWith(
         'user_leave',
         expect.any(Function)

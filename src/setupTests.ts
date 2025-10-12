@@ -96,4 +96,4 @@ window.scrollTo = jest.fn();
 
 // Environment variables for testing
 process.env.REACT_APP_API_URL = 'https://ahp-django-backend.onrender.com';
-process.env.NODE_ENV = 'test';
+// Note: NODE_ENV is read-only in test environment

@@ -182,10 +182,12 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
   };
 
   const handleDeleteEvaluator = async (evaluatorId: string, fromProject?: boolean) => {
-    if (!confirm(fromProject ? 
+    // Note: In production, replace with proper modal confirmation
+    const shouldDelete = window.confirm(fromProject ? 
       '이 평가자를 현재 프로젝트에서 제거하시겠습니까?' : 
       '이 평가자를 모든 프로젝트에서 완전히 삭제하시겠습니까?'
-    )) return;
+    );
+    if (!shouldDelete) return;
 
     try {
       const url = fromProject && projectId 

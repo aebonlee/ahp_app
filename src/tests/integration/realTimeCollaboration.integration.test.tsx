@@ -94,6 +94,9 @@ describe('RealTimeCollaboration Integration Tests', () => {
     // Both users should see each other
     await waitFor(() => {
       expect(onUserJoin1).toHaveBeenCalled();
+    });
+    
+    await waitFor(() => {
       expect(onUserJoin2).toHaveBeenCalled();
     });
   });
@@ -253,7 +256,7 @@ describe('RealTimeCollaboration Integration Tests', () => {
 
     // Wait for cursor to appear in UI
     await waitFor(() => {
-      const cursor = container.querySelector(`[data-testid="user-cursor-${user2.id}"]`);
+      const cursor = screen.getByTestId(`user-cursor-${user2.id}`);
       expect(cursor).toBeInTheDocument();
     }, { timeout: 3000 });
 
@@ -416,7 +419,7 @@ describe('RealTimeCollaboration Integration Tests', () => {
 
     // Should show notification
     await waitFor(() => {
-      const notifications = container.querySelectorAll('[data-testid="collaboration-notification"]');
+      const notifications = screen.getAllByTestId('collaboration-notification');
       expect(notifications.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
 
