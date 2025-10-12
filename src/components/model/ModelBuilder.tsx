@@ -68,6 +68,20 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     ? 'http://localhost:8000' 
     : 'https://ahp-django-backend.onrender.com';
 
+  // 캔버스 모델 저장 핸들러
+  const handleCanvasModelSave = useCallback((canvasNodes: any[]) => {
+    setModelData(canvasNodes);
+    setModelCompleted(true);
+    setSaving(true);
+    
+    // 실제 API 저장 로직 (여기서는 시뮬레이션)
+    setTimeout(() => {
+      setSaving(false);
+      console.log('✅ 캔버스 모델 저장 완료:', canvasNodes);
+      onSave?.();
+    }, 1000);
+  }, [onSave]);
+
   const fetchProject = useCallback(async () => {
     try {
       setLoading(true);
@@ -398,20 +412,6 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       </Card>
     );
   }
-
-  // 캔버스 모델 저장 핸들러
-  const handleCanvasModelSave = useCallback((canvasNodes: any[]) => {
-    setModelData(canvasNodes);
-    setModelCompleted(true);
-    setSaving(true);
-    
-    // 실제 API 저장 로직 (여기서는 시뮬레이션)
-    setTimeout(() => {
-      setSaving(false);
-      console.log('✅ 캔버스 모델 저장 완료:', canvasNodes);
-      onSave?.();
-    }, 1000);
-  }, [onSave]);
 
   // 모델 구축 완료 후 다음 단계로
   const handleProceedToEvaluation = () => {

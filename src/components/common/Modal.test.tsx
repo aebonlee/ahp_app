@@ -51,12 +51,9 @@ describe('Modal', () => {
       </Modal>
     );
 
-    // Get the backdrop overlay div and trigger event properly
-    const dialog = screen.getByRole('dialog');
-    const backdrop = dialog.parentElement?.parentElement; // Get the outer container
-    if (backdrop) {
-      fireEvent.click(backdrop);
-    }
+    // Get the backdrop overlay div using a more appropriate selector
+    const backdrop = screen.getByTestId('modal-backdrop');
+    fireEvent.click(backdrop);
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });

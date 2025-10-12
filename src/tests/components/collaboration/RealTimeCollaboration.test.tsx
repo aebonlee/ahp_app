@@ -83,6 +83,9 @@ describe('RealTimeCollaboration', () => {
     
     await waitFor(() => {
       expect(MockedRealTimeSyncManager).toHaveBeenCalledWith('test-model-123', 'user-1');
+    });
+    
+    await waitFor(() => {
       expect(mockSyncManager.startSync).toHaveBeenCalled();
     });
   });
@@ -201,6 +204,9 @@ describe('RealTimeCollaboration', () => {
     
     await waitFor(() => {
       expect(screen.getByText('오프라인 모드')).toBeInTheDocument();
+    });
+    
+    await waitFor(() => {
       expect(screen.getByText('5개 변경사항이 큐에 대기중입니다')).toBeInTheDocument();
     });
   });

@@ -263,7 +263,9 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
   };
 
   const removeParticipant = (participantId: string) => {
-    if (confirm('정말로 이 참가자를 제거하시겠습니까?')) {
+    // Note: In production, replace with proper modal confirmation
+    const shouldRemove = window.confirm('정말로 이 참가자를 제거하시겠습니까?');
+    if (shouldRemove) {
       setParticipants(participants.filter(p => p.id !== participantId));
     }
   };

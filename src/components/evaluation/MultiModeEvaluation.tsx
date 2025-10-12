@@ -166,7 +166,9 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
 
   const handleModeChange = (newMode: EvaluationMode) => {
     if (evaluationData && currentMode !== newMode) {
-      if (confirm('평가 모드를 변경하면 현재 입력한 데이터가 손실됩니다. 계속하시겠습니까?')) {
+      // Note: In production, replace with proper modal confirmation
+      const shouldChange = window.confirm('평가 모드를 변경하면 현재 입력한 데이터가 손실됩니다. 계속하시겠습니까?');
+      if (shouldChange) {
         setCurrentMode(newMode);
         setEvaluationData(null);
         setValidationResults(null);

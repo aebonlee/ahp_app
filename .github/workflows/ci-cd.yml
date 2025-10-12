@@ -11,6 +11,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+  security-events: write
+
 jobs:
   # 1. 코드 품질 검사
   lint-and-format:
@@ -146,9 +153,10 @@ jobs:
     - name: Run npm audit
       run: |
         echo "Running npm security audit..."
-        npm audit --audit-level=high || echo "⚠️ Security vulnerabilities found"
+        npm audit --audit-level=high --fix || echo "⚠️ Security vulnerabilities found - continuing with fixes applied"
     
     - name: Run Snyk Security Scan
+      if: env.SNYK_TOKEN != ''
       uses: snyk/actions/node@master
       continue-on-error: true
       env:
@@ -208,6 +216,10 @@ jobs:
     environment:
       name: github-pages
       url: https://aebonlee.github.io/ahp_app/
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     
     steps:
     - name: Checkout code
@@ -219,14 +231,17 @@ jobs:
         name: build-files
         path: build/
     
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+    
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build
-        force_orphan: true
-        enable_jekyll: false
-        exclude_assets: '.github,src,public,node_modules'
+        path: ./build
+    
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
     
     - name: Deployment success notification
       run: |
