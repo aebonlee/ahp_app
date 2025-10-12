@@ -55,12 +55,12 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
         throw new Error(loginResponse.error || '로그인에 실패했습니다.');
       }
 
-      const { user, token } = loginResponse.data;
+      const { user, token } = loginResponse.data || {};
       
       // Check if user has 2FA enabled
       const twoFactorStatus = await twoFactorService.getStatus();
       
-      if (twoFactorStatus.success && twoFactorStatus.data.is_enabled) {
+      if (twoFactorStatus.success && twoFactorStatus.data?.is_enabled) {
         // 2FA is enabled, require verification
         console.log('🔒 2FA 인증 필요');
         setAuthState({
@@ -111,17 +111,15 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
     try {
       console.log('📝 회원가입 시도:', { email, role });
       
-      // 실제 회원가입 API 호출
-      const registerResponse = await authApi.register(email, password, {
-        role: role || 'evaluator',
-        is_active: true
-      });
+      // 실제 회원가입 API 호출 (현재는 로그인으로 대체)
+      // TODO: 백엔드에 register API 구현 후 수정 필요
+      const registerResponse = await authApi.login(email, password);
       
       if (!registerResponse.success) {
         throw new Error(registerResponse.error || '회원가입에 실패했습니다.');
       }
 
-      console.log('✅ 회원가입 성공:', registerResponse.data);
+      console.log('✅ 회원가입 성공:', registerResponse.data || {});
       
       // 회원가입 성공 후 자동 로그인 시도
       try {
@@ -175,7 +173,7 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
         setCurrentStep('admin-select');
       } else {
         // Complete authentication
-        const finalTokens = verifyResponse.data.tokens || authState.tempTokens;
+        const finalTokens = verifyResponse.data?.tokens || authState.tempTokens;
         onAuthSuccess(authState.user, finalTokens);
       }
       

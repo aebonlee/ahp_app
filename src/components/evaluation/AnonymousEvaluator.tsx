@@ -475,7 +475,7 @@ const AnonymousEvaluator: React.FC = () => {
     }
   };
 
-  const handleRecoveryAccept = () => {
+  const handleRecoveryAccept = async () => {
     if (recoveryData) {
       setSession(recoveryData.session);
       setIsRegistered(true);

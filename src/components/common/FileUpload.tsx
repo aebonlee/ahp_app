@@ -76,7 +76,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     try {
       const response = await fileUploadService.getFiles(1, category, projectId);
       if (response.success && response.data) {
-        setState(prev => ({ ...prev, files: response.data.results }));
+        setState(prev => ({ ...prev, files: response.data?.results || [] }));
       }
     } catch (error) {
       console.error('Failed to load existing files:', error);
@@ -151,14 +151,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
           // Add to file list
           setState(prev => ({
             ...prev,
-            files: [...prev.files, response.data],
+            files: [...prev.files, response.data!],
             uploadProgress: {
               ...prev.uploadProgress,
-              [response.data.id]: {
-                file_id: response.data.id,
+              [response.data!.id]: {
+                file_id: response.data!.id,
                 progress_percentage: 100,
-                bytes_uploaded: response.data.file_size,
-                total_bytes: response.data.file_size,
+                bytes_uploaded: response.data!.file_size,
+                total_bytes: response.data!.file_size,
                 status: 'completed'
               }
             }
@@ -168,14 +168,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
           setTimeout(() => {
             setState(prev => {
               const newProgress = { ...prev.uploadProgress };
-              delete newProgress[response.data.id];
+              delete newProgress[response.data!.id];
               return { ...prev, uploadProgress: newProgress };
             });
-            fileUploadUtils.clearUploadProgress(response.data.id);
+            fileUploadUtils.clearUploadProgress(response.data!.id);
           }, 2000);
           
           setSuccess(`파일 업로드 완료: ${file.name}`);
-          onFileUploaded?.(response.data);
+          onFileUploaded?.(response.data!);
           
           console.log('✅ 파일 업로드 완료:', response.data);
         } else {

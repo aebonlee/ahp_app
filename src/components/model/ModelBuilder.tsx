@@ -1,7 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
+import Button from '../common/Button';
 import EvaluatorAssignment from '../admin/EvaluatorAssignment';
+import CanvasModelBuilder from './CanvasModelBuilder';
 import { DEMO_PROJECTS, DEMO_CRITERIA, DEMO_ALTERNATIVES } from '../../data/demoData';
+import { 
+  Squares2X2Icon, 
+  ListBulletIcon, 
+  ArrowRightIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/outline';
 
 interface Criterion {
   id: string;
@@ -33,12 +42,20 @@ interface ModelBuilderProps {
   projectId: string;
   onSave?: () => void;
   demoMode?: boolean;
+  onComplete?: () => void;
 }
 
-const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode = false }) => {
+const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode = false, onComplete }) => {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // 빌더 모드 선택
+  const [builderMode, setBuilderMode] = useState<'select' | 'canvas' | 'form'>('select');
+  const [modelData, setModelData] = useState<any[]>([]);
+  const [modelCompleted, setModelCompleted] = useState(false);
+  
+  // 기존 상태들
   const [editingCriterion, setEditingCriterion] = useState<string | null>(null);
   const [newCriterionName, setNewCriterionName] = useState('');
   const [newCriterionDescription, setNewCriterionDescription] = useState('');
@@ -382,13 +399,213 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     );
   }
 
+  // 캔버스 모델 저장 핸들러
+  const handleCanvasModelSave = useCallback((canvasNodes: any[]) => {
+    setModelData(canvasNodes);
+    setModelCompleted(true);
+    setSaving(true);
+    
+    // 실제 API 저장 로직 (여기서는 시뮬레이션)
+    setTimeout(() => {
+      setSaving(false);
+      console.log('✅ 캔버스 모델 저장 완료:', canvasNodes);
+      onSave?.();
+    }, 1000);
+  }, [onSave]);
+
+  // 모델 구축 완료 후 다음 단계로
+  const handleProceedToEvaluation = () => {
+    onComplete?.();
+  };
+
+  // 빌더 모드 선택 화면
+  if (builderMode === 'select') {
+    return (
+      <div className="space-y-6">
+        <Card title={`모델 구축 방식 선택: ${project?.title || 'Loading...'}`}>
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-800 mb-2">🎯 프로젝트 목표</h4>
+              <p className="text-blue-700">{project?.objective || project?.description}</p>
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                어떤 방식으로 모델을 구축하시겠습니까?
+              </h3>
+              <p className="text-gray-600 mb-6">
+                프로젝트에 적합한 모델 구축 방식을 선택하세요
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 캔버스 기반 빌더 */}
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-transparent hover:border-blue-200">
+                <div 
+                  className="p-6 text-center"
+                  onClick={() => setBuilderMode('canvas')}
+                >
+                  <div className="bg-blue-100 rounded-full p-4 mx-auto mb-4 w-16 h-16 flex items-center justify-center">
+                    <Squares2X2Icon className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    캔버스 기반 빌더
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    드래그&드롭으로 시각적으로 모델을 구축합니다
+                  </p>
+                  <div className="text-sm text-gray-500 space-y-1">
+                    <div>✅ 3×3 기본 템플릿 제공</div>
+                    <div>✅ 다양한 템플릿 지원</div>
+                    <div>✅ 시각적 편집</div>
+                    <div>✅ 다단계 계층구조</div>
+                  </div>
+                  <Button className="mt-4 w-full" variant="primary">
+                    캔버스 빌더 시작
+                  </Button>
+                </div>
+              </Card>
+
+              {/* 폼 기반 빌더 */}
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-transparent hover:border-gray-200">
+                <div 
+                  className="p-6 text-center"
+                  onClick={() => setBuilderMode('form')}
+                >
+                  <div className="bg-gray-100 rounded-full p-4 mx-auto mb-4 w-16 h-16 flex items-center justify-center">
+                    <ListBulletIcon className="h-8 w-8 text-gray-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    전통적 폼 빌더
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    폼 기반으로 단계별로 모델을 구축합니다
+                  </p>
+                  <div className="text-sm text-gray-500 space-y-1">
+                    <div>✅ 단계별 가이드</div>
+                    <div>✅ 상세 설정</div>
+                    <div>✅ 기존 방식</div>
+                    <div>✅ 안정적 구축</div>
+                  </div>
+                  <Button className="mt-4 w-full" variant="outline">
+                    폼 빌더 시작
+                  </Button>
+                </div>
+              </Card>
+            </div>
+
+            {/* 추천 */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-2" />
+                <p className="text-sm text-yellow-700">
+                  <strong>추천:</strong> 처음 사용하시거나 복잡한 구조가 필요한 경우 
+                  <strong className="text-yellow-800">캔버스 기반 빌더</strong>를 권장합니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // 캔버스 빌더 모드
+  if (builderMode === 'canvas') {
+    return (
+      <CanvasModelBuilder
+        projectId={projectId}
+        projectTitle={project?.title || ''}
+        onSave={handleCanvasModelSave}
+        onCancel={() => setBuilderMode('select')}
+        initialModel={modelData}
+      />
+    );
+  }
+
+  // 모델 구축 완료 상태
+  if (modelCompleted) {
+    return (
+      <div className="space-y-6">
+        <Card title="모델 구축 완료">
+          <div className="text-center space-y-4">
+            <div className="bg-green-100 rounded-full p-4 mx-auto w-16 h-16 flex items-center justify-center">
+              <CheckCircleIcon className="h-8 w-8 text-green-600" />
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                모델 구축이 완료되었습니다!
+              </h3>
+              <p className="text-gray-600">
+                이제 평가자를 배정하고 평가를 시작할 수 있습니다.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 text-left">
+              <h4 className="font-medium text-gray-900 mb-2">구축된 모델 요약</h4>
+              <div className="text-sm text-gray-600 space-y-1">
+                <div>📊 총 노드 수: {modelData.length}개</div>
+                <div>🎯 목표: {modelData.filter(n => n.type === 'goal').length}개</div>
+                <div>📋 주기준: {modelData.filter(n => n.type === 'criteria').length}개</div>
+                <div>📝 하위기준: {modelData.filter(n => n.type === 'sub_criteria').length}개</div>
+                <div>🔄 대안: {modelData.filter(n => n.type === 'alternative').length}개</div>
+              </div>
+            </div>
+
+            <div className="flex justify-center space-x-4">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setModelCompleted(false);
+                  setBuilderMode('canvas');
+                }}
+              >
+                모델 수정
+              </Button>
+              
+              <Button 
+                variant="primary" 
+                onClick={handleProceedToEvaluation}
+                className="flex items-center"
+              >
+                평가자 배정하기
+                <ArrowRightIcon className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // 폼 기반 빌더 (기존 로직)
   return (
     <div className="space-y-6">
-      <Card title={`모델 빌더: ${project.title}`}>
+      <Card title={`모델 빌더: ${project?.title || 'Loading...'}`}>
         <div className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-800 mb-2">🎯 프로젝트 목표</h4>
-            <p className="text-blue-700">{project.objective || project.description}</p>
+            <p className="text-blue-700">{project?.objective || project?.description}</p>
+          </div>
+
+          {/* 캔버스 빌더로 전환 버튼 */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-green-800 mb-1">💡 캔버스 빌더 사용하기</h4>
+                <p className="text-sm text-green-700">더 직관적이고 편리한 캔버스 기반 빌더를 사용해보세요!</p>
+              </div>
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => setBuilderMode('canvas')}
+                className="flex items-center"
+              >
+                <Squares2X2Icon className="h-4 w-4 mr-1" />
+                캔버스 빌더
+              </Button>
+            </div>
           </div>
 
           {/* 탭 네비게이션 */}

@@ -254,7 +254,7 @@ export const fileUploadService = {
       await fileUploadService.incrementDownloadCount(fileId);
     }
     
-    return response;
+    return response as ApiResponse<FileDownloadInfo>;
   },
 
   // Delete file

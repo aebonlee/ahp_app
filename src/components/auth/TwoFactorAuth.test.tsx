@@ -63,7 +63,7 @@ describe('TwoFactorAuth Component', () => {
     });
 
     it('progresses to step 2 when next button is clicked', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       render(<TwoFactorAuth {...defaultProps} />);
       
       // Wait for setup to complete
@@ -71,50 +71,50 @@ describe('TwoFactorAuth Component', () => {
         expect(screen.getByRole('button', { name: '다음 단계' })).not.toBeDisabled();
       });
       
-      await user.click(screen.getByRole('button', { name: '다음 단계' }));
+      await userEvent.click(screen.getByRole('button', { name: '다음 단계' }));
       
       expect(screen.getByText('인증 코드 확인')).toBeInTheDocument();
       expect(screen.getByText('앱에서 생성된 6자리 코드를 입력하세요')).toBeInTheDocument();
     });
 
     it('validates verification code format in step 2', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       render(<TwoFactorAuth {...defaultProps} />);
       
       // Navigate to step 2
       await waitFor(() => {
         expect(screen.getByRole('button', { name: '다음 단계' })).not.toBeDisabled();
       });
-      await user.click(screen.getByRole('button', { name: '다음 단계' }));
+      await userEvent.click(screen.getByRole('button', { name: '다음 단계' }));
       
       const codeInput = screen.getByPlaceholderText('000000');
       const confirmButton = screen.getByRole('button', { name: '확인' });
       
       // Test invalid input (letters)
-      await user.type(codeInput, 'abc123');
+      await userEvent.type(codeInput, 'abc123');
       expect(codeInput).toHaveValue('123');
       
       // Test valid 6-digit code
-      await user.clear(codeInput);
-      await user.type(codeInput, '123456');
+      await userEvent.clear(codeInput);
+      await userEvent.type(codeInput, '123456');
       expect(codeInput).toHaveValue('123456');
       expect(confirmButton).not.toBeDisabled();
     });
 
     it('progresses to step 3 when valid code is entered', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       render(<TwoFactorAuth {...defaultProps} />);
       
       // Navigate to step 2
       await waitFor(() => {
         expect(screen.getByRole('button', { name: '다음 단계' })).not.toBeDisabled();
       });
-      await user.click(screen.getByRole('button', { name: '다음 단계' }));
+      await userEvent.click(screen.getByRole('button', { name: '다음 단계' }));
       
       // Enter valid code
       const codeInput = screen.getByPlaceholderText('000000');
-      await user.type(codeInput, '123456');
-      await user.click(screen.getByRole('button', { name: '확인' }));
+      await userEvent.type(codeInput, '123456');
+      await userEvent.click(screen.getByRole('button', { name: '확인' }));
       
       await waitFor(() => {
         expect(screen.getByText('백업 코드 저장')).toBeInTheDocument();
@@ -125,7 +125,7 @@ describe('TwoFactorAuth Component', () => {
     });
 
     it('completes setup when setup complete button is clicked', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       const onSetupComplete = jest.fn();
       render(<TwoFactorAuth {...defaultProps} onSetupComplete={onSetupComplete} />);
       
@@ -133,17 +133,17 @@ describe('TwoFactorAuth Component', () => {
       await waitFor(() => {
         expect(screen.getByRole('button', { name: '다음 단계' })).not.toBeDisabled();
       });
-      await user.click(screen.getByRole('button', { name: '다음 단계' }));
+      await userEvent.click(screen.getByRole('button', { name: '다음 단계' }));
       
       const codeInput = screen.getByPlaceholderText('000000');
-      await user.type(codeInput, '123456');
-      await user.click(screen.getByRole('button', { name: '확인' }));
+      await userEvent.type(codeInput, '123456');
+      await userEvent.click(screen.getByRole('button', { name: '확인' }));
       
       await waitFor(() => {
         expect(screen.getByRole('button', { name: '설정 완료' })).toBeInTheDocument();
       });
       
-      await user.click(screen.getByRole('button', { name: '설정 완료' }));
+      await userEvent.click(screen.getByRole('button', { name: '설정 완료' }));
       
       expect(onSetupComplete).toHaveBeenCalledWith(
         expect.any(String),
@@ -168,47 +168,47 @@ describe('TwoFactorAuth Component', () => {
     });
 
     it('switches between TOTP and backup code input', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       render(<TwoFactorAuth {...verifyProps} />);
       
       expect(screen.getByPlaceholderText('000000')).toBeInTheDocument();
       expect(screen.getByText('백업 코드 사용')).toBeInTheDocument();
       
-      await user.click(screen.getByText('백업 코드 사용'));
+      await userEvent.click(screen.getByText('백업 코드 사용'));
       
       expect(screen.getByPlaceholderText('ABCD1234')).toBeInTheDocument();
       expect(screen.getByText('인증 앱 코드 사용')).toBeInTheDocument();
     });
 
     it('calls verification success on valid TOTP code', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       const onVerificationSuccess = jest.fn();
       render(<TwoFactorAuth {...verifyProps} onVerificationSuccess={onVerificationSuccess} />);
       
       const codeInput = screen.getByPlaceholderText('000000');
-      await user.type(codeInput, '123456');
-      await user.click(screen.getByRole('button', { name: '인증' }));
+      await userEvent.type(codeInput, '123456');
+      await userEvent.click(screen.getByRole('button', { name: '인증' }));
       
       expect(onVerificationSuccess).toHaveBeenCalledWith('123456');
     });
 
     it('calls verification success on valid backup code', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       const onVerificationSuccess = jest.fn();
       render(<TwoFactorAuth {...verifyProps} onVerificationSuccess={onVerificationSuccess} />);
       
       // Switch to backup code mode
-      await user.click(screen.getByText('백업 코드 사용'));
+      await userEvent.click(screen.getByText('백업 코드 사용'));
       
       const backupInput = screen.getByPlaceholderText('ABCD1234');
-      await user.type(backupInput, 'ABCD1234');
-      await user.click(screen.getByRole('button', { name: '인증' }));
+      await userEvent.type(backupInput, 'ABCD1234');
+      await userEvent.click(screen.getByRole('button', { name: '인증' }));
       
       expect(onVerificationSuccess).toHaveBeenCalledWith('ABCD1234');
     });
 
     it('disables submit button for invalid code length', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       render(<TwoFactorAuth {...verifyProps} />);
       
       const codeInput = screen.getByPlaceholderText('000000');
@@ -216,10 +216,10 @@ describe('TwoFactorAuth Component', () => {
       
       expect(submitButton).toBeDisabled();
       
-      await user.type(codeInput, '123');
+      await userEvent.type(codeInput, '123');
       expect(submitButton).toBeDisabled();
       
-      await user.type(codeInput, '456');
+      await userEvent.type(codeInput, '456');
       expect(submitButton).not.toBeDisabled();
     });
   });
@@ -242,7 +242,7 @@ describe('TwoFactorAuth Component', () => {
     });
 
     it('calls disable callback when disable button is clicked', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       const onDisable = jest.fn();
       
       // Mock window.confirm
@@ -250,7 +250,7 @@ describe('TwoFactorAuth Component', () => {
       
       render(<TwoFactorAuth {...manageProps} onDisable={onDisable} />);
       
-      await user.click(screen.getByRole('button', { name: '2단계 인증 비활성화' }));
+      await userEvent.click(screen.getByRole('button', { name: '2단계 인증 비활성화' }));
       
       expect(confirmSpy).toHaveBeenCalledWith(
         '2단계 인증을 비활성화하시겠습니까? 계정 보안이 약해질 수 있습니다.'
@@ -261,7 +261,7 @@ describe('TwoFactorAuth Component', () => {
     });
 
     it('does not call disable callback when confirmation is cancelled', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       const onDisable = jest.fn();
       
       // Mock window.confirm to return false
@@ -269,7 +269,7 @@ describe('TwoFactorAuth Component', () => {
       
       render(<TwoFactorAuth {...manageProps} onDisable={onDisable} />);
       
-      await user.click(screen.getByRole('button', { name: '2단계 인증 비활성화' }));
+      await userEvent.click(screen.getByRole('button', { name: '2단계 인증 비활성화' }));
       
       expect(confirmSpy).toHaveBeenCalled();
       expect(onDisable).not.toHaveBeenCalled();
@@ -294,7 +294,7 @@ describe('TwoFactorAuth Component', () => {
 
   describe('Error Handling', () => {
     it('displays error messages', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       const onVerificationFailed = jest.fn();
       render(
         <TwoFactorAuth 
@@ -305,8 +305,8 @@ describe('TwoFactorAuth Component', () => {
       );
       
       const codeInput = screen.getByPlaceholderText('000000');
-      await user.type(codeInput, '000000'); // Invalid code
-      await user.click(screen.getByRole('button', { name: '인증' }));
+      await userEvent.type(codeInput, '000000'); // Invalid code
+      await userEvent.click(screen.getByRole('button', { name: '인증' }));
       
       await waitFor(() => {
         expect(screen.getByText('잘못된 인증 코드입니다. 다시 시도해주세요.')).toBeInTheDocument();
@@ -324,7 +324,7 @@ describe('TwoFactorAuth Component', () => {
     });
 
     it('maintains focus order through steps', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
       render(<TwoFactorAuth {...defaultProps} />);
       
       await waitFor(() => {
@@ -335,7 +335,7 @@ describe('TwoFactorAuth Component', () => {
       const nextButton = screen.getByRole('button', { name: '다음 단계' });
       expect(nextButton).toBeInTheDocument();
       
-      await user.tab();
+      await userEvent.tab();
       expect(nextButton).toHaveFocus();
     });
   });

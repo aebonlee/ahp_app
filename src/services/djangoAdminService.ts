@@ -331,9 +331,9 @@ export const djangoAdminService = {
     
     if (response.success) {
       // Handle blob response for file download
-      return response;
+      return response as ApiResponse<Blob>;
     }
-    return response;
+    return response as ApiResponse<Blob>;
   },
 
   importModelData: async (appLabel: string, modelName: string, file: File, format: 'csv' | 'json' | 'xlsx'): Promise<ApiResponse<{

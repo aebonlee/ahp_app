@@ -278,13 +278,13 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
             onSuccess?.(successMessage);
             
             // Monitor backup progress if task_id is provided
-            if (response.data.task_id) {
+            if (response.data?.task_id) {
               setRunningTasks(prev => {
                 const newSet = new Set(prev);
-                newSet.add(response.data.task_id);
+                newSet.add(response.data!.task_id);
                 return newSet;
               });
-              monitorTask(response.data.task_id);
+              monitorTask(response.data?.task_id);
             }
             
             // Refresh backup list
@@ -384,13 +384,14 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
               t.id === taskId ? { ...t, status: 'running' } : t
             ));
             
-            if (response.data.task_id) {
+            if (response.data?.task_id) {
+              const taskId = response.data.task_id;
               setRunningTasks(prev => {
                 const newSet = new Set(prev);
-                newSet.add(response.data.task_id);
+                newSet.add(taskId);
                 return newSet;
               });
-              monitorTask(response.data.task_id);
+              monitorTask(taskId);
             }
             
           } else {
@@ -456,13 +457,14 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
             setSuccess(successMessage);
             onSuccess?.(successMessage);
             
-            if (response.data.task_id) {
+            if (response.data?.task_id) {
+              const taskId = response.data.task_id;
               setRunningTasks(prev => {
                 const newSet = new Set(prev);
-                newSet.add(response.data.task_id);
+                newSet.add(taskId);
                 return newSet;
               });
-              monitorTask(response.data.task_id);
+              monitorTask(taskId);
             }
             
           } else {
@@ -862,7 +864,7 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
             <div className="flex justify-between items-center">
               <span>전체 캐시 초기화</span>
               <Button 
-                variant="danger" 
+                variant="primary" 
                 size="sm" 
                 onClick={() => handleCacheClear('all')}
                 disabled={loading}

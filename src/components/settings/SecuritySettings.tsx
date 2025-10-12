@@ -63,7 +63,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
         setTwoFactorStatus(statusResponse.data);
         setSecurityConfig(prev => ({
           ...prev,
-          twoFactorEnabled: statusResponse.data.is_enabled
+          twoFactorEnabled: statusResponse.data?.is_enabled || false
         }));
       }
 
@@ -168,7 +168,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
         throw new Error(response.error || '백업 코드 생성에 실패했습니다.');
       }
 
-      setNewBackupCodes(response.data.backup_codes);
+      setNewBackupCodes(response.data!.backup_codes);
       setShowBackupCodes(true);
       setSuccess('새로운 백업 코드가 생성되었습니다.');
       
@@ -289,7 +289,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
                     
                     <Button
                       size="sm"
-                      variant="danger"
+                      variant="error"
                       onClick={handle2FADisable}
                       disabled={loading}
                     >
