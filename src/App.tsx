@@ -196,7 +196,7 @@ function App() {
     // 임시 역할 체크
     const tempRole = localStorage.getItem('ahp_temp_role');
     if (tempRole && user && user.role === 'super_admin') {
-      setUser({ ...user, role: tempRole as UserRole });
+      setUser(prevUser => prevUser ? { ...prevUser, role: tempRole as UserRole } : null);
     }
   }, []);
 

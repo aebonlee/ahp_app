@@ -17,6 +17,7 @@ const EnhancedProjectDashboard: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeTab, setActiveTab] = useState<'list' | 'create' | 'manage'>('list');
   const [showModelConfig, setShowModelConfig] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);

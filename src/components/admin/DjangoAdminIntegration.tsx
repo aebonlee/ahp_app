@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   CheckCircleIcon, 
   ExclamationTriangleIcon, 
@@ -50,11 +50,7 @@ const DjangoAdminIntegration: React.FC<DjangoAdminIntegrationProps> = ({
   const [selectedUser, setSelectedUser] = useState<DjangoUser | null>(null);
   const [djangoUsers, setDjangoUsers] = useState<DjangoUser[]>([]);
 
-  useEffect(() => {
-    loadAdminData();
-  }, []);
-
-  const loadAdminData = async () => {
+  const loadAdminData = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -106,7 +102,11 @@ const DjangoAdminIntegration: React.FC<DjangoAdminIntegrationProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [onError, onSuccess]);
+
+  useEffect(() => {
+    loadAdminData();
+  }, [loadAdminData]);
 
   const handleOpenDjangoAdmin = () => {
     const adminUrl = djangoAdminService.getDjangoAdminUrl();

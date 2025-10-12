@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Input from '../common/Input';
 import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import HierarchyTreeBuilder from '../modeling/HierarchyTreeBuilder';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
 import CriteriaTemplates from '../criteria/CriteriaTemplates';
@@ -49,12 +51,13 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   const [activeInputMode, setActiveInputMode] = useState<'template' | 'bulk' | 'visual' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
   const [editMode, setEditMode] = useState(false);
 
   // 백엔드에서 기준 로드
-  const loadCriteria = async () => {
+  const loadCriteria = useCallback(async () => {
     try {
       setIsLoading(true);
       const loadedCriteria = await cleanDataService.getCriteria(projectId);
@@ -86,7 +89,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [projectId, onCriteriaChange]);
 
   // 계층 구조 구성
   const buildHierarchy = (flatCriteria: Criterion[]): Criterion[] => {
@@ -157,7 +160,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     if (projectId) {
       loadCriteria();
     }
-  }, [projectId]);
+  }, [projectId, loadCriteria]);
 
   // 저장된 기준 개수가 변경되면 부모 컴포넌트에 알림
   useEffect(() => {

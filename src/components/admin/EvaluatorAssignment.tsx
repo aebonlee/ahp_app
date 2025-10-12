@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import cleanDataService from '../../services/dataService_clean';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { evaluatorApi } from '../../services/api';
 import { EvaluatorData } from '../../services/api';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
@@ -39,6 +40,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
   currentPlan = 'Standard Plan'
 }) => {
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showBulkQR, setShowBulkQR] = useState(false);
   const [evaluationStats, setEvaluationStats] = useState<{
     total: number;

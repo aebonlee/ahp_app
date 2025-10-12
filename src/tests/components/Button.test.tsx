@@ -19,18 +19,18 @@ describe('Button Component', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  test('applies variant classes correctly', () => {
+  test('applies variant styles correctly', () => {
     const { rerender } = render(<Button variant="primary">Primary</Button>);
     let button = screen.getByText('Primary');
-    expect(button).toHaveClass('bg-blue-500');
+    expect(button).toHaveStyle('background-color: var(--accent-primary)');
 
     rerender(<Button variant="secondary">Secondary</Button>);
     button = screen.getByText('Secondary');
-    expect(button).toHaveClass('bg-gray-500');
+    expect(button).toHaveStyle('background-color: var(--bg-elevated)');
 
     rerender(<Button variant="error">Error</Button>);
     button = screen.getByText('Error');
-    expect(button).toHaveClass('bg-red-500');
+    expect(button).toHaveStyle('background-color: var(--status-danger-text)');
   });
 
   test('disables button when disabled prop is true', () => {
@@ -41,21 +41,23 @@ describe('Button Component', () => {
 
   test('shows loading state', () => {
     render(<Button loading>Loading</Button>);
-    const button = screen.getByText('Loading...');
+    const button = screen.getByText('Loading');
     expect(button).toBeDisabled();
+    const spinner = screen.getByRole('img', { hidden: true });
+    expect(spinner).toBeInTheDocument();
   });
 
-  test('applies size classes correctly', () => {
+  test('applies size styles correctly', () => {
     const { rerender } = render(<Button size="sm">Small</Button>);
     let button = screen.getByText('Small');
-    expect(button).toHaveClass('px-3', 'py-1');
+    expect(button).toHaveStyle('padding: 8px 16px');
 
     rerender(<Button size="md">Medium</Button>);
     button = screen.getByText('Medium');
-    expect(button).toHaveClass('px-4', 'py-2');
+    expect(button).toHaveStyle('padding: 12px 24px');
 
     rerender(<Button size="lg">Large</Button>);
     button = screen.getByText('Large');
-    expect(button).toHaveClass('px-6', 'py-3');
+    expect(button).toHaveStyle('padding: 16px 32px');
   });
 });
