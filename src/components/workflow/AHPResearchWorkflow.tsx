@@ -288,7 +288,7 @@ const AHPResearchWorkflow: React.FC<AHPResearchWorkflowProps> = ({
                 };
                 handleProjectCreated(newProject);
               }}
-              onCancel={onCancel}
+              onCancel={onCancel || (() => {})}
               loading={false}
             />
           </div>

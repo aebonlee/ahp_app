@@ -600,7 +600,7 @@ const CanvasModelBuilder: React.FC<CanvasModelBuilderProps> = ({
                         variant="primary"
                         className="w-6 h-6 p-0 rounded-full"
                         onClick={(e) => {
-                          e.stopPropagation();
+                          e?.stopPropagation();
                           const nextType = node.type === 'goal' ? 'criteria' :
                                          node.type === 'criteria' ? 'sub_criteria' :
                                          node.type === 'sub_criteria' ? 'sub_sub_criteria' : 'alternative';
@@ -616,7 +616,7 @@ const CanvasModelBuilder: React.FC<CanvasModelBuilderProps> = ({
                       variant="outline"
                       className="w-6 h-6 p-0 rounded-full"
                       onClick={(e) => {
-                        e.stopPropagation();
+                        e?.stopPropagation();
                         handleNodeDoubleClick(node.id);
                       }}
                     >
@@ -629,7 +629,7 @@ const CanvasModelBuilder: React.FC<CanvasModelBuilderProps> = ({
                         variant="outline"
                         className="w-6 h-6 p-0 rounded-full text-red-600 hover:text-red-700"
                         onClick={(e) => {
-                          e.stopPropagation();
+                          e?.stopPropagation();
                           deleteNode(node.id);
                         }}
                       >
@@ -700,7 +700,7 @@ const CanvasModelBuilder: React.FC<CanvasModelBuilderProps> = ({
             </label>
             <Input
               value={editNodeData.name}
-              onChange={(e) => setEditNodeData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(value: string) => setEditNodeData(prev => ({ ...prev, name: value }))}
               placeholder="노드 이름을 입력하세요"
             />
           </div>
@@ -713,7 +713,7 @@ const CanvasModelBuilder: React.FC<CanvasModelBuilderProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               rows={3}
               value={editNodeData.description}
-              onChange={(e) => setEditNodeData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditNodeData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="노드 설명을 입력하세요"
             />
           </div>
