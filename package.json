@@ -5,6 +5,7 @@
   "homepage": "https://aebonlee.github.io/ahp_app",
   "dependencies": {
     "2": "^3.0.0",
+    "@anthropic-ai/claude-agent-sdk": "^0.1.14",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.19",
