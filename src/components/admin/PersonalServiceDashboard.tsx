@@ -1087,22 +1087,34 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     loadProjectData();
   }, [selectedProjectId]);
 
-  const handleExport = async (format: 'csv' | 'excel', type: 'criteria' | 'alternatives' | 'results') => {
+  const handleExport = async (format: 'csv' | 'excel' | 'pdf' | 'ppt' | 'json', type: 'criteria' | 'alternatives' | 'results') => {
     if (!selectedProjectId || !projectData) return;
     try {
       switch (type) {
         case 'criteria':
-          await exportService.exportCriteria(selectedProjectId, projectData.criteria, {
-            format,
-            includeWeights: true,
-            includeDescriptions: true
-          });
+          if (format === 'csv' || format === 'excel') {
+            await exportService.exportCriteria(selectedProjectId, projectData.criteria, {
+              format,
+              includeWeights: true,
+              includeDescriptions: true
+            });
+          } else {
+            alert(`${format.toUpperCase()} 형식으로 기준을 내보내는 기능을 개발 중입니다.`);
+          }
           break;
         case 'alternatives':
-          await exportService.exportAlternatives(selectedProjectId, projectData.alternatives, format);
+          if (format === 'csv' || format === 'excel') {
+            await exportService.exportAlternatives(selectedProjectId, projectData.alternatives, format);
+          } else {
+            alert(`${format.toUpperCase()} 형식으로 대안을 내보내는 기능을 개발 중입니다.`);
+          }
           break;
         case 'results':
-          await exportService.exportResults(selectedProjectId, format, projectData.results);
+          if (format === 'csv' || format === 'excel') {
+            await exportService.exportResults(selectedProjectId, format, projectData.results);
+          } else {
+            alert(`${format.toUpperCase()} 형식으로 결과를 내보내는 기능을 개발 중입니다.`);
+          }
           break;
       }
     } catch (error) {
@@ -1112,63 +1124,190 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
 
   const renderExportReportsFullPage = () => (
-    <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
-      <h2 className="text-2xl font-bold">보고서 내보내기</h2>
-      
-      <Card>
-        <div className="p-4 space-y-6">
-          <div>
-            <h3 className="text-lg font-medium mb-4">CSV 형식으로 내보내기</h3>
-            <div className="space-y-3">
-              <Button
-                variant="secondary"
-                onClick={() => handleExport('csv', 'criteria')}
-                className="w-full"
-              >
-                평가 기준 내보내기
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleExport('csv', 'alternatives')}
-                className="w-full"
-              >
-                대안 내보내기
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleExport('csv', 'results')}
-                className="w-full"
-              >
-                평가 결과 내보내기
-              </Button>
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <button 
+                  onClick={() => handleTabChange('dashboard')}
+                  className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
+                >
+                  ←
+                </button>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                    <span className="text-4xl mr-3">📤</span>
+                    보고서 내보내기
+                  </h1>
+                  <p className="text-gray-600 mt-2">분석 결과를 다양한 형태로 내보냅니다</p>
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <Button variant="secondary" onClick={() => handleTabChange('analysis')}>
+                  📊 결과 분석
+                </Button>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {renderExportReports()}
+      </div>
+    </div>
+  );
 
-          <div>
-            <h3 className="text-lg font-medium mb-4">Excel 형식으로 내보내기</h3>
-            <div className="space-y-3">
-              <Button
-                variant="secondary"
-                onClick={() => handleExport('excel', 'criteria')}
-                className="w-full"
-              >
-                평가 기준 내보내기
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleExport('excel', 'alternatives')}
-                className="w-full"
-              >
-                대안 내보내기
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleExport('excel', 'results')}
-                className="w-full"
-              >
-                평가 결과 내보내기
-              </Button>
+  const renderExportReports = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold">보고서 내보내기</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card title="Excel 보고서">
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              상세한 데이터와 계산 과정이 포함된 스프레드시트
             </div>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">원시 데이터</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">가중치 계산</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">일관성 지수</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" />
+                <span className="ml-2 text-sm">민감도 분석</span>
+              </label>
+            </div>
+            <Button 
+              variant="primary" 
+              className="w-full"
+              onClick={() => handleExport('excel', 'results')}
+            >
+              Excel 다운로드
+            </Button>
+          </div>
+        </Card>
+
+        <Card title="PDF 보고서">
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              발표용 전문 보고서 형태
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">표지 및 요약</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">방법론 설명</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">결과 차트</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" />
+                <span className="ml-2 text-sm">부록 데이터</span>
+              </label>
+            </div>
+            <Button 
+              variant="primary" 
+              className="w-full"
+              onClick={() => handleExport('pdf', 'results')}
+            >
+              PDF 다운로드
+            </Button>
+          </div>
+        </Card>
+
+        <Card title="PowerPoint 프레젠테이션">
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              발표용 슬라이드
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">결과 요약</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" defaultChecked />
+                <span className="ml-2 text-sm">비교 차트</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="form-checkbox" />
+                <span className="ml-2 text-sm">세부 데이터</span>
+              </label>
+            </div>
+            <Button 
+              variant="primary" 
+              className="w-full"
+              onClick={() => handleExport('ppt', 'results')}
+            >
+              PPT 다운로드
+            </Button>
+          </div>
+        </Card>
+      </div>
+
+      {/* 추가 내보내기 옵션 */}
+      <Card title="개별 데이터 내보내기">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Button
+            variant="secondary"
+            onClick={() => handleExport('csv', 'criteria')}
+            className="w-full"
+          >
+            📋 평가 기준 (CSV)
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => handleExport('csv', 'alternatives')}
+            className="w-full"
+          >
+            📝 대안 (CSV)
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => handleExport('csv', 'results')}
+            className="w-full"
+          >
+            📊 평가 결과 (CSV)
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => handleExport('json', 'results')}
+            className="w-full"
+          >
+            💾 전체 데이터 (JSON)
+          </Button>
+        </div>
+      </Card>
+      
+      {/* 고급 내보내기 옵션 */}
+      <Card title="고급 옵션">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">날짜 범위 필터링</span>
+            <input type="date" className="border border-gray-300 rounded px-3 py-1 text-sm" />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">평가자별 분리</span>
+            <input type="checkbox" className="form-checkbox" />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">익명화 처리</span>
+            <input type="checkbox" className="form-checkbox" defaultChecked />
           </div>
         </div>
       </Card>
@@ -2836,155 +2975,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               <p>• 생산성 가중치 20% 감소 시: 2위↔3위 변동 가능</p>
               <p>• 품질 가중치 50% 증가 시: 1위↔2위 변동 가능</p>
             </div>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
-
-
-  const renderExportReports = () => (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold">보고서 내보내기</h3>
-
-      <div className="grid grid-cols-3 gap-8">
-        <Card title="Excel 보고서">
-          <div className="space-y-4">
-            <div className="text-sm text-gray-600">
-              상세한 데이터와 계산 과정이 포함된 스프레드시트
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">원시 데이터</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">계산 과정</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">차트</span>
-              </label>
-            </div>
-            <Button variant="primary" className="w-full p-4 lg:p-5 text-lg lg:text-xl">
-              📊 Excel 다운로드
-            </Button>
-          </div>
-        </Card>
-
-        <Card title="PDF 보고서">
-          <div className="space-y-4">
-            <div className="text-sm text-gray-600">
-              프레젠테이션용 요약 보고서
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">요약 정보</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">시각화 차트</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" />
-                <span className="ml-2 text-sm">상세 분석</span>
-              </label>
-            </div>
-            <Button variant="primary" className="w-full p-4 lg:p-5 text-lg lg:text-xl">
-              📄 PDF 다운로드
-            </Button>
-          </div>
-        </Card>
-
-        <Card title="PowerPoint">
-          <div className="space-y-4">
-            <div className="text-sm text-gray-600">
-              발표용 슬라이드 자료
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">개요 슬라이드</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">결과 차트</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">결론 및 제안</span>
-              </label>
-            </div>
-            <Button variant="primary" className="w-full p-4 lg:p-5 text-lg lg:text-xl">
-              📺 PPT 다운로드
-            </Button>
-          </div>
-        </Card>
-      </div>
-
-      <Card title="맞춤형 보고서">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">보고서 형식</label>
-              <select className="w-full border border-gray-300 rounded px-3 py-2">
-                <option>상세 분석 보고서</option>
-                <option>요약 보고서</option>
-                <option>평가자별 개별 보고서</option>
-                <option>비교 분석 보고서</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">언어</label>
-              <select className="w-full border border-gray-300 rounded px-3 py-2">
-                <option>한국어</option>
-                <option>English</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">포함할 섹션</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">프로젝트 개요</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">방법론 설명</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">결과 분석</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" />
-                <span className="ml-2 text-sm">민감도 분석</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">일관성 검증</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" />
-                <span className="ml-2 text-sm">평가자 의견</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" defaultChecked />
-                <span className="ml-2 text-sm">결론 및 제안</span>
-              </label>
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox" />
-                <span className="ml-2 text-sm">부록</span>
-              </label>
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button variant="primary" className="p-4 lg:p-5 text-lg lg:text-xl">
-              맞춤 보고서 생성
-            </Button>
           </div>
         </div>
       </Card>
