@@ -5,6 +5,7 @@
   "homepage": "https://aebonlee.github.io/ahp_app",
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.1.14",
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.19",
@@ -13,6 +14,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
     "@types/node": "^16.18.23",
+    "@types/qrcode": "^1.5.5",
     "@types/qrcode.react": "^1.0.5",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",

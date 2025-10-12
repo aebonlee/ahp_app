@@ -3,8 +3,10 @@
  * 작성된 논문의 학술적 품질을 AI가 다각도로 검증하고 개선 제안을 제공하는 시스템
  */
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { getAIService } from '../../services/aiService';
+import FileUpload from '../common/FileUpload';
+import { FileUploadInfo } from '../../services/fileUploadService';
 import type { User } from '../../types';
 
 interface QualityCheck {
@@ -62,20 +64,59 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
     { id: 'improvements', title: '개선 제안', icon: '✨' }
   ];
 
-  // 파일 업로드 처리
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // 파일 업로드 처리 (영구 저장 지원)
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setUploadedFile(file);
       
-      // 파일 내용 읽기 (시뮬레이션)
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        // 실제로는 파일 파싱이 필요하지만 여기서는 시뮬레이션
-        setValidationText(content.slice(0, 1000) + '...');
-      };
-      reader.readAsText(file);
+      try {
+        // 파일을 영구 저장소에 업로드
+        const { fileUploadService } = await import('../../services/fileUploadService');
+        
+        const response = await fileUploadService.uploadFile(
+          file,
+          'document',
+          {
+            description: 'AI 품질 검증용 논문',
+            tags: ['ai-validation', 'paper'],
+            public: false
+          }
+        );
+        
+        if (response.success && response.data) {
+          console.log('✅ 파일이 영구 저장소에 업로드되었습니다:', response.data);
+          
+          // 파일 내용 읽기 (로컬에서만 미리보기용)
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const content = e.target?.result as string;
+            // 실제로는 파일 파싱이 필요하지만 여기서는 시뮬레이션
+            setValidationText(content.slice(0, 1000) + '...');
+          };
+          reader.readAsText(file);
+        } else {
+          console.warn('⚠️ 파일 업로드 실패, 임시 저장 모드로 진행:', response.error);
+          
+          // 실패 시 기존 방식으로 임시 저장
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const content = e.target?.result as string;
+            setValidationText(content.slice(0, 1000) + '...');
+          };
+          reader.readAsText(file);
+        }
+      } catch (error) {
+        console.error('❌ 파일 업로드 서비스 오류:', error);
+        
+        // 오류 발생 시 기존 방식으로 임시 저장
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          setValidationText(content.slice(0, 1000) + '...');
+        };
+        reader.readAsText(file);
+      }
     }
   };
 
@@ -290,55 +331,82 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* 파일 업로드 */}
+        {/* 파일 업로드 (영구 저장 지원) */}
         <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)' }}>
           <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-            💾 파일 업로드
+            💾 파일 업로드 (영구 저장)
           </h3>
-          <div 
-            className="border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer hover:border-blue-400"
-            style={{ borderColor: 'var(--border-light)' }}
-            onClick={() => document.getElementById('file-upload')?.click()}
-          >
-            {uploadedFile ? (
-              <div>
-                <div className="text-4xl mb-4">📄</div>
-                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>
-                  {uploadedFile.name}
-                </p>
-                <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
-                  크기: {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setUploadedFile(null);
-                    setValidationText('');
-                  }}
-                  className="mt-3 text-sm text-red-500 hover:text-red-700"
-                >
-                  파일 제거
-                </button>
-              </div>
-            ) : (
-              <div>
-                <div className="text-4xl mb-4">📤</div>
-                <p className="font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                  논문 파일을 드래그하거나 클릭하여 업로드
-                </p>
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                  지원 형식: PDF, DOC, DOCX, TXT
-                </p>
-              </div>
-            )}
-          </div>
-          <input
-            id="file-upload"
-            type="file"
+          
+          {/* FileUpload 컴포넌트로 교체 */}
+          <FileUpload
+            onFileUploaded={(fileInfo: FileUploadInfo) => {
+              console.log('✅ 파일이 영구 저장되었습니다:', fileInfo);
+              setUploadedFile(new File([], fileInfo.original_name, { type: fileInfo.mime_type }));
+              
+              // 업로드된 파일의 내용을 시뮬레이션 (실제로는 파일 다운로드 필요)
+              setValidationText(`논문 내용이 업로드되었습니다: ${fileInfo.original_name}\n\n이곳에 실제 논문 내용이 표시됩니다...`);
+            }}
+            onFileDeleted={(fileId: string) => {
+              console.log('🗑️ 파일이 삭제되었습니다:', fileId);
+              setUploadedFile(null);
+              setValidationText('');
+            }}
+            allowMultiple={false}
             accept=".pdf,.doc,.docx,.txt"
-            onChange={handleFileUpload}
-            style={{ display: 'none' }}
+            maxFileSize={50 * 1024 * 1024} // 50MB
+            category="document"
+            showPreview={true}
+            allowDownload={true}
+            className="mt-4"
           />
+          
+          {/* 기존 파일 업로드 (백업용) */}
+          <div className="mt-4">
+            <div 
+              className="border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer hover:border-blue-400"
+              style={{ borderColor: 'var(--border-light)' }}
+              onClick={() => document.getElementById('file-upload-backup')?.click()}
+            >
+              {uploadedFile ? (
+                <div>
+                  <div className="text-4xl mb-4">📄</div>
+                  <p className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {uploadedFile.name}
+                  </p>
+                  <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+                    크기: {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUploadedFile(null);
+                      setValidationText('');
+                    }}
+                    className="mt-3 text-sm text-red-500 hover:text-red-700"
+                  >
+                    파일 제거
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div className="text-4xl mb-4">📤</div>
+                  <p className="font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
+                    또는 기존 방식으로 논문 파일 업로드
+                  </p>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                    지원 형식: PDF, DOC, DOCX, TXT (임시 저장)
+                  </p>
+                </div>
+              )}
+            </div>
+            <input
+              id="file-upload-backup"
+              type="file"
+              accept=".pdf,.doc,.docx,.txt"
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
+            />
+          </div>
         </div>
 
         {/* 텍스트 입력 */}

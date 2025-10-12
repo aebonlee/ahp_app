@@ -19,8 +19,6 @@ const Modal: React.FC<ModalProps> = ({
   className = '',
   footer
 }) => {
-  if (!isOpen) return null;
-
   const sizeClasses = {
     sm: 'max-w-md',
     md: 'max-w-lg',
@@ -52,6 +50,8 @@ const Modal: React.FC<ModalProps> = ({
       return () => document.removeEventListener('keydown', handleEscapeKey);
     }
   }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   return (
     <div 
