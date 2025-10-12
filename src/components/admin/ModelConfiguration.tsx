@@ -4,6 +4,7 @@ import Button from '../common/Button';
 import Input from '../common/Input';
 import HelpModal from '../common/HelpModal';
 import TreeModelConfiguration from './TreeModelConfiguration';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ProjectStatus, ProjectFormData } from './ProjectCreationForm';
 
 interface Project extends ProjectFormData {

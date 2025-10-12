@@ -89,7 +89,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, onCriteriaChange]);
+  }, [projectId]);
 
   // 계층 구조 구성
   const buildHierarchy = (flatCriteria: Criterion[]): Criterion[] => {

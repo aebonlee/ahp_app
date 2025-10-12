@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
@@ -49,16 +49,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
   const [errors, setErrors] = useState<any>({});
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Load project-specific evaluators from API
-  useEffect(() => {
-    if (projectId) {
-      loadProjectEvaluators();
-    } else {
-      loadAllEvaluators();
-    }
-  }, [projectId]);
-
-  const loadProjectEvaluators = async () => {
+  const loadProjectEvaluators = useCallback(async () => {
     try {
       const response = await fetch(`https://ahp-platform.onrender.com/api/projects/${projectId}/evaluators`, {
         headers: {
@@ -74,9 +65,9 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
       console.error('평가자 목록 로딩 실패:', error);
       loadDemoData();
     }
-  };
+  }, [projectId]);
 
-  const loadAllEvaluators = async () => {
+  const loadAllEvaluators = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/service/evaluators/`, {
         headers: {
@@ -92,7 +83,16 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
       console.error('전체 평가자 목록 로딩 실패:', error);
       loadDemoData();
     }
-  };
+  }, []);
+
+  // Load project-specific evaluators from API
+  useEffect(() => {
+    if (projectId) {
+      loadProjectEvaluators();
+    } else {
+      loadAllEvaluators();
+    }
+  }, [projectId, loadProjectEvaluators, loadAllEvaluators]);
 
   const loadDemoData = () => {
     const demoProjects = [
@@ -254,6 +254,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAddEvaluatorDemo = () => {
     if (!validateForm()) return;
     

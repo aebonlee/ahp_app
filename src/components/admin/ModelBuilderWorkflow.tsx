@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import CriteriaManagement from './CriteriaManagement';
@@ -39,14 +39,11 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
     evaluationStarted: false
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [project, setProject] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadProjectData();
-  }, [projectId]);
-
-  const loadProjectData = async () => {
+  const loadProjectData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -87,7 +84,11 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    loadProjectData();
+  }, [projectId, loadProjectData]);
 
   const handleStepChange = (step: WorkflowProgress['currentStep']) => {
     setProgress(prev => ({ ...prev, currentStep: step }));

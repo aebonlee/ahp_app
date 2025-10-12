@@ -102,7 +102,7 @@ const DjangoAdminIntegration: React.FC<DjangoAdminIntegrationProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [onError, onSuccess]);
+  }, [onError]);
 
   useEffect(() => {
     loadAdminData();

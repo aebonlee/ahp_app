@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import dataService from '../../services/dataService_clean';
 import { ProjectData } from '../../services/api';
 
@@ -27,23 +27,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft' | 'trash'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  // refreshTrigger가 변경되면 프로젝트 목록 새로고침
-  useEffect(() => {
-    if (refreshTrigger !== undefined) {
-      fetchProjects();
-    }
-  }, [refreshTrigger]);
-
-  // filter가 변경되면 프로젝트 목록 새로고침
-  useEffect(() => {
-    fetchProjects();
-  }, [filter]);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
       let data;
@@ -88,7 +72,23 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  // refreshTrigger가 변경되면 프로젝트 목록 새로고침
+  useEffect(() => {
+    if (refreshTrigger !== undefined) {
+      fetchProjects();
+    }
+  }, [refreshTrigger, fetchProjects]);
+
+  // filter가 변경되면 프로젝트 목록 새로고침
+  useEffect(() => {
+    fetchProjects();
+  }, [filter, fetchProjects]);
 
   const filteredProjects = projects.filter(project => {
     // 휴지통 필터의 경우 별도 처리 (이미 fetchProjects에서 필터링됨)
