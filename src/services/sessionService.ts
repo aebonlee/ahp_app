@@ -30,11 +30,13 @@ class SessionService {
     // localStorage 제거됨 - JWT 토큰 만료 시간에 따라 서버에서 처리
   }
 
-  // 로그인 시 세션 시작 (JWT 토큰 기반 - 서버에서 만료 관리)
+  // 로그인 시 세션 시작 (30분 세션)
   public startSession(): void {
-    // JWT 토큰 기반에서는 authService가 토큰 만료를 자동 관리
-    // 클라이언트에서 별도 타이머 없이 서버 토큰 상태를 따름
-    console.log('세션이 시작되었습니다. (JWT 토큰 기반)');
+    console.log('30분 세션이 시작되었습니다.');
+    
+    // 30분 세션 타이머 시작
+    this.clearTimers();
+    this.resumeSessionTimer(this.SESSION_DURATION);
     
     // 토큰 만료 이벤트 리스너 등록
     this.setupTokenExpirationListener();
@@ -48,11 +50,11 @@ class SessionService {
     });
   }
 
-  // 레거시 세션 타이머 (JWT 기반에서는 사용하지 않음)
+  // 세션 타이머 시작 (30분 기본)
   private startSessionTimer(): void {
-    // JWT 기반에서는 authService가 토큰 자동 갱신을 관리하므로
-    // 클라이언트에서 별도 세션 타이머를 설정하지 않음
-    console.log('JWT 기반 인증: 서버에서 토큰 만료 관리');
+    console.log('30분 세션 타이머 시작');
+    this.clearTimers();
+    this.resumeSessionTimer(this.SESSION_DURATION);
   }
 
   // 세션 타이머 재개 (JWT 기반에서는 사용하지 않음)
@@ -78,20 +80,31 @@ class SessionService {
     }, remainingTime);
   }
 
-  // 세션 연장 (localStorage 제거)
+  // 세션 연장 (30분 추가)
   public extendSession(): void {
     // JWT 토큰 연장은 서버에서 처리
     // TODO: API 호출로 서버 세션 연장 처리
     
-    this.startSessionTimer(); // 클라이언트 타이머 재시작
+    // 30분(1800초) 연장을 위한 타이머 재시작
+    this.clearTimers();
+    this.resumeSessionTimer(this.SESSION_DURATION); // 새로운 30분 세션 시작
     this.hideSessionWarning();
+    
     console.log('세션이 30분 연장되었습니다.');
+    
+    // 사용자에게 연장 확인 알림
+    this.showExtensionConfirmation();
   }
 
-  // 마지막 활동 시간 업데이트 (JWT 기반에서는 불필요)
+  // 마지막 활동 시간 업데이트 및 세션 연장
   public updateLastActivity(): void {
-    // JWT 기반 인증에서는 서버가 자동으로 세션 활동을 추적
-    // localStorage 제거됨
+    // 현재 세션이 유효한 경우에만 활동 업데이트
+    if (this.sessionTimer) {
+      console.log('사용자 활동 감지 - 세션 갱신');
+      // 새로운 30분 세션으로 갱신
+      this.clearTimers();
+      this.resumeSessionTimer(this.SESSION_DURATION);
+    }
   }
 
   // 세션 상태 확인 (JWT 기반)
@@ -213,6 +226,41 @@ class SessionService {
     if (warningDiv) {
       warningDiv.remove();
     }
+  }
+
+  // 세션 연장 확인 알림
+  private showExtensionConfirmation(): void {
+    const confirmDiv = document.createElement('div');
+    confirmDiv.id = 'session-extension-confirm';
+    confirmDiv.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      background-color: #10b981;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      min-width: 300px;
+      animation: slideIn 0.3s ease-out;
+    `;
+    
+    confirmDiv.innerHTML = `
+      <div style="display: flex; align-items: center;">
+        <div>
+          <h4 style="font-weight: 600; font-size: 16px; margin: 0;">✅ 세션 연장 완료</h4>
+          <p style="font-size: 14px; margin-top: 4px; margin-bottom: 0;">30분이 추가되었습니다.</p>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(confirmDiv);
+    
+    // 3초 후 자동 제거
+    setTimeout(() => {
+      confirmDiv.remove();
+    }, 3000);
   }
 
   // 로그아웃 콜백 설정

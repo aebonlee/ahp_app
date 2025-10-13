@@ -94,12 +94,13 @@ const SessionBar: React.FC = () => {
               size="sm"
               onClick={() => {
                 sessionService.extendSession();
-                // 즉시 UI 업데이트
+                // 즉시 UI 업데이트 (30분으로 설정)
                 setRemainingTime(30);
               }}
               icon="⏰"
+              title="세션을 30분 연장합니다"
             >
-              연장하기
+              +30분 연장
             </UnifiedButton>
             
             <LayerPopup
@@ -200,8 +201,9 @@ const SessionBar: React.FC = () => {
                         setRemainingTime(30);
                       }}
                       icon="⏰"
+                      title="세션을 30분 연장합니다"
                     >
-                      지금 30분 연장하기
+                      지금 +30분 연장하기
                     </UnifiedButton>
                   </div>
                 </div>
