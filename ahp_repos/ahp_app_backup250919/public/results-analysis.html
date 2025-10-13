@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - 결과 분석</title>
+    <link rel="stylesheet" href="styles/layout.css">
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-light: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --rank-1: #FFD700;
+            --rank-2: #C0C0C0;
+            --rank-3: #CD7F32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .nav-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .status-bar {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-light);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-light);
+        }
+
+        .progress-bar {
+            background: var(--border-light);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .results-summary {
+            background: linear-gradient(135deg, var(--accent-light), #f8f6f0);
+            border: 2px solid var(--accent-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .winner-announcement {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .ranking-table th,
+        .ranking-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .ranking-table th {
+            background: var(--accent-primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .ranking-table tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .rank-1 { background: var(--rank-1); color: #8B4513; }
+        .rank-2 { background: var(--rank-2); color: #2C2C2C; }
+        .rank-3 { background: var(--rank-3); color: white; }
+        .rank-other { background: var(--text-secondary); }
+
+        .weight-bar {
+            background: var(--border-light);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .weight-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        .weight-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .criteria-weights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .criteria-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .criteria-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .criteria-weight {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+            margin: 0.5rem 0;
+        }
+
+        .detailed-scores {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .score-matrix {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .score-matrix th,
+        .score-matrix td {
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid var(--border-light);
+            background: white;
+        }
+
+        .score-matrix th {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .chart-container {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .export-options {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .sensitivity-analysis {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 2px dashed var(--success);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .celebration {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--accent-light), #fff);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .trophy {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .export-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .ranking-table {
+                font-size: 0.9rem;
+            }
+            
+            .criteria-weights {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="./personal-service-enhanced.html" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP System</span>
+            </a>
+            <nav class="header-nav">
+                <a href="./personal-service-enhanced.html" class="header-nav-item" data-page="dashboard">대시보드</a>
+                <a href="./project-management.html" class="header-nav-item" data-page="projects">프로젝트</a>
+                <a href="./results-analysis.html" class="header-nav-item active" data-page="analysis">분석</a>
+                <a href="#" class="header-nav-item" data-page="reports">보고서</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar">김</div>
+                <div>
+                    <div class="user-name">김철수</div>
+                    <div class="user-role">Personal Admin</div>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="logout-btn">로그아웃</button>
+        </div>
+    </header>
+
+    <!-- 왼쪽 사이드바 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">프로젝트 관리</div>
+            <div class="sidebar-menu">
+                <a href="./project-management.html" class="sidebar-item" data-menu="my-projects">
+                    <span class="sidebar-icon">📋</span>
+                    <span>내 프로젝트</span>
+                    <span class="sidebar-badge">3</span>
+                </a>
+                <a href="./project-management.html" class="sidebar-item" data-menu="new-project">
+                    <span class="sidebar-icon">➕</span>
+                    <span>새 프로젝트</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="trash">
+                    <span class="sidebar-icon">🗑️</span>
+                    <span>휴지통</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">모델 구축</div>
+            <div class="sidebar-menu">
+                <a href="./criteria-management.html" class="sidebar-item" data-menu="criteria">
+                    <span class="sidebar-icon">⚖️</span>
+                    <span>기준 설정</span>
+                </a>
+                <a href="./alternatives-management.html" class="sidebar-item" data-menu="alternatives">
+                    <span class="sidebar-icon">🔄</span>
+                    <span>대안 관리</span>
+                </a>
+                <a href="./pairwise-comparison.html" class="sidebar-item" data-menu="comparison">
+                    <span class="sidebar-icon">⚡</span>
+                    <span>쌍대비교</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="evaluators">
+                    <span class="sidebar-icon">👥</span>
+                    <span>평가자 관리</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">분석 및 결과</div>
+            <div class="sidebar-menu">
+                <a href="./results-analysis.html" class="sidebar-item active" data-menu="results">
+                    <span class="sidebar-icon">📈</span>
+                    <span>결과 분석</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="monitoring">
+                    <span class="sidebar-icon">📊</span>
+                    <span>진행률 모니터링</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="reports">
+                    <span class="sidebar-icon">📄</span>
+                    <span>보고서 생성</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="sensitivity">
+                    <span class="sidebar-icon">🔍</span>
+                    <span>민감도 분석</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">설정</div>
+            <div class="sidebar-menu">
+                <a href="#" class="sidebar-item" data-menu="settings">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>개인 설정</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="billing">
+                    <span class="sidebar-icon">💳</span>
+                    <span>요금제 관리</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="guide">
+                    <span class="sidebar-icon">📚</span>
+                    <span>사용 가이드</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 사이드바 토글 버튼 -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <span id="toggle-icon">◀</span>
+    </button>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <div class="status-bar">
+            <div>
+                <strong>Django 백엔드:</strong> <span id="backend-status">연결 확인중...</span>
+            </div>
+            <div>
+                <strong>현재 프로젝트:</strong> <span id="current-project">프로젝트를 선택해주세요</span>
+            </div>
+            <div>
+                <strong>단계:</strong> <span style="color: var(--success);">5단계 - 결과 분석 완료</span>
+            </div>
+        </div>
+
+        <!-- AHP 진행 상황 -->
+        <div class="section">
+            <h2 class="section-title">🎯 AHP 분석 완료</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                <span>프로젝트 생성</span>
+                <span>기준 설정</span>
+                <span>대안 입력</span>
+                <span>쌍대비교</span>
+                <span style="color: var(--success); font-weight: 600;">결과 분석</span>
+            </div>
+        </div>
+
+        <!-- 축하 섹션 -->
+        <div class="celebration">
+            <div class="trophy">🏆</div>
+            <h2 style="color: var(--accent-primary); margin-bottom: 0.5rem;">분석 완료!</h2>
+            <p style="color: var(--text-secondary);">AHP 의사결정 분석이 성공적으로 완료되었습니다.</p>
+        </div>
+
+        <!-- 결과 요약 -->
+        <div class="section">
+            <h2 class="section-title">🏅 최종 결과 요약</h2>
+            <div class="results-summary">
+                <div class="winner-announcement">
+                    🥇 최적 선택: <span id="winner-name">-</span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 1.1rem;">
+                    종합 가중치: <strong id="winner-score" style="color: var(--accent-primary);">-</strong>
+                </div>
+            </div>
+
+            <div id="ranking-loading" class="loading">
+                결과를 계산하는 중...
+            </div>
+
+            <table class="ranking-table" id="ranking-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>대안</th>
+                        <th>종합 가중치</th>
+                        <th>상대적 비율</th>
+                        <th>시각적 표현</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-tbody">
+                    <!-- 순위 데이터가 여기에 동적으로 추가됩니다 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 기준별 가중치 -->
+        <div class="section">
+            <h2 class="section-title">⚖️ 기준별 가중치 분석</h2>
+            <div class="criteria-weights" id="criteria-weights">
+                <!-- 기준별 가중치가 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+
+        <!-- 세부 점수표 -->
+        <div class="section">
+            <h2 class="section-title">📊 세부 점수표</h2>
+            <div class="detailed-scores">
+                <table class="score-matrix" id="detailed-scores-table">
+                    <thead>
+                        <tr>
+                            <th>대안</th>
+                            <!-- 기준들이 동적으로 추가됩니다 -->
+                        </tr>
+                    </thead>
+                    <tbody id="detailed-scores-tbody">
+                        <!-- 세부 점수가 여기에 동적으로 추가됩니다 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 차트 영역 -->
+        <div class="section">
+            <h2 class="section-title">📈 시각적 분석</h2>
+            <div class="chart-container">
+                <div class="chart-placeholder">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                    <h3>차트가 곧 구현됩니다</h3>
+                    <p>막대 그래프, 원형 차트, 레이더 차트 등을 통한<br>시각적 분석 결과를 제공할 예정입니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 민감도 분석 -->
+        <div class="section">
+            <h2 class="section-title">🔍 민감도 분석</h2>
+            <div class="sensitivity-analysis">
+                <h3 style="color: var(--success); margin-bottom: 1rem;">📊 결과의 안정성</h3>
+                <div id="sensitivity-results">
+                    <div style="margin: 1rem 0;">
+                        <strong>일관성 비율:</strong> <span id="overall-cr">0.05</span> (✅ 일관성 있음)
+                    </div>
+                    <div style="margin: 1rem 0;">
+                        <strong>순위 안정성:</strong> <span style="color: var(--success);">높음</span>
+                    </div>
+                    <div style="margin: 1rem 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        기준 가중치를 ±10% 변경해도 1위 순위는 변하지 않을 것으로 예상됩니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 내보내기 옵션 -->
+        <div class="section">
+            <h2 class="section-title">💾 결과 저장 및 공유</h2>
+            <div class="export-options">
+                <button class="btn" onclick="exportToPDF()">
+                    📄 PDF 보고서
+                </button>
+                <button class="btn btn-secondary" onclick="exportToExcel()">
+                    📊 Excel 파일
+                </button>
+                <button class="btn btn-secondary" onclick="copyResults()">
+                    📋 결과 복사
+                </button>
+                <button class="btn btn-success" onclick="saveToDatabase()">
+                    💾 결과 저장
+                </button>
+            </div>
+        </div>
+
+        <!-- 새 분석 시작 -->
+        <div class="section">
+            <h2 class="section-title">🔄 추가 작업</h2>
+            <div style="text-align: center;">
+                <p style="margin-bottom: 2rem; color: var(--text-secondary);">
+                    분석이 완료되었습니다. 새로운 프로젝트를 시작하거나 현재 결과를 활용해보세요.
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn" onclick="startNewProject()">
+                        🆕 새 프로젝트 시작
+                    </button>
+                    <button class="btn btn-secondary" onclick="modifyCurrentProject()">
+                        ✏️ 현재 프로젝트 수정
+                    </button>
+                    <a href="./personal-service.html" class="btn btn-secondary">
+                        🏠 대시보드로 돌아가기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="scripts/layout.js"></script>
+    <script>
+        // 전역 변수
+        let currentProject = null;
+        let currentCriteria = [];
+        let currentAlternatives = [];
+        let comparisonResults = {};
+        let finalResults = [];
+        const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 결과 분석 페이지 로드됨');
+            
+            // 레이아웃 초기화
+            if (window.layoutUtils) {
+                window.layoutUtils.initializePage({
+                    menuId: 'results',
+                    pageId: 'analysis',
+                    title: '결과 분석'
+                });
+            }
+            
+            checkBackendStatus();
+            loadProjectData();
+            calculateResults();
+        });
+
+        // 백엔드 상태 확인
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/service/status/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    document.getElementById('backend-status').innerHTML = 
+                        '<span style="color: var(--success);">✅ 정상 연결</span>';
+                } else {
+                    document.getElementById('backend-status').innerHTML = 
+                        '<span style="color: var(--warning);">⚠️ 응답 오류</span>';
+                }
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = 
+                    '<span style="color: var(--error);">❌ 연결 실패</span>';
+                console.error('백엔드 연결 오류:', error);
+            }
+        }
+
+        // 프로젝트 데이터 로드
+        function loadProjectData() {
+            const savedProject = sessionStorage.getItem('currentProject');
+            const savedCriteria = sessionStorage.getItem('currentCriteria');
+            const savedAlternatives = sessionStorage.getItem('currentAlternatives');
+            const savedComparisons = sessionStorage.getItem('comparisonResults');
+
+            if (savedProject) {
+                try {
+                    currentProject = JSON.parse(savedProject);
+                    document.getElementById('current-project').textContent = currentProject.title;
+                } catch (e) {
+                    console.error('프로젝트 정보 파싱 오류:', e);
+                }
+            }
+
+            if (savedCriteria) {
+                try {
+                    currentCriteria = JSON.parse(savedCriteria);
+                } catch (e) {
+                    console.error('기준 정보 파싱 오류:', e);
+                }
+            }
+
+            if (savedAlternatives) {
+                try {
+                    currentAlternatives = JSON.parse(savedAlternatives);
+                } catch (e) {
+                    console.error('대안 정보 파싱 오류:', e);
+                }
+            }
+
+            if (savedComparisons) {
+                try {
+                    comparisonResults = JSON.parse(savedComparisons);
+                } catch (e) {
+                    console.error('비교 결과 파싱 오류:', e);
+                }
+            }
+
+            // 데모 데이터 설정
+            if (currentCriteria.length === 0) {
+                currentCriteria = [
+                    { id: 'demo-1', name: '품질', weight: 0.35 },
+                    { id: 'demo-2', name: '비용', weight: 0.25 },
+                    { id: 'demo-3', name: '신뢰성', weight: 0.20 },
+                    { id: 'demo-4', name: '사용성', weight: 0.20 }
+                ];
+            }
+
+            if (currentAlternatives.length === 0) {
+                currentAlternatives = [
+                    { id: 'demo-alt-1', name: '대안 A', description: '첫 번째 선택 가능한 대안' },
+                    { id: 'demo-alt-2', name: '대안 B', description: '두 번째 대안' },
+                    { id: 'demo-alt-3', name: '대안 C', description: '세 번째 대안' },
+                    { id: 'demo-alt-4', name: '대안 D', description: '네 번째 대안' }
+                ];
+            }
+        }
+
+        // 결과 계산
+        function calculateResults() {
+            setTimeout(() => {
+                // 데모용 결과 계산
+                finalResults = currentAlternatives.map(alt => ({
+                    ...alt,
+                    totalScore: Math.random() * 0.4 + 0.15, // 0.15-0.55 범위
+                    criteriaScores: currentCriteria.reduce((scores, criteria) => {
+                        scores[criteria.id] = Math.random() * 0.8 + 0.1; // 0.1-0.9 범위
+                        return scores;
+                    }, {})
+                }));
+
+                // 점수로 정렬
+                finalResults.sort((a, b) => b.totalScore - a.totalScore);
+
+                // 결과 표시
+                displayResults();
+                displayCriteriaWeights();
+                displayDetailedScores();
+                
+                document.getElementById('ranking-loading').style.display = 'none';
+                document.getElementById('ranking-table').style.display = 'table';
+            }, 2000);
+        }
+
+        // 결과 표시
+        function displayResults() {
+            const winner = finalResults[0];
+            document.getElementById('winner-name').textContent = winner.name;
+            document.getElementById('winner-score').textContent = (winner.totalScore * 100).toFixed(1) + '%';
+
+            const tbody = document.getElementById('ranking-tbody');
+            tbody.innerHTML = finalResults.map((result, index) => {
+                const rank = index + 1;
+                const percentage = (result.totalScore * 100).toFixed(1);
+                const relativeScore = ((result.totalScore / finalResults[0].totalScore) * 100).toFixed(0);
+                
+                let rankClass = 'rank-other';
+                if (rank === 1) rankClass = 'rank-1';
+                else if (rank === 2) rankClass = 'rank-2';
+                else if (rank === 3) rankClass = 'rank-3';
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="rank-badge ${rankClass}">${rank}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600;">${result.name}</div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">${result.description || '설명 없음'}</div>
+                        </td>
+                        <td style="font-weight: 600; color: var(--accent-primary);">${percentage}%</td>
+                        <td style="color: var(--text-secondary);">${relativeScore}%</td>
+                        <td>
+                            <div class="weight-bar">
+                                <div class="weight-fill" style="width: ${relativeScore}%;"></div>
+                                <div class="weight-text">${percentage}%</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 기준별 가중치 표시
+        function displayCriteriaWeights() {
+            const container = document.getElementById('criteria-weights');
+            container.innerHTML = currentCriteria.map(criteria => `
+                <div class="criteria-card">
+                    <div class="criteria-name">${criteria.name}</div>
+                    <div class="criteria-weight">${(criteria.weight * 100).toFixed(1)}%</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                        ${criteria.description || '평가 기준'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 세부 점수표 표시
+        function displayDetailedScores() {
+            const table = document.getElementById('detailed-scores-table');
+            
+            // 헤더 생성
+            let headerHTML = '<thead><tr><th>대안</th>';
+            currentCriteria.forEach(criteria => {
+                headerHTML += `<th>${criteria.name}<br><small>(${(criteria.weight * 100).toFixed(0)}%)</small></th>`;
+            });
+            headerHTML += '<th>종합점수</th></tr></thead>';
+
+            // 바디 생성
+            let bodyHTML = '<tbody>';
+            finalResults.forEach(result => {
+                bodyHTML += `<tr><td style="font-weight: 600;">${result.name}</td>`;
+                currentCriteria.forEach(criteria => {
+                    const score = result.criteriaScores[criteria.id];
+                    bodyHTML += `<td>${(score * 100).toFixed(1)}%</td>`;
+                });
+                bodyHTML += `<td style="font-weight: 600; color: var(--accent-primary);">${(result.totalScore * 100).toFixed(1)}%</td></tr>`;
+            });
+            bodyHTML += '</tbody>';
+
+            table.innerHTML = headerHTML + bodyHTML;
+        }
+
+        // 내보내기 함수들
+        function exportToPDF() {
+            alert('PDF 보고서 생성 기능이 곧 구현됩니다.\n\n포함될 내용:\n• 프로젝트 요약\n• 최종 순위 결과\n• 기준별 분석\n• 일관성 검증 결과');
+        }
+
+        function exportToExcel() {
+            alert('Excel 파일 내보내기 기능이 곧 구현됩니다.\n\n포함될 내용:\n• 순위표\n• 세부 점수표\n• 비교 매트릭스\n• 기준 가중치');
+        }
+
+        function copyResults() {
+            const winner = finalResults[0];
+            const results = `AHP 분석 결과 요약
+
+프로젝트: ${currentProject.title}
+분석 일시: ${new Date().toLocaleString('ko-KR')}
+
+=== 최종 순위 ===
+${finalResults.map((result, index) => 
+    `${index + 1}위. ${result.name} (${(result.totalScore * 100).toFixed(1)}%)`
+).join('\n')}
+
+=== 기준별 가중치 ===
+${currentCriteria.map(criteria => 
+    `${criteria.name}: ${(criteria.weight * 100).toFixed(1)}%`
+).join('\n')}
+
+최적 선택: ${winner.name}
+`;
+
+            navigator.clipboard.writeText(results).then(() => {
+                alert('✅ 결과가 클립보드에 복사되었습니다!');
+            }).catch(() => {
+                alert('❌ 복사에 실패했습니다.');
+            });
+        }
+
+        async function saveToDatabase() {
+            try {
+                const resultData = {
+                    project_id: currentProject.id,
+                    results: finalResults,
+                    criteria_weights: currentCriteria,
+                    analysis_date: new Date().toISOString()
+                };
+
+                // 실제 API 호출 대신 로컬 스토리지에 저장
+                const savedResults = JSON.parse(localStorage.getItem('ahp_saved_results') || '[]');
+                savedResults.push(resultData);
+                localStorage.setItem('ahp_saved_results', JSON.stringify(savedResults));
+
+                alert('✅ 결과가 성공적으로 저장되었습니다!\n\n저장된 결과는 나중에 대시보드에서 확인할 수 있습니다.');
+            } catch (error) {
+                console.error('결과 저장 오류:', error);
+                alert('❌ 결과 저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 추가 작업 함수들
+        function startNewProject() {
+            if (confirm('새 프로젝트를 시작하시겠습니까?\n\n현재 세션 데이터가 초기화됩니다.')) {
+                // 세션 데이터 정리
+                sessionStorage.clear();
+                window.location.href = '/ahp_app/project-management.html';
+            }
+        }
+
+        function modifyCurrentProject() {
+            alert('프로젝트 수정 기능이 곧 구현됩니다.\n\n가능한 수정사항:\n• 기준 추가/삭제/수정\n• 대안 추가/삭제/수정\n• 쌍대비교 재수행');
+        }
+
+        // 개발용: Ctrl+R로 결과 재계산
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                document.getElementById('ranking-loading').style.display = 'block';
+                document.getElementById('ranking-table').style.display = 'none';
+                calculateResults();
+            }
+        });
+    </script>
+</body>
+</html>

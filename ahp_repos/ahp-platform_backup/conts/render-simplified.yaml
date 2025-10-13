@@ -1,0 +1,45 @@
+# Render.com Configuration - Simplified for Current Setup
+# Blueprint Name: ahp.dev
+# Service URL: https://ahp-forpaper.onrender.com
+
+services:
+  # Main Web Service (Combined Frontend + Backend)
+  - type: web
+    name: ahp-research-platform
+    env: node
+    region: oregon
+    plan: free  # Upgrade to 'standard' for Team Plan features
+    buildCommand: |
+      # Install all dependencies
+      npm install
+      cd backend && npm install && npm run build && cd ..
+      npm run build:frontend
+    startCommand: |
+      # Start backend server which also serves frontend
+      cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ahp-database
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://ahp-forpaper.onrender.com
+      - key: ADMIN_EMAIL
+        value: aebon@naver.com
+      - key: SUPPORT_EMAIL
+        value: aebon@naver.com
+    healthCheckPath: /api/health
+    autoDeploy: true  # Auto deploy when pushing to main branch
+
+databases:
+  # PostgreSQL Database
+  - name: ahp-database
+    plan: free  # Upgrade to 'standard' for Team Plan
+    region: oregon
+    postgresMajorVersion: 15

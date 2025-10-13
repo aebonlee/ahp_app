@@ -1,0 +1,77 @@
+{
+  "name": "ahp-decision-system",
+  "version": "2.3.1",
+  "private": true,
+  "homepage": "https://aebonlee.github.io/ahp-platform/",
+  "dependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.126",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-particles": "^2.12.2",
+    "react-scripts": "^5.0.1",
+    "recharts": "^3.1.2",
+    "tsparticles-slim": "^2.12.0",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5",
+    "zustand": "^5.0.7"
+  },
+  "main": "backend/dist/index.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "start": "cd backend && node dist/index.js",
+    "start:frontend": "react-scripts start",
+    "build": "cd backend && npm install && npm run build",
+    "build:frontend": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "predeploy": "cross-env PUBLIC_URL=/ahp-platform/ npm run build:frontend",
+    "deploy": "gh-pages -d build",
+    "backend:install": "cd backend && npm install",
+    "backend:build": "cd backend && npm run build",
+    "backend:start": "cd backend && npm start",
+    "backend:dev": "cd backend && npm run dev",
+    "dev:all": "concurrently \"npm run backend:dev\" \"npm run start:frontend\"",
+    "install:all": "npm install && npm run backend:install",
+    "build:all": "npm run build:frontend && npm run backend:build",
+    "build:render": "npm install && cd backend && npm install && cd .. && npm run build:frontend && cd backend && npm run build",
+    "start:render": "cd backend && npm start"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "cross-env": "^10.0.0",
+    "gh-pages": "^6.3.0",
+    "postcss": "^8.5.6",
+    "static-eval": "^2.1.1",
+    "tailwindcss": "^3.4.17"
+  }
+}

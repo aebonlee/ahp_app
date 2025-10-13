@@ -1,0 +1,1116 @@
+/* Import global theme and color system */
+@import './styles/global.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   AHP Research Platform - Application Specific Styles
+   Extends global.css with app-specific utilities
+   ============================================================================ */
+
+/* Legacy variable mappings for backward compatibility */
+:root {
+  /* === Primary Color Palette === */
+  /* Luxury Brand Grays (12-step scale centered on #848484) */
+  --gray-0:   #fafafa;
+  --gray-50:  #f5f5f5;
+  --gray-100: #eeeeee;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #bfbfbf;
+  --gray-500: #a3a3a3;
+  --gray-600: #919191;
+  --gray-650: #848484; /* Core brand color - sophisticated neutral */
+  --gray-700: #6f6f6f;
+  --gray-800: #4d4d4d;
+  --gray-900: #1f1f1f;
+
+  /* Luxury Gold Accents (restrained usage) */
+  --gold-primary:   #C8A968; /* Primary gold for buttons, highlights */
+  --gold-secondary: #A98C4B; /* Darker gold for hover/active states */
+  --gold-light:     #E5D5AA; /* Light gold for subtle backgrounds */
+  --ivory:          #F4F1EA; /* Warm ivory for section backgrounds */
+
+  /* === Semantic Colors (Low Saturation) === */
+  --color-info:    #6B8AA6; /* Muted blue-gray */
+  --color-success: #5F8D6A; /* Muted forest green */
+  --color-warning: #C49A4A; /* Muted amber */
+  --color-danger:  #A65A5A; /* Muted burgundy */
+
+  /* === Surface & Background === */
+  --bg-primary:    var(--gray-0);     /* Main background */
+  --bg-secondary:  #ffffff;           /* Card/content background */
+  --bg-elevated:   var(--gray-50);    /* Elevated surfaces */
+  --bg-subtle:     var(--ivory);      /* Subtle section backgrounds */
+  
+  /* === Typography === */
+  --text-primary:   #0f0f0f;          /* Primary text - maximum contrast */
+  --text-secondary: #1f1f1f;          /* Secondary text - stronger contrast */
+  --text-tertiary:  #4f4f4f;          /* Tertiary text - improved readability */
+  --text-muted:     #6f6f6f;          /* Muted text - better contrast */
+  --text-inverse:   #ffffff;          /* Text on dark backgrounds */
+
+  /* === Borders & Dividers === */
+  --border-light:   var(--gray-200);  /* Light borders */
+  --border-medium:  var(--gray-300);  /* Medium borders */
+  --border-strong:  var(--gray-400);  /* Strong borders */
+  --border-focus:   var(--gold-primary); /* Focus ring color */
+
+  /* === Layout System === */
+  --container-max-width: 1880px;     /* Max desktop width (under 1980px) */
+  --container-desktop-width: 1600px; /* Standard desktop content width */
+  --container-tablet-width: 1024px;  /* Tablet optimized width */
+  --container-mobile-width: 100%;    /* Mobile full width */
+  --sidebar-width: 280px;            /* Sidebar width */
+  --header-height: 72px;             /* Header height (4.5rem) */
+  
+  /* === Responsive Breakpoints === */
+  --breakpoint-mobile: 768px;   /* Mobile/Tablet threshold */
+  --breakpoint-tablet: 1024px;  /* Tablet/Desktop threshold */
+  --breakpoint-desktop: 1280px; /* Standard Desktop */
+  --breakpoint-large: 1680px;   /* Large Desktop */
+  --breakpoint-xlarge: 1980px;  /* Extra Large Desktop */
+  
+  /* === Border Radius (12px system) === */
+  --radius-xs:  12px;  /* Unified radius */
+  --radius-sm:  12px;  /* Unified radius */
+  --radius-md:  12px;  /* Primary radius */
+  --radius-lg:  12px;  /* Unified radius */
+  --radius-xl:  12px;  /* Unified radius */
+  --radius-2xl: 12px;  /* Unified radius */
+  --radius-3xl: 12px;  /* Unified radius */
+
+  /* === Spacing Scale === */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+
+  /* === Sophisticated Shadows === */
+  --shadow-xs:  0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-sm:  0 2px 10px rgba(0, 0, 0, 0.06);
+  --shadow-md:  0 6px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg:  0 12px 40px rgba(0, 0, 0, 0.10);
+  --shadow-xl:  0 20px 60px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 30px 80px rgba(0, 0, 0, 0.14);
+  
+  /* Special shadows */
+  --shadow-gold:  0 4px 20px rgba(200, 169, 104, 0.25);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-focus: 0 0 0 3px rgba(200, 169, 104, 0.35);
+
+  /* === Typography Scale === */
+  --font-size-xs:   0.8125rem; /* 13px - Slightly larger for better readability */
+  --font-size-sm:   0.9375rem; /* 15px - Improved small text */
+  --font-size-base: 1.0625rem; /* 17px - More comfortable base size */
+  --font-size-lg:   1.1875rem; /* 19px - Better medium text */
+  --font-size-xl:   1.375rem;  /* 22px - Clearer large text */
+  --font-size-2xl:  1.625rem;  /* 26px - Better heading size */
+  --font-size-3xl:  2rem;      /* 32px - Prominent headings */
+  --font-size-4xl:  2.5rem;    /* 40px - Large headings */
+  
+  --line-height-tight: 1.25;
+  --line-height-snug:  1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* === Font Weights === */
+  --font-weight-light:    300;
+  --font-weight-normal:   400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+  --font-weight-extrabold: 800;
+
+  /* === AHP-Specific Chart Colors === */
+  --chart-gold:    #D4AF37;
+  --chart-steel:   #6F737A;
+  --chart-cool:    #8F9AA6;
+  --chart-light:   #B8C2CC;
+  --chart-subtle:  #E5E7EB;
+
+  /* === Animation & Transitions === */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   350ms ease;
+  --transition-luxury: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* === Dynamic Color System === */
+  --accent-primary:   #3B82F6; /* Will be updated by ColorTheme hook - Default Ocean Blue */
+  --accent-secondary: #2563EB;
+  --accent-light:     #93C5FD;
+  --accent-hover:     #1D4ED8;
+  --accent-focus:     rgba(59, 130, 246, 0.35);
+  --accent-rgb:       59, 130, 246;
+  --shadow-accent:    0 4px 20px rgba(59, 130, 246, 0.25);
+
+  /* === Semantic Theme Colors === */
+  /* Status Colors */
+  --status-success-bg:     var(--color-success);
+  --status-success-light:  rgba(95, 141, 106, 0.1);
+  --status-success-border: rgba(95, 141, 106, 0.3);
+  --status-success-text:   #2d5a37;
+  
+  --status-warning-bg:     var(--color-warning);
+  --status-warning-light:  rgba(196, 154, 74, 0.1);
+  --status-warning-border: rgba(196, 154, 74, 0.3);
+  --status-warning-text:   #8b5f2a;
+  
+  --status-danger-bg:      var(--color-danger);
+  --status-danger-light:   rgba(166, 90, 90, 0.1);
+  --status-danger-border:  rgba(166, 90, 90, 0.3);
+  --status-danger-text:    #7a3434;
+  
+  --status-info-bg:        var(--color-info);
+  --status-info-light:     rgba(107, 138, 166, 0.1);
+  --status-info-border:    rgba(107, 138, 166, 0.3);
+  --status-info-text:      #3d5a73;
+
+  /* Interactive Colors - Theme Adaptive */
+  --interactive-primary:     var(--accent-primary);
+  --interactive-primary-hover: var(--accent-hover);
+  --interactive-primary-light: var(--accent-light);
+  --interactive-secondary:   var(--accent-secondary);
+  
+  /* Favorite Colors - Theme Adaptive */
+  --favorite-bg:           var(--accent-light);
+  --favorite-border:       var(--accent-primary);
+  --favorite-text:         var(--accent-secondary);
+  --favorite-hover-bg:     var(--accent-primary);
+  --favorite-hover-text:   white;
+  --favorite-inactive-bg:  var(--bg-elevated);
+  --favorite-inactive-border: var(--border-light);
+  --favorite-inactive-text: var(--text-muted);
+
+  /* Session Status Colors */
+  --session-good-bg:       var(--status-success-light);
+  --session-good-text:     var(--status-success-text);
+  --session-good-border:   var(--status-success-border);
+  
+  --session-warning-bg:    var(--status-warning-light);
+  --session-warning-text:  var(--status-warning-text);
+  --session-warning-border: var(--status-warning-border);
+  
+  --session-danger-bg:     var(--status-danger-light);
+  --session-danger-text:   var(--status-danger-text);
+  --session-danger-border: var(--status-danger-border);
+
+  /* User Avatar Colors - Theme Adaptive */
+  --user-avatar-bg:        linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  --user-avatar-text:      white;
+
+  /* === Legacy Compatibility (for existing components) === */
+  --accent-gold:   var(--accent-primary);
+  --accent-gold-2: var(--accent-secondary);
+  --accent-ivory:  var(--ivory);
+  --info:    var(--color-info);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger:  var(--color-danger);
+  --bg:            var(--bg-primary);
+  --surface:       var(--bg-secondary);
+  --surface-2:     var(--bg-elevated);
+  --text-1:        var(--text-primary);
+  --text-2:        var(--text-secondary);
+  --text-3:        var(--text-tertiary);
+  --muted:         var(--text-muted);
+  --border:        var(--border-light);
+  --border-strong: var(--border-medium);
+  --ring:          var(--border-focus);
+  --radius-sm:     var(--radius-sm);
+  --radius-md:     var(--radius-md);
+  --radius-lg:     var(--radius-lg);
+  --shadow-sm:     var(--shadow-sm);
+  --shadow-md:     var(--shadow-md);
+  --shadow-lg:     var(--shadow-lg);
+  --focus:         var(--shadow-focus);
+  --ahp-primary:   var(--accent-primary);
+  --ahp-secondary: var(--gray-650);
+  --ahp-surface-elevated: rgba(244, 241, 234, 0.5);
+  
+  /* Map gold variables to dynamic accent */
+  --gold-primary:   var(--accent-primary);
+  --gold-secondary: var(--accent-secondary);
+  --gold-light:     var(--accent-light);
+  --shadow-gold:    var(--shadow-accent);
+}
+
+/* ============================================================================
+   Dark Mode - Sophisticated Dark Theme with Better Readability
+   ============================================================================ */
+:root[data-theme="dark"] {
+  /* Dark mode surface colors */
+  --bg-primary:    #0f0f0f;   /* Deeper black for better contrast */
+  --bg-secondary:  #1a1a1a;   /* Slightly lighter card backgrounds */
+  --bg-elevated:   #242424;   /* More visible elevated surfaces */
+  --bg-subtle:     #2e2e2e;   /* Better contrast subtle backgrounds */
+  
+  /* Dark mode typography - Enhanced for readability */
+  --text-primary:   #ffffff;  /* Pure white for maximum contrast */
+  --text-secondary: #f0f0f0;  /* Brighter secondary text for better readability */
+  --text-tertiary:  #e0e0e0;  /* Much more visible tertiary text */
+  --text-muted:     #c0c0c0;  /* Significantly brighter muted text */
+  --text-inverse:   #0a0a0a;  /* Very dark text on light backgrounds */
+  
+  /* Dark mode borders - More visible */
+  --border-light:   #333333;  /* More visible light borders */
+  --border-medium:  #404040;  /* Better contrast medium borders */
+  --border-strong:  #555555;  /* Clear strong borders */
+  
+  /* Enhanced shadows for dark mode - More subtle */
+  --shadow-xs:  0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-sm:  0 2px 10px rgba(0, 0, 0, 0.6);
+  --shadow-md:  0 8px 30px rgba(0, 0, 0, 0.7);
+  --shadow-lg:  0 16px 50px rgba(0, 0, 0, 0.75);
+  --shadow-xl:  0 24px 70px rgba(0, 0, 0, 0.8);
+  --shadow-2xl: 0 35px 90px rgba(0, 0, 0, 0.85);
+  
+  /* Dark mode specific overrides */
+  --ahp-surface-elevated: rgba(200, 169, 104, 0.08);
+  --ivory: #2e2e2e; /* Better contrast ivory substitute */
+  
+  /* Gold colors adjusted for dark mode */
+  --gold-primary:   #D4B569;   /* Brighter gold for dark backgrounds */
+  --gold-secondary: #B59A4D;   /* Adjusted secondary gold */
+  --gold-light:     #F0E0B0;   /* Light gold for dark mode */
+
+  /* Dark mode semantic colors adjusted */
+  --status-success-text:   #4ade80;
+  --status-warning-text:   #fbbf24;
+  --status-danger-text:    #f87171;
+  --status-info-text:      #60a5fa;
+  
+  /* Legacy compatibility */
+  --bg:            var(--bg-primary);
+  --surface:       var(--bg-secondary);
+  --surface-2:     var(--bg-elevated);
+  --text-1:        var(--text-primary);
+  --text-2:        var(--text-secondary);
+  --text-3:        var(--text-tertiary);
+  --muted:         var(--text-muted);
+  --border:        var(--border-light);
+  --border-strong: var(--border-medium);
+  --shadow-sm:     var(--shadow-sm);
+  --shadow-md:     var(--shadow-md);
+  --shadow-lg:     var(--shadow-lg);
+  --accent-ivory:  var(--ivory);
+}
+
+/* ============================================================================
+   System Dark Mode Detection (Auto-applies dark theme)
+   ============================================================================ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    /* Apply dark mode variables when system preference is dark */
+    --bg-primary:    #0f0f0f;
+    --bg-secondary:  #1a1a1a;
+    --bg-elevated:   #242424;
+    --bg-subtle:     #2e2e2e;
+    
+    --text-primary:   #ffffff;
+    --text-secondary: #f0f0f0;
+    --text-tertiary:  #e0e0e0;
+    --text-muted:     #c0c0c0;
+    --text-inverse:   #0a0a0a;
+    
+    --border-light:   #333333;
+    --border-medium:  #404040;
+    --border-strong:  #555555;
+    
+    --shadow-xs:  0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-sm:  0 2px 10px rgba(0, 0, 0, 0.6);
+    --shadow-md:  0 8px 30px rgba(0, 0, 0, 0.7);
+    --shadow-lg:  0 16px 50px rgba(0, 0, 0, 0.75);
+    --shadow-xl:  0 24px 70px rgba(0, 0, 0, 0.8);
+    --shadow-2xl: 0 35px 90px rgba(0, 0, 0, 0.85);
+    
+    --ahp-surface-elevated: rgba(200, 169, 104, 0.08);
+    --ivory: #2e2e2e;
+    
+    /* Gold colors adjusted for dark mode */
+    --gold-primary:   #D4B569;
+    --gold-secondary: #B59A4D;
+    --gold-light:     #F0E0B0;
+    
+    /* Legacy compatibility */
+    --bg:            var(--bg-primary);
+    --surface:       var(--bg-secondary);
+    --surface-2:     var(--bg-elevated);
+    --text-1:        var(--text-primary);
+    --text-2:        var(--text-secondary);
+    --text-3:        var(--text-tertiary);
+    --muted:         var(--text-muted);
+    --border:        var(--border-light);
+    --border-strong: var(--border-medium);
+    --shadow-sm:     var(--shadow-sm);
+    --shadow-md:     var(--shadow-md);
+    --shadow-lg:     var(--shadow-lg);
+    --accent-ivory:  var(--ivory);
+  }
+}
+
+/* ============================================================================
+   Base Styles & Typography Setup
+   ============================================================================ */
+
+/* Base layer - foundational styles */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html {
+    /* Enable smooth scrolling */
+    scroll-behavior: smooth;
+    /* Prevent horizontal scroll */
+    overflow-x: hidden;
+    /* Set base font size for rem calculations */
+    font-size: 16px;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    
+    /* Sophisticated Typography Stack */
+    font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+                 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'Liberation Sans', 
+                 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    
+    /* Typography Settings */
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    
+    /* Font Rendering Optimization */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'kern', 'liga', 'clig', 'calt';
+    
+    /* Unified Background - Force consistency */
+    background-color: var(--bg-primary) !important;
+    background: var(--bg-primary) !important;
+    color: var(--text-primary);
+    
+    /* Smooth Transitions */
+    transition: background-color 0.3s var(--transition-luxury), 
+                color 0.3s var(--transition-luxury);
+    
+    /* Enhanced Readability */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+
+  /* Ensure all page backgrounds are consistent */
+  #root {
+    background-color: var(--bg-primary) !important;
+    min-height: 100vh;
+  }
+  
+  /* Headings with Luxury Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', 'Pretendard', system-ui, sans-serif;
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    color: var(--text-primary);
+    margin: 0;
+  }
+  
+  h1 { font-size: var(--font-size-4xl); font-weight: var(--font-weight-extrabold); }
+  h2 { font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); }
+  h3 { font-size: var(--font-size-2xl); font-weight: var(--font-weight-semibold); }
+  h4 { font-size: var(--font-size-xl);  font-weight: var(--font-weight-semibold); }
+  h5 { font-size: var(--font-size-lg);  font-weight: var(--font-weight-medium); }
+  h6 { font-size: var(--font-size-base); font-weight: var(--font-weight-medium); }
+  
+  /* Paragraph & Text Elements */
+  p {
+    margin: 0 0 1rem 0;
+    line-height: var(--line-height-relaxed);
+  }
+  
+  a {
+    color: var(--gold-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  
+  a:hover {
+    color: var(--gold-secondary);
+    text-decoration: underline;
+  }
+  
+  /* Form Elements */
+  button, input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+  
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-weight: var(--font-weight-medium);
+  }
+  
+  /* Focus States - Accessibility */
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    box-shadow: var(--shadow-focus);
+  }
+}
+
+/* ============================================================================
+   Components & Utilities Layer - Enhanced Design System Classes
+   ============================================================================ */
+@layer components {
+  /* === Code & Monospace Typography === */
+  code, pre {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 
+                 'Courier New', monospace;
+    font-size: 0.9em;
+    font-weight: var(--font-weight-normal);
+  }
+  
+  code {
+    background-color: var(--bg-elevated);
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-light);
+  }
+
+  /* === Enhanced Scrollbar Styles === */
+  .scrollbar-luxury {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-medium) var(--bg-elevated);
+  }
+  
+  .scrollbar-luxury::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-luxury::-webkit-scrollbar-track {
+    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+  }
+  
+  .scrollbar-luxury::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--border-light), var(--border-medium));
+    border-radius: var(--radius-sm);
+    transition: var(--transition-normal);
+  }
+  
+  .scrollbar-luxury::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--border-medium), var(--border-strong));
+  }
+  
+  /* Legacy scrollbar class support */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-medium) var(--bg-elevated);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--border-light), var(--border-medium));
+    border-radius: var(--radius-sm);
+    transition: var(--transition-normal);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--border-medium), var(--border-strong));
+  }
+}
+
+@layer utilities {
+  /* === Universal Border Radius Override === */
+  .rounded,
+  .rounded-sm,
+  .rounded-md,
+  .rounded-lg,
+  .rounded-xl,
+  .rounded-2xl,
+  .rounded-3xl,
+  .rounded-full {
+    border-radius: 12px !important;
+  }
+  
+  /* Keep rounded-full as circle */
+  .rounded-full {
+    border-radius: 9999px !important;
+  }
+
+  /* === Enhanced Responsive Container System === */
+  .container-adaptive {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    background-color: transparent; /* 부모 배경색 상속 */
+  }
+
+  /* Mobile - Tablet optimized for evaluators */
+  @media (max-width: 1023px) {
+    .container-adaptive {
+      max-width: var(--container-tablet-width);
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  /* Desktop - Standard */
+  @media (min-width: 1024px) and (max-width: 1679px) {
+    .container-adaptive {
+      max-width: var(--container-desktop-width);
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+    }
+  }
+
+  /* Large Desktop */
+  @media (min-width: 1680px) and (max-width: 1979px) {
+    .container-adaptive {
+      max-width: var(--container-max-width);
+      padding-left: 3rem;
+      padding-right: 3rem;
+    }
+  }
+
+  /* Extra Large Desktop (1980px+) */
+  @media (min-width: 1980px) {
+    .container-adaptive {
+      max-width: var(--container-max-width);
+      padding-left: 4rem;
+      padding-right: 4rem;
+    }
+  }
+
+  /* === Specialized Content Widths === */
+  .content-width-evaluator {
+    max-width: var(--container-tablet-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .content-width-admin {
+    max-width: var(--container-desktop-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+
+  .content-width-full {
+    max-width: var(--container-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+
+  /* === Typography Utilities === */
+  .text-responsive {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+  }
+
+  @media (min-width: 768px) {
+    .text-responsive {
+      font-size: var(--font-size-base);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .text-responsive {
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  /* === Spacing Utilities === */
+  .section-padding {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    background-color: var(--bg-primary);
+    transition: background-color 0.3s var(--transition-luxury);
+  }
+
+  @media (min-width: 768px) {
+    .section-padding {
+      padding-top: 2.5rem;
+      padding-bottom: 2.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .section-padding {
+      padding-top: 3rem;
+      padding-bottom: 3rem;
+    }
+  }
+
+  /* === Unified Page Layout System === */
+  .page-wrapper {
+    min-height: calc(100vh - var(--header-height));
+    background-color: var(--bg-primary) !important;
+    padding: 0;
+    transition: background-color 0.3s var(--transition-luxury);
+  }
+
+  .page-container {
+    width: 100%;
+    min-height: calc(100vh - var(--header-height));
+    background-color: var(--bg-primary) !important;
+    padding: 2rem 1rem;
+    transition: background-color 0.3s var(--transition-luxury);
+  }
+
+  .page-content {
+    width: 100%;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-light);
+    margin: 0 auto;
+  }
+
+  /* Responsive page content sizing */
+  @media (max-width: 1023px) {
+    .page-content {
+      max-width: var(--container-tablet-width);
+      padding: 2rem 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) and (max-width: 1679px) {
+    .page-content {
+      max-width: var(--container-desktop-width);
+      padding: 3rem 2.5rem;
+    }
+  }
+
+  @media (min-width: 1680px) {
+    .page-content {
+      max-width: var(--container-max-width);
+      padding: 3rem;
+    }
+  }
+
+  /* === Specialized Page Layouts === */
+  .page-evaluator {
+    background-color: var(--bg-primary) !important;
+    min-height: calc(100vh - var(--header-height));
+    transition: background-color 0.3s var(--transition-luxury);
+  }
+
+  .page-evaluator .page-content {
+    max-width: var(--container-tablet-width);
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    margin-bottom: 2.5rem;
+    text-align: center;
+  }
+
+  .page-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-extrabold);
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    line-height: var(--line-height-tight);
+  }
+
+  .page-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* === Card System Enhancement === */
+  .card-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .card-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .card-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .card-enhanced {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-luxury);
+  }
+
+  .card-enhanced:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+    border-color: var(--accent-primary);
+  }
+
+  /* === Legacy Theme Utility Classes (Backward Compatibility) === */
+  .theme-surface {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+  }
+  
+  .theme-surface-elevated {
+    background-color: var(--bg-secondary);
+    background-image: linear-gradient(var(--ahp-surface-elevated), var(--ahp-surface-elevated));
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+  }
+  
+  .theme-text {
+    color: var(--text-primary);
+  }
+  
+  .theme-text-muted {
+    color: var(--text-muted);
+  }
+  
+  .theme-border {
+    border-color: var(--border-light);
+  }
+  
+  .theme-focus:focus {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+  
+  /* === Modern Utility Classes === */
+  .text-luxury-primary {
+    color: var(--gold-primary);
+    font-weight: var(--font-weight-semibold);
+  }
+  
+  .text-luxury-secondary {
+    color: var(--gray-650);
+    font-weight: var(--font-weight-medium);
+  }
+  
+  .bg-luxury-surface {
+    background-color: var(--bg-secondary);
+    background-image: linear-gradient(var(--ahp-surface-elevated), var(--ahp-surface-elevated));
+  }
+  
+  .border-luxury {
+    border-color: var(--border-light);
+  }
+  
+  .shadow-luxury {
+    box-shadow: var(--shadow-md);
+  }
+  
+  .transition-luxury {
+    transition: var(--transition-luxury);
+  }
+
+  /* === Focus Utilities === */
+  .focus-luxury:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    box-shadow: var(--shadow-focus);
+  }
+}
+
+/* ============================================================================
+   Print Styles & Accessibility
+   ============================================================================ */
+@media print {
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+}
+
+/* ============================================================================
+   Dynamic Background Animations & Scroll Effects
+   ============================================================================ */
+
+/* Keyframe Animations for HomePage */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+  66% {
+    transform: translateY(5px) rotate(-1deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  33% {
+    transform: translate(10px, -10px) rotate(1deg);
+  }
+  66% {
+    transform: translate(-5px, 5px) rotate(-1deg);
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Scroll Animation Classes */
+.scroll-fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scroll-fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-slide-left {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scroll-slide-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-slide-right {
+  opacity: 0;
+  transform: translateX(50px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scroll-slide-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-scale-up {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scroll-scale-up.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Enhanced Card Hover Effects */
+.card-hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center bottom;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Button Hover Effects with Ripple */
+.button-ripple {
+  position: relative;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.button-ripple:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.button-ripple::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.button-ripple:hover::before {
+  left: 100%;
+}
+
+/* Scroll to Top Button Animation */
+.scroll-top-bounce {
+  animation: bounceIn 0.5s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Parallax Performance Optimization */
+.parallax-element {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Dynamic Particle System */
+.particle-container {
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particleFloat 8s infinite linear;
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-10px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Intersection Observer Performance */
+.observe-animation {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced Accessibility for Animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .parallax-element {
+    transform: none !important;
+  }
+  
+  .card-hover-lift:hover {
+    transform: none;
+  }
+  
+  .button-ripple:hover {
+    transform: none;
+  }
+}

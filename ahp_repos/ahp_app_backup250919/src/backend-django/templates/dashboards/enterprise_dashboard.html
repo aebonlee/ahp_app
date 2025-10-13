@@ -1,0 +1,377 @@
+{% extends "dashboards/base_dashboard.html" %}
+
+{% block title %}AHP Platform - 기업 서비스{% endblock %}
+
+{% block dashboard_title %}기업 대시보드{% endblock %}
+{% block dashboard_subtitle %}팀과 함께 전략적 의사결정을 위한 AHP 분석을 수행하세요.{% endblock %}
+
+{% block nav_links %}
+    <li class="nav-item">
+        <a class="nav-link" href="/enterprise-dashboard/"><i class="fas fa-home"></i> 대시보드</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/enterprise-dashboard/projects/"><i class="fas fa-briefcase"></i> 팀 프로젝트</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/enterprise-dashboard/members/"><i class="fas fa-users"></i> 팀 구성원</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/enterprise-dashboard/analytics/"><i class="fas fa-chart-line"></i> 분석 보고서</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <div class="stat-title">팀 프로젝트</div>
+            <div class="stat-value">{{ team_projects|length|default:"0" }}</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-title">팀 구성원</div>
+            <div class="stat-value">{{ team_members|length|default:"0" }}</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-title">진행 중인 분석</div>
+            <div class="stat-value">3</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="stat-title">이번 월 완료</div>
+            <div class="stat-value">12</div>
+        </div>
+    </div>
+
+    <!-- Team Projects Overview -->
+    <div class="content-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3><i class="fas fa-briefcase"></i> 팀 프로젝트 현황</h3>
+            <a href="/enterprise-dashboard/projects/create/" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 새 프로젝트
+            </a>
+        </div>
+        
+        {% if team_projects %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>프로젝트명</th>
+                            <th>팀장</th>
+                            <th>참여자</th>
+                            <th>진행률</th>
+                            <th>마감일</th>
+                            <th>상태</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in team_projects %}
+                        <tr>
+                            <td>
+                                <strong>{{ project.name }}</strong>
+                                <br><small class="text-muted">{{ project.description|truncatechars:50 }}</small>
+                            </td>
+                            <td>{{ project.leader }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ project.member_count }}명</span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 8px; width: 80px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.progress }}%"></div>
+                                </div>
+                                <small>{{ project.progress }}%</small>
+                            </td>
+                            <td>{{ project.deadline|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="badge bg-{{ project.status_color }}">{{ project.status }}</span>
+                            </td>
+                            <td>
+                                <a href="/enterprise-dashboard/project/{{ project.id }}/" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> 상세
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-briefcase text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+                <h5 class="mt-3 text-muted">팀 프로젝트가 없습니다</h5>
+                <p class="text-muted">첫 번째 팀 프로젝트를 생성해보세요!</p>
+                <a href="/enterprise-dashboard/projects/create/" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 새 팀 프로젝트 만들기
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Team Members -->
+    <div class="content-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3><i class="fas fa-users"></i> 팀 구성원</h3>
+            <a href="/enterprise-dashboard/members/invite/" class="btn btn-success">
+                <i class="fas fa-user-plus"></i> 팀원 초대
+            </a>
+        </div>
+        
+        {% if team_members %}
+            <div class="row">
+                {% for member in team_members|slice:":8" %}
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="avatar mb-3">
+                                <i class="fas fa-user-circle text-primary" style="font-size: 3rem;"></i>
+                            </div>
+                            <h6 class="card-title">{{ member.name }}</h6>
+                            <p class="card-text text-muted">{{ member.role }}</p>
+                            <small class="text-muted">{{ member.email }}</small>
+                        </div>
+                        <div class="card-footer bg-transparent text-center">
+                            <span class="badge bg-{{ member.status_color }}">{{ member.status }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if team_members|length > 8 %}
+                <div class="text-center mt-3">
+                    <a href="/enterprise-dashboard/members/" class="btn btn-outline-primary">
+                        모든 팀원 보기 ({{ team_members|length }}명)
+                    </a>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-users text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
+                <p class="text-muted mt-2">팀 구성원이 없습니다</p>
+                <a href="/enterprise-dashboard/members/invite/" class="btn btn-success">
+                    <i class="fas fa-user-plus"></i> 첫 번째 팀원 초대하기
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Analytics Dashboard -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="content-card">
+                <h3><i class="fas fa-chart-pie"></i> 프로젝트 분포</h3>
+                <div class="text-center py-4">
+                    <canvas id="projectChart" width="300" height="200"></canvas>
+                </div>
+                <div class="row text-center mt-3">
+                    <div class="col-4">
+                        <strong class="text-success">완료</strong><br>
+                        <span class="badge bg-success">8</span>
+                    </div>
+                    <div class="col-4">
+                        <strong class="text-warning">진행중</strong><br>
+                        <span class="badge bg-warning">3</span>
+                    </div>
+                    <div class="col-4">
+                        <strong class="text-secondary">계획</strong><br>
+                        <span class="badge bg-secondary">2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="content-card">
+                <h3><i class="fas fa-chart-line"></i> 월별 활동</h3>
+                <div class="text-center py-4">
+                    <canvas id="activityChart" width="300" height="200"></canvas>
+                </div>
+                <div class="text-center mt-3">
+                    <small class="text-muted">지난 6개월간의 프로젝트 완료 현황</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="content-card">
+        <h3><i class="fas fa-bolt"></i> 빠른 작업</h3>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-plus-circle text-primary mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">새 프로젝트</h5>
+                        <p class="card-text">팀 프로젝트를 시작하세요</p>
+                        <a href="/enterprise-dashboard/projects/create/" class="btn btn-primary">시작하기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-plus text-success mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">팀원 초대</h5>
+                        <p class="card-text">새로운 팀원을 초대하세요</p>
+                        <a href="/enterprise-dashboard/members/invite/" class="btn btn-success">초대하기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-bar text-info mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">분석 보고서</h5>
+                        <p class="card-text">팀 성과를 분석하세요</p>
+                        <a href="/enterprise-dashboard/analytics/" class="btn btn-info">보고서 보기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cog text-secondary mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">팀 설정</h5>
+                        <p class="card-text">팀 권한과 설정을 관리하세요</p>
+                        <a href="/enterprise-dashboard/settings/" class="btn btn-secondary">설정하기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar {
+        border-radius: 50%;
+        overflow: hidden;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .progress {
+        background-color: #e9ecef;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+    
+    .badge.bg-active {
+        background-color: #28a745 !important;
+    }
+    
+    .badge.bg-inactive {
+        background-color: #6c757d !important;
+    }
+    
+    .badge.bg-pending {
+        background-color: #ffc107 !important;
+    }
+    
+    .card-footer {
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    canvas {
+        max-width: 100%;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Project Distribution Chart
+    const projectCtx = document.getElementById('projectChart').getContext('2d');
+    new Chart(projectCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['완료', '진행중', '계획'],
+            datasets: [{
+                data: [8, 3, 2],
+                backgroundColor: ['#28a745', '#ffc107', '#6c757d'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Monthly Activity Chart
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    new Chart(activityCtx, {
+        type: 'line',
+        data: {
+            labels: ['4월', '5월', '6월', '7월', '8월', '9월'],
+            datasets: [{
+                label: '완료된 프로젝트',
+                data: [2, 4, 3, 5, 6, 8],
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

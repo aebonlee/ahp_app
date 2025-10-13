@@ -1,0 +1,316 @@
+{% extends 'super_admin/base.html' %}
+
+{% block title %}결제 관리 - AHP Platform 총 관리자{% endblock %}
+
+{% block page_title %}결제 관리{% endblock %}
+
+{% block content %}
+<!-- Search and Filter -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">상태</label>
+                        <select class="form-select" name="status">
+                            <option value="">전체</option>
+                            {% for value, display in payment_statuses %}
+                                <option value="{{ value }}" 
+                                        {% if request.GET.status == value %}selected{% endif %}>
+                                    {{ display }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">시작 날짜</label>
+                        <input type="date" class="form-control" name="date_from" 
+                               value="{{ request.GET.date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">종료 날짜</label>
+                        <input type="date" class="form-control" name="date_to" 
+                               value="{{ request.GET.date_to }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">결제 방법</label>
+                        <select class="form-select" name="payment_method">
+                            <option value="">전체</option>
+                            {% for value, display in payment_methods %}
+                                <option value="{{ value }}" 
+                                        {% if request.GET.payment_method == value %}selected{% endif %}>
+                                    {{ display }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> 검색
+                            </button>
+                            <a href="{% url 'super_admin:payment_management' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-refresh"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h6>완료된 결제</h6>
+                <h4 id="completedPayments">-</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h6>대기중인 결제</h6>
+                <h4 id="pendingPayments">-</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-times-circle fa-2x mb-2"></i>
+                <h6>실패한 결제</h6>
+                <h4 id="failedPayments">-</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-won-sign fa-2x mb-2"></i>
+                <h6>이번 달 매출</h6>
+                <h4 id="monthlyRevenue">-</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-credit-card me-2"></i>결제 내역</h5>
+                <div>
+                    <button class="btn btn-info btn-sm" onclick="exportPayments()">
+                        <i class="fas fa-download"></i> 내보내기
+                    </button>
+                    <button class="btn btn-success btn-sm" onclick="refreshStats()">
+                        <i class="fas fa-sync-alt"></i> 통계 새로고침
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>거래 ID</th>
+                                    <th>사용자</th>
+                                    <th>플랜</th>
+                                    <th>금액</th>
+                                    <th>결제 방법</th>
+                                    <th>상태</th>
+                                    <th>결제일</th>
+                                    <th>처리일</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                    <tr>
+                                        <td>
+                                            <code>{{ payment.transaction_id|truncatechars:13 }}</code>
+                                        </td>
+                                        <td>
+                                            <strong>{{ payment.user.get_full_name|default:payment.user.email }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ payment.user.email }}</small>
+                                        </td>
+                                        <td>
+                                            <strong>{{ payment.plan.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ payment.plan.get_tier_display }} - {{ payment.plan.get_plan_type_display }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <strong>{{ payment.amount|floatformat:0 }}원</strong>
+                                        </td>
+                                        <td>{{ payment.get_payment_method_display }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if payment.status == 'completed' %}success{% elif payment.status == 'pending' %}warning{% elif payment.status == 'processing' %}info{% else %}danger{% endif %}">
+                                                {{ payment.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ payment.created_at|date:"Y-m-d H:i" }}</td>
+                                        <td>
+                                            {% if payment.processed_at %}
+                                                {{ payment.processed_at|date:"Y-m-d H:i" }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary" 
+                                                        onclick="viewPayment('{{ payment.transaction_id }}')"
+                                                        title="상세 보기">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% if payment.status == 'pending' %}
+                                                    <button class="btn btn-outline-success" 
+                                                            onclick="approvePayment('{{ payment.transaction_id }}')"
+                                                            title="승인">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger" 
+                                                            onclick="rejectPayment('{{ payment.transaction_id }}')"
+                                                            title="거절">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                {% elif payment.status == 'completed' %}
+                                                    <button class="btn btn-outline-warning" 
+                                                            onclick="refundPayment('{{ payment.transaction_id }}')"
+                                                            title="환불">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3 text-end">
+                        <small class="text-muted">총 {{ payments|length }}건의 결제 내역</small>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">결제 내역이 없습니다.</h5>
+                        <p class="text-muted">검색 조건을 변경해보세요.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Detail Modal -->
+<div class="modal fade" id="paymentDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">결제 상세 정보</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="paymentDetailContent">
+                <!-- Payment details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Load payment statistics on page load
+document.addEventListener('DOMContentLoaded', function() {
+    refreshStats();
+});
+
+function refreshStats() {
+    fetch('/super-admin/api/stats/payments/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('completedPayments').textContent = data.payment_status_distribution.completed || 0;
+            document.getElementById('pendingPayments').textContent = data.payment_status_distribution.pending || 0;
+            document.getElementById('failedPayments').textContent = data.payment_status_distribution.failed || 0;
+            document.getElementById('monthlyRevenue').textContent = (data.monthly_revenue || 0).toLocaleString() + '원';
+        })
+        .catch(error => console.error('Error loading stats:', error));
+}
+
+function exportPayments() {
+    const params = new URLSearchParams(window.location.search);
+    window.location.href = '/super-admin/api/admin/export-payments/?' + params.toString();
+}
+
+function viewPayment(transactionId) {
+    fetch(`/super-admin/api/payments/?transaction_id=${transactionId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.results && data.results.length > 0) {
+                const payment = data.results[0];
+                document.getElementById('paymentDetailContent').innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>거래 ID:</strong> ${payment.transaction_id}<br>
+                            <strong>상태:</strong> ${payment.status_display}<br>
+                            <strong>금액:</strong> ${payment.display_amount}<br>
+                            <strong>결제 방법:</strong> ${payment.payment_method}<br>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>사용자:</strong> ${payment.user_info.full_name}<br>
+                            <strong>플랜:</strong> ${payment.plan_info.name}<br>
+                            <strong>결제일:</strong> ${new Date(payment.created_at).toLocaleString()}<br>
+                            ${payment.processed_at ? '<strong>처리일:</strong> ' + new Date(payment.processed_at).toLocaleString() : ''}
+                        </div>
+                    </div>
+                    ${payment.notes ? '<div class="mt-3"><strong>메모:</strong><br>' + payment.notes + '</div>' : ''}
+                    ${payment.failure_reason ? '<div class="mt-3 text-danger"><strong>실패 사유:</strong><br>' + payment.failure_reason + '</div>' : ''}
+                `;
+                new bootstrap.Modal(document.getElementById('paymentDetailModal')).show();
+            }
+        })
+        .catch(error => console.error('Error loading payment details:', error));
+}
+
+function approvePayment(transactionId) {
+    if (confirm('이 결제를 승인하시겠습니까?')) {
+        // Implement payment approval
+        alert('결제 승인 기능을 구현 중입니다.');
+    }
+}
+
+function rejectPayment(transactionId) {
+    const reason = prompt('거절 사유를 입력하세요:');
+    if (reason) {
+        // Implement payment rejection
+        alert('결제 거절 기능을 구현 중입니다.');
+    }
+}
+
+function refundPayment(transactionId) {
+    const reason = prompt('환불 사유를 입력하세요:');
+    if (reason) {
+        // Implement payment refund
+        alert('결제 환불 기능을 구현 중입니다.');
+    }
+}
+</script>
+{% endblock %}

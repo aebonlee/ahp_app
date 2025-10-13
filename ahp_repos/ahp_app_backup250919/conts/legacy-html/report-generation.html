@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보고서 생성 - AHP for Paper</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-elevated: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        /* 다크 모드 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Pretendard', sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* 헤더 */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        /* 메인 레이아웃 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .content-area {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .sidebar {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+            height: fit-content;
+        }
+
+        /* 프로젝트 선택 */
+        .project-selector {
+            margin-bottom: 2rem;
+        }
+
+        .selector-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        /* 보고서 설정 */
+        .report-settings {
+            margin-bottom: 2rem;
+        }
+
+        .setting-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .setting-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-primary);
+        }
+
+        .checkbox-item label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        /* 템플릿 선택 */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .template-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .template-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .template-card.selected {
+            border-color: var(--accent-primary);
+            background: var(--accent-light);
+        }
+
+        .template-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .template-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .template-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 보고서 미리보기 */
+        .preview-area {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            min-height: 400px;
+            border: 1px solid var(--border-light);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .preview-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .preview-content {
+            background: white;
+            border-radius: 4px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-height: 350px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .report-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .report-subtitle {
+            color: var(--text-secondary);
+        }
+
+        .report-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .chart-placeholder {
+            background: var(--bg-elevated);
+            border-radius: 4px;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin: 1rem 0;
+        }
+
+        /* 생성 과정 표시 */
+        .generation-progress {
+            display: none;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .progress-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-light);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-text {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-detail {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 생성된 보고서 목록 */
+        .generated-reports {
+            margin-bottom: 2rem;
+        }
+
+        .report-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .report-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.2s;
+        }
+
+        .report-item:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .report-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .report-item-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .report-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/ahp_app/" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP for Paper</span>
+            </a>
+            <h1 class="page-title">보고서 생성</h1>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-secondary" onclick="goBack()">
+                이전으로
+            </button>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <!-- 설정 사이드바 -->
+        <div class="sidebar">
+            <!-- 프로젝트 선택 -->
+            <div class="project-selector">
+                <h3 class="selector-title">프로젝트 선택</h3>
+                <select id="projectSelect" class="form-select" onchange="loadProjectData()">
+                    <option value="">프로젝트를 선택하세요</option>
+                </select>
+            </div>
+
+            <!-- 보고서 설정 -->
+            <div class="report-settings">
+                <div class="setting-group">
+                    <h4 class="setting-title">포함할 내용</h4>
+                    <div class="checkbox-list">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeSummary" checked>
+                            <label for="includeSummary">분석 요약</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeMethodology" checked>
+                            <label for="includeMethodology">방법론 설명</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeCriteria">
+                            <label for="includeCriteria">기준 상세</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeAlternatives">
+                            <label for="includeAlternatives">대안 분석</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeComparisons">
+                            <label for="includeComparisons">비교 매트릭스</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeResults" checked>
+                            <label for="includeResults">결과 분석</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeCharts" checked>
+                            <label for="includeCharts">차트 및 그래프</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeRecommendations">
+                            <label for="includeRecommendations">권장사항</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <h4 class="setting-title">출력 형식</h4>
+                    <div class="checkbox-list">
+                        <div class="checkbox-item">
+                            <input type="radio" name="outputFormat" id="formatPDF" value="pdf" checked>
+                            <label for="formatPDF">PDF 파일</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" name="outputFormat" id="formatDOCX" value="docx">
+                            <label for="formatDOCX">Word 문서</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" name="outputFormat" id="formatHTML" value="html">
+                            <label for="formatHTML">HTML 페이지</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="content-area">
+            <!-- 템플릿 선택 -->
+            <div class="template-selection">
+                <h2 style="margin-bottom: 1rem; color: var(--text-primary);">보고서 템플릿 선택</h2>
+                <div class="template-grid">
+                    <div class="template-card selected" data-template="standard">
+                        <div class="template-icon">📄</div>
+                        <div class="template-name">표준 보고서</div>
+                        <div class="template-desc">일반적인 AHP 분석 보고서</div>
+                    </div>
+                    <div class="template-card" data-template="academic">
+                        <div class="template-icon">🎓</div>
+                        <div class="template-name">학술 논문</div>
+                        <div class="template-desc">논문 형식의 상세 보고서</div>
+                    </div>
+                    <div class="template-card" data-template="executive">
+                        <div class="template-icon">💼</div>
+                        <div class="template-name">경영진 요약</div>
+                        <div class="template-desc">간결한 의사결정 보고서</div>
+                    </div>
+                    <div class="template-card" data-template="presentation">
+                        <div class="template-icon">📊</div>
+                        <div class="template-name">프레젠테이션</div>
+                        <div class="template-desc">발표용 시각화 중심</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 보고서 미리보기 -->
+            <div class="preview-area">
+                <div class="preview-header">
+                    <h3 class="preview-title">보고서 미리보기</h3>
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        📄 보고서 생성
+                    </button>
+                </div>
+                <div id="previewContent" class="preview-content">
+                    <!-- 동적으로 생성됩니다 -->
+                </div>
+            </div>
+
+            <!-- 생성 과정 표시 -->
+            <div id="generationProgress" class="generation-progress">
+                <div class="progress-spinner"></div>
+                <div class="progress-text">보고서를 생성하고 있습니다...</div>
+                <div id="progressDetail" class="progress-detail">데이터 수집 중...</div>
+            </div>
+        </div>
+
+        <!-- 보고서 히스토리 사이드바 -->
+        <div class="sidebar">
+            <!-- 생성된 보고서 목록 -->
+            <div class="generated-reports">
+                <h3 class="selector-title">생성된 보고서</h3>
+                <div id="reportList" class="report-list">
+                    <!-- 동적으로 생성됩니다 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedTemplate = 'standard';
+        let selectedProject = null;
+        let generatedReports = JSON.parse(localStorage.getItem('ahp_generated_reports')) || [];
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProjects();
+            loadReportHistory();
+            updatePreview();
+            setupEventListeners();
+        });
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 템플릿 선택
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedTemplate = this.dataset.template;
+                    updatePreview();
+                });
+            });
+
+            // 설정 변경 시 미리보기 업데이트
+            document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(input => {
+                input.addEventListener('change', updatePreview);
+            });
+        }
+
+        // 프로젝트 목록 로드
+        function loadProjects() {
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            const select = document.getElementById('projectSelect');
+            
+            select.innerHTML = '<option value="">프로젝트를 선택하세요</option>';
+            
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.title;
+                select.appendChild(option);
+            });
+        }
+
+        // 프로젝트 데이터 로드
+        function loadProjectData() {
+            const projectId = document.getElementById('projectSelect').value;
+            if (!projectId) {
+                selectedProject = null;
+                updatePreview();
+                return;
+            }
+
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            selectedProject = projects.find(p => p.id === projectId);
+            updatePreview();
+        }
+
+        // 보고서 미리보기 업데이트
+        function updatePreview() {
+            const previewContent = document.getElementById('previewContent');
+            
+            if (!selectedProject) {
+                previewContent.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                        <h3>프로젝트를 선택하세요</h3>
+                        <p>보고서를 생성할 AHP 프로젝트를 선택하면 미리보기가 표시됩니다.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const template = getTemplateContent(selectedTemplate, selectedProject);
+            previewContent.innerHTML = template;
+        }
+
+        // 템플릿 콘텐츠 생성
+        function getTemplateContent(templateType, project) {
+            const criteria = project.criteria || [];
+            const alternatives = project.alternatives || [];
+            const results = project.results || null;
+
+            let content = `
+                <div class="report-header">
+                    <div class="report-title">${project.title}</div>
+                    <div class="report-subtitle">AHP 분석 보고서</div>
+                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
+                        생성일: ${new Date().toLocaleDateString('ko-KR')}
+                    </div>
+                </div>
+            `;
+
+            if (document.getElementById('includeSummary').checked) {
+                content += `
+                    <div class="report-section">
+                        <h3 class="section-title">분석 요약</h3>
+                        <p>${project.description || '이 보고서는 AHP(Analytic Hierarchy Process) 방법론을 사용하여 다기준 의사결정 분석을 수행한 결과를 담고 있습니다.'}</p>
+                        <p><strong>분석 목표:</strong> ${project.goal || '최적 대안 선택'}</p>
+                        <p><strong>평가 기준 수:</strong> ${criteria.length}개</p>
+                        <p><strong>대안 수:</strong> ${alternatives.length}개</p>
+                    </div>
+                `;
+            }
+
+            if (document.getElementById('includeMethodology').checked) {
+                content += `
+                    <div class="report-section">
+                        <h3 class="section-title">방법론</h3>
+                        <p>본 분석에서는 Saaty(1980)가 개발한 계층적 의사결정기법(AHP)을 사용하였습니다. AHP는 복잡한 의사결정 문제를 계층적으로 분해하고, 쌍대비교를 통해 각 요소의 상대적 중요도를 산정하는 방법입니다.</p>
+                    </div>
+                `;
+            }
+
+            if (document.getElementById('includeCriteria').checked && criteria.length > 0) {
+                content += `
+                    <div class="report-section">
+                        <h3 class="section-title">평가 기준</h3>
+                        <ul>
+                            ${criteria.map(criterion => `
+                                <li><strong>${criterion.name}:</strong> ${criterion.description || '상세 설명 없음'}</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (document.getElementById('includeResults').checked) {
+                if (results && results.rankedAlternatives) {
+                    content += `
+                        <div class="report-section">
+                            <h3 class="section-title">분석 결과</h3>
+                            <p><strong>최종 순위:</strong></p>
+                            <ol>
+                                ${results.rankedAlternatives.map((alt, index) => `
+                                    <li>${alt.name} (점수: ${(alt.score * 100).toFixed(1)}점)</li>
+                                `).join('')}
+                            </ol>
+                            <p><strong>일관성 지수(CR):</strong> ${results.consistencyRatio ? results.consistencyRatio.toFixed(3) : 'N/A'}</p>
+                        </div>
+                    `;
+                } else {
+                    content += `
+                        <div class="report-section">
+                            <h3 class="section-title">분석 결과</h3>
+                            <p style="color: var(--text-muted);">분석이 완료되지 않았습니다. 먼저 쌍대비교를 완료해주세요.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            if (document.getElementById('includeCharts').checked) {
+                content += `
+                    <div class="report-section">
+                        <h3 class="section-title">시각화</h3>
+                        <div class="chart-placeholder">
+                            📊 순위 차트<br>
+                            <small>(실제 보고서에는 상세한 차트가 포함됩니다)</small>
+                        </div>
+                        <div class="chart-placeholder">
+                            📈 가중치 분포<br>
+                            <small>(기준별 중요도 시각화)</small>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (document.getElementById('includeRecommendations').checked) {
+                content += `
+                    <div class="report-section">
+                        <h3 class="section-title">결론 및 권장사항</h3>
+                        <p>본 AHP 분석을 통해 도출된 결과를 바탕으로 다음과 같이 권장합니다:</p>
+                        <ul>
+                            <li>최상위 대안의 구체적 실행 방안 수립</li>
+                            <li>일관성 지수가 0.1 이상인 경우 비교 재검토 필요</li>
+                            <li>민감도 분석을 통한 결과의 안정성 검증</li>
+                        </ul>
+                    </div>
+                `;
+            }
+
+            return content;
+        }
+
+        // 보고서 생성
+        function generateReport() {
+            if (!selectedProject) {
+                alert('먼저 프로젝트를 선택해주세요.');
+                return;
+            }
+
+            const progressDiv = document.getElementById('generationProgress');
+            const progressDetail = document.getElementById('progressDetail');
+            
+            // 생성 과정 표시
+            progressDiv.style.display = 'block';
+            
+            const steps = [
+                '데이터 수집 중...',
+                '차트 생성 중...',
+                '템플릿 적용 중...',
+                'PDF 변환 중...',
+                '최종 검토 중...'
+            ];
+
+            let stepIndex = 0;
+            const interval = setInterval(() => {
+                if (stepIndex < steps.length) {
+                    progressDetail.textContent = steps[stepIndex];
+                    stepIndex++;
+                } else {
+                    clearInterval(interval);
+                    
+                    // 보고서 생성 완료
+                    const reportData = {
+                        id: Date.now().toString(),
+                        projectId: selectedProject.id,
+                        projectTitle: selectedProject.title,
+                        template: selectedTemplate,
+                        format: document.querySelector('input[name="outputFormat"]:checked').value,
+                        createdAt: new Date().toISOString(),
+                        settings: {
+                            includeSummary: document.getElementById('includeSummary').checked,
+                            includeMethodology: document.getElementById('includeMethodology').checked,
+                            includeCriteria: document.getElementById('includeCriteria').checked,
+                            includeAlternatives: document.getElementById('includeAlternatives').checked,
+                            includeComparisons: document.getElementById('includeComparisons').checked,
+                            includeResults: document.getElementById('includeResults').checked,
+                            includeCharts: document.getElementById('includeCharts').checked,
+                            includeRecommendations: document.getElementById('includeRecommendations').checked
+                        }
+                    };
+
+                    // 생성된 보고서 저장
+                    generatedReports.unshift(reportData);
+                    localStorage.setItem('ahp_generated_reports', JSON.stringify(generatedReports));
+                    
+                    progressDiv.style.display = 'none';
+                    loadReportHistory();
+                    
+                    // 다운로드 시뮬레이션
+                    simulateDownload(reportData);
+                    
+                    showNotification(`보고서가 성공적으로 생성되었습니다! (${reportData.format.toUpperCase()})`, 'success');
+                }
+            }, 800);
+        }
+
+        // 다운로드 시뮬레이션
+        function simulateDownload(reportData) {
+            const format = reportData.format.toUpperCase();
+            const filename = `${reportData.projectTitle}_보고서_${new Date().toISOString().slice(0,10)}.${reportData.format}`;
+            
+            // 실제 환경에서는 서버에서 PDF/DOCX 생성 후 다운로드
+            const blob = new Blob([document.getElementById('previewContent').innerHTML], { 
+                type: reportData.format === 'html' ? 'text/html' : 'text/plain' 
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 보고서 히스토리 로드
+        function loadReportHistory() {
+            const reportList = document.getElementById('reportList');
+            
+            if (generatedReports.length === 0) {
+                reportList.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">📄</div>
+                        <p>아직 생성된 보고서가 없습니다</p>
+                    </div>
+                `;
+                return;
+            }
+
+            reportList.innerHTML = generatedReports.map(report => `
+                <div class="report-item">
+                    <div class="report-item-header">
+                        <div class="report-item-title">${report.projectTitle}</div>
+                        <div class="report-item-date">${new Date(report.createdAt).toLocaleDateString('ko-KR')}</div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                        템플릿: ${getTemplateName(report.template)} | 형식: ${report.format.toUpperCase()}
+                    </div>
+                    <div class="report-item-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="viewReport('${report.id}')">
+                            미리보기
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="downloadReport('${report.id}')">
+                            다운로드
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteReport('${report.id}')">
+                            삭제
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 템플릿 이름 반환
+        function getTemplateName(template) {
+            const names = {
+                standard: '표준 보고서',
+                academic: '학술 논문',
+                executive: '경영진 요약',
+                presentation: '프레젠테이션'
+            };
+            return names[template] || template;
+        }
+
+        // 보고서 보기
+        function viewReport(reportId) {
+            const report = generatedReports.find(r => r.id === reportId);
+            if (!report) return;
+
+            alert('보고서 미리보기 기능은 향후 구현될 예정입니다.');
+        }
+
+        // 보고서 다운로드
+        function downloadReport(reportId) {
+            const report = generatedReports.find(r => r.id === reportId);
+            if (!report) return;
+
+            simulateDownload(report);
+            showNotification('보고서를 다운로드했습니다.', 'success');
+        }
+
+        // 보고서 삭제
+        function deleteReport(reportId) {
+            if (!confirm('보고서를 삭제하시겠습니까?')) return;
+
+            generatedReports = generatedReports.filter(r => r.id !== reportId);
+            localStorage.setItem('ahp_generated_reports', JSON.stringify(generatedReports));
+            loadReportHistory();
+            showNotification('보고서가 삭제되었습니다.', 'info');
+        }
+
+        // 이전 페이지로
+        function goBack() {
+            window.history.back();
+        }
+
+        // 알림 시스템
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--info)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: var(--shadow-lg);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        console.log('✅ AHP 보고서 생성 시스템 로드 완료');
+    </script>
+</body>
+</html>

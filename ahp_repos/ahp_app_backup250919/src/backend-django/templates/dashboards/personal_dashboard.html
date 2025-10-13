@@ -1,0 +1,211 @@
+{% extends "dashboards/base_dashboard.html" %}
+
+{% block title %}AHP Platform - 개인서비스{% endblock %}
+
+{% block dashboard_title %}개인서비스 대시보드{% endblock %}
+{% block dashboard_subtitle %}AHP 분석 도구를 활용해 최적의 의사결정을 하세요.{% endblock %}
+
+{% block nav_links %}
+    <li class="nav-item">
+        <a class="nav-link" href="/personal-dashboard/"><i class="fas fa-home"></i> 대시보드</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/personal-dashboard/projects/"><i class="fas fa-project-diagram"></i> 내 프로젝트</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/personal-dashboard/create/"><i class="fas fa-plus"></i> 새 프로젝트</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/personal-dashboard/help/"><i class="fas fa-question-circle"></i> 도움말</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <div class="stat-title">총 프로젝트</div>
+            <div class="stat-value">{{ user_projects|length|default:"0" }}</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-title">완료된 분석</div>
+            <div class="stat-value">0</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-title">진행 중</div>
+            <div class="stat-value">0</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-title">평가 점수</div>
+            <div class="stat-value">-</div>
+        </div>
+    </div>
+
+    <!-- Recent Projects -->
+    <div class="content-card">
+        <h3><i class="fas fa-history"></i> 최근 프로젝트</h3>
+        {% if user_projects %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>프로젝트명</th>
+                            <th>생성일</th>
+                            <th>상태</th>
+                            <th>진행률</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in user_projects %}
+                        <tr>
+                            <td>
+                                <strong>{{ project.name }}</strong>
+                                <br><small class="text-muted">{{ project.description|truncatechars:50 }}</small>
+                            </td>
+                            <td>{{ project.created_at|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="badge bg-primary">분석 중</span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 30%"></div>
+                                </div>
+                                <small>30%</small>
+                            </td>
+                            <td>
+                                <a href="/personal-dashboard/project/{{ project.id }}/" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i> 편집
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-project-diagram text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+                <h5 class="mt-3 text-muted">아직 프로젝트가 없습니다</h5>
+                <p class="text-muted">첫 번째 AHP 프로젝트를 생성해보세요!</p>
+                <a href="/personal-dashboard/create/" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 새 프로젝트 만들기
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="content-card">
+        <h3><i class="fas fa-bolt"></i> 빠른 작업</h3>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-plus-circle text-primary mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">새 프로젝트</h5>
+                        <p class="card-text">AHP 의사결정 프로젝트를 시작하세요</p>
+                        <a href="/personal-dashboard/create/" class="btn btn-primary">시작하기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-book text-success mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">사용법 배우기</h5>
+                        <p class="card-text">AHP 방법론과 사용법을 알아보세요</p>
+                        <a href="/personal-dashboard/help/" class="btn btn-success">도움말 보기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-bar text-info mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">예제 보기</h5>
+                        <p class="card-text">완성된 AHP 분석 예제를 살펴보세요</p>
+                        <a href="/personal-dashboard/examples/" class="btn btn-info">예제 보기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="content-card">
+        <h3><i class="fas fa-bell"></i> 최근 활동</h3>
+        {% if recent_activity %}
+            <div class="list-group">
+                {% for activity in recent_activity %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">{{ activity.title }}</h6>
+                        <small>{{ activity.created_at|timesince }} 전</small>
+                    </div>
+                    <p class="mb-1">{{ activity.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-bell-slash text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
+                <p class="text-muted mt-2">최근 활동이 없습니다</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress {
+        background-color: #e9ecef;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+    
+    .badge {
+        padding: 0.5em 0.75em;
+        border-radius: 0.5rem;
+    }
+    
+    .list-group-item {
+        border: none;
+        border-left: 3px solid var(--primary-color);
+        margin-bottom: 0.5rem;
+        border-radius: 0.5rem;
+        background: #f8f9fa;
+    }
+</style>
+{% endblock %}

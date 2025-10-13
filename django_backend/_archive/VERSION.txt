@@ -1,0 +1,7 @@
+AHP Django Backend Version 1.2.1
+Last Updated: 2025-09-21
+Changes:
+- Updated CORS settings for GitHub Pages deployment
+- Enhanced API endpoint compatibility
+- Improved security headers
+- Fixed frontend-backend integration issues

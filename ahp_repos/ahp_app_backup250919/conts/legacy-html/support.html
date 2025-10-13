@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객지원 - AHP for Paper</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --accent-primary-rgb: 200, 169, 104;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-subtle: #fafbfc;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: white;
+            border-bottom: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 4rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: none;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-primary);
+        }
+
+        .nav-actions {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(var(--accent-primary-rgb), 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .main-content {
+            margin-top: 4rem;
+            padding: 4rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-4px);
+        }
+
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .support-card {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .support-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .support-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+
+        .support-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .support-desc {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .support-action {
+            color: var(--accent-primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .contact-form-section {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            padding: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-subtitle {
+            color: var(--text-secondary);
+        }
+
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .form-submit:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .faq-section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .faq-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .info-card {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .info-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-content {
+            color: var(--text-secondary);
+        }
+
+        @media (min-width: 768px) {
+            .nav-menu {
+                display: flex;
+            }
+            
+            .nav-actions {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="nav-container">
+            <a href="/ahp_app/" class="logo">
+                <h1>AHP for Paper</h1>
+            </a>
+            
+            <nav class="nav-menu">
+                <a href="/ahp_app/#features" class="nav-link">기능 및 이용방법</a>
+                <a href="/ahp_app/#guide" class="nav-link">사용 가이드</a>
+                <a href="/ahp_app/pricing.html" class="nav-link">요금제</a>
+                <a href="/ahp_app/news.html" class="nav-link">소식 및 사례</a>
+                <a href="/ahp_app/support.html" class="nav-link active">고객지원</a>
+            </nav>
+            
+            <div class="nav-actions">
+                <a href="/ahp_app/login.html" class="btn btn-primary">시작하기</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <div class="container">
+            <a href="/ahp_app/" class="back-btn">
+                ← 홈으로 돌아가기
+            </a>
+            
+            <div class="page-header">
+                <h1 class="page-title">고객지원</h1>
+                <p class="page-subtitle">
+                    AHP for Paper 사용 중 궁금한 점이나 문제가 있으시면 언제든 연락주세요
+                </p>
+            </div>
+
+            <!-- 지원 옵션 -->
+            <div class="support-grid">
+                <div class="support-card" onclick="scrollToSection('contact-form')">
+                    <div class="support-icon">📧</div>
+                    <h3 class="support-title">문의하기</h3>
+                    <p class="support-desc">
+                        직접 문의를 남겨주시면 빠른 시간 내에 답변드리겠습니다.
+                    </p>
+                    <span class="support-action">문의 작성하기</span>
+                </div>
+
+                <div class="support-card" onclick="downloadGuide()">
+                    <div class="support-icon">📚</div>
+                    <h3 class="support-title">사용자 매뉴얼</h3>
+                    <p class="support-desc">
+                        AHP for Paper의 모든 기능을 상세히 설명한 매뉴얼을 다운로드하세요.
+                    </p>
+                    <span class="support-action">매뉴얼 다운로드</span>
+                </div>
+
+                <div class="support-card" onclick="openVideoTutorial()">
+                    <div class="support-icon">🎥</div>
+                    <h3 class="support-title">동영상 튜토리얼</h3>
+                    <p class="support-desc">
+                        단계별 동영상 튜토리얼로 AHP 분석 과정을 쉽게 따라해보세요.
+                    </p>
+                    <span class="support-action">튜토리얼 보기</span>
+                </div>
+
+                <div class="support-card" onclick="openRemoteSupport()">
+                    <div class="support-icon">🖥️</div>
+                    <h3 class="support-title">원격 지원</h3>
+                    <p class="support-desc">
+                        복잡한 문제는 원격 지원을 통해 직접 해결해드립니다.
+                    </p>
+                    <span class="support-action">원격 지원 요청</span>
+                </div>
+            </div>
+
+            <!-- 문의 폼 -->
+            <div class="contact-form-section" id="contact-form">
+                <div class="form-header">
+                    <h2 class="form-title">문의 보내기</h2>
+                    <p class="form-subtitle">
+                        아래 양식을 작성해주시면 담당자가 확인 후 답변드리겠습니다
+                    </p>
+                </div>
+
+                <form class="contact-form" id="contactForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name" class="form-label">이름 *</label>
+                            <input type="text" id="name" class="form-input" placeholder="이름을 입력하세요" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="form-label">이메일 *</label>
+                            <input type="email" id="email" class="form-input" placeholder="이메일을 입력하세요" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone" class="form-label">전화번호</label>
+                            <input type="tel" id="phone" class="form-input" placeholder="전화번호를 입력하세요">
+                        </div>
+                        <div class="form-group">
+                            <label for="category" class="form-label">문의 유형 *</label>
+                            <select id="category" class="form-select" required>
+                                <option value="">선택하세요</option>
+                                <option value="technical">기술적 문제</option>
+                                <option value="billing">결제/요금 문의</option>
+                                <option value="feature">기능 요청</option>
+                                <option value="general">일반 문의</option>
+                                <option value="partnership">파트너십 문의</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject" class="form-label">제목 *</label>
+                        <input type="text" id="subject" class="form-input" placeholder="문의 제목을 입력하세요" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message" class="form-label">문의 내용 *</label>
+                        <textarea id="message" class="form-textarea" placeholder="문의 내용을 상세히 작성해주세요" required></textarea>
+                    </div>
+
+                    <button type="submit" class="form-submit">
+                        문의 보내기
+                    </button>
+                </form>
+            </div>
+
+            <!-- FAQ -->
+            <div class="faq-section">
+                <h2 class="section-title">자주 묻는 질문</h2>
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            AHP 분석에 필요한 전문 지식이 있어야 하나요?
+                            <span>+</span>
+                        </div>
+                        <div class="faq-answer">
+                            아니요, AHP for Paper는 전문 지식이 없는 연구자도 쉽게 사용할 수 있도록 설계되었습니다. 직관적인 인터페이스와 단계별 가이드를 통해 누구나 체계적인 AHP 분석을 수행할 수 있습니다.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            분석 결과를 논문에 어떻게 활용할 수 있나요?
+                            <span>+</span>
+                        </div>
+                        <div class="faq-answer">
+                            분석 결과는 학술 표준에 맞는 표와 그래프로 자동 생성되어 PDF, Excel 등의 형태로 내보낼 수 있습니다. 또한 방법론 설명과 참고문헌도 함께 제공되어 논문 작성에 바로 활용 가능합니다.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            여러 명의 전문가가 함께 평가할 수 있나요?
+                            <span>+</span>
+                        </div>
+                        <div class="faq-answer">
+                            네, 다중 평가자 기능을 통해 여러 전문가의 의견을 수집하고 통합할 수 있습니다. 각 평가자별 결과와 통합 결과를 모두 확인할 수 있어 더욱 신뢰성 있는 분석이 가능합니다.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            데이터 보안은 어떻게 보장되나요?
+                            <span>+</span>
+                        </div>
+                        <div class="faq-answer">
+                            모든 연구 데이터는 암호화되어 저장되며, 개인 계정을 통해서만 접근할 수 있습니다. 또한 정기적인 백업과 보안 업데이트를 통해 데이터 안전성을 보장합니다.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            기술 지원은 어떻게 받을 수 있나요?
+                            <span>+</span>
+                        </div>
+                        <div class="faq-answer">
+                            이메일, 전화, 원격 지원 등 다양한 방법으로 기술 지원을 제공합니다. 요금제에 따라 우선 지원과 24/7 지원도 받으실 수 있습니다.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 연락처 정보 -->
+            <div class="contact-info">
+                <div class="info-card">
+                    <div class="info-icon">📧</div>
+                    <h3 class="info-title">이메일</h3>
+                    <div class="info-content">
+                        support@ahp-paper.com<br>
+                        일반적으로 24시간 내 답변
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">📞</div>
+                    <h3 class="info-title">전화 지원</h3>
+                    <div class="info-content">
+                        02-1234-5678<br>
+                        평일 9:00 ~ 18:00
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">💬</div>
+                    <h3 class="info-title">실시간 채팅</h3>
+                    <div class="info-content">
+                        웹사이트 우하단 채팅창<br>
+                        평일 9:00 ~ 22:00
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // FAQ 토글 기능
+        function toggleFaq(element) {
+            const faqItem = element.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            // 모든 FAQ 아이템 닫기
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+                item.querySelector('.faq-question span').textContent = '+';
+            });
+            
+            // 클릭한 아이템 토글
+            if (!isActive) {
+                faqItem.classList.add('active');
+                element.querySelector('span').textContent = '−';
+            }
+        }
+
+        // 섹션으로 스크롤
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // 지원 기능들
+        function downloadGuide() {
+            alert('사용자 매뉴얼 다운로드 기능은 준비 중입니다.');
+        }
+
+        function openVideoTutorial() {
+            alert('동영상 튜토리얼 기능은 준비 중입니다.');
+        }
+
+        function openRemoteSupport() {
+            alert('원격 지원 요청 기능은 준비 중입니다.');
+        }
+
+        // 문의 폼 처리
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 폼 데이터 수집
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                category: document.getElementById('category').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+
+            // 간단한 유효성 검사
+            if (!formData.name || !formData.email || !formData.subject || !formData.message || !formData.category) {
+                alert('필수 항목을 모두 입력해주세요.');
+                return;
+            }
+
+            // 실제로는 서버로 데이터를 전송
+            console.log('문의 데이터:', formData);
+            
+            // 성공 메시지
+            alert('문의가 성공적으로 전송되었습니다. 빠른 시간 내에 답변드리겠습니다.');
+            
+            // 폼 초기화
+            this.reset();
+        });
+
+        console.log('✅ AHP for Paper 고객지원 페이지 로드 완료');
+    </script>
+</body>
+</html>

@@ -1,0 +1,623 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"ko" }}" dir="{{ LANGUAGE_BIDI|yesno:"rtl,ltr" }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AHP Platform 관리자 로그인{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            pointer-events: none;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            padding: 48px;
+            width: 100%;
+            max-width: 440px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .logo {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 32px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+        }
+        
+        .login-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        
+        .login-subtitle {
+            color: #64748b;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+            letter-spacing: 0.01em;
+        }
+        
+        .form-input, 
+        input[type="text"], 
+        input[type="password"],
+        input[name="username"],
+        input[name="password"] {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 400;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            color: #1f2937;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus,
+        input[type="text"]:focus, 
+        input[type="password"]:focus,
+        input[name="username"]:focus,
+        input[name="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .form-input::placeholder,
+        input[type="text"]::placeholder, 
+        input[type="password"]::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+        
+        .input-icon {
+            position: relative;
+        }
+        
+        .input-icon i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 16px;
+            transition: color 0.3s ease;
+            z-index: 2;
+        }
+        
+        .input-icon input {
+            padding-left: 54px;
+        }
+        
+        .input-icon:focus-within i {
+            color: #667eea;
+        }
+        
+        .field-error {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(220, 38, 38, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #dc2626;
+        }
+        
+        .login-button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 24px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.02em;
+        }
+        
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        .login-button:active {
+            transform: translateY(0);
+        }
+        
+        .login-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .login-button:hover::before {
+            left: 100%;
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #dc2626;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            border-left: 4px solid #dc2626;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .error-message i {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #065f46;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            border-left: 4px solid #10b981;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .success-message i {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            padding: 20px;
+            border-radius: 16px;
+            margin-top: 24px;
+            font-size: 14px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .info-box h4 {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-box p {
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .credentials {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-top: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .credentials div {
+            margin-bottom: 4px;
+        }
+        
+        .credentials div:last-child {
+            margin-bottom: 0;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 32px 24px;
+                margin: 16px;
+                border-radius: 20px;
+            }
+            
+            .login-title {
+                font-size: 24px;
+            }
+            
+            .logo {
+                width: 64px;
+                height: 64px;
+                font-size: 24px;
+            }
+        }
+        
+        /* Loading Animation */
+        .loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .loading .login-button::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div style="position: absolute; top: 20px; right: 20px;">
+                <a href="https://aebonlee.github.io/ahp-platform/" 
+                   style="color: #667eea; text-decoration: none; font-size: 14px; padding: 8px 12px; border: 1px solid #667eea; border-radius: 8px; transition: all 0.3s ease;"
+                   onmouseover="this.style.backgroundColor='#667eea'; this.style.color='white';"
+                   onmouseout="this.style.backgroundColor='transparent'; this.style.color='#667eea';"
+                   title="웹 앱으로 돌아가기">
+                    <i class="fas fa-home"></i> 웹 앱으로
+                </a>
+            </div>
+            <div class="logo">
+                <i class="fas fa-crown"></i>
+            </div>
+            <h1 class="login-title">AHP Platform</h1>
+            <p class="login-subtitle">관리자 전용 로그인</p>
+            <p style="font-size: 12px; color: #666; margin-top: 8px;">
+                일반 사용자는 <a href="https://aebonlee.github.io/ahp-platform/" style="color: #667eea;">웹 앱</a>에서 로그인해주세요.
+            </p>
+        </div>
+        
+        {% if form.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    {% if form.non_field_errors %}
+                        {{ form.non_field_errors|first }}
+                    {% else %}
+                        로그인 정보를 확인해주세요.
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        
+        <form method="post" action="{{ app_path }}" id="login-form">
+            {% csrf_token %}
+            
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}" class="form-label">
+                    <i class="fas fa-user"></i> 사용자명
+                </label>
+                <div class="input-icon">
+                    <i class="fas fa-user"></i>
+                    {{ form.username }}
+                </div>
+                {% if form.username.errors %}
+                    <div class="field-error">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}" class="form-label">
+                    <i class="fas fa-lock"></i> 비밀번호
+                </label>
+                <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                    {{ form.password }}
+                </div>
+                {% if form.password.errors %}
+                    <div class="field-error">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="login-button">
+                <i class="fas fa-sign-in-alt"></i> 관리자 로그인
+            </button>
+        </form>
+        
+        <div class="info-box">
+            <h4>
+                <i class="fas fa-info-circle"></i>
+                테스트 계정 정보
+            </h4>
+            <p>개발 및 테스트 목적으로 사용할 수 있는 관리자 계정:</p>
+            <div class="credentials">
+                <div><strong>사용자명:</strong> admin</div>
+                <div><strong>이메일:</strong> admin@ahp-platform.com</div>
+                <div><strong>비밀번호:</strong> ahp2025admin</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>
+                © 2025 AHP Platform. 
+                <a href="https://github.com/aebonlee/ahp_app" target="_blank">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Form submission with API integration
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+            
+            const container = document.querySelector('.login-container');
+            const button = document.querySelector('.login-button');
+            const form = e.target;
+            
+            // Show loading state
+            container.classList.add('loading');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 로그인 중...';
+            
+            // Get form data
+            const formData = new FormData(form);
+            const username = formData.get('username');
+            const password = formData.get('password');
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.remove());
+            
+            // API login request
+            fetch('/api/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Success - redirect based on user type
+                    button.innerHTML = '<i class="fas fa-check"></i> 로그인 성공!';
+                    button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    
+                    // Show success message
+                    showMessage('success', data.message);
+                    
+                    // Redirect based on user permissions
+                    setTimeout(() => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        } else if (data.user.is_superuser || data.user.user_type === 'super_admin') {
+                            window.location.href = '/super-admin/';
+                        } else if (data.user.is_staff || data.user.user_type === 'admin') {
+                            window.location.href = '/admin/';
+                        } else {
+                            window.location.href = '/personal-dashboard/';
+                        }
+                    }, 1500);
+                } else {
+                    // Error handling
+                    showMessage('error', data.message);
+                    resetForm();
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                showMessage('error', '서버 연결 오류가 발생했습니다.');
+                resetForm();
+            });
+            
+            function resetForm() {
+                container.classList.remove('loading');
+                button.innerHTML = '<i class="fas fa-sign-in-alt"></i> 관리자 로그인';
+                button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            }
+            
+            function showMessage(type, message) {
+                const existing = document.querySelector('.error-message');
+                if (existing) existing.remove();
+                
+                const messageEl = document.createElement('div');
+                messageEl.className = type === 'success' ? 'success-message' : 'error-message';
+                messageEl.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                    <div>${message}</div>
+                `;
+                
+                const form = document.querySelector('form');
+                form.parentNode.insertBefore(messageEl, form);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.remove();
+                    }
+                }, 5000);
+            }
+        });
+        
+        // Auto-focus and set attributes on Django form fields
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameField = document.querySelector('input[name="username"]');
+            const passwordField = document.querySelector('input[name="password"]');
+            
+            // Set attributes for username field
+            if (usernameField) {
+                usernameField.placeholder = '사용자명 또는 이메일';
+                usernameField.autocomplete = 'username';
+                usernameField.required = true;
+                if (!usernameField.value) {
+                    usernameField.focus();
+                }
+            }
+            
+            // Set attributes for password field
+            if (passwordField) {
+                passwordField.placeholder = '비밀번호를 입력하세요';
+                passwordField.autocomplete = 'current-password';
+                passwordField.required = true;
+                if (usernameField && usernameField.value && !passwordField.value) {
+                    passwordField.focus();
+                }
+            }
+        });
+        
+        // Enhanced keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                const inputs = Array.from(document.querySelectorAll('input[type="text"], input[type="password"]'));
+                const currentIndex = inputs.indexOf(e.target);
+                
+                if (currentIndex < inputs.length - 1) {
+                    e.preventDefault();
+                    inputs[currentIndex + 1].focus();
+                }
+            }
+        });
+        
+        // Input validation feedback
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+                if (this.value.trim()) {
+                    this.classList.add('filled');
+                } else {
+                    this.classList.remove('filled');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

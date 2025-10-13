@@ -1,0 +1,216 @@
+{% extends 'super_admin/base.html' %}
+
+{% block title %}대시보드 - AHP Platform 총 관리자{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x mb-3"></i>
+                <h3>{{ user_stats.total_users }}</h3>
+                <p class="mb-1">전체 사용자</p>
+                <small>활성: {{ user_stats.active_users }} | 인증: {{ user_stats.verified_users }}</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card revenue">
+            <div class="card-body text-center">
+                <i class="fas fa-won-sign fa-3x mb-3"></i>
+                <h3>{{ payment_stats.monthly_revenue|floatformat:0 }}원</h3>
+                <p class="mb-1">이번 달 매출</p>
+                <small>총 매출: {{ payment_stats.total_revenue|floatformat:0 }}원</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card projects">
+            <div class="card-body text-center">
+                <i class="fas fa-project-diagram fa-3x mb-3"></i>
+                <h3>{{ project_stats.total_projects }}</h3>
+                <p class="mb-1">전체 프로젝트</p>
+                <small>진행중: {{ project_stats.active_projects }} | 완료: {{ project_stats.completed_projects }}</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card premium">
+            <div class="card-body text-center">
+                <i class="fas fa-crown fa-3x mb-3"></i>
+                <h3>{{ user_stats.premium_users }}</h3>
+                <p class="mb-1">프리미엄 사용자</p>
+                <small>대기중인 결제: {{ payment_stats.pending_payments }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user-plus me-2"></i>최근 가입 사용자</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ user.get_full_name|default:user.email }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ user.get_user_type_display }} | {{ user.created_at|date:"Y-m-d H:i" }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-{% if user.is_verified %}success{% else %}warning{% endif %}">
+                                    {% if user.is_verified %}인증완료{% else %}미인증{% endif %}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">최근 가입한 사용자가 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-credit-card me-2"></i>최근 결제</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_payments %}
+                    <div class="list-group list-group-flush">
+                        {% for payment in recent_payments %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ payment.user.get_full_name|default:payment.user.email }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ payment.plan.name }} - {{ payment.amount|floatformat:0 }}원
+                                        <br>{{ payment.created_at|date:"Y-m-d H:i" }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-{% if payment.status == 'completed' %}success{% elif payment.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                    {{ payment.get_status_display }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">최근 결제 내역이 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Projects -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-project-diagram me-2"></i>최근 생성된 프로젝트</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_projects %}
+                    <div class="list-group list-group-flush">
+                        {% for project in recent_projects %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ project.title }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ project.owner.get_full_name|default:project.owner.email }}
+                                        <br>{{ project.created_at|date:"Y-m-d H:i" }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}primary{% else %}secondary{% endif %}">
+                                    {{ project.get_status_display }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">최근 생성된 프로젝트가 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history me-2"></i>최근 활동 로그</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_activities %}
+                    <div class="list-group list-group-flush">
+                        {% for activity in recent_activities %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ activity.action }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ activity.description|truncatechars:50 }}</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ activity.timestamp|date:"m-d H:i" }}
+                                    </small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">최근 활동이 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Status -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-server me-2"></i>시스템 상태</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-database fa-2x text-success mb-2"></i>
+                            <h6>데이터베이스</h6>
+                            <span class="badge bg-success">정상</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-cloud fa-2x text-success mb-2"></i>
+                            <h6>클라우드 서비스</h6>
+                            <span class="badge bg-success">정상</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                            <h6>보안 시스템</h6>
+                            <span class="badge bg-success">정상</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>평가자 관리 - AHP for Paper</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-elevated: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        /* 다크 모드 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Pretendard', sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* 헤더 */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--accent-primary);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        /* 메인 레이아웃 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .content-area {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* 프로젝트 정보 */
+        .project-info {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .project-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* 평가자 추가 폼 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .evaluator-form {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            padding: 0.75rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(200, 169, 104, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* 평가자 목록 */
+        .evaluators-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .evaluator-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .evaluator-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .evaluator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .evaluator-info {
+            flex: 1;
+        }
+
+        .evaluator-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .evaluator-role {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .evaluator-email {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .evaluator-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-inactive {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .evaluator-progress {
+            margin: 1rem 0;
+        }
+
+        .progress-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            background: var(--border-light);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--accent-primary);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .evaluator-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 협업 설정 */
+        .collaboration-settings {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .setting-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: var(--border-light);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-primary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: left 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            left: 28px;
+        }
+
+        /* 초대 링크 */
+        .invite-section {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .invite-link {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0.5rem 0;
+            word-break: break-all;
+        }
+
+        /* 빈 상태 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-description {
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .breadcrumb {
+                font-size: 0.8rem;
+            }
+
+            .evaluator-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .evaluator-actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/ahp_app/" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP for Paper</span>
+            </a>
+            <div>
+                <div class="breadcrumb">
+                    <a href="/ahp_app/project-management.html">프로젝트 관리</a>
+                    <span>→</span>
+                    <span>평가자 관리</span>
+                </div>
+                <h1 class="page-title">평가자 관리</h1>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-success" onclick="generateInviteLink()">
+                📤 초대 링크 생성
+            </button>
+            <button class="btn btn-secondary" onclick="goBack()">
+                이전으로
+            </button>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <!-- 메인 콘텐츠 -->
+        <div class="content-area">
+            <div class="section-header">
+                <h2 class="section-title">평가자 관리</h2>
+                <button class="btn btn-primary" onclick="toggleEvaluatorForm()">
+                    <span id="form-toggle-text">새 평가자 추가</span>
+                </button>
+            </div>
+
+            <!-- 평가자 추가 폼 -->
+            <div id="evaluatorForm" class="evaluator-form" style="display: none;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">새 평가자 추가</h3>
+                <form id="addEvaluatorForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="evaluatorName">이름 *</label>
+                            <input type="text" id="evaluatorName" class="form-input" 
+                                   placeholder="평가자 이름" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="evaluatorEmail">이메일 *</label>
+                            <input type="email" id="evaluatorEmail" class="form-input" 
+                                   placeholder="evaluator@example.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="evaluatorRole">역할</label>
+                            <select id="evaluatorRole" class="form-select">
+                                <option value="evaluator">평가자</option>
+                                <option value="expert">전문가</option>
+                                <option value="stakeholder">이해관계자</option>
+                                <option value="decision_maker">의사결정자</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="evaluatorDepartment">소속/부서</label>
+                            <input type="text" id="evaluatorDepartment" class="form-input" 
+                                   placeholder="예: 기술개발팀, 경영관리실">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label class="form-label" for="evaluatorNote">비고</label>
+                            <textarea id="evaluatorNote" class="form-textarea" 
+                                      placeholder="평가자에 대한 추가 정보나 특별한 권한 사항..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn btn-secondary" onclick="resetEvaluatorForm()">
+                            초기화
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            평가자 추가
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 협업 설정 -->
+            <div class="collaboration-settings">
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">협업 설정</h3>
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">실시간 협업</div>
+                        <div class="setting-desc">평가자들이 동시에 작업할 수 있습니다</div>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">익명 평가</div>
+                        <div class="setting-desc">평가자 간 평가 결과가 서로 보이지 않습니다</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)"></div>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">자동 알림</div>
+                        <div class="setting-desc">평가 진행 상황을 이메일로 알림합니다</div>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">평가 기한</div>
+                        <div class="setting-desc">평가 완료 기한을 설정합니다</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this)"></div>
+                </div>
+            </div>
+
+            <!-- 초대 링크 섹션 -->
+            <div id="inviteSection" class="invite-section" style="display: none;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">초대 링크</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    아래 링크를 복사하여 평가자에게 공유하세요. 링크는 7일간 유효합니다.
+                </p>
+                <div id="inviteLink" class="invite-link">
+                    <!-- 동적으로 생성됩니다 -->
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="copyInviteLink()">
+                        📋 링크 복사
+                    </button>
+                    <button class="btn btn-primary" onclick="sendInviteEmails()">
+                        📧 이메일 발송
+                    </button>
+                </div>
+            </div>
+
+            <!-- 평가자 목록 -->
+            <div id="evaluatorsList" class="evaluators-list">
+                <!-- 동적으로 생성됩니다 -->
+            </div>
+
+            <!-- 빈 상태 -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">👥</div>
+                <h3 class="empty-title">평가자가 없습니다</h3>
+                <p class="empty-description">
+                    프로젝트에 참여할 평가자를 추가하여 협업 분석을 시작하세요.<br>
+                    여러 평가자의 의견을 종합하여 더 객관적인 결과를 얻을 수 있습니다.
+                </p>
+                <button class="btn btn-primary" onclick="toggleEvaluatorForm()">
+                    첫 번째 평가자 추가하기
+                </button>
+            </div>
+        </div>
+
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <!-- 프로젝트 정보 -->
+            <div class="project-info">
+                <h3 class="project-title" id="currentProjectTitle">프로젝트 로딩 중...</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.5rem 0;" id="currentProjectDescription">
+                    설명을 불러오는 중...
+                </p>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                    <div>평가자 수: <span id="evaluatorCount">0</span>명</div>
+                    <div>완료률: <span id="completionRate">0</span>%</div>
+                </div>
+            </div>
+
+            <!-- 진행 현황 -->
+            <div class="project-info">
+                <h3 class="project-title">📊 평가 진행 현황</h3>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                    <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                        <span>기준 설정:</span>
+                        <strong id="criteriaStatus">완료</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                        <span>대안 설정:</span>
+                        <strong id="alternativesStatus">완료</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                        <span>쌍대비교:</span>
+                        <strong id="comparisonStatus" style="color: var(--warning);">진행 중</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                        <span>결과 분석:</span>
+                        <strong id="resultsStatus" style="color: var(--text-muted);">대기 중</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 평가자 관리 가이드 -->
+            <div class="project-info">
+                <h3 class="project-title">💡 협업 가이드</h3>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                    <p><strong>효과적인 협업을 위한 팁:</strong></p>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.2rem;">
+                        <li>역할별 평가자 구성</li>
+                        <li>명확한 평가 기준 공유</li>
+                        <li>정기적인 진행 상황 확인</li>
+                        <li>일관성 검토 및 조정</li>
+                    </ul>
+                    <p><strong>권장 평가자 수:</strong> 3-7명</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProject = null;
+        let evaluators = [];
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentProject();
+            loadEvaluators();
+            setupEventListeners();
+        });
+
+        // URL에서 프로젝트 ID 가져오기
+        function getProjectIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('project');
+        }
+
+        // 현재 프로젝트 로드
+        function loadCurrentProject() {
+            const projectId = getProjectIdFromUrl();
+            if (!projectId) {
+                alert('프로젝트가 지정되지 않았습니다.');
+                window.location.href = '/ahp_app/project-management.html';
+                return;
+            }
+
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            currentProject = projects.find(p => p.id === projectId);
+
+            if (!currentProject) {
+                alert('프로젝트를 찾을 수 없습니다.');
+                window.location.href = '/ahp_app/project-management.html';
+                return;
+            }
+
+            // 프로젝트 정보 표시
+            document.getElementById('currentProjectTitle').textContent = currentProject.title;
+            document.getElementById('currentProjectDescription').textContent = 
+                currentProject.description || '설명이 없습니다.';
+            
+            updateProjectStatus();
+        }
+
+        // 프로젝트 상태 업데이트
+        function updateProjectStatus() {
+            const criteria = currentProject.criteria || [];
+            const alternatives = currentProject.alternatives || [];
+            const comparisons = currentProject.comparisons || [];
+            
+            document.getElementById('criteriaStatus').textContent = 
+                criteria.length > 0 ? '완료' : '미완료';
+            document.getElementById('alternativesStatus').textContent = 
+                alternatives.length > 0 ? '완료' : '미완료';
+            document.getElementById('comparisonStatus').textContent = 
+                comparisons.length > 0 ? '완료' : '미완료';
+            document.getElementById('resultsStatus').textContent = 
+                currentProject.results ? '완료' : '미완료';
+        }
+
+        // 평가자 데이터 로드
+        function loadEvaluators() {
+            if (!currentProject) return;
+            
+            evaluators = currentProject.evaluators || [];
+            renderEvaluators();
+            updateEvaluatorStats();
+        }
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            document.getElementById('addEvaluatorForm').addEventListener('submit', addEvaluator);
+        }
+
+        // 평가자 추가
+        function addEvaluator(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('evaluatorName').value.trim();
+            const email = document.getElementById('evaluatorEmail').value.trim();
+            const role = document.getElementById('evaluatorRole').value;
+            const department = document.getElementById('evaluatorDepartment').value.trim();
+            const note = document.getElementById('evaluatorNote').value.trim();
+
+            if (!name || !email) {
+                alert('이름과 이메일은 필수 입력 사항입니다.');
+                return;
+            }
+
+            // 중복 이메일 체크
+            if (evaluators.some(e => e.email.toLowerCase() === email.toLowerCase())) {
+                alert('이미 등록된 이메일입니다.');
+                return;
+            }
+
+            const newEvaluator = {
+                id: Date.now().toString(),
+                name: name,
+                email: email,
+                role: role,
+                department: department,
+                note: note,
+                status: 'pending',
+                progress: 0,
+                invitedAt: new Date().toISOString(),
+                lastActivity: null
+            };
+
+            evaluators.push(newEvaluator);
+            saveEvaluators();
+            renderEvaluators();
+            updateEvaluatorStats();
+            resetEvaluatorForm();
+            toggleEvaluatorForm();
+
+            showNotification(`평가자 ${name}이 성공적으로 추가되었습니다!`, 'success');
+        }
+
+        // 평가자 렌더링
+        function renderEvaluators() {
+            const evaluatorsList = document.getElementById('evaluatorsList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (evaluators.length === 0) {
+                evaluatorsList.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            evaluatorsList.style.display = 'flex';
+            emptyState.style.display = 'none';
+
+            evaluatorsList.innerHTML = evaluators.map(evaluator => createEvaluatorCard(evaluator)).join('');
+        }
+
+        // 평가자 카드 생성
+        function createEvaluatorCard(evaluator) {
+            const roleLabels = {
+                evaluator: '평가자',
+                expert: '전문가',
+                stakeholder: '이해관계자',
+                decision_maker: '의사결정자'
+            };
+
+            const statusLabels = {
+                pending: '초대됨',
+                active: '활동 중',
+                completed: '완료',
+                inactive: '비활성'
+            };
+
+            return `
+                <div class="evaluator-card" data-evaluator-id="${evaluator.id}">
+                    <div class="evaluator-header">
+                        <div class="evaluator-info">
+                            <div class="evaluator-name">${evaluator.name}</div>
+                            <div class="evaluator-role">${roleLabels[evaluator.role]} ${evaluator.department ? `• ${evaluator.department}` : ''}</div>
+                            <div class="evaluator-email">${evaluator.email}</div>
+                        </div>
+                        <div class="evaluator-status">
+                            <span class="status-badge status-${evaluator.status}">
+                                ${statusLabels[evaluator.status]}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="evaluator-progress">
+                        <div class="progress-label">평가 진행률: ${evaluator.progress}%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${evaluator.progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    ${evaluator.note ? `<div style="font-size: 0.9rem; color: var(--text-secondary); margin: 0.5rem 0;">${evaluator.note}</div>` : ''}
+                    
+                    <div class="evaluator-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="sendReminder('${evaluator.id}')">
+                            📧 알림 발송
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="viewProgress('${evaluator.id}')">
+                            📊 진행 현황
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="editEvaluator('${evaluator.id}')">
+                            편집
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="removeEvaluator('${evaluator.id}')">
+                            삭제
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 평가자 통계 업데이트
+        function updateEvaluatorStats() {
+            const totalEvaluators = evaluators.length;
+            const completedEvaluators = evaluators.filter(e => e.status === 'completed').length;
+            const completionRate = totalEvaluators > 0 ? Math.round((completedEvaluators / totalEvaluators) * 100) : 0;
+
+            document.getElementById('evaluatorCount').textContent = totalEvaluators;
+            document.getElementById('completionRate').textContent = completionRate;
+        }
+
+        // 평가자 편집
+        function editEvaluator(evaluatorId) {
+            const evaluator = evaluators.find(e => e.id === evaluatorId);
+            if (!evaluator) return;
+
+            const newName = prompt('이름을 수정하세요:', evaluator.name);
+            if (newName && newName.trim() && newName !== evaluator.name) {
+                evaluator.name = newName.trim();
+                evaluator.updatedAt = new Date().toISOString();
+                saveEvaluators();
+                renderEvaluators();
+                showNotification('평가자 정보가 수정되었습니다!', 'success');
+            }
+        }
+
+        // 평가자 삭제
+        function removeEvaluator(evaluatorId) {
+            const evaluator = evaluators.find(e => e.id === evaluatorId);
+            if (!evaluator) return;
+
+            if (!confirm(`정말로 ${evaluator.name} 평가자를 삭제하시겠습니까?`)) return;
+
+            evaluators = evaluators.filter(e => e.id !== evaluatorId);
+            saveEvaluators();
+            renderEvaluators();
+            updateEvaluatorStats();
+            showNotification('평가자가 삭제되었습니다.', 'info');
+        }
+
+        // 알림 발송
+        function sendReminder(evaluatorId) {
+            const evaluator = evaluators.find(e => e.id === evaluatorId);
+            if (!evaluator) return;
+
+            // 실제 환경에서는 이메일 API 호출
+            showNotification(`${evaluator.name}에게 알림을 발송했습니다.`, 'success');
+        }
+
+        // 진행 현황 보기
+        function viewProgress(evaluatorId) {
+            const evaluator = evaluators.find(e => e.id === evaluatorId);
+            if (!evaluator) return;
+
+            alert(`${evaluator.name} 진행 현황:\n\n` +
+                  `상태: ${evaluator.status}\n` +
+                  `진행률: ${evaluator.progress}%\n` +
+                  `초대일: ${new Date(evaluator.invitedAt).toLocaleDateString('ko-KR')}\n` +
+                  `최근 활동: ${evaluator.lastActivity ? new Date(evaluator.lastActivity).toLocaleDateString('ko-KR') : '없음'}`);
+        }
+
+        // 초대 링크 생성
+        function generateInviteLink() {
+            if (!currentProject) return;
+
+            const inviteCode = Math.random().toString(36).substr(2, 10);
+            const baseUrl = window.location.origin;
+            const inviteUrl = `${baseUrl}/ahp_app/evaluator-invite.html?project=${currentProject.id}&invite=${inviteCode}`;
+
+            document.getElementById('inviteLink').textContent = inviteUrl;
+            document.getElementById('inviteSection').style.display = 'block';
+
+            // 초대 링크 정보 저장
+            const inviteData = {
+                code: inviteCode,
+                projectId: currentProject.id,
+                createdAt: new Date().toISOString(),
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 후
+                used: false
+            };
+
+            const inviteLinks = JSON.parse(localStorage.getItem('ahp_invite_links')) || [];
+            inviteLinks.push(inviteData);
+            localStorage.setItem('ahp_invite_links', JSON.stringify(inviteLinks));
+
+            showNotification('초대 링크가 생성되었습니다!', 'success');
+        }
+
+        // 초대 링크 복사
+        function copyInviteLink() {
+            const inviteLink = document.getElementById('inviteLink').textContent;
+            if (!inviteLink) return;
+
+            navigator.clipboard.writeText(inviteLink).then(() => {
+                showNotification('링크가 클립보드에 복사되었습니다!', 'success');
+            }).catch(() => {
+                // 폴백: 텍스트 선택
+                const textArea = document.createElement('textarea');
+                textArea.value = inviteLink;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('링크가 복사되었습니다!', 'success');
+            });
+        }
+
+        // 이메일 발송
+        function sendInviteEmails() {
+            if (evaluators.length === 0) {
+                alert('발송할 평가자가 없습니다.');
+                return;
+            }
+
+            const pendingEvaluators = evaluators.filter(e => e.status === 'pending');
+            if (pendingEvaluators.length === 0) {
+                alert('초대 대기 중인 평가자가 없습니다.');
+                return;
+            }
+
+            // 실제 환경에서는 이메일 API 호출
+            showNotification(`${pendingEvaluators.length}명의 평가자에게 초대 이메일을 발송했습니다.`, 'success');
+        }
+
+        // 설정 토글
+        function toggleSetting(element) {
+            element.classList.toggle('active');
+            // 실제 환경에서는 설정 저장
+        }
+
+        // 평가자 데이터 저장
+        function saveEvaluators() {
+            if (!currentProject) return;
+
+            currentProject.evaluators = evaluators;
+            currentProject.updatedAt = new Date().toISOString();
+
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            const projectIndex = projects.findIndex(p => p.id === currentProject.id);
+            
+            if (projectIndex !== -1) {
+                projects[projectIndex] = currentProject;
+                localStorage.setItem('ahp_projects', JSON.stringify(projects));
+            }
+        }
+
+        // 폼 토글
+        function toggleEvaluatorForm() {
+            const form = document.getElementById('evaluatorForm');
+            const toggleText = document.getElementById('form-toggle-text');
+            
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                toggleText.textContent = '폼 닫기';
+                document.getElementById('evaluatorName').focus();
+            } else {
+                form.style.display = 'none';
+                toggleText.textContent = '새 평가자 추가';
+            }
+        }
+
+        // 폼 초기화
+        function resetEvaluatorForm() {
+            document.getElementById('addEvaluatorForm').reset();
+        }
+
+        // 이전 페이지로
+        function goBack() {
+            window.history.back();
+        }
+
+        // 알림 시스템
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--info)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: var(--shadow-lg);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        console.log('✅ AHP 평가자 관리 시스템 로드 완료');
+    </script>
+</body>
+</html>

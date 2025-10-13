@@ -1,0 +1,10 @@
+5f82da0 docs: Add comprehensive backup and restore point management system
+7031e64 fix: Show evaluation-test within template layout instead of standalone page
+5c18e76 fix: Resolve evaluation-test blank page by moving to direct App.tsx routing
+e16e6e2 feat: Finalize evaluation test feature implementation
+b8f8d75 debug: Add extensive debugging for evaluation-test routing issue
+ea3b2ff fix: Remove console.log to resolve TypeScript switch fallthrough error
+7bb38c0 fix: Add debugging logs for evaluation-test routing
+ac73e0c fix: Resolve TypeScript build error for evaluation-test feature
+185c775 feat: Add evaluation test feature for researchers
+c6eabb8 feat: Add comprehensive help system with validity checker

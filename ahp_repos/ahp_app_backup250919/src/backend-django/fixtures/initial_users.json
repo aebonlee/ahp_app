@@ -1,0 +1,25 @@
+[
+  {
+    "model": "super_admin.customuser",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$720000$xJ5y4VKL9qT0Z7UH0QVEsL$9Gx0wvkMxTZHPdLKxKhW7qMKJFvRTx5w3pJxp6cBFoU=",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "Admin",
+      "last_name": "User",
+      "email": "admin@ahp-platform.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2025-09-10T00:00:00Z",
+      "user_type": "super_admin",
+      "subscription_tier": "unlimited",
+      "is_verified": true,
+      "phone_number": "",
+      "company": "AHP Platform",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]

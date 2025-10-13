@@ -1,0 +1,269 @@
+{% extends "dashboards/base_dashboard.html" %}
+
+{% block title %}AHP Platform - 평가자{% endblock %}
+
+{% block dashboard_title %}평가자 대시보드{% endblock %}
+{% block dashboard_subtitle %}전문 평가자로서 프로젝트를 검토하고 평가하세요.{% endblock %}
+
+{% block nav_links %}
+    <li class="nav-item">
+        <a class="nav-link" href="/evaluator-dashboard/"><i class="fas fa-home"></i> 대시보드</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/evaluator-dashboard/evaluations/"><i class="fas fa-clipboard-check"></i> 평가 목록</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/evaluator-dashboard/pending/"><i class="fas fa-clock"></i> 대기중</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/evaluator-dashboard/reports/"><i class="fas fa-chart-line"></i> 평가 보고서</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="stat-title">총 평가 프로젝트</div>
+            <div class="stat-value">{{ evaluation_projects|length|default:"0" }}</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div class="stat-title">대기중인 평가</div>
+            <div class="stat-value">{{ pending_evaluations|length|default:"0" }}</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-title">완료된 평가</div>
+            <div class="stat-value">0</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-title">평가자 등급</div>
+            <div class="stat-value">Expert</div>
+        </div>
+    </div>
+
+    <!-- Pending Evaluations -->
+    <div class="content-card">
+        <h3><i class="fas fa-clock text-warning"></i> 대기중인 평가</h3>
+        {% if pending_evaluations %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>프로젝트명</th>
+                            <th>요청자</th>
+                            <th>요청일</th>
+                            <th>마감일</th>
+                            <th>우선순위</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for evaluation in pending_evaluations %}
+                        <tr>
+                            <td>
+                                <strong>{{ evaluation.project_name }}</strong>
+                                <br><small class="text-muted">{{ evaluation.description|truncatechars:50 }}</small>
+                            </td>
+                            <td>{{ evaluation.requester }}</td>
+                            <td>{{ evaluation.requested_at|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="badge bg-warning">{{ evaluation.deadline|date:"Y-m-d" }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ evaluation.priority|lower }}">{{ evaluation.priority }}</span>
+                            </td>
+                            <td>
+                                <a href="/evaluator-dashboard/evaluate/{{ evaluation.id }}/" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-play"></i> 평가 시작
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-clipboard-check text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+                <h5 class="mt-3 text-muted">대기중인 평가가 없습니다</h5>
+                <p class="text-muted">새로운 평가 요청을 기다리고 있습니다.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Evaluations -->
+    <div class="content-card">
+        <h3><i class="fas fa-history"></i> 최근 평가 활동</h3>
+        {% if evaluation_projects %}
+            <div class="row">
+                {% for project in evaluation_projects|slice:":6" %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ project.name }}</h6>
+                            <p class="card-text text-muted">{{ project.description|truncatechars:80 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">{{ project.updated_at|date:"m/d" }}</small>
+                                <span class="badge bg-success">완료</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="/evaluator-dashboard/evaluation/{{ project.id }}/" class="btn btn-sm btn-outline-primary w-100">
+                                <i class="fas fa-eye"></i> 결과 보기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-chart-line text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
+                <p class="text-muted mt-2">평가 활동이 없습니다</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Evaluation Tools -->
+    <div class="content-card">
+        <h3><i class="fas fa-tools"></i> 평가 도구</h3>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calculator text-primary mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">일관성 검사</h5>
+                        <p class="card-text">AHP 매트릭스의 일관성을 검증합니다</p>
+                        <a href="/evaluator-dashboard/tools/consistency/" class="btn btn-primary">사용하기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-balance-scale text-success mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">가중치 계산기</h5>
+                        <p class="card-text">고급 가중치 계산 및 분석 도구</p>
+                        <a href="/evaluator-dashboard/tools/weights/" class="btn btn-success">사용하기</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-pie text-info mb-3" style="font-size: 2rem;"></i>
+                        <h5 class="card-title">민감도 분석</h5>
+                        <p class="card-text">결과의 안정성을 분석합니다</p>
+                        <a href="/evaluator-dashboard/tools/sensitivity/" class="btn btn-info">사용하기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="content-card">
+        <h3><i class="fas fa-chart-bar"></i> 평가자 성과</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">이번 월 평가 완료율</h6>
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%">85%</div>
+                        </div>
+                        <small class="text-muted">목표: 80% 이상</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">평균 평가 품질 점수</h6>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <span class="badge bg-primary" style="font-size: 1.2rem;">4.7/5.0</span>
+                            </div>
+                            <div>
+                                <div class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <small class="text-muted">지난 10개 평가 기준</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .badge.bg-high {
+        background-color: #dc3545 !important;
+    }
+    
+    .badge.bg-medium {
+        background-color: #fd7e14 !important;
+    }
+    
+    .badge.bg-low {
+        background-color: #28a745 !important;
+    }
+    
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 10px;
+    }
+    
+    .progress-bar {
+        border-radius: 10px;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+    
+    .card-footer {
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .text-warning .fas {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}

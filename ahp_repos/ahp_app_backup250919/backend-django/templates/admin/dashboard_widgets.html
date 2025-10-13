@@ -1,0 +1,409 @@
+{% load static %}
+
+<!-- AHP Platform Super Admin Dashboard Widgets -->
+
+<!-- System Overview Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
+    
+    <!-- Users Statistics -->
+    <div class="stats-card">
+        <div class="stats-number" id="total-users">-</div>
+        <div class="stats-label">총 사용자</div>
+        <div style="font-size: 12px; color: #95a5a6; margin-top: 5px;">
+            활성: <span id="active-users">-</span> | 신규: <span id="new-users">-</span>
+        </div>
+    </div>
+    
+    <!-- Projects Statistics -->
+    <div class="stats-card">
+        <div class="stats-number" id="total-projects">-</div>
+        <div class="stats-label">총 프로젝트</div>
+        <div style="font-size: 12px; color: #95a5a6; margin-top: 5px;">
+            진행중: <span id="active-projects">-</span> | 완료: <span id="completed-projects">-</span>
+        </div>
+    </div>
+    
+    <!-- Evaluations Statistics -->
+    <div class="stats-card">
+        <div class="stats-number" id="total-evaluations">-</div>
+        <div class="stats-label">총 평가</div>
+        <div style="font-size: 12px; color: #95a5a6; margin-top: 5px;">
+            오늘: <span id="today-evaluations">-</span>
+        </div>
+    </div>
+    
+    <!-- System Health -->
+    <div class="stats-card">
+        <div class="stats-number" style="color: #27ae60;" id="system-uptime">99.9%</div>
+        <div class="stats-label">시스템 가동률</div>
+        <div style="font-size: 12px; color: #95a5a6; margin-top: 5px;">
+            응답시간: <span id="avg-response">-</span>ms
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Panel -->
+<div class="dashboard-widget">
+    <h3>⚡ 빠른 작업</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        
+        <a href="{% url 'admin:accounts_user_add' %}" class="quick-action-btn">
+            <div class="quick-action-icon">👤</div>
+            <div class="quick-action-label">새 사용자 추가</div>
+        </a>
+        
+        <a href="{% url 'admin:projects_project_add' %}" class="quick-action-btn">
+            <div class="quick-action-icon">📊</div>
+            <div class="quick-action-label">새 프로젝트 생성</div>
+        </a>
+        
+        <a href="{% url 'admin:system_systemsettings_changelist' %}" class="quick-action-btn">
+            <div class="quick-action-icon">⚙️</div>
+            <div class="quick-action-label">시스템 설정</div>
+        </a>
+        
+        <a href="{% url 'admin:system_systemlog_changelist' %}" class="quick-action-btn">
+            <div class="quick-action-icon">📋</div>
+            <div class="quick-action-label">시스템 로그</div>
+        </a>
+        
+        <a href="{% url 'admin:system_backuprecord_changelist' %}" class="quick-action-btn">
+            <div class="quick-action-icon">💾</div>
+            <div class="quick-action-label">백업 관리</div>
+        </a>
+        
+        <button onclick="createSystemBackup()" class="quick-action-btn">
+            <div class="quick-action-icon">🔄</div>
+            <div class="quick-action-label">즉시 백업</div>
+        </button>
+    </div>
+</div>
+
+<!-- Recent Activity Panel -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+    
+    <!-- Recent Users -->
+    <div class="dashboard-widget">
+        <h3>👥 최근 가입한 사용자</h3>
+        <div id="recent-users">로딩 중...</div>
+    </div>
+    
+    <!-- Recent Projects -->
+    <div class="dashboard-widget">
+        <h3>📊 최근 생성된 프로젝트</h3>
+        <div id="recent-projects">로딩 중...</div>
+    </div>
+</div>
+
+<!-- System Alerts Panel -->
+<div class="dashboard-widget">
+    <h3>🚨 시스템 알림</h3>
+    <div id="system-alerts">
+        <div class="alert alert-info">
+            <strong>정보:</strong> AHP Platform이 정상적으로 운영 중입니다.
+        </div>
+    </div>
+</div>
+
+<!-- Performance Charts Panel -->
+<div class="dashboard-widget">
+    <h3>📈 성능 모니터링</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        
+        <!-- API Response Time Chart -->
+        <div>
+            <h4 style="color: #7f8c8d; font-size: 14px; margin-bottom: 10px;">API 응답 시간 (24시간)</h4>
+            <canvas id="responseTimeChart" width="300" height="150"></canvas>
+        </div>
+        
+        <!-- User Activity Chart -->
+        <div>
+            <h4 style="color: #7f8c8d; font-size: 14px; margin-bottom: 10px;">사용자 활동 (7일)</h4>
+            <canvas id="userActivityChart" width="300" height="150"></canvas>
+        </div>
+    </div>
+</div>
+
+<style>
+.quick-action-btn {
+    display: block;
+    text-decoration: none;
+    background: white;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+    color: #2c3e50;
+}
+
+.quick-action-btn:hover {
+    border-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+    text-decoration: none;
+    color: #3498db;
+}
+
+.quick-action-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.quick-action-label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 12px;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 13px;
+}
+
+.activity-meta {
+    font-size: 11px;
+    color: #7f8c8d;
+    margin-top: 2px;
+}
+</style>
+
+<script>
+// Dashboard Data Loading
+async function loadDashboardData() {
+    try {
+        // Load statistics (you would replace these with actual API calls)
+        document.getElementById('total-users').textContent = '1,247';
+        document.getElementById('active-users').textContent = '892';
+        document.getElementById('new-users').textContent = '23';
+        
+        document.getElementById('total-projects').textContent = '156';
+        document.getElementById('active-projects').textContent = '43';
+        document.getElementById('completed-projects').textContent = '98';
+        
+        document.getElementById('total-evaluations').textContent = '2,341';
+        document.getElementById('today-evaluations').textContent = '17';
+        
+        document.getElementById('avg-response').textContent = '145';
+        
+        // Load recent activities
+        loadRecentUsers();
+        loadRecentProjects();
+        loadSystemAlerts();
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    }
+}
+
+function loadRecentUsers() {
+    const recentUsers = [
+        { name: '김철수', email: 'kim@example.com', joined: '2시간 전', type: 'evaluator' },
+        { name: '이영희', email: 'lee@example.com', joined: '5시간 전', type: 'admin' },
+        { name: '박민수', email: 'park@example.com', joined: '1일 전', type: 'user' }
+    ];
+    
+    const container = document.getElementById('recent-users');
+    container.innerHTML = recentUsers.map(user => `
+        <div class="activity-item">
+            <div class="activity-icon" style="background: #3498db; color: white;">
+                ${user.type === 'admin' ? '👑' : user.type === 'evaluator' ? '📊' : '👤'}
+            </div>
+            <div class="activity-content">
+                <div class="activity-title">${user.name}</div>
+                <div class="activity-meta">${user.email} • ${user.joined}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadRecentProjects() {
+    const recentProjects = [
+        { title: '신제품 개발 우선순위 평가', owner: '김철수', created: '3시간 전', status: 'active' },
+        { title: '공급업체 선정 분석', owner: '이영희', created: '1일 전', status: 'evaluation' },
+        { title: '투자 포트폴리오 최적화', owner: '박민수', created: '2일 전', status: 'completed' }
+    ];
+    
+    const statusColors = {
+        'active': '#3498db',
+        'evaluation': '#f39c12',
+        'completed': '#27ae60'
+    };
+    
+    const container = document.getElementById('recent-projects');
+    container.innerHTML = recentProjects.map(project => `
+        <div class="activity-item">
+            <div class="activity-icon" style="background: ${statusColors[project.status]}; color: white;">
+                📊
+            </div>
+            <div class="activity-content">
+                <div class="activity-title">${project.title}</div>
+                <div class="activity-meta">${project.owner} • ${project.created}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadSystemAlerts() {
+    // This would typically load from your backend
+    const alerts = [
+        { type: 'success', message: '백업이 성공적으로 완료되었습니다.', time: '10분 전' },
+        { type: 'warning', message: 'PostgreSQL 연결 풀 사용률이 80%를 초과했습니다.', time: '1시간 전' }
+    ];
+    
+    const container = document.getElementById('system-alerts');
+    const existingAlerts = container.querySelectorAll('.alert:not(.alert-info)');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    alerts.forEach(alert => {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${alert.type}`;
+        alertDiv.innerHTML = `
+            <strong>${alert.type === 'success' ? '성공' : '경고'}:</strong> 
+            ${alert.message}
+            <small style="float: right; opacity: 0.7;">${alert.time}</small>
+        `;
+        container.appendChild(alertDiv);
+    });
+}
+
+// System Actions
+async function createSystemBackup() {
+    if (!confirm('시스템 백업을 생성하시겠습니까?')) return;
+    
+    const btn = event.target.closest('.quick-action-btn');
+    const originalContent = btn.innerHTML;
+    
+    btn.innerHTML = `
+        <div class="quick-action-icon">⏳</div>
+        <div class="quick-action-label">백업 중...</div>
+    `;
+    btn.style.pointerEvents = 'none';
+    
+    try {
+        // Simulate backup creation (replace with actual API call)
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        btn.innerHTML = `
+            <div class="quick-action-icon">✅</div>
+            <div class="quick-action-label">백업 완료</div>
+        `;
+        
+        setTimeout(() => {
+            btn.innerHTML = originalContent;
+            btn.style.pointerEvents = 'auto';
+        }, 2000);
+        
+        // Add success alert
+        const alertsContainer = document.getElementById('system-alerts');
+        const successAlert = document.createElement('div');
+        successAlert.className = 'alert alert-success';
+        successAlert.innerHTML = '<strong>성공:</strong> 시스템 백업이 완료되었습니다.';
+        alertsContainer.insertBefore(successAlert, alertsContainer.firstChild);
+        
+    } catch (error) {
+        btn.innerHTML = `
+            <div class="quick-action-icon">❌</div>
+            <div class="quick-action-label">백업 실패</div>
+        `;
+        
+        setTimeout(() => {
+            btn.innerHTML = originalContent;
+            btn.style.pointerEvents = 'auto';
+        }, 2000);
+    }
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    
+    // Refresh data every 5 minutes
+    setInterval(loadDashboardData, 300000);
+});
+
+// Simple chart rendering (you might want to use Chart.js for production)
+function drawSimpleChart(canvasId, data, color) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw axes
+    ctx.strokeStyle = '#e1e8ed';
+    ctx.lineWidth = 1;
+    
+    // Y axis
+    ctx.beginPath();
+    ctx.moveTo(30, 10);
+    ctx.lineTo(30, height - 20);
+    ctx.stroke();
+    
+    // X axis
+    ctx.beginPath();
+    ctx.moveTo(30, height - 20);
+    ctx.lineTo(width - 10, height - 20);
+    ctx.stroke();
+    
+    // Draw data line
+    if (data && data.length > 0) {
+        const maxValue = Math.max(...data);
+        const stepX = (width - 40) / (data.length - 1);
+        const stepY = (height - 30) / maxValue;
+        
+        ctx.strokeStyle = color || '#3498db';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        data.forEach((value, index) => {
+            const x = 30 + index * stepX;
+            const y = height - 20 - value * stepY;
+            
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        
+        ctx.stroke();
+    }
+}
+
+// Initialize charts with sample data
+setTimeout(() => {
+    drawSimpleChart('responseTimeChart', [120, 135, 115, 140, 125, 155, 145, 130], '#3498db');
+    drawSimpleChart('userActivityChart', [245, 267, 289, 312, 298, 334, 356], '#27ae60');
+}, 1000);
+</script>

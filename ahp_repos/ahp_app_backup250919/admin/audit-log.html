@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>감사 로그 - AHP Admin</title>
+    <link rel="stylesheet" href="../styles/layout.css">
+    <style>
+        .audit-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .audit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .audit-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .audit-subtitle {
+            color: var(--text-secondary);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .audit-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .filters-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .filters-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .filters-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .filter-input {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            transition: all 0.3s;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(200, 169, 104, 0.1);
+        }
+
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            text-align: center;
+        }
+
+        .stats-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .audit-table {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--bg-secondary);
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .table-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-box {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 20px;
+            width: 200px;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            width: 250px;
+        }
+
+        .table-content {
+            overflow-x: auto;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .log-table th {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-light);
+            white-space: nowrap;
+        }
+
+        .log-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: top;
+        }
+
+        .log-table tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .log-timestamp {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .log-action {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .log-user {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .log-details {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+
+        .log-level {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .log-level.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        .log-level.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .log-level.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .log-level.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .log-ip {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 1.5rem;
+            border-top: 2px solid var(--border-light);
+        }
+
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            background: var(--bg-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .page-btn:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .page-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .log-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .detail-group {
+            margin-bottom: 1rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+            background: var(--bg-elevated);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-light);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .audit-container {
+                padding: 1rem;
+            }
+
+            .audit-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .audit-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .audit-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .table-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .search-box:focus {
+                width: 100%;
+            }
+
+            .table-content {
+                font-size: 0.9rem;
+            }
+
+            .log-table th,
+            .log-table td {
+                padding: 0.5rem;
+            }
+
+            .pagination {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="audit-container">
+        <div class="audit-header">
+            <div>
+                <h1 class="audit-title">📋 감사 로그</h1>
+                <p class="audit-subtitle">시스템 활동 및 사용자 행위를 추적하고 분석합니다</p>
+            </div>
+            <div class="audit-actions">
+                <button class="btn btn-secondary" id="exportLogs">
+                    📄 로그 내보내기
+                </button>
+                <button class="btn btn-primary" id="refreshLogs">
+                    🔄 새로고침
+                </button>
+            </div>
+        </div>
+
+        <!-- 필터링 섹션 -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <span>🔍</span>
+                <h3 class="filters-title">필터 설정</h3>
+            </div>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">로그 레벨</label>
+                    <select class="filter-select" id="levelFilter">
+                        <option value="">전체</option>
+                        <option value="info">정보</option>
+                        <option value="warning">경고</option>
+                        <option value="error">오류</option>
+                        <option value="success">성공</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">사용자</label>
+                    <input type="text" class="filter-input" id="userFilter" placeholder="사용자명 또는 이메일">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">시작 날짜</label>
+                    <input type="date" class="filter-input" id="startDateFilter">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">종료 날짜</label>
+                    <input type="date" class="filter-input" id="endDateFilter">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">IP 주소</label>
+                    <input type="text" class="filter-input" id="ipFilter" placeholder="IP 주소">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">액션 타입</label>
+                    <select class="filter-select" id="actionFilter">
+                        <option value="">전체</option>
+                        <option value="login">로그인</option>
+                        <option value="logout">로그아웃</option>
+                        <option value="create">생성</option>
+                        <option value="update">수정</option>
+                        <option value="delete">삭제</option>
+                        <option value="view">조회</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" id="applyFilters">필터 적용</button>
+                <button class="btn btn-secondary" id="clearFilters">필터 초기화</button>
+            </div>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="stats-grid">
+            <div class="stats-card">
+                <div class="stats-icon">📊</div>
+                <div class="stats-number" id="totalLogsCount">0</div>
+                <div class="stats-label">전체 로그</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-icon">👤</div>
+                <div class="stats-number" id="uniqueUsersCount">0</div>
+                <div class="stats-label">고유 사용자</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-icon">⚠️</div>
+                <div class="stats-number" id="errorLogsCount">0</div>
+                <div class="stats-label">오류 로그</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-icon">📅</div>
+                <div class="stats-number" id="todayLogsCount">0</div>
+                <div class="stats-label">오늘 로그</div>
+            </div>
+        </div>
+
+        <!-- 감사 로그 테이블 -->
+        <div class="audit-table">
+            <div class="table-header">
+                <h3 class="table-title">감사 로그 목록</h3>
+                <div class="table-controls">
+                    <input type="text" class="search-box" id="searchBox" placeholder="검색...">
+                </div>
+            </div>
+            <div class="table-content">
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th>시간</th>
+                            <th>레벨</th>
+                            <th>사용자</th>
+                            <th>액션</th>
+                            <th>세부사항</th>
+                            <th>IP 주소</th>
+                            <th>상세</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr>
+                            <td colspan="7" class="loading">로그 데이터를 불러오는 중...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <div class="pagination-info" id="paginationInfo">
+                    총 0개 항목
+                </div>
+                <div class="pagination-controls" id="paginationControls">
+                    <button class="page-btn" id="prevPage" disabled>이전</button>
+                    <button class="page-btn active" id="page1">1</button>
+                    <button class="page-btn" id="nextPage" disabled>다음</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세 정보 모달 -->
+    <div class="log-modal" id="logModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">로그 상세 정보</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 상세 정보가 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/api-service.js"></script>
+    <script>
+        let currentPage = 1;
+        let itemsPerPage = 20;
+        let totalItems = 0;
+        let currentFilters = {};
+        let allLogs = [];
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 감사 로그 페이지 초기화');
+            await loadAuditLogs();
+            setupEventListeners();
+            updateStatistics();
+        });
+
+        async function loadAuditLogs(filters = {}) {
+            try {
+                const queryParams = new URLSearchParams({
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    ...filters
+                });
+
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/audit/logs/?${queryParams}`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    allLogs = data.results || data.logs || [];
+                    totalItems = data.total || data.count || allLogs.length;
+                    renderLogsTable(allLogs);
+                    updatePagination();
+                } else {
+                    console.warn('API로 로그 로드 실패, 데모 데이터 사용');
+                    loadDemoLogs();
+                }
+            } catch (error) {
+                console.error('감사 로그 로드 실패:', error);
+                loadDemoLogs();
+            }
+        }
+
+        function loadDemoLogs() {
+            const demoLogs = [
+                {
+                    id: '1',
+                    timestamp: '2025-09-13T10:30:25Z',
+                    level: 'info',
+                    user: { name: '김관리자', email: 'admin@ahp-platform.com' },
+                    action: 'login',
+                    details: '관리자 대시보드 로그인',
+                    ipAddress: '192.168.1.100',
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    resource: 'auth',
+                    method: 'POST'
+                },
+                {
+                    id: '2',
+                    timestamp: '2025-09-13T10:25:15Z',
+                    level: 'success',
+                    user: { name: '이사용자', email: 'user@ahp.com' },
+                    action: 'create',
+                    details: '새 프로젝트 생성: "마케팅 전략 분석"',
+                    ipAddress: '192.168.1.101',
+                    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+                    resource: 'projects',
+                    method: 'POST'
+                },
+                {
+                    id: '3',
+                    timestamp: '2025-09-13T10:20:45Z',
+                    level: 'warning',
+                    user: { name: '박사용자', email: 'test@ahp.com' },
+                    action: 'update',
+                    details: '프로젝트 설정 변경 시도 (권한 부족)',
+                    ipAddress: '192.168.1.102',
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                    resource: 'projects',
+                    method: 'PUT'
+                },
+                {
+                    id: '4',
+                    timestamp: '2025-09-13T10:15:30Z',
+                    level: 'error',
+                    user: { name: 'system', email: 'system@ahp.com' },
+                    action: 'backup',
+                    details: '자동 백업 실패: 디스크 공간 부족',
+                    ipAddress: '127.0.0.1',
+                    userAgent: 'System/1.0',
+                    resource: 'system',
+                    method: 'POST'
+                },
+                {
+                    id: '5',
+                    timestamp: '2025-09-13T10:10:20Z',
+                    level: 'info',
+                    user: { name: '최사용자', email: 'user2@ahp.com' },
+                    action: 'view',
+                    details: '프로젝트 목록 조회',
+                    ipAddress: '192.168.1.103',
+                    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0)',
+                    resource: 'projects',
+                    method: 'GET'
+                }
+            ];
+
+            allLogs = demoLogs;
+            totalItems = demoLogs.length;
+            renderLogsTable(demoLogs);
+            updatePagination();
+        }
+
+        function renderLogsTable(logs) {
+            const tbody = document.getElementById('logsTableBody');
+            
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-secondary);">로그 데이터가 없습니다.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>
+                        <div class="log-timestamp">
+                            ${formatDateTime(log.timestamp)}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="log-level ${log.level}">${getLevelText(log.level)}</span>
+                    </td>
+                    <td>
+                        <div class="log-user">
+                            <div class="user-avatar">
+                                ${log.user?.name ? log.user.name[0].toUpperCase() : 'S'}
+                            </div>
+                            <div>
+                                <div style="font-weight: 500;">${log.user?.name || 'System'}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">${log.user?.email || ''}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="log-action">${getActionText(log.action)}</div>
+                    </td>
+                    <td>
+                        <div class="log-details" title="${log.details}">${log.details}</div>
+                    </td>
+                    <td>
+                        <div class="log-ip">${log.ipAddress}</div>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="showLogDetails('${log.id}')">
+                            상세보기
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function getLevelText(level) {
+            const levels = {
+                'info': '정보',
+                'warning': '경고',
+                'error': '오류',
+                'success': '성공'
+            };
+            return levels[level] || level;
+        }
+
+        function getActionText(action) {
+            const actions = {
+                'login': '로그인',
+                'logout': '로그아웃',
+                'create': '생성',
+                'update': '수정',
+                'delete': '삭제',
+                'view': '조회',
+                'backup': '백업'
+            };
+            return actions[action] || action;
+        }
+
+        function updatePagination() {
+            const paginationInfo = document.getElementById('paginationInfo');
+            const start = (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, totalItems);
+            
+            paginationInfo.textContent = `${start}-${end} / 총 ${totalItems}개 항목`;
+
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage * itemsPerPage >= totalItems;
+        }
+
+        function updateStatistics() {
+            const totalCount = allLogs.length;
+            const uniqueUsers = new Set(allLogs.map(log => log.user?.email || 'system')).size;
+            const errorCount = allLogs.filter(log => log.level === 'error').length;
+            const today = new Date().toISOString().split('T')[0];
+            const todayCount = allLogs.filter(log => log.timestamp.startsWith(today)).length;
+
+            document.getElementById('totalLogsCount').textContent = totalCount.toLocaleString();
+            document.getElementById('uniqueUsersCount').textContent = uniqueUsers.toLocaleString();
+            document.getElementById('errorLogsCount').textContent = errorCount.toLocaleString();
+            document.getElementById('todayLogsCount').textContent = todayCount.toLocaleString();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('refreshLogs').addEventListener('click', async () => {
+                await loadAuditLogs(currentFilters);
+                updateStatistics();
+            });
+
+            document.getElementById('exportLogs').addEventListener('click', exportLogs);
+
+            document.getElementById('applyFilters').addEventListener('click', applyFilters);
+            document.getElementById('clearFilters').addEventListener('click', clearFilters);
+
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadAuditLogs(currentFilters);
+                }
+            });
+
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (currentPage * itemsPerPage < totalItems) {
+                    currentPage++;
+                    loadAuditLogs(currentFilters);
+                }
+            });
+
+            document.getElementById('searchBox').addEventListener('input', debounce(performSearch, 300));
+
+            document.getElementById('closeModal').addEventListener('click', closeLogModal);
+            document.getElementById('logModal').addEventListener('click', (e) => {
+                if (e.target.id === 'logModal') {
+                    closeLogModal();
+                }
+            });
+        }
+
+        function applyFilters() {
+            currentFilters = {
+                level: document.getElementById('levelFilter').value,
+                user: document.getElementById('userFilter').value,
+                startDate: document.getElementById('startDateFilter').value,
+                endDate: document.getElementById('endDateFilter').value,
+                ip: document.getElementById('ipFilter').value,
+                action: document.getElementById('actionFilter').value
+            };
+
+            currentPage = 1;
+            loadAuditLogs(currentFilters);
+        }
+
+        function clearFilters() {
+            document.getElementById('levelFilter').value = '';
+            document.getElementById('userFilter').value = '';
+            document.getElementById('startDateFilter').value = '';
+            document.getElementById('endDateFilter').value = '';
+            document.getElementById('ipFilter').value = '';
+            document.getElementById('actionFilter').value = '';
+            
+            currentFilters = {};
+            currentPage = 1;
+            loadAuditLogs();
+        }
+
+        function performSearch(query) {
+            if (!query.trim()) {
+                renderLogsTable(allLogs);
+                return;
+            }
+
+            const filteredLogs = allLogs.filter(log => {
+                return Object.values(log).some(value => {
+                    if (typeof value === 'string') {
+                        return value.toLowerCase().includes(query.toLowerCase());
+                    }
+                    if (typeof value === 'object' && value !== null) {
+                        return Object.values(value).some(v => 
+                            typeof v === 'string' && v.toLowerCase().includes(query.toLowerCase())
+                        );
+                    }
+                    return false;
+                });
+            });
+
+            renderLogsTable(filteredLogs);
+        }
+
+        function showLogDetails(logId) {
+            const log = allLogs.find(l => l.id === logId);
+            if (!log) return;
+
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div class="detail-group">
+                    <div class="detail-label">타임스탬프</div>
+                    <div class="detail-value">${formatDateTime(log.timestamp)}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">로그 레벨</div>
+                    <div class="detail-value">${getLevelText(log.level)}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">사용자</div>
+                    <div class="detail-value">${log.user?.name || 'System'} (${log.user?.email || 'system@ahp.com'})</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">액션</div>
+                    <div class="detail-value">${getActionText(log.action)}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">세부 내용</div>
+                    <div class="detail-value">${log.details}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">IP 주소</div>
+                    <div class="detail-value">${log.ipAddress}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">User Agent</div>
+                    <div class="detail-value">${log.userAgent || 'N/A'}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">리소스</div>
+                    <div class="detail-value">${log.resource || 'N/A'}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">HTTP 메소드</div>
+                    <div class="detail-value">${log.method || 'N/A'}</div>
+                </div>
+            `;
+
+            document.getElementById('logModal').style.display = 'flex';
+        }
+
+        function closeLogModal() {
+            document.getElementById('logModal').style.display = 'none';
+        }
+
+        async function exportLogs() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/audit/logs/export/', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(currentFilters)
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    throw new Error('로그 내보내기 실패');
+                }
+            } catch (error) {
+                console.error('로그 내보내기 오류:', error);
+                
+                // 데모용 CSV 다운로드
+                const csvContent = generateCSV(allLogs);
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `audit-logs-demo-${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }
+        }
+
+        function generateCSV(logs) {
+            const headers = ['시간', '레벨', '사용자', '이메일', '액션', '세부내용', 'IP주소'];
+            const rows = logs.map(log => [
+                formatDateTime(log.timestamp),
+                getLevelText(log.level),
+                log.user?.name || 'System',
+                log.user?.email || 'system@ahp.com',
+                getActionText(log.action),
+                log.details,
+                log.ipAddress
+            ]);
+
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(field => `"${field}"`).join(','))
+                .join('\n');
+
+            return '\uFEFF' + csvContent; // BOM for UTF-8
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>

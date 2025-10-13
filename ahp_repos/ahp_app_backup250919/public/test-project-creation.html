@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 생성 테스트 - AHP Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2rem;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+        }
+        
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .btn-info {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .console {
+            background: #1a202c;
+            color: #68d391;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .console-line {
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .success {
+            color: #68d391;
+        }
+        
+        .error {
+            color: #fc8181;
+        }
+        
+        .info {
+            color: #63b3ed;
+        }
+        
+        .warning {
+            color: #f6e05e;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: #48bb78;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-offline {
+            background: #f56565;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 프로젝트 생성 테스트 콘솔</h1>
+        
+        <!-- 연결 상태 -->
+        <div class="section">
+            <h2>📡 연결 상태</h2>
+            <div>
+                <span class="status-indicator status-online" id="statusIndicator"></span>
+                <span id="statusText">온라인</span>
+            </div>
+            <div style="margin-top: 10px;">
+                <strong>API 서버:</strong> <span id="apiServer">https://ahp-django-backend.onrender.com</span>
+            </div>
+        </div>
+        
+        <!-- 프로젝트 정보 입력 -->
+        <div class="section">
+            <h2>📝 프로젝트 정보</h2>
+            <div class="form-group">
+                <label for="projectTitle">프로젝트 제목 *</label>
+                <input type="text" id="projectTitle" value="테스트 프로젝트" placeholder="프로젝트 제목 입력">
+            </div>
+            <div class="form-group">
+                <label for="projectObjective">프로젝트 목표 *</label>
+                <input type="text" id="projectObjective" value="최적의 대안 선택" placeholder="프로젝트 목표 입력">
+            </div>
+            <div class="form-group">
+                <label for="projectDescription">상세 설명</label>
+                <textarea id="projectDescription" rows="3" placeholder="프로젝트 상세 설명 입력">테스트를 위한 프로젝트입니다.</textarea>
+            </div>
+            <div class="form-group">
+                <label for="projectVisibility">공개 범위</label>
+                <select id="projectVisibility">
+                    <option value="private">비공개</option>
+                    <option value="team">팀 공개</option>
+                    <option value="public">전체 공개</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- 테스트 버튼들 -->
+        <div class="section">
+            <h2>🚀 테스트 실행</h2>
+            <div class="button-group">
+                <button class="btn-primary" onclick="testConnection()">1. 연결 테스트</button>
+                <button class="btn-info" onclick="testAuth()">2. 인증 테스트</button>
+                <button class="btn-success" onclick="testCreateProject()">3. 프로젝트 생성</button>
+                <button class="btn-warning" onclick="testDirectAPI()">4. 직접 API 호출</button>
+            </div>
+        </div>
+        
+        <!-- 콘솔 출력 -->
+        <div class="console" id="console">
+            <div class="console-line info">🎯 프로젝트 생성 테스트 콘솔 준비 완료</div>
+            <div class="console-line info">📅 ${new Date().toLocaleString()}</div>
+            <div class="console-line">-----------------------------------</div>
+        </div>
+    </div>
+    
+    <script>
+        // 콘솔 로그 함수
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        // 네트워크 상태 체크
+        function updateNetworkStatus() {
+            const indicator = document.getElementById('statusIndicator');
+            const text = document.getElementById('statusText');
+            
+            if (navigator.onLine) {
+                indicator.className = 'status-indicator status-online';
+                text.textContent = '온라인';
+            } else {
+                indicator.className = 'status-indicator status-offline';
+                text.textContent = '오프라인';
+            }
+        }
+        
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        
+        // 1. 연결 테스트
+        async function testConnection() {
+            log('🔍 API 서버 연결 테스트 시작...', 'info');
+            
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/api/service/projects/', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                log(`✅ 서버 응답: ${response.status} ${response.statusText}`, 'success');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`📊 프로젝트 수: ${data.count || 0}개`, 'info');
+                    log('✅ API 서버 연결 성공!', 'success');
+                } else {
+                    log(`⚠️ 서버 응답 코드: ${response.status}`, 'warning');
+                }
+            } catch (error) {
+                log(`❌ 연결 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 2. 인증 테스트
+        async function testAuth() {
+            log('🔐 인증 상태 확인 중...', 'info');
+            
+            try {
+                // 세션 쿠키 확인
+                const cookies = document.cookie;
+                log(`🍪 쿠키: ${cookies || '(없음)'}`, 'info');
+                
+                // CSRF 토큰 확인
+                const csrfToken = getCookie('csrftoken');
+                if (csrfToken) {
+                    log(`🔑 CSRF 토큰: ${csrfToken.substring(0, 10)}...`, 'success');
+                } else {
+                    log('⚠️ CSRF 토큰 없음', 'warning');
+                }
+                
+                // 현재 사용자 정보 가져오기 시도
+                const response = await fetch('https://ahp-django-backend.onrender.com/api/auth/user/', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    log(`✅ 인증된 사용자: ${user.username || user.email}`, 'success');
+                } else {
+                    log('⚠️ 인증되지 않은 상태 (Anonymous)', 'warning');
+                }
+            } catch (error) {
+                log(`❌ 인증 확인 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 3. 프로젝트 생성 테스트
+        async function testCreateProject() {
+            log('🚀 프로젝트 생성 시작...', 'info');
+            
+            const projectData = {
+                title: document.getElementById('projectTitle').value + ' - ' + new Date().toLocaleTimeString(),
+                objective: document.getElementById('projectObjective').value,
+                description: document.getElementById('projectDescription').value,
+                visibility: document.getElementById('projectVisibility').value,
+                consistency_ratio_threshold: 0.1,
+                tags: ['test', 'debug'],
+                settings: {
+                    evaluation_method: 'pairwise',
+                    status: 'draft'
+                }
+            };
+            
+            log(`📤 요청 데이터: ${JSON.stringify(projectData, null, 2)}`, 'info');
+            
+            try {
+                const csrfToken = getCookie('csrftoken');
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                };
+                
+                if (csrfToken) {
+                    headers['X-CSRFToken'] = csrfToken;
+                }
+                
+                const response = await fetch('https://ahp-django-backend.onrender.com/api/service/projects/', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: headers,
+                    body: JSON.stringify(projectData)
+                });
+                
+                log(`📥 응답 상태: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                const responseText = await response.text();
+                let responseData;
+                
+                try {
+                    responseData = JSON.parse(responseText);
+                    log(`📥 응답 데이터: ${JSON.stringify(responseData, null, 2)}`, response.ok ? 'success' : 'error');
+                } catch {
+                    log(`📥 응답 텍스트: ${responseText}`, 'warning');
+                }
+                
+                if (response.ok) {
+                    log('✅ 프로젝트 생성 성공!', 'success');
+                    if (responseData && responseData.id) {
+                        log(`🆔 프로젝트 ID: ${responseData.id}`, 'success');
+                    }
+                } else {
+                    log(`❌ 프로젝트 생성 실패: ${response.status}`, 'error');
+                    if (responseData && responseData.detail) {
+                        log(`💭 오류 상세: ${responseData.detail}`, 'error');
+                    }
+                }
+            } catch (error) {
+                log(`❌ 요청 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 4. 직접 API 호출 (curl 스타일)
+        async function testDirectAPI() {
+            log('🔧 직접 API 호출 (익명 사용자로)...', 'info');
+            
+            const projectData = {
+                title: '익명 테스트 프로젝트 ' + Date.now(),
+                objective: '익명 사용자 테스트',
+                description: '인증 없이 프로젝트 생성 테스트',
+                visibility: 'private'
+            };
+            
+            log(`📤 최소 데이터로 시도: ${JSON.stringify(projectData)}`, 'info');
+            
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/api/service/projects/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(projectData)
+                });
+                
+                const responseText = await response.text();
+                log(`📥 응답: ${response.status} - ${responseText}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    log('💡 힌트: 인증이 필요할 수 있습니다. Django admin에서 권한 설정을 확인하세요.', 'warning');
+                }
+            } catch (error) {
+                log(`❌ 직접 호출 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 쿠키 가져오기 헬퍼
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        // 초기 상태 체크
+        updateNetworkStatus();
+        log('💡 팁: 버튼을 순서대로 클릭하여 문제를 진단하세요', 'info');
+    </script>
+</body>
+</html>
