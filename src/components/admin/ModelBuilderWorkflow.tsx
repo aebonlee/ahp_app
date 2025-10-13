@@ -84,7 +84,7 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, progress.isModelFinalized]);
 
   useEffect(() => {
     loadProjectData();

@@ -198,7 +198,7 @@ function App() {
     if (tempRole && user && user.role === 'super_admin') {
       setUser(prevUser => prevUser ? { ...prevUser, role: tempRole as UserRole } : null);
     }
-  }, []);
+  }, [user]);
 
   // URL 파라미터 변경 감지 (로그인 여부와 관계없이 처리)
   useEffect(() => {

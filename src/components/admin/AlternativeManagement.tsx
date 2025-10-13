@@ -67,7 +67,7 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
     if (projectId) {
       loadProjectAlternatives();
     }
-  }, [projectId]);
+  }, [projectId, onAlternativesChange]);
 
   // 대안이 변경될 때마다 부모 컴포넌트에 개수 알림
   useEffect(() => {

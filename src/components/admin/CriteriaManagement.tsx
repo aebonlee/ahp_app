@@ -9,6 +9,7 @@ import HierarchyTreeBuilder from '../modeling/HierarchyTreeBuilder';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
 import CriteriaTemplates from '../criteria/CriteriaTemplates';
 import VisualCriteriaBuilder from '../criteria/VisualCriteriaBuilder';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import InteractiveCriteriaEditor from '../criteria/InteractiveCriteriaEditor';
 import cleanDataService from '../../services/dataService_clean';
 
@@ -58,6 +59,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   
   // 인라인 편집 상태
   const [editingCriteria, setEditingCriteria] = useState<{[key: string]: {name: string, description: string}}>({});
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [draggedItem, setDraggedItem] = useState<Criterion | null>(null);
 
   // 백엔드에서 기준 로드

@@ -65,7 +65,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
       console.error('평가자 목록 로딩 실패:', error);
       loadDemoData();
     }
-  }, [projectId]);
+  }, [projectId, loadDemoData]);
 
   const loadAllEvaluators = useCallback(async () => {
     try {
@@ -83,7 +83,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
       console.error('전체 평가자 목록 로딩 실패:', error);
       loadDemoData();
     }
-  }, []);
+  }, [loadDemoData]);
 
   // Load project-specific evaluators from API
   useEffect(() => {
