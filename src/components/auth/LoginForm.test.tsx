@@ -16,8 +16,9 @@ describe('LoginForm', () => {
     render(<LoginForm onLogin={mockOnLogin} />);
     
     expect(screen.getByText('AHP for Paper')).toBeInTheDocument();
-    expect(screen.getByText('서비스 이용')).toBeInTheDocument();
-    expect(screen.getByText('시스템 관리')).toBeInTheDocument();
+    // 버튼 텍스트가 변경되어 업데이트된 테스트
+    expect(screen.getByText('🚀 서비스 로그인')).toBeInTheDocument();
+    expect(screen.getByText('🔧 시스템 관리')).toBeInTheDocument();
   });
 
   it('switches to service login mode when service login button is clicked', async () => {

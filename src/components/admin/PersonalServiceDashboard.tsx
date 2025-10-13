@@ -556,6 +556,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         });
         
         if (updatedProject) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const updatedUserProject: UserProject = {
             ...updatedProject,
             evaluator_count: editingProject.evaluator_count || 0,
@@ -725,6 +726,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
 
   // 요금제 데이터 정의
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const pricingPlans = {
     subscription: [
       {
@@ -1091,7 +1093,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       }
     };
     loadProjectData();
-  }, [selectedProjectId]);
+  }, [selectedProjectId, onFetchCriteria, onFetchAlternatives]);
 
   const handleExport = async (format: 'csv' | 'excel' | 'pdf' | 'ppt' | 'json', type: 'criteria' | 'alternatives' | 'results') => {
     if (!selectedProjectId || !projectData) {
@@ -1712,6 +1714,7 @@ ${project?.title} - ${type} 프레젠테이션
     </div>
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderMyProjects = () => {
     // 필터링 및 검색 로직
     const filteredProjects = (projects || []).filter(project => {

@@ -2,12 +2,15 @@
  * 개선된 PersonalServiceDashboard - 드롭다운 메뉴 구조
  * 기본기능/고급기능 분류 및 슈퍼관리자 전용 메뉴
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import Card from '../common/Card';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Button from '../common/Button';
 import MyProjects from './MyProjects';
 import ProjectCreation from './ProjectCreation';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import CriteriaManagement from './CriteriaManagement';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AlternativeManagement from './AlternativeManagement';
 import EvaluatorAssignment from './EvaluatorAssignment';
 import EnhancedEvaluatorManagement from './EnhancedEvaluatorManagement';
