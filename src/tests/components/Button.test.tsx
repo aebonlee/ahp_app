@@ -47,8 +47,8 @@ describe('Button Component', () => {
     render(<Button loading>Loading</Button>);
     const button = screen.getByText('Loading');
     expect(button).toBeDisabled();
-    // SVG 스피너는 role='img'가 아니므로 다른 방법으로 찾기
-    const spinner = button.querySelector('svg');
+    // Testing Library 방식으로 SVG 스피너 찾기
+    const spinner = screen.getByTestId('loading-spinner');
     expect(spinner).toBeInTheDocument();
   });
 

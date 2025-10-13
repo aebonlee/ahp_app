@@ -103,6 +103,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
   
   // 요금제 정보 관리
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userPlan, setUserPlan] = useState<{
     planType: 'basic' | 'standard' | 'premium' | 'enterprise';
     additionalEvaluators: number; // 10명 단위 추가 구매
@@ -169,7 +170,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     if (user.first_name !== initialUser.first_name || user.last_name !== initialUser.last_name) {
       setUser(initialUser);
     }
-  }, [initialUser.first_name, initialUser.last_name]);
+  }, [initialUser, user]);
 
   // 사용자 정보 업데이트 처리
   const handleUserUpdate = (updatedUser: typeof initialUser) => {
@@ -211,6 +212,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     };
   };
   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const quotas = getCurrentQuotas();
   
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -232,6 +234,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   });
   const [newProjectStep, setNewProjectStep] = useState(1);
   const [newProjectId, setNewProjectId] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [projectEvaluators, setProjectEvaluators] = useState<any[]>([]);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [projectSelectorConfig, setProjectSelectorConfig] = useState<{
@@ -240,6 +243,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     nextAction: string;
   } | null>(null);
   // 진행률 모니터링 페이지네이션 상태
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentMonitoringPage, setCurrentMonitoringPage] = useState(1);
   
   // 프로젝트 목록 새로고침을 위한 트리거

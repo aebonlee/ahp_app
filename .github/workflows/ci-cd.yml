@@ -35,6 +35,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: true
         clean: true
+        submodules: false
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -71,6 +72,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: true
         clean: true
+        submodules: false
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -111,6 +113,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: true
         clean: true
+        submodules: false
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -163,6 +166,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: true
         clean: true
+        submodules: false
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -212,6 +216,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: true
         clean: true
+        submodules: false
     
     - name: Download build artifacts
       uses: actions/download-artifact@v4
@@ -262,6 +267,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: true
         clean: true
+        submodules: false
     
     - name: Download build artifacts
       uses: actions/download-artifact@v4

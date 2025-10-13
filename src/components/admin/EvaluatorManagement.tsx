@@ -49,52 +49,8 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
   const [errors, setErrors] = useState<any>({});
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadProjectEvaluators = useCallback(async () => {
-    try {
-      const response = await fetch(`https://ahp-platform.onrender.com/api/projects/${projectId}/evaluators`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setEvaluators(data.evaluators || []);
-      }
-    } catch (error) {
-      console.error('평가자 목록 로딩 실패:', error);
-      loadDemoData();
-    }
-  }, [projectId, loadDemoData]);
-
-  const loadAllEvaluators = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setEvaluators(data.evaluators || []);
-      }
-    } catch (error) {
-      console.error('전체 평가자 목록 로딩 실패:', error);
-      loadDemoData();
-    }
-  }, [loadDemoData]);
-
-  // Load project-specific evaluators from API
-  useEffect(() => {
-    if (projectId) {
-      loadProjectEvaluators();
-    } else {
-      loadAllEvaluators();
-    }
-  }, [projectId, loadProjectEvaluators, loadAllEvaluators]);
-
-  const loadDemoData = () => {
+  // loadDemoData 함수를 먼저 정의 (useCallback으로 래핑)
+  const loadDemoData = useCallback(() => {
     const demoProjects = [
       { projectId: '1', projectName: 'AI 도구 선택 프로젝트', assignedAt: '2025-08-30', completionRate: 75, status: 'in_progress' as const },
       { projectId: '2', projectName: '마케팅 전략 평가', assignedAt: '2025-08-28', completionRate: 100, status: 'completed' as const },
@@ -146,7 +102,53 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
     } else {
       setEvaluators(demoEvaluators);
     }
-  };
+  }, [projectId]);
+
+  const loadProjectEvaluators = useCallback(async () => {
+    try {
+      const response = await fetch(`https://ahp-platform.onrender.com/api/projects/${projectId}/evaluators`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setEvaluators(data.evaluators || []);
+      }
+    } catch (error) {
+      console.error('평가자 목록 로딩 실패:', error);
+      loadDemoData();
+    }
+  }, [projectId, loadDemoData]);
+
+  const loadAllEvaluators = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setEvaluators(data.evaluators || []);
+      }
+    } catch (error) {
+      console.error('전체 평가자 목록 로딩 실패:', error);
+      loadDemoData();
+    }
+  }, [loadDemoData]);
+
+  // Load project-specific evaluators from API
+  useEffect(() => {
+    if (projectId) {
+      loadProjectEvaluators();
+    } else {
+      loadAllEvaluators();
+    }
+  }, [projectId, loadProjectEvaluators, loadAllEvaluators]);
+
 
   const handleSelectAll = () => {
     const newSelectAll = !selectAll;
