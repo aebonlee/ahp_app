@@ -31,12 +31,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 1
         token: ${{ secrets.GITHUB_TOKEN }}
-        persist-credentials: true
+        persist-credentials: false
         clean: true
-        submodules: false
-        ref: ${{ github.head_ref || github.ref }}
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -69,12 +67,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 1
         token: ${{ secrets.GITHUB_TOKEN }}
-        persist-credentials: true
+        persist-credentials: false
         clean: true
-        submodules: false
-        ref: ${{ github.head_ref || github.ref }}
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -111,12 +107,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 1
         token: ${{ secrets.GITHUB_TOKEN }}
-        persist-credentials: true
+        persist-credentials: false
         clean: true
-        submodules: false
-        ref: ${{ github.head_ref || github.ref }}
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -165,12 +159,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 1
         token: ${{ secrets.GITHUB_TOKEN }}
-        persist-credentials: true
+        persist-credentials: false
         clean: true
-        submodules: false
-        ref: ${{ github.head_ref || github.ref }}
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -216,12 +208,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 1
         token: ${{ secrets.GITHUB_TOKEN }}
-        persist-credentials: true
+        persist-credentials: false
         clean: true
-        submodules: false
-        ref: ${{ github.head_ref || github.ref }}
     
     - name: Download build artifacts
       uses: actions/download-artifact@v4
@@ -268,12 +258,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 1
         token: ${{ secrets.GITHUB_TOKEN }}
-        persist-credentials: true
+        persist-credentials: false
         clean: true
-        submodules: false
-        ref: ${{ github.head_ref || github.ref }}
     
     - name: Download build artifacts
       uses: actions/download-artifact@v4
