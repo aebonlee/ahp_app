@@ -55,6 +55,10 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
   const [editMode, setEditMode] = useState(false);
+  
+  // 인라인 편집 상태
+  const [editingCriteria, setEditingCriteria] = useState<{[key: string]: {name: string, description: string}}>({});
+  const [draggedItem, setDraggedItem] = useState<Criterion | null>(null);
 
   // 백엔드에서 기준 로드
   const loadCriteria = useCallback(async () => {
@@ -222,19 +226,26 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       
       // 새로운 기준 저장
       let success = true;
-      for (const criterion of flatCriteria) {
+      const createdCriteriaMap = new Map<string, any>(); // 원본 ID -> 생성된 기준 매핑
+      
+      // 계층 구조 순서대로 정렬 (부모부터 자식 순으로)
+      const sortedCriteria = flatCriteria.sort((a, b) => a.level - b.level);
+      
+      for (const criterion of sortedCriteria) {
         const criteriaData = {
           project_id: projectId,
           project: projectId,
           name: criterion.name,
           description: criterion.description || '',
-          parent_id: criterion.parent_id,
-          parent: criterion.parent_id || undefined,  // parent는 parent_id가 있을 때만 전달
           level: criterion.level || 1,
           order: criterion.order || 0,
           position: criterion.order || 0,
           weight: criterion.weight || 1,
-          type: 'criteria' as const
+          type: 'criteria' as const,
+          // parent 필드는 실제 생성된 부모 기준의 ID를 사용
+          ...(criterion.parent_id && createdCriteriaMap.has(criterion.parent_id) 
+            ? { parent: createdCriteriaMap.get(criterion.parent_id).id }
+            : {})
         };
         
         const result = await cleanDataService.createCriteria(criteriaData);
@@ -242,6 +253,9 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           success = false;
           break;
         }
+        
+        // 생성된 기준을 매핑에 저장 (자식 기준들이 참조할 수 있도록)
+        createdCriteriaMap.set(criterion.id, result);
       }
       
       if (success) {
@@ -260,6 +274,257 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // 인라인 편집 시작
+  const startEditing = (criterionId: string, name: string, description: string) => {
+    setEditingCriteria({
+      ...editingCriteria,
+      [criterionId]: { name, description }
+    });
+  };
+
+  // 인라인 편집 저장
+  const saveInlineEdit = (criterionId: string) => {
+    if (!editingCriteria[criterionId]) return;
+
+    const updateCriteria = (criteria: Criterion[]): Criterion[] => {
+      return criteria.map(criterion => {
+        if (criterion.id === criterionId) {
+          return {
+            ...criterion,
+            name: editingCriteria[criterionId].name,
+            description: editingCriteria[criterionId].description
+          };
+        }
+        if (criterion.children) {
+          return {
+            ...criterion,
+            children: updateCriteria(criterion.children)
+          };
+        }
+        return criterion;
+      });
+    };
+
+    const updatedCriteria = updateCriteria(hasTempChanges ? tempCriteria : criteria);
+    
+    if (hasTempChanges) {
+      setTempCriteria(updatedCriteria);
+    } else {
+      setCriteria(updatedCriteria);
+      setTempCriteria(updatedCriteria);
+      setHasTempChanges(true);
+    }
+
+    // 편집 모드 종료
+    const newEditingCriteria = { ...editingCriteria };
+    delete newEditingCriteria[criterionId];
+    setEditingCriteria(newEditingCriteria);
+  };
+
+  // 인라인 편집 취소
+  const cancelInlineEdit = (criterionId: string) => {
+    const newEditingCriteria = { ...editingCriteria };
+    delete newEditingCriteria[criterionId];
+    setEditingCriteria(newEditingCriteria);
+  };
+
+  // 기준 위아래 이동
+  const moveCriterion = (criterionId: string, direction: 'up' | 'down') => {
+    const moveCriteriaInList = (criteria: Criterion[]): Criterion[] => {
+      const newCriteria = [...criteria];
+      const index = newCriteria.findIndex(c => c.id === criterionId);
+      
+      if (index === -1) {
+        // 하위 레벨에서 찾기
+        return newCriteria.map(criterion => ({
+          ...criterion,
+          children: criterion.children ? moveCriteriaInList(criterion.children) : undefined
+        }));
+      }
+      
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      
+      if (targetIndex >= 0 && targetIndex < newCriteria.length) {
+        // 위치 교환
+        [newCriteria[index], newCriteria[targetIndex]] = [newCriteria[targetIndex], newCriteria[index]];
+        
+        // order 값 업데이트
+        newCriteria.forEach((criterion, idx) => {
+          criterion.order = idx;
+        });
+      }
+      
+      return newCriteria;
+    };
+
+    const updatedCriteria = moveCriteriaInList(hasTempChanges ? tempCriteria : criteria);
+    
+    if (hasTempChanges) {
+      setTempCriteria(updatedCriteria);
+    } else {
+      setCriteria(updatedCriteria);
+      setTempCriteria(updatedCriteria);
+      setHasTempChanges(true);
+    }
+  };
+
+  // 기준 삭제
+  const deleteCriterion = (criterionId: string) => {
+    if (!window.confirm('이 기준을 삭제하시겠습니까?')) return;
+
+    const deleteCriteriaFromList = (criteria: Criterion[]): Criterion[] => {
+      return criteria
+        .filter(c => c.id !== criterionId)
+        .map(criterion => ({
+          ...criterion,
+          children: criterion.children ? deleteCriteriaFromList(criterion.children) : undefined
+        }));
+    };
+
+    const updatedCriteria = deleteCriteriaFromList(hasTempChanges ? tempCriteria : criteria);
+    
+    if (hasTempChanges) {
+      setTempCriteria(updatedCriteria);
+    } else {
+      setCriteria(updatedCriteria);
+      setTempCriteria(updatedCriteria);
+      setHasTempChanges(true);
+    }
+  };
+
+  // 편집 가능한 기준 목록 렌더링
+  const renderEditableCriteriaList = (criteriaList: Criterion[]) => {
+    const flatCriteria = getAllCriteria(criteriaList);
+
+    return (
+      <div className="space-y-3">
+        {flatCriteria.map((criterion) => {
+          const isEditing = editingCriteria[criterion.id];
+          const indent = (criterion.level - 1) * 24;
+          
+          return (
+            <div 
+              key={criterion.id}
+              className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+              style={{ marginLeft: `${indent}px` }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1 mr-4">
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={editingCriteria[criterion.id]?.name || ''}
+                        onChange={(e) => {
+                          setEditingCriteria({
+                            ...editingCriteria,
+                            [criterion.id]: {
+                              ...editingCriteria[criterion.id],
+                              name: e.target.value
+                            }
+                          });
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                        placeholder="기준 이름"
+                      />
+                      <input
+                        type="text"
+                        value={editingCriteria[criterion.id]?.description || ''}
+                        onChange={(e) => {
+                          setEditingCriteria({
+                            ...editingCriteria,
+                            [criterion.id]: {
+                              ...editingCriteria[criterion.id],
+                              description: e.target.value
+                            }
+                          });
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        placeholder="설명 (선택사항)"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg">
+                          {criterion.level === 1 ? '🎯' : 
+                           criterion.level === 2 ? '📋' : 
+                           criterion.level === 3 ? '🎪' : 
+                           criterion.level === 4 ? '📝' : '🔹'}
+                        </span>
+                        <span className="font-medium text-gray-900">{criterion.name}</span>
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          L{criterion.level}
+                        </span>
+                      </div>
+                      {criterion.description && (
+                        <div className="text-sm text-gray-600 mt-1 ml-7">
+                          {criterion.description}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex items-center space-x-1">
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={() => saveInlineEdit(criterion.id)}
+                        className="p-2 text-green-600 hover:bg-green-100 rounded-md transition-colors"
+                        title="저장"
+                      >
+                        ✅
+                      </button>
+                      <button
+                        onClick={() => cancelInlineEdit(criterion.id)}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                        title="취소"
+                      >
+                        ❌
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => startEditing(criterion.id, criterion.name, criterion.description || '')}
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+                        title="편집"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => moveCriterion(criterion.id, 'up')}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                        title="위로 이동"
+                      >
+                        ⬆️
+                      </button>
+                      <button
+                        onClick={() => moveCriterion(criterion.id, 'down')}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                        title="아래로 이동"
+                      >
+                        ⬇️
+                      </button>
+                      <button
+                        onClick={() => deleteCriterion(criterion.id)}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                        title="삭제"
+                      >
+                        🗑️
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   // 템플릿 선택 처리
@@ -515,16 +780,9 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
                   </div>
                 </div>
                 {editMode ? (
-                  <InteractiveCriteriaEditor
-                    criteria={criteria}
-                    onUpdate={(updatedCriteria) => {
-                      setCriteria(updatedCriteria);
-                      setTempCriteria(updatedCriteria);
-                      setHasTempChanges(true);
-                    }}
-                    allowEdit={true}
-                    layoutMode={layoutMode}
-                  />
+                  <div className="space-y-4">
+                    {renderEditableCriteriaList(hasTempChanges ? tempCriteria : criteria)}
+                  </div>
                 ) : (
                   <HierarchyTreeVisualization 
                     nodes={getAllCriteria(criteria)}
