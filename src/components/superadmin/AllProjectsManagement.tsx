@@ -46,8 +46,9 @@ const AllProjectsManagement: React.FC = () => {
       
       if (response.data) {
         const data = response.data as any;
-        setProjects(data.results || data);
-        setTotalPages(Math.ceil((data.count || data.length) / pageSize));
+        const projectsData = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+        setProjects(projectsData);
+        setTotalPages(Math.ceil((data.count || projectsData.length) / pageSize));
       }
     } catch (error) {
       console.error('프로젝트 목록 로드 실패:', error);
@@ -147,7 +148,7 @@ const AllProjectsManagement: React.FC = () => {
   };
 
   // 필터링된 프로젝트
-  const filteredProjects = projects.filter(project => {
+  const filteredProjects = Array.isArray(projects) ? projects.filter(project => {
     const matchesSearch = !searchTerm || 
       project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.owner.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -155,7 +156,7 @@ const AllProjectsManagement: React.FC = () => {
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
     
     return matchesSearch && matchesStatus;
-  });
+  }) : [];
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -179,7 +180,7 @@ const AllProjectsManagement: React.FC = () => {
         <Card>
           <div className="p-4">
             <div className="text-2xl font-bold text-green-600">
-              {projects.filter(p => p.status === 'active').length}
+              {Array.isArray(projects) ? projects.filter(p => p.status === 'active').length : 0}
             </div>
             <div className="text-sm text-gray-600">진행중</div>
           </div>
@@ -187,7 +188,7 @@ const AllProjectsManagement: React.FC = () => {
         <Card>
           <div className="p-4">
             <div className="text-2xl font-bold text-purple-600">
-              {projects.filter(p => p.status === 'completed').length}
+              {Array.isArray(projects) ? projects.filter(p => p.status === 'completed').length : 0}
             </div>
             <div className="text-sm text-gray-600">완료됨</div>
           </div>

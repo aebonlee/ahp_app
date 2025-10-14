@@ -1120,7 +1120,7 @@ function App() {
   };
 
   const updateUser = async (userId: string, userData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/accounts/${userId}`, {
       method: 'PUT',
       credentials: 'include',
       headers: {
@@ -1138,7 +1138,7 @@ function App() {
   };
 
   const deleteUser = async (userId: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/accounts/${userId}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {

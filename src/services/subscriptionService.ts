@@ -130,25 +130,25 @@ class SubscriptionService {
     lastName: string;
     maxProjects: number;
   }): Promise<ExtendedUser> {
-    return this.request<ExtendedUser>('/api/users/personal-admin', {
+    return this.request<ExtendedUser>('/api/accounts/personal-admin', {
       method: 'POST',
       body: JSON.stringify(adminData),
     });
   }
 
   async getPersonalAdmins(superAdminId: string): Promise<ExtendedUser[]> {
-    return this.request<ExtendedUser[]>(`/api/users/personal-admins/${superAdminId}`);
+    return this.request<ExtendedUser[]>(`/api/accounts/personal-admins/${superAdminId}`);
   }
 
   async updatePersonalAdminLimits(adminId: string, limits: Partial<ProjectLimits>): Promise<void> {
-    await this.request(`/api/users/personal-admin/${adminId}/limits`, {
+    await this.request(`/api/accounts/personal-admin/${adminId}/limits`, {
       method: 'PUT',
       body: JSON.stringify(limits),
     });
   }
 
   async deactivatePersonalAdmin(adminId: string): Promise<void> {
-    await this.request(`/api/users/personal-admin/${adminId}/deactivate`, {
+    await this.request(`/api/accounts/personal-admin/${adminId}/deactivate`, {
       method: 'POST',
     });
   }

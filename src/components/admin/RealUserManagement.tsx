@@ -73,7 +73,7 @@ const RealUserManagement: React.FC = () => {
         ...(roleFilter !== 'all' && { role: roleFilter })
       });
 
-      const response = await apiService.get<any>(`/api/users/?${params}`);
+      const response = await apiService.get<any>(`/api/accounts/?${params}`);
       
       if (response.data) {
         const data = response.data as any;
