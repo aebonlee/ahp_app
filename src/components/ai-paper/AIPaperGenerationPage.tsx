@@ -4,6 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import UIIcon from '../common/UIIcon';
+import PageHeader from '../common/PageHeader';
+import { PrimaryButton, SecondaryButton, SuccessButton, DangerButton } from '../common/UIButton';
 import cleanDataService from '../../services/dataService_clean';
 import type { User } from '../../types';
 
@@ -205,23 +208,27 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
 
   const renderProjectSelection = () => (
     <div className="space-y-6">
-      <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-          📂 논문 작성할 프로젝트 선택
-        </h2>
-        <p className="text-lg mb-6" style={{ color: 'var(--text-secondary)' }}>
+      <div className="ui-card p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <UIIcon emoji="📂" size="lg" color="primary" />
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            논문 작성할 프로젝트 선택
+          </h2>
+        </div>
+        <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
           AI가 분석하여 학술 논문을 자동 생성할 AHP 프로젝트를 선택해주세요.
         </p>
       </div>
 
       {loading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: 'var(--accent-primary)' }}></div>
+        <div className="ui-card p-8 text-center">
+          <UIIcon emoji="⏳" size="4xl" color="muted" className="mb-4" />
           <p style={{ color: 'var(--text-secondary)' }}>프로젝트를 불러오는 중...</p>
         </div>
       ) : projects.length === 0 ? (
-        <div className="text-center py-12" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-          <p className="text-xl mb-4" style={{ color: 'var(--text-secondary)' }}>📋 사용 가능한 프로젝트가 없습니다</p>
+        <div className="ui-card p-12 text-center">
+          <UIIcon emoji="📋" size="4xl" color="muted" className="mb-4" />
+          <p className="text-xl mb-4" style={{ color: 'var(--text-secondary)' }}>사용 가능한 프로젝트가 없습니다</p>
           <p style={{ color: 'var(--text-muted)' }}>먼저 AHP 프로젝트를 생성하고 데이터를 입력해주세요.</p>
         </div>
       ) : (
@@ -229,11 +236,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
           {projects.map((project, index) => (
             <div 
               key={project.id || `project-${index}`}
-              className="p-6 rounded-lg border cursor-pointer transition-all hover:shadow-lg"
-              style={{ 
-                backgroundColor: 'var(--bg-primary)', 
-                borderColor: 'var(--border-light)'
-              }}
+              className="ui-card p-6 cursor-pointer transition-all hover:shadow-lg"
               onClick={() => loadProjectData(project)}
             >
               <div className="flex justify-between items-start mb-3">
@@ -274,17 +277,20 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
 
   const renderPaperSettings = () => (
     <div className="space-y-6">
-      <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-          ⚙️ 논문 생성 설정
-        </h2>
-        <p className="text-lg mb-6" style={{ color: 'var(--text-secondary)' }}>
+      <div className="ui-card p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <UIIcon emoji="⚙️" size="lg" color="primary" />
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            논문 생성 설정
+          </h2>
+        </div>
+        <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
           선택된 프로젝트: <strong>{selectedProject?.title}</strong>
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="ui-card p-6">
           <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>논문 유형</h3>
           <div className="space-y-2">
             {[
@@ -308,7 +314,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
           </div>
         </div>
 
-        <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="ui-card p-6">
           <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>언어 설정</h3>
           <div className="space-y-2">
             {[
@@ -331,7 +337,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
           </div>
         </div>
 
-        <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="ui-card p-6">
           <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>인용 스타일</h3>
           <select
             value={paperSettings.citationStyle}
@@ -346,7 +352,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
           </select>
         </div>
 
-        <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="ui-card p-6">
           <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>추가 옵션</h3>
           <div className="space-y-3">
             <label className="flex items-center space-x-2">
@@ -372,24 +378,28 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
       </div>
 
       <div className="flex justify-center pt-6">
-        <button
+        <PrimaryButton
           onClick={generatePaper}
           disabled={!selectedProject}
-          className="px-8 py-3 rounded-lg font-semibold text-white transition-colors disabled:opacity-50"
-          style={{ backgroundColor: 'var(--accent-primary)' }}
+          size="lg"
+          className="px-8 py-3"
         >
-          🤖 AI 논문 생성 시작
-        </button>
+          <UIIcon emoji="🤖" size="sm" className="mr-2" />
+          AI 논문 생성 시작
+        </PrimaryButton>
       </div>
     </div>
   );
 
   const renderContentGeneration = () => (
     <div className="space-y-6">
-      <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-          ✍️ AI 논문 생성 진행 상황
-        </h2>
+      <div className="ui-card p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <UIIcon emoji="✍️" size="lg" color="primary" />
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            AI 논문 생성 진행 상황
+          </h2>
+        </div>
         <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
           AI가 프로젝트 데이터를 분석하여 논문을 작성하고 있습니다...
         </p>
@@ -399,13 +409,11 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
         {paperSections.map((section, index) => (
           <div 
             key={section.id}
-            className="p-4 rounded-lg border"
-            style={{ 
-              backgroundColor: 'var(--bg-primary)',
-              borderColor: section.status === 'completed' ? 'var(--success-primary)' : 
-                          section.status === 'generating' ? 'var(--accent-primary)' : 
-                          'var(--border-light)'
-            }}
+            className={`ui-card p-4 border ${
+              section.status === 'completed' ? 'border-green-400' : 
+              section.status === 'generating' ? 'border-blue-400' : 
+              'border-gray-200'
+            }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -443,13 +451,13 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
 
       {!generating && paperSections.every(s => s.status === 'completed') && (
         <div className="text-center pt-6">
-          <button
+          <SuccessButton
             onClick={() => setActiveTab('review-edit')}
-            className="px-6 py-2 rounded-lg font-semibold text-white"
-            style={{ backgroundColor: 'var(--success-primary)' }}
+            size="lg"
           >
-            📝 검토 및 편집하기
-          </button>
+            <UIIcon emoji="📝" size="sm" className="mr-2" />
+            검토 및 편집하기
+          </SuccessButton>
         </div>
       )}
     </div>
@@ -457,10 +465,13 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
 
   const renderReviewEdit = () => (
     <div className="space-y-6">
-      <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-          📝 논문 검토 및 편집
-        </h2>
+      <div className="ui-card p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <UIIcon emoji="📝" size="lg" color="primary" />
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            논문 검토 및 편집
+          </h2>
+        </div>
         <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
           생성된 논문 내용을 검토하고 필요에 따라 수정해주세요.
         </p>
@@ -470,8 +481,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
         {paperSections.map((section) => (
           <div 
             key={section.id}
-            className="p-6 rounded-lg border"
-            style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-light)' }}
+            className="ui-card p-6"
           >
             <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
               {section.title}
@@ -492,77 +502,83 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
       </div>
 
       <div className="text-center pt-6">
-        <button
+        <PrimaryButton
           onClick={() => setActiveTab('export-download')}
-          className="px-6 py-2 rounded-lg font-semibold text-white"
-          style={{ backgroundColor: 'var(--accent-primary)' }}
+          size="lg"
         >
-          💾 내보내기 단계로
-        </button>
+          <UIIcon emoji="💾" size="sm" className="mr-2" />
+          내보내기 단계로
+        </PrimaryButton>
       </div>
     </div>
   );
 
   const renderExportDownload = () => (
     <div className="space-y-6">
-      <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-          💾 논문 내보내기
-        </h2>
+      <div className="ui-card p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <UIIcon emoji="💾" size="lg" color="primary" />
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            논문 내보내기
+          </h2>
+        </div>
         <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
           완성된 논문을 원하는 형식으로 다운로드하세요.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-lg text-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
-          <div className="text-4xl mb-4">📄</div>
+        <div className="ui-card p-6 text-center">
+          <UIIcon emoji="📄" size="4xl" className="mb-4" />
           <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Microsoft Word</h3>
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
             편집 가능한 .docx 형식
           </p>
-          <button
+          <PrimaryButton
             onClick={() => exportPaper('word')}
-            className="w-full py-2 rounded font-semibold text-white"
-            style={{ backgroundColor: 'var(--accent-primary)' }}
+            className="w-full"
+            size="md"
           >
             Word 다운로드
-          </button>
+          </PrimaryButton>
         </div>
 
-        <div className="p-6 rounded-lg text-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
-          <div className="text-4xl mb-4">📋</div>
+        <div className="ui-card p-6 text-center">
+          <UIIcon emoji="📋" size="4xl" className="mb-4" />
           <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>PDF</h3>
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
             인쇄 및 배포용 PDF 형식
           </p>
-          <button
+          <DangerButton
             onClick={() => exportPaper('pdf')}
-            className="w-full py-2 rounded font-semibold text-white"
-            style={{ backgroundColor: 'var(--error-primary)' }}
+            className="w-full"
+            size="md"
           >
             PDF 다운로드
-          </button>
+          </DangerButton>
         </div>
 
-        <div className="p-6 rounded-lg text-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
-          <div className="text-4xl mb-4">📝</div>
+        <div className="ui-card p-6 text-center">
+          <UIIcon emoji="📝" size="4xl" className="mb-4" />
           <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>LaTeX</h3>
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
             학술지 투고용 LaTeX 형식
           </p>
-          <button
+          <SuccessButton
             onClick={() => exportPaper('latex')}
-            className="w-full py-2 rounded font-semibold text-white"
-            style={{ backgroundColor: 'var(--success-primary)' }}
+            className="w-full"
+            size="md"
           >
             LaTeX 다운로드
-          </button>
+          </SuccessButton>
         </div>
       </div>
 
-      <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--accent-pastel)' }}>
-        <h3 className="font-semibold mb-2" style={{ color: 'var(--accent-dark)' }}>📊 논문 통계</h3>
+      <div className="ui-card p-6" style={{ backgroundColor: 'var(--accent-pastel)' }}>
+        <div className="flex items-center gap-2 mb-2">
+          <UIIcon emoji="📊" size="lg" />
+          <h3 className="font-semibold" style={{ color: 'var(--accent-dark)' }}>논문 통계</h3>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <span style={{ color: 'var(--accent-dark)' }}>총 단어 수: </span>
@@ -603,8 +619,95 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
   };
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: 'var(--bg-primary)' }}>
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      <PageHeader
+        title="AI 논문 생성"
+        description="AHP 프로젝트 데이터를 기반으로 학술 논문을 자동 생성합니다"
+        icon="🤖"
+        onBack={() => window.history.back()}
+      />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 소개 섹션 */}
+        <div className="mb-8">
+          <div className="text-center space-y-6">
+            <h1 className="text-4xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+              🤖 AI 논문 생성 시스템
+            </h1>
+            <p className="text-xl max-w-4xl mx-auto leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              AHP 프로젝트 데이터를 AI가 분석하여 학술 논문을 자동 생성하는 혁신적인 연구 도구입니다. 
+              복잡한 다기준 의사결정 분석 결과를 체계적인 학술 논문으로 변환해보세요.
+            </p>
+          </div>
+
+          {/* 주요 기능 카드들 */}
+          <div className="max-w-5xl mx-auto mt-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* 자동 생성 */}
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-light)' }}>
+                <div className="text-center">
+                  <div className="text-6xl mb-6">✍️</div>
+                  <h3 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+                    자동 논문 생성
+                  </h3>
+                  <p className="text-lg mb-6" style={{ color: 'var(--text-secondary)' }}>
+                    프로젝트 데이터를 기반으로 완전한 학술 논문을 자동 생성
+                  </p>
+                  <div className="space-y-3 text-left mb-8">
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">📝</span>
+                      <span>초록부터 결론까지 완전 자동 생성</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">📊</span>
+                      <span>AHP 분석 결과 자동 해석</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">📈</span>
+                      <span>통계 및 차트 자동 삽입</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">🔗</span>
+                      <span>참고문헌 자동 생성</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 다양한 형식 */}
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-light)' }}>
+                <div className="text-center">
+                  <div className="text-6xl mb-6">📄</div>
+                  <h3 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+                    다양한 출력 형식
+                  </h3>
+                  <p className="text-lg mb-6" style={{ color: 'var(--text-secondary)' }}>
+                    원하는 형식으로 논문을 내보내고 편집할 수 있습니다
+                  </p>
+                  <div className="space-y-3 text-left mb-8">
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">📄</span>
+                      <span>Microsoft Word (.docx)</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">📋</span>
+                      <span>PDF 형식</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">📝</span>
+                      <span>LaTeX 형식</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">🎨</span>
+                      <span>다양한 인용 스타일</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* 탭 네비게이션 */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>

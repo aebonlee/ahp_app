@@ -4,6 +4,7 @@
  */
 
 import React, { useState, Suspense } from 'react';
+import PageHeader from '../common/PageHeader';
 import { getAIService } from '../../services/aiService';
 import FileUpload from '../common/FileUpload';
 import { FileUploadInfo } from '../../services/fileUploadService';
@@ -854,8 +855,15 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
   };
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: 'var(--bg-primary)' }}>
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      <PageHeader
+        title="AI 논문 품질 검증"
+        description="작성된 논문의 학술적 품질을 AI가 다각도로 검증하고 개선 제안을 제공합니다"
+        icon="✨"
+        onBack={() => window.history.back()}
+      />
+      
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* 탭 네비게이션 */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>

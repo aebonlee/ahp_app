@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import PageHeader from '../common/PageHeader';
 import SubscriptionDashboard from '../subscription/SubscriptionDashboard';
 import InteractiveCharts from '../visualization/InteractiveCharts';
 import SystemManagement from './SystemManagement';
@@ -799,36 +800,28 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상단 네비게이션 */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <span className="text-4xl mr-3">🛡️</span>
-                  고급 관리자 대시보드
-                </h1>
-                <p className="text-gray-600 mt-2">시스템 전반의 운영 상황을 모니터링하고 관리합니다</p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-3 h-3 rounded-full ${
-                    systemMetrics.successRate > 99 ? 'bg-green-500' :
-                    systemMetrics.successRate > 95 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                  <span className="text-sm text-gray-600">
-                    시스템 정상 ({systemMetrics.successRate.toFixed(1)}%)
-                  </span>
-                </div>
-                <Button variant="secondary" onClick={loadDashboardData}>
-                  새로고침
-                </Button>
-              </div>
+      <PageHeader
+        title="고급 관리자 대시보드"
+        description="시스템 전반의 운영 상황을 모니터링하고 관리합니다"
+        icon="🛡️"
+        actions={
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${
+                systemMetrics.successRate > 99 ? 'bg-green-500' :
+                systemMetrics.successRate > 95 ? 'bg-yellow-500' : 'bg-red-500'
+              }`}></div>
+              <span className="text-sm text-gray-600">
+                시스템 정상 ({systemMetrics.successRate.toFixed(1)}%)
+              </span>
             </div>
+            <Button variant="secondary" onClick={loadDashboardData}>
+              새로고침
+            </Button>
           </div>
-        </div>
-      </div>
+        }
+        className="bg-white"
+      />
 
       {/* 메뉴 탭 */}
       <div className="bg-white border-b border-gray-200">

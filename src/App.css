@@ -6,6 +6,9 @@
    For core styles, see: src/styles/design-system.css
    ============================================================================ */
 
+/* Import UI System Styles */
+@import './styles/ui-system.css';
+
 /* === App Container === */
 .App {
   min-height: 100vh;

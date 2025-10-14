@@ -422,27 +422,40 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
               </div>
             )}
             
-            {/* 사용자 정보 */}
+            {/* 사용자 정보 - 클릭 가능한 버튼 */}
             {user && (
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
+              <button
+                onClick={() => onTabChange && onTabChange('personal-settings')}
+                className="flex items-center space-x-3 p-2 rounded-lg transition-all duration-200 hover:shadow-md hover:scale-105 group focus:outline-none focus:ring-2 focus:ring-offset-2"
+                style={{ 
+                  backgroundColor: activeTab === 'personal-settings' ? 'var(--accent-pastel)' : 'transparent',
+                  border: activeTab === 'personal-settings' ? '1px solid var(--accent-primary)' : '1px solid transparent'
+                }}
+                title="개인 설정으로 이동 (클릭하세요)"
+              >
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
                   <span className="text-sm font-bold text-white">
                     {(user.first_name || '').charAt(0)}{(user.last_name || '').charAt(0)}
                   </span>
                 </div>
                 <div className="hidden md:flex flex-col">
-                  <span className="text-base font-bold"
-                        style={{ 
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                          color: 'var(--text-primary)',
-                          fontSize: 'var(--font-size-base)',
-                          fontWeight: 'var(--font-weight-bold)'
-                        }}>
-                    {user.first_name || ''} {user.last_name || ''}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-base font-bold"
+                          style={{ 
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            color: activeTab === 'personal-settings' ? 'var(--accent-dark)' : 'var(--text-primary)',
+                            fontSize: 'var(--font-size-base)',
+                            fontWeight: 'var(--font-weight-bold)'
+                          }}>
+                      {user.first_name || ''} {user.last_name || ''}
+                    </span>
+                    <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: 'var(--accent-primary)' }}>
+                      ⚙️
+                    </span>
+                  </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium"
-                          style={{ color: 'var(--text-secondary)' }}>
+                          style={{ color: activeTab === 'personal-settings' ? 'var(--accent-dark)' : 'var(--text-secondary)' }}>
                       {user.role === 'super_admin' ? '시스템 관리자' : 
                        user.role === 'service_admin' ? '서비스 관리자' : user.role === 'service_user' ? '서비스 사용자' : '평가자'}
                     </span>
@@ -459,7 +472,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                     )}
                   </div>
                 </div>
-              </div>
+              </button>
             )}
               
             {/* 로그아웃 버튼 */}

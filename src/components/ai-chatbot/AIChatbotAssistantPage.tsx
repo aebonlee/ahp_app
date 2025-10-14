@@ -4,9 +4,11 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import PageHeader from '../common/PageHeader';
 import { getAIService } from '../../services/aiService';
 import { getCurrentAISettings } from '../../utils/aiInitializer';
 import AIConfiguration from '../settings/AIConfiguration';
+import UIIcon, { AddIcon, DeleteIcon, SettingsIcon } from '../common/UIIcon';
 import type { User } from '../../types';
 
 interface ChatMessage {
@@ -449,7 +451,25 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
   };
 
   return (
-    <div className="flex h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      <PageHeader
+        title="AI 챗봇 도우미"
+        description="AHP 연구와 분석에 대한 실시간 질의응답과 전문적 상담을 제공합니다"
+        icon="💬"
+        onBack={() => window.history.back()}
+        actions={
+          <button
+            onClick={() => setShowAIConfig(true)}
+            className="flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors hover:bg-gray-50"
+            style={{ borderColor: 'var(--border-light)' }}
+          >
+            <UIIcon emoji="⚙️" size="sm" />
+            <span>AI 설정</span>
+          </button>
+        }
+      />
+      
+      <div className="flex" style={{ height: 'calc(100vh - 120px)', backgroundColor: 'var(--bg-primary)' }}>
       {/* 사이드바 */}
       {showSidebar && (
         <div 
@@ -459,23 +479,20 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
             borderColor: 'var(--border-light)'
           }}
         >
-          {/* 헤더 */}
+          {/* 대화 목록 헤더 */}
           <div className="p-4 border-b" style={{ borderColor: 'var(--border-light)' }}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-                💬 AI 도우미
-              </h2>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                대화 목록
+              </h3>
               <button
                 onClick={createNewSession}
                 className="p-2 rounded-lg transition-colors"
                 style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}
                 title="새 대화"
               >
-                ➕
+                <AddIcon size="lg" hover />
               </button>
-            </div>
-            <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              AHP 연구 전문 상담
             </div>
           </div>
 
@@ -521,7 +538,7 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
                     className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 ml-2"
                     title="삭제"
                   >
-                    🗑️
+                    <DeleteIcon size="sm" hover />
                   </button>
                 </div>
               </div>
@@ -564,7 +581,7 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
               style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-secondary)' }}
               title="AI 설정"
             >
-              ⚙️
+              <SettingsIcon size="lg" hover />
             </button>
             <div className="flex items-center space-x-2">
               <div className={`w-2 h-2 rounded-full ${getCurrentAISettings().hasApiKey ? 'bg-green-500' : 'bg-orange-500'}`}></div>
@@ -645,7 +662,8 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
         {currentSession?.messages.length === 1 && (
           <div className="px-4 py-2 border-t" style={{ borderColor: 'var(--border-light)' }}>
             <div className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
-              🚀 빠른 질문
+              <UIIcon emoji="🚀" size="lg" color="primary" className="inline mr-2" />
+              빠른 질문
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
               {quickPrompts.slice(0, 8).map((prompt) => (
@@ -660,7 +678,7 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
                   }}
                 >
                   <div className="flex items-center space-x-2">
-                    <span className="text-lg">{prompt.icon}</span>
+                    <UIIcon emoji={prompt.icon} preset="button" hover />
                     <span className="text-xs font-medium">{prompt.title}</span>
                   </div>
                 </button>
@@ -703,7 +721,8 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
               className="p-3 rounded-lg font-semibold text-white transition-colors disabled:opacity-50"
               style={{ backgroundColor: 'var(--accent-primary)' }}
             >
-              📤 전송
+              <UIIcon emoji="📤" size="lg" color="white" className="inline mr-2" />
+              전송
             </button>
           </div>
           
@@ -721,6 +740,7 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

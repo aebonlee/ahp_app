@@ -1,94 +1,49 @@
-name: Quick Deploy
+name: Deploy to GitHub Pages
 
 on:
-  workflow_dispatch:
-    inputs:
-      skip_tests:
-        description: 'Skip tests and deploy directly'
-        required: false
-        default: 'false'
-        type: boolean
+  push:
+    branches: [ main ]
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: quick-deploy
-  cancel-in-progress: true
-
 jobs:
-  quick-deploy:
-    name: Quick Deploy to Pages
+  deploy:
     runs-on: ubuntu-latest
     environment:
-      name: github-pages-quick
-      url: https://aebonlee.github.io/ahp_app/
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
       
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
         
     - name: Install dependencies
       run: |
-        echo "🔧 Installing dependencies..."
-        npm ci --legacy-peer-deps
-      
-    - name: Quick test (optional)
-      if: ${{ !inputs.skip_tests }}
-      run: |
-        echo "🧪 Running quick tests..."
-        npm test -- --coverage --watchAll=false --testTimeout=5000 --maxWorkers=2 --passWithNoTests
-      continue-on-error: true
-      env:
-        CI: true
+        npm cache clean --force
+        npm install --legacy-peer-deps
         
-    - name: Build application
-      run: |
-        echo "🏗️ Building application..."
-        npm run build
+    - name: Build
+      run: npm run build
       env:
         CI: false
-        PUBLIC_URL: /ahp_app
-        GENERATE_SOURCEMAP: false
-        REACT_APP_OPENAI_API_KEY: API_KEY_NOT_SET
-        
-    - name: Verify build
-      run: |
-        if [ -d "build" ]; then 
-          echo "✅ Build completed successfully"
-          echo "📊 Build stats:"
-          du -sh build/
-          echo "📁 Main files:"
-          find build -name "*.js" -o -name "*.css" | head -5
-        else 
-          echo "❌ Build failed"
-          exit 1
-        fi
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
-        
-    - name: Upload to GitHub Pages
-      uses: actions/upload-pages-artifact@v4
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
       with:
         path: ./build
         
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
-        
-    - name: Deploy success
-      run: |
-        echo "🚀 Quick deployment completed!"
-        echo "🌐 Site: https://aebonlee.github.io/ahp_app/"
-        echo "⏱️ Deployed at: $(date -u)"

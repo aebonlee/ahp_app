@@ -31,14 +31,7 @@ import PaymentSystem from '../payment/PaymentSystem';
 import WorkshopManagement from '../workshop/WorkshopManagement';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import DecisionSupportSystem from '../decision/DecisionSupportSystem';
-import PaperManagement from '../paper/PaperManagement';
-import ProjectSelector from '../project/ProjectSelector';
-import SurveyManagementSystem from '../survey/SurveyManagementSystem';
-import PersonalSettings from '../settings/PersonalSettings';
-import DemographicSurvey from '../survey/DemographicSurvey';
-import SurveyFormBuilder from '../survey/SurveyFormBuilder';
-import UsageManagement from './UsageManagement';
-import ValidityCheck from '../validity/ValidityCheck';
+// Removed unused imports to fix linting errors
 import TrashBin from './TrashBin';
 import dataService from '../../services/dataService_clean';
 import type { ProjectData } from '../../services/api';

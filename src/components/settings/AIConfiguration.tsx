@@ -30,9 +30,13 @@ const AIConfiguration: React.FC<AIConfigurationProps> = ({ onClose }) => {
   useEffect(() => {
     const currentSettings = getCurrentAISettings();
     if (currentSettings.hasApiKey) {
+      // API 키 마스킹 처리 (보안을 위해 뒷부분만 표시)
+      const maskedKey = currentSettings.apiKey ? 
+        currentSettings.apiKey.substring(0, 12) + '...' + currentSettings.apiKey.slice(-8) : '';
+      
       setApiKeys(prev => ({
         ...prev,
-        [currentSettings.provider]: currentSettings.apiKey || ''
+        [currentSettings.provider]: maskedKey
       }));
       setSelectedProvider(currentSettings.provider as 'openai' | 'claude');
       setValidationStatus(prev => ({
@@ -131,6 +135,13 @@ const AIConfiguration: React.FC<AIConfigurationProps> = ({ onClose }) => {
         <p style={{ color: 'var(--text-secondary)' }}>
           AI 기능을 사용하기 위한 API 키를 설정하세요.
         </p>
+        {getCurrentAISettings().hasApiKey && (
+          <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--success-pastel)' }}>
+            <p style={{ color: 'var(--success-dark)' }}>
+              ✅ <strong>ChatGPT API 키가 이미 설정되어 있습니다.</strong> AI 기능이 활성화되었습니다.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 제공자 선택 */}

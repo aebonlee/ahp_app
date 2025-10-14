@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Card from '../common/Card';
-import Button from '../common/Button';
+import UIIcon from '../common/UIIcon';
+import PageHeader from '../common/PageHeader';
+import { PrimaryButton, SecondaryButton, SuccessButton, DangerButton } from '../common/UIButton';
 import { useColorTheme, ColorTheme } from '../../hooks/useColorTheme';
 import { API_BASE_URL } from '../../config/api';
 import type { User } from '../../types';
@@ -395,159 +396,210 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
   ];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">개인 설정</h1>
-          <p className="text-gray-600 mt-1">계정 정보와 개인 환경설정을 관리합니다 (서버 기반)</p>
-        </div>
-        
-        <div className="flex items-center space-x-3">
-          <Button
-            variant="secondary"
-            onClick={onBack}
-            className="flex items-center"
-          >
-            ← 뒤로
-          </Button>
-          
-          <Button
-            variant="primary"
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      <PageHeader
+        title="개인 설정"
+        description="계정 정보와 개인 환경설정을 관리합니다"
+        icon="⚙️"
+        onBack={onBack || (() => window.history.back())}
+        actions={
+          <SuccessButton
             onClick={saveSettingsToAPI}
             disabled={saveStatus === 'saving'}
-            className={`flex items-center ${getSaveStatusColor()}`}
+            className="flex items-center space-x-2"
           >
-            💾 {getSaveStatusText()}
-          </Button>
-        </div>
-      </div>
+            <UIIcon emoji="💾" size="lg" color="white" />
+            <span>{getSaveStatusText()}</span>
+          </SuccessButton>
+        }
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* 사이드바 탭 */}
-        <div className="lg:col-span-1">
-          <Card>
-            <nav className="space-y-1">
-              {tabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center space-x-3 ${
-                    activeTab === tab.id
-                      ? 'bg-blue-100 text-blue-700 border-blue-200'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <span className="text-lg">{tab.icon}</span>
-                  <span className="font-medium">{tab.label}</span>
-                </button>
-              ))}
-            </nav>
-          </Card>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        {/* 메인 콘텐츠 */}
-        <div className="lg:col-span-3">
-          {activeTab === 'profile' && (
-            <Card title="프로필 정보">
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
-                    <input
-                      type="text"
-                      value={settings.profile.firstName}
-                      onChange={(e) => updateSettings('profile', 'firstName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">성</label>
-                    <input
-                      type="text"
-                      value={settings.profile.lastName}
-                      onChange={(e) => updateSettings('profile', 'lastName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">이메일</label>
-                    <input
-                      type="email"
-                      value={settings.profile.email}
-                      onChange={(e) => updateSettings('profile', 'email', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">전화번호</label>
-                    <input
-                      type="tel"
-                      value={settings.profile.phone}
-                      onChange={(e) => updateSettings('profile', 'phone', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">조직</label>
-                    <input
-                      type="text"
-                      value={settings.profile.organization}
-                      onChange={(e) => updateSettings('profile', 'organization', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">부서</label>
-                    <input
-                      type="text"
-                      value={settings.profile.department}
-                      onChange={(e) => updateSettings('profile', 'department', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* 사이드바 탭 */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <nav className="p-4 space-y-2">
+                {tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ${
+                      activeTab === tab.id
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-gray-700 hover:bg-gray-50 border border-gray-200'
+                    }`}
+                  >
+                    <UIIcon emoji={tab.icon} size="lg" color={activeTab === tab.id ? 'white' : 'primary'} />
+                    <span className="font-medium">{tab.label}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </div>
+
+          {/* 메인 콘텐츠 */}
+          <div className="lg:col-span-3">
+            {activeTab === 'profile' && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <UIIcon emoji="👤" size="xl" color="primary" />
+                  <h2 className="text-2xl font-bold text-gray-900">프로필 정보</h2>
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>이름</label>
+                      <input
+                        type="text"
+                        value={settings.profile.firstName}
+                        onChange={(e) => updateSettings('profile', 'firstName', e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2"
+                        style={{
+                          backgroundColor: 'var(--bg-primary)',
+                          borderColor: 'var(--border-light)',
+                          color: 'var(--text-primary)'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>성</label>
+                      <input
+                        type="text"
+                        value={settings.profile.lastName}
+                        onChange={(e) => updateSettings('profile', 'lastName', e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2"
+                        style={{
+                          backgroundColor: 'var(--bg-primary)',
+                          borderColor: 'var(--border-light)',
+                          color: 'var(--text-primary)'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>이메일</label>
+                      <input
+                        type="email"
+                        value={settings.profile.email}
+                        onChange={(e) => updateSettings('profile', 'email', e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2"
+                        style={{
+                          backgroundColor: 'var(--bg-primary)',
+                          borderColor: 'var(--border-light)',
+                          color: 'var(--text-primary)'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>전화번호</label>
+                      <input
+                        type="tel"
+                        value={settings.profile.phone}
+                        onChange={(e) => updateSettings('profile', 'phone', e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2"
+                        style={{
+                          backgroundColor: 'var(--bg-primary)',
+                          borderColor: 'var(--border-light)',
+                          color: 'var(--text-primary)'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>조직</label>
+                      <input
+                        type="text"
+                        value={settings.profile.organization}
+                        onChange={(e) => updateSettings('profile', 'organization', e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2"
+                        style={{
+                          backgroundColor: 'var(--bg-primary)',
+                          borderColor: 'var(--border-light)',
+                          color: 'var(--text-primary)'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>부서</label>
+                      <input
+                        type="text"
+                        value={settings.profile.department}
+                        onChange={(e) => updateSettings('profile', 'department', e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2"
+                        style={{
+                          backgroundColor: 'var(--bg-primary)',
+                          borderColor: 'var(--border-light)',
+                          color: 'var(--text-primary)'
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </Card>
-          )}
+            )}
 
-          {activeTab === 'security' && (
-            <Card title="보안 설정">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-4">비밀번호 변경</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">현재 비밀번호</label>
-                      <input
-                        type="password"
-                        value={passwordForm.currentPassword}
-                        onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
+            {activeTab === 'security' && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <UIIcon emoji="🔒" size="xl" color="primary" />
+                  <h2 className="text-2xl font-bold text-gray-900">보안 설정</h2>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium mb-4 flex items-center space-x-2" style={{ color: 'var(--text-primary)' }}>
+                      <UIIcon emoji="🔑" size="lg" color="primary" />
+                      <span>비밀번호 변경</span>
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>현재 비밀번호</label>
+                        <input
+                          type="password"
+                          value={passwordForm.currentPassword}
+                          onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
+                          className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2"
+                          style={{
+                            backgroundColor: 'var(--bg-primary)',
+                            borderColor: 'var(--border-light)',
+                            color: 'var(--text-primary)'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>새 비밀번호</label>
+                        <input
+                          type="password"
+                          value={passwordForm.newPassword}
+                          onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                          className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2"
+                          style={{
+                            backgroundColor: 'var(--bg-primary)',
+                            borderColor: 'var(--border-light)',
+                            color: 'var(--text-primary)'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>새 비밀번호 확인</label>
+                        <input
+                          type="password"
+                          value={passwordForm.confirmPassword}
+                          onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                          className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2"
+                          style={{
+                            backgroundColor: 'var(--bg-primary)',
+                            borderColor: 'var(--border-light)',
+                            color: 'var(--text-primary)'
+                          }}
+                        />
+                      </div>
+                      <PrimaryButton onClick={handlePasswordChange} className="flex items-center space-x-2">
+                        <UIIcon emoji="🔄" size="lg" color="white" />
+                        <span>비밀번호 변경</span>
+                      </PrimaryButton>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">새 비밀번호</label>
-                      <input
-                        type="password"
-                        value={passwordForm.newPassword}
-                        onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">새 비밀번호 확인</label>
-                      <input
-                        type="password"
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <Button variant="primary" onClick={handlePasswordChange}>
-                      비밀번호 변경
-                    </Button>
-                  </div>
                 </div>
 
                 <div>
@@ -574,11 +626,15 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           )}
 
           {activeTab === 'workflow' && (
-            <Card title="워크플로우 설정">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <UIIcon emoji="⚙️" size="xl" color="primary" />
+                <h2 className="text-2xl font-bold text-gray-900">워크플로우 설정</h2>
+              </div>
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">자동 저장 간격 (초)</label>
@@ -617,11 +673,15 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                   <span className="ml-2">튜토리얼 표시</span>
                 </label>
               </div>
-            </Card>
+            </div>
           )}
 
           {activeTab === 'notifications' && (
-            <Card title="알림 설정">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <UIIcon emoji="🔔" size="xl" color="primary" />
+                <h2 className="text-2xl font-bold text-gray-900">알림 설정</h2>
+              </div>
               <div className="space-y-4">
                 <label className="flex items-center">
                   <input
@@ -660,11 +720,15 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                   <span className="ml-2">마감일 알림</span>
                 </label>
               </div>
-            </Card>
+            </div>
           )}
 
           {activeTab === 'display' && (
-            <Card title="표시 설정">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <UIIcon emoji="🎨" size="xl" color="primary" />
+                <h2 className="text-2xl font-bold text-gray-900">표시 설정</h2>
+              </div>
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">언어</label>
@@ -705,11 +769,15 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                   </select>
                 </div>
               </div>
-            </Card>
+            </div>
           )}
 
           {activeTab === 'privacy' && (
-            <Card title="개인정보 설정">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <UIIcon emoji="🔒" size="xl" color="primary" />
+                <h2 className="text-2xl font-bold text-gray-900">개인정보 설정</h2>
+              </div>
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">프로필 공개 범위</label>
@@ -754,46 +822,64 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                   </label>
                 </div>
               </div>
-            </Card>
+            </div>
           )}
 
-          {activeTab === 'data' && (
-            <Card title="데이터 관리">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-4">데이터 백업 및 복원</h3>
-                  <div className="flex space-x-4">
-                    <Button variant="primary" onClick={handleDataExport}>
-                      📥 설정 내보내기
-                    </Button>
-                    <label className="cursor-pointer">
-                      <Button variant="secondary">
-                        📤 설정 가져오기
-                      </Button>
-                      <input
-                        type="file"
-                        accept=".json"
-                        onChange={handleDataImport}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
+            {activeTab === 'data' && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <UIIcon emoji="💾" size="xl" color="primary" />
+                  <h2 className="text-2xl font-bold text-gray-900">데이터 관리</h2>
                 </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium mb-4 flex items-center space-x-2" style={{ color: 'var(--text-primary)' }}>
+                      <UIIcon emoji="📂" size="lg" color="primary" />
+                      <span>데이터 백업 및 복원</span>
+                    </h3>
+                    <div className="flex space-x-4">
+                      <PrimaryButton onClick={handleDataExport} className="flex items-center space-x-2">
+                        <UIIcon emoji="📥" size="lg" color="white" />
+                        <span>설정 내보내기</span>
+                      </PrimaryButton>
+                      <label className="cursor-pointer">
+                        <SecondaryButton className="flex items-center space-x-2">
+                          <UIIcon emoji="📤" size="lg" color="primary" />
+                          <span>설정 가져오기</span>
+                        </SecondaryButton>
+                        <input
+                          type="file"
+                          accept=".json"
+                          onChange={handleDataImport}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
 
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-medium mb-4 text-red-600">위험 구역</h3>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-800 mb-4">
-                      계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.
-                    </p>
-                    <Button variant="error" onClick={handleDeleteAccount}>
-                      ⚠️ 계정 삭제
-                    </Button>
+                  <div className="border-t pt-6" style={{ borderColor: 'var(--border-light)' }}>
+                    <h3 className="text-lg font-medium mb-4 flex items-center space-x-2" style={{ color: 'var(--error-primary)' }}>
+                      <UIIcon emoji="⚠️" size="lg" color="error" />
+                      <span>위험 구역</span>
+                    </h3>
+                    <div className="p-4 rounded-lg border" style={{ 
+                      backgroundColor: 'var(--error-pastel)', 
+                      borderColor: 'var(--error-light)' 
+                    }}>
+                      <p className="mb-4" style={{ color: 'var(--error-dark)' }}>
+                        계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.
+                      </p>
+                      <DangerButton onClick={handleDeleteAccount} className="flex items-center space-x-2">
+                        <UIIcon emoji="🗑️" size="lg" color="white" />
+                        <span>계정 삭제</span>
+                      </DangerButton>
+                    </div>
                   </div>
                 </div>
               </div>
-            </Card>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

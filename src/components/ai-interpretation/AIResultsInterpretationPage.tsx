@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import PageHeader from '../common/PageHeader';
 import cleanDataService from '../../services/dataService_clean';
 import { getAIService } from '../../services/aiService';
 import type { User } from '../../types';
@@ -759,8 +760,15 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
   };
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: 'var(--bg-primary)' }}>
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      <PageHeader
+        title="AI 결과 분석 & 해석"
+        description="AHP 평가 결과를 AI가 분석하고 해석하여 의사결정 인사이트를 제공합니다"
+        icon="🤖"
+        onBack={() => window.history.back()}
+      />
+      
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* 탭 네비게이션 */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>

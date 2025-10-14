@@ -4,6 +4,7 @@ import './App.css';
 import sessionService from './services/sessionService';
 import authService from './services/authService';
 import cleanDataService from './services/dataService_clean';
+import { setAPIKeyDirectly } from './utils/aiInitializer';
 import type { User, UserRole } from './types';
 import Layout from './components/layout/Layout';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -13,6 +14,7 @@ import RegisterForm from './components/auth/RegisterForm';
 import HomePage from './components/home/HomePage';
 // import WelcomeDashboard from './components/admin/WelcomeDashboard'; // 더 이상 사용하지 않음
 import Card from './components/common/Card';
+import UIIcon, { EditIcon, DeleteIcon } from './components/common/UIIcon';
 import ApiErrorModal from './components/common/ApiErrorModal';
 import TrashOverflowModal from './components/common/TrashOverflowModal';
 import PairwiseComparison from './components/comparison/PairwiseComparison';
@@ -396,6 +398,36 @@ function App() {
         console.log('✅ 백엔드 연결 성공');
         setBackendStatus('available');
         validateSession(); // 비동기로 세션 검증
+        
+        // AI 서비스 초기화 (고정 API 키 사용)
+        try {
+          console.log('🤖 AI 서비스 초기화 중... (고정 API 키 사용)');
+          
+          // 환경변수에서 ChatGPT API 키 로드
+          const FIXED_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
+          
+          // API 키를 로컬 스토리지에 저장하고 AI 서비스 초기화
+          const aiService = FIXED_API_KEY ? setAPIKeyDirectly(FIXED_API_KEY, 'openai') : null;
+          
+          if (aiService) {
+            console.log('✅ AI 서비스 초기화 성공 (고정 API 키)');
+            // API 키 유효성 검증
+            try {
+              const isValid = await aiService.validateAPIKey();
+              if (isValid) {
+                console.log('✅ ChatGPT API 키 유효성 검증 완료');
+              } else {
+                console.warn('⚠️ ChatGPT API 키 유효성 검증 실패');
+              }
+            } catch (validationError) {
+              console.error('❌ API 키 검증 중 오류:', validationError);
+            }
+          } else {
+            console.warn('⚠️ 환경변수에 REACT_APP_OPENAI_API_KEY가 설정되지 않음');
+          }
+        } catch (error) {
+          console.error('❌ AI 서비스 초기화 중 예외 발생:', error);
+        }
       } else {
         console.log('⚠️ 백엔드 응답 오류');
         setBackendStatus('unavailable');
@@ -1609,7 +1641,7 @@ function App() {
         return <EvaluatorGuidePage />;
 
       case 'evaluation-test':
-        return <EvaluationTest />;
+        return <EvaluationTest onBack={() => setActiveTab('personal-service')} />;
 
       case 'connection-test':
         return <ConnectionTestPage />;
@@ -1905,7 +1937,7 @@ function App() {
                               title="편집"
                               type="button"
                             >
-                              ✏️
+                              <EditIcon preset="button" hover />
                             </button>
                             <button
                               onClick={(e) => {
@@ -1918,7 +1950,7 @@ function App() {
                               title="모델 구축"
                               type="button"
                             >
-                              🏗️
+                              <UIIcon emoji="🏗️" preset="button" color="success" hover />
                             </button>
                             <button
                               onClick={(e) => {
@@ -1931,7 +1963,7 @@ function App() {
                               title="결과 분석"
                               type="button"
                             >
-                              📊
+                              <UIIcon emoji="📊" preset="button" color="info" hover />
                             </button>
                             <button
                               onClick={(e) => {
@@ -1946,7 +1978,7 @@ function App() {
                               title="삭제"
                               type="button"
                             >
-                              🗑️
+                              <DeleteIcon preset="button" hover />
                             </button>
                             <span className="text-xs text-gray-500 ml-2">
                               {new Date(project.created_at).toLocaleDateString()}
@@ -2070,7 +2102,10 @@ function App() {
           <Card title="평가자 대시보드">
             <div className="space-y-4">
               <div className="bg-purple-50 border border-purple-200 rounded p-4">
-                <h5 className="font-medium text-purple-800">👤 내 평가 현황</h5>
+                <h5 className="font-medium text-purple-800 flex items-center">
+                  <UIIcon emoji="👤" size="lg" color="#7C3AED" className="mr-2" />
+                  내 평가 현황
+                </h5>
                 <p className="text-purple-700 text-sm mt-1">
                   할당된 프로젝트의 평가 진행 상황을 확인합니다.
                 </p>
@@ -2118,7 +2153,10 @@ function App() {
           <Card title="진행 상황">
             <div className="space-y-4">
               <div className="bg-indigo-50 border border-indigo-200 rounded p-4">
-                <h5 className="font-medium text-indigo-800">📈 프로젝트 진행률</h5>
+                <h5 className="font-medium text-indigo-800 flex items-center">
+                  <UIIcon emoji="📈" size="lg" color="#4F46E5" className="mr-2" />
+                  프로젝트 진행률
+                </h5>
                 <p className="text-indigo-700 text-sm mt-1">
                   각 단계별 완료 상황을 추적합니다.
                 </p>
