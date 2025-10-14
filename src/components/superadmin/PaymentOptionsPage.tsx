@@ -102,7 +102,7 @@ const PaymentOptionsPage: React.FC<PaymentOptionsPageProps> = ({ user, onTabChan
       setFormData(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof typeof prev],
+          ...(prev[parent as keyof typeof prev] as Record<string, any> || {}),
           [child]: value
         }
       }));
@@ -192,7 +192,7 @@ const PaymentOptionsPage: React.FC<PaymentOptionsPageProps> = ({ user, onTabChan
   const formatCardNumber = (value: string) => {
     const cleaned = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     const matches = cleaned.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
+    const match = (matches && matches[0]) || '';
     const parts = [];
     for (let i = 0, len = match.length; i < len; i += 4) {
       parts.push(match.substring(i, i + 4));

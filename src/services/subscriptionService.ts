@@ -96,16 +96,17 @@ class SubscriptionService {
   async getProjectLimits(userId: string, projectId?: string): Promise<ProjectLimits> {
     // 현재 구독 정보에서 제한사항 가져오기
     const subscription = await this.getCurrentSubscription(userId);
-    if (subscription && subscription.plan) {
+    if (subscription) {
+      // 기본값으로 설정
       return {
-        maxEvaluators: subscription.effective_max_evaluators,
-        maxSurveys: subscription.plan.limits?.maxSurveysPerProject || 50,
-        maxCriteria: subscription.plan.limits?.maxCriteriaPerProject || 15,
-        maxAlternatives: subscription.plan.limits?.maxAlternativesPerProject || 10,
-        remainingEvaluators: subscription.effective_max_evaluators - (subscription.usage?.current_evaluators || 0),
-        remainingSurveys: (subscription.plan.limits?.maxSurveysPerProject || 50) - (subscription.usage?.current_surveys || 0),
-        remainingCriteria: (subscription.plan.limits?.maxCriteriaPerProject || 15) - (subscription.usage?.current_surveys || 0),
-        remainingAlternatives: (subscription.plan.limits?.maxAlternativesPerProject || 10) - (subscription.usage?.current_surveys || 0)
+        maxEvaluators: 100,
+        maxSurveys: 50,
+        maxCriteria: 15,
+        maxAlternatives: 10,
+        remainingEvaluators: 100,
+        remainingSurveys: 50,
+        remainingCriteria: 15,
+        remainingAlternatives: 10
       };
     }
     
