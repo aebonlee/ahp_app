@@ -1,0 +1,9 @@
+[submodule "ahp-django-service-repo"]
+	path = ahp-django-service-repo
+	url = https://github.com/aebonlee/ahp-django-service.git
+	branch = main
+
+[submodule "ahp_app_251014"]
+	path = ahp_app_251014
+	url = https://github.com/aebonlee/ahp_app.git
+	branch = main
