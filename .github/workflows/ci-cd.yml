@@ -35,6 +35,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: false
         clean: true
+        submodules: 'recursive'
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -73,6 +74,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: false
         clean: true
+        submodules: 'recursive'
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -114,6 +116,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: false
         clean: true
+        submodules: 'recursive'
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -168,6 +171,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: false
         clean: true
+        submodules: 'recursive'
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -219,6 +223,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: false
         clean: true
+        submodules: 'recursive'
     
     - name: Download build artifacts
       uses: actions/download-artifact@v4
@@ -269,6 +274,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         persist-credentials: false
         clean: true
+        submodules: 'recursive'
     
     - name: Download build artifacts
       uses: actions/download-artifact@v4
