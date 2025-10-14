@@ -40,8 +40,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: 'ahp_app_251014/package-lock.json'
     
     - name: Install dependencies
       run: npm ci --legacy-peer-deps
@@ -80,8 +78,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: 'ahp_app_251014/package-lock.json'
     
     - name: Install dependencies
       run: npm ci --legacy-peer-deps
@@ -123,8 +119,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: 'ahp_app_251014/package-lock.json'
     
     - name: Install dependencies
       run: npm ci --legacy-peer-deps
@@ -179,8 +173,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: 'ahp_app_251014/package-lock.json'
     
     - name: Install dependencies
       run: npm ci --legacy-peer-deps
