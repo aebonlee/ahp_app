@@ -41,21 +41,25 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+        cache-dependency-path: 'ahp_app_251014/package-lock.json'
     
     - name: Install dependencies
       run: npm ci --legacy-peer-deps
+      working-directory: ahp_app_251014
     
     - name: Check code formatting
       run: |
         echo "Checking code formatting..."
         # TypeScript 타입 검사
         npx tsc --noEmit
+      working-directory: ahp_app_251014
       continue-on-error: true
     
     - name: ESLint check
       run: |
         echo "Running ESLint..."
         npx eslint src --ext .ts,.tsx --max-warnings 500
+      working-directory: ahp_app_251014
       continue-on-error: true
 
   # 2. 테스트 실행
@@ -77,12 +81,15 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+        cache-dependency-path: 'ahp_app_251014/package-lock.json'
     
     - name: Install dependencies
       run: npm ci --legacy-peer-deps
+      working-directory: ahp_app_251014
     
     - name: Run tests
       run: npm test -- --coverage --watchAll=false --testTimeout=10000 --passWithNoTests
+      working-directory: ahp_app_251014
       env:
         CI: true
       continue-on-error: true
@@ -117,12 +124,15 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+        cache-dependency-path: 'ahp_app_251014/package-lock.json'
     
     - name: Install dependencies
       run: npm ci --legacy-peer-deps
+      working-directory: ahp_app_251014
     
     - name: Build application
       run: npm run build
+      working-directory: ahp_app_251014
       env:
         CI: false
         PUBLIC_URL: /ahp_app
@@ -141,12 +151,13 @@ jobs:
           echo "❌ Build failed - no build directory"
           exit 1
         fi
+      working-directory: ahp_app_251014
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-files
-        path: build/
+        path: ahp_app_251014/build/
         retention-days: 1
 
   # 4. 보안 검사
@@ -169,14 +180,17 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+        cache-dependency-path: 'ahp_app_251014/package-lock.json'
     
     - name: Install dependencies
       run: npm ci --legacy-peer-deps
+      working-directory: ahp_app_251014
     
     - name: Run npm audit
       run: |
         echo "Running npm security audit..."
         npm audit --audit-level=high --fix || echo "⚠️ Security vulnerabilities found - continuing with fixes applied"
+      working-directory: ahp_app_251014
     
     - name: Run Snyk Security Scan
       if: env.SNYK_TOKEN != ''
@@ -195,6 +209,7 @@ jobs:
         echo "🔍 Scanning for API keys..."
         grep -r "sk-" src/ 2>/dev/null || echo "✅ No obvious API keys in source code"
         echo "🔍 Security scan completed"
+      working-directory: ahp_app_251014
 
   # 5. 성능 테스트
   performance:
@@ -217,7 +232,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: build-files
-        path: build/
+        path: ahp_app_251014/build/
     
     - name: Setup Node.js for Lighthouse
       uses: actions/setup-node@v4
@@ -229,7 +244,7 @@ jobs:
     
     - name: Start static file server
       run: |
-        cd build
+        cd ahp_app_251014/build
         npx serve -s . -l 8080 &
         sleep 5
     
@@ -267,7 +282,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: build-files
-        path: build/
+        path: ahp_app_251014/build/
     
     - name: Setup Pages
       uses: actions/configure-pages@v4
@@ -275,7 +290,7 @@ jobs:
     - name: Upload to GitHub Pages
       uses: actions/upload-pages-artifact@v4
       with:
-        path: ./build
+        path: ./ahp_app_251014/build
     
     - name: Deploy to GitHub Pages
       id: deployment

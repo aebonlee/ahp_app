@@ -37,17 +37,20 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+        cache-dependency-path: 'ahp_app_251014/package-lock.json'
         
     - name: Install dependencies
       run: |
         echo "🔧 Installing dependencies..."
         npm ci --legacy-peer-deps
+      working-directory: ahp_app_251014
       
     - name: Quick test (optional)
       if: ${{ !inputs.skip_tests }}
       run: |
         echo "🧪 Running quick tests..."
         npm test -- --coverage --watchAll=false --testTimeout=5000 --maxWorkers=2 --passWithNoTests
+      working-directory: ahp_app_251014
       continue-on-error: true
       env:
         CI: true
@@ -56,6 +59,7 @@ jobs:
       run: |
         echo "🏗️ Building application..."
         npm run build
+      working-directory: ahp_app_251014
       env:
         CI: false
         PUBLIC_URL: /ahp_app
@@ -74,6 +78,7 @@ jobs:
           echo "❌ Build failed"
           exit 1
         fi
+      working-directory: ahp_app_251014
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
@@ -81,7 +86,7 @@ jobs:
     - name: Upload to GitHub Pages
       uses: actions/upload-pages-artifact@v4
       with:
-        path: ./build
+        path: ./ahp_app_251014/build
         
     - name: Deploy to GitHub Pages
       id: deployment
