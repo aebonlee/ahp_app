@@ -247,6 +247,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
       actions: [
         { label: '시스템 정보', onClick: () => onTabChange('system-info') },
         { label: '시스템 설정', onClick: () => onTabChange('system-settings') },
+        { label: 'AI 시스템 관리', onClick: () => window.open('https://platform.openai.com/settings/organization/billing/overview', '_blank') },
         { label: '시스템 초기화', onClick: () => onTabChange('system-reset') }
       ]
     },
