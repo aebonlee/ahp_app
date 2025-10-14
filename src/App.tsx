@@ -35,6 +35,7 @@ import DirectInputEvaluation from './components/evaluator/DirectInputEvaluation'
 import ComprehensiveUserGuide from './components/guide/ComprehensiveUserGuide';
 import ResearcherGuidePage from './components/guide/ResearcherGuidePage';
 import EvaluatorGuidePage from './components/guide/EvaluatorGuidePage';
+import AIResearchGuidePage from './components/guide/AIResearchGuidePage';
 import EvaluatorDashboard from './components/evaluator/EvaluatorDashboard';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
@@ -1639,6 +1640,9 @@ function App() {
 
       case 'evaluator-guide':
         return <EvaluatorGuidePage />;
+
+      case 'ai-research-guide':
+        return <AIResearchGuidePage />;
 
       case 'evaluation-test':
         return <EvaluationTest onBack={() => setActiveTab('personal-service')} />;

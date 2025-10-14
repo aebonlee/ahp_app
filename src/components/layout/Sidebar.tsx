@@ -163,7 +163,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         { id: 'ai-ahp-methodology', label: 'AHP 이론 및 절차' },
         { id: 'ai-fuzzy-methodology', label: '퍼지 AHP 방법론' },
         { id: 'researcher-guide', label: '연구자 실무 가이드' },
-        { id: 'evaluator-guide', label: '평가자 참여 가이드' }
+        { id: 'evaluator-guide', label: '평가자 참여 가이드' },
+        { id: 'ai-research-guide', label: 'AI연구 지원 활용 가이드' }
       ]
     },
     {
