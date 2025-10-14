@@ -240,11 +240,14 @@ class CleanDataService {
             project_id: projectId,
             name: item.name,
             description: item.description || '',
-            parent_id: item.parent_id,
+            // parent와 parent_id 필드 모두 처리
+            parent_id: item.parent || item.parent_id || null,
+            parent: item.parent || item.parent_id || null,
             level: item.level || 1,
             order: item.order || item.position || 0,
             position: item.position || item.order || 0,
-            weight: item.weight || 0
+            weight: item.weight || 0,
+            type: 'criteria' as const
           }));
         
         console.log('✅ PostgreSQL DB 기준 조회 성공:', criteria.length, '개');

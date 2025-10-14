@@ -8,12 +8,14 @@ interface ModelFinalizationProps {
   projectId: string;
   onFinalize: () => void;
   isReadyToFinalize: boolean;
+  onNavigateToEvaluators?: () => void;
 }
 
 const ModelFinalization: React.FC<ModelFinalizationProps> = ({ 
   projectId, 
   onFinalize, 
-  isReadyToFinalize 
+  isReadyToFinalize,
+  onNavigateToEvaluators
 }) => {
   const [workshopMode, setWorkshopMode] = useState<'individual' | 'workshop'>('individual');
   const [isConfirming, setIsConfirming] = useState(false);
@@ -69,6 +71,12 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
   const handleFinalize = () => {
     if (isConfirming) {
       onFinalize();
+      // 모델 확정 후 평가자 관리 페이지로 자동 이동
+      if (onNavigateToEvaluators) {
+        setTimeout(() => {
+          onNavigateToEvaluators();
+        }, 1000); // 1초 후 이동하여 사용자가 확정 완료를 인지할 수 있도록 함
+      }
     } else {
       setIsConfirming(true);
     }

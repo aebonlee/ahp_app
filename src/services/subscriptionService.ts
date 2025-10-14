@@ -16,8 +16,8 @@ class SubscriptionService {
 
   constructor() {
     this.baseUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:5000' 
-      : 'https://ahp-platform.onrender.com';
+      ? 'http://localhost:8000' 
+      : 'https://ahp-django-backend.onrender.com';
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -40,17 +40,17 @@ class SubscriptionService {
 
   // 구독 플랜 관련
   async getAvailablePlans(): Promise<SubscriptionPlan[]> {
-    return this.request<SubscriptionPlan[]>('/api/subscription/plans');
+    return this.request<SubscriptionPlan[]>('/api/subscriptions/plans/');
   }
 
   async getPlanDetails(planId: string): Promise<SubscriptionPlan> {
-    return this.request<SubscriptionPlan>(`/api/subscription/plans/${planId}`);
+    return this.request<SubscriptionPlan>(`/api/subscriptions/plans/${planId}/`);
   }
 
   // 사용자 구독 관리
   async getCurrentSubscription(userId: string): Promise<UserSubscription | null> {
     try {
-      return await this.request<UserSubscription>(`/api/subscription/user/${userId}`);
+      return await this.request<UserSubscription>('/api/subscriptions/subscriptions/current/');
     } catch (error) {
       // 구독이 없는 경우 null 반환
       return null;
@@ -58,47 +58,68 @@ class SubscriptionService {
   }
 
   async subscribeToPlan(request: PaymentRequest): Promise<PaymentResponse> {
-    return this.request<PaymentResponse>('/api/subscription/subscribe', {
+    return this.request<PaymentResponse>('/api/subscriptions/subscribe/', {
       method: 'POST',
       body: JSON.stringify(request),
     });
   }
 
   async cancelSubscription(subscriptionId: string): Promise<SubscriptionResponse> {
-    return this.request<SubscriptionResponse>(`/api/subscription/${subscriptionId}/cancel`, {
+    return this.request<SubscriptionResponse>(`/api/subscriptions/subscriptions/${subscriptionId}/cancel/`, {
       method: 'POST',
     });
   }
 
   async renewSubscription(subscriptionId: string): Promise<SubscriptionResponse> {
-    return this.request<SubscriptionResponse>(`/api/subscription/${subscriptionId}/renew`, {
+    return this.request<SubscriptionResponse>(`/api/subscriptions/subscriptions/${subscriptionId}/renew/`, {
       method: 'POST',
     });
   }
 
   // 사용량 관리
   async getUsage(userId: string): Promise<SubscriptionUsage> {
-    return this.request<SubscriptionUsage>(`/api/subscription/usage/${userId}`);
+    return this.request<SubscriptionUsage>('/api/subscriptions/usage/current/');
   }
 
   async updateUsage(userId: string, resource: string, increment: number): Promise<void> {
-    await this.request('/api/subscription/usage/update', {
-      method: 'POST',
-      body: JSON.stringify({ userId, resource, increment }),
-    });
+    // 백엔드에서 자동으로 처리되므로 별도 API 불필요
   }
 
   async checkLimits(userId: string, resource: string, required: number = 1): Promise<boolean> {
-    const response = await this.request<{ allowed: boolean; remaining: number }>('/api/subscription/check-limits', {
+    const response = await this.request<{ allowed: boolean; remaining: number }>('/api/subscriptions/check-limits/', {
       method: 'POST',
-      body: JSON.stringify({ userId, resource, required }),
+      body: JSON.stringify({ resource_type: resource, required_amount: required }),
     });
     return response.allowed;
   }
 
   async getProjectLimits(userId: string, projectId?: string): Promise<ProjectLimits> {
-    const params = projectId ? `?projectId=${projectId}` : '';
-    return this.request<ProjectLimits>(`/api/subscription/project-limits/${userId}${params}`);
+    // 현재 구독 정보에서 제한사항 가져오기
+    const subscription = await this.getCurrentSubscription(userId);
+    if (subscription && subscription.plan) {
+      return {
+        maxEvaluators: subscription.effective_max_evaluators,
+        maxSurveys: subscription.plan.limits?.maxSurveysPerProject || 50,
+        maxCriteria: subscription.plan.limits?.maxCriteriaPerProject || 15,
+        maxAlternatives: subscription.plan.limits?.maxAlternativesPerProject || 10,
+        remainingEvaluators: subscription.effective_max_evaluators - (subscription.usage?.current_evaluators || 0),
+        remainingSurveys: (subscription.plan.limits?.maxSurveysPerProject || 50) - (subscription.usage?.current_surveys || 0),
+        remainingCriteria: (subscription.plan.limits?.maxCriteriaPerProject || 15) - (subscription.usage?.current_surveys || 0),
+        remainingAlternatives: (subscription.plan.limits?.maxAlternativesPerProject || 10) - (subscription.usage?.current_surveys || 0)
+      };
+    }
+    
+    // 기본값 반환
+    return {
+      maxEvaluators: 10,
+      maxSurveys: 50,
+      maxCriteria: 15,
+      maxAlternatives: 10,
+      remainingEvaluators: 10,
+      remainingSurveys: 50,
+      remainingCriteria: 15,
+      remainingAlternatives: 10
+    };
   }
 
   // 개인 관리자 관리 (총괄 관리자용)
@@ -133,24 +154,24 @@ class SubscriptionService {
 
   // 알림 및 경고
   async getUsageAlerts(userId: string): Promise<UsageAlert[]> {
-    return this.request<UsageAlert[]>(`/api/subscription/alerts/${userId}`);
+    return this.request<UsageAlert[]>('/api/subscriptions/alerts/');
   }
 
   async markAlertAsRead(alertId: string): Promise<void> {
-    await this.request(`/api/subscription/alerts/${alertId}/read`, {
+    await this.request(`/api/subscriptions/alerts/${alertId}/mark_read/`, {
       method: 'POST',
     });
   }
 
   // 결제 이력
   async getPaymentHistory(userId: string): Promise<any[]> {
-    return this.request<any[]>(`/api/subscription/payments/${userId}`);
+    return this.request<any[]>('/api/subscriptions/payment-records/');
   }
 
   // 결제 방법 관리
   async updatePaymentMethod(subscriptionId: string, paymentMethodData: any): Promise<void> {
-    await this.request(`/api/subscription/${subscriptionId}/payment-method`, {
-      method: 'PUT',
+    await this.request('/api/subscriptions/payment-methods/', {
+      method: 'POST',
       body: JSON.stringify(paymentMethodData),
     });
   }
@@ -162,15 +183,15 @@ class SubscriptionService {
     discountType: 'percentage' | 'fixed';
     message: string;
   }> {
-    return this.request('/api/subscription/validate-coupon', {
+    return this.request('/api/subscriptions/validate-coupon/', {
       method: 'POST',
-      body: JSON.stringify({ couponCode, planId }),
+      body: JSON.stringify({ coupon_code: couponCode, plan_id: planId }),
     });
   }
 
   // 관리자 전용 기능
   async getAllSubscriptions(): Promise<UserSubscription[]> {
-    return this.request<UserSubscription[]>('/api/admin/subscriptions');
+    return this.request<UserSubscription[]>('/api/subscriptions/subscriptions/');
   }
 
   async getSubscriptionStats(): Promise<{
@@ -179,18 +200,18 @@ class SubscriptionService {
     planDistribution: { [planId: string]: number };
     monthlyGrowth: number;
   }> {
-    return this.request('/api/admin/subscription-stats');
+    return this.request('/api/subscriptions/stats/');
   }
 
   async createCustomPlan(planData: Omit<SubscriptionPlan, 'id'>): Promise<SubscriptionPlan> {
-    return this.request<SubscriptionPlan>('/api/admin/plans', {
+    return this.request<SubscriptionPlan>('/api/subscriptions/plans/', {
       method: 'POST',
       body: JSON.stringify(planData),
     });
   }
 
   async updatePlan(planId: string, planData: Partial<SubscriptionPlan>): Promise<SubscriptionPlan> {
-    return this.request<SubscriptionPlan>(`/api/admin/plans/${planId}`, {
+    return this.request<SubscriptionPlan>(`/api/subscriptions/plans/${planId}/`, {
       method: 'PUT',
       body: JSON.stringify(planData),
     });

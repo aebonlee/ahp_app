@@ -12,7 +12,7 @@ import ProjectCreation from './ProjectCreation';
 import CriteriaManagement from './CriteriaManagement';
 import AlternativeManagement from './AlternativeManagement';
 import EvaluatorAssignment from './EvaluatorAssignment';
-import EnhancedEvaluatorManagement from './EnhancedEvaluatorManagement';
+import EnhancedEvaluatorManagement from '../evaluator/EnhancedEvaluatorManagement';
 import SurveyLinkManager from './SurveyLinkManager';
 import ModelFinalization from './ModelFinalization';
 import WorkflowStageIndicator, { WorkflowStage } from '../workflow/WorkflowStageIndicator';
@@ -129,37 +129,40 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
 
   useEffect(() => {
-    const autoLoadProjects = async () => {
-      // 이미 로딩 시도했거나 현재 로딩 중이면 스킵
-      if (hasAttemptedLoad || isAutoLoading) return;
-      
-      // 프로젝트가 있거나 명시적으로 빈 배열이 전달된 경우 스킵
-      if (externalProjects && externalProjects.length > 0) return;
-      
+    // App.tsx에서 'home' 탭일 때도 fetchProjects를 호출하도록 수정했으므로
+    // 이제 PersonalServiceDashboard에서 중복 로딩할 필요가 없습니다.
+    console.log('🔍 PersonalServiceDashboard 프로젝트 상태:', {
+      externalProjects: externalProjects?.length || 0,
+      hasAttemptedLoad,
+      isAutoLoading
+    });
+    
+    // 상위에서 프로젝트가 전달되지 않고, 아직 로딩 시도하지 않았으면 자동 로딩
+    if (!externalProjects?.length && !hasAttemptedLoad && !isAutoLoading) {
       console.log('🔄 PersonalServiceDashboard: 프로젝트 자동 로딩 시작...');
-      setIsAutoLoading(true);
-      setHasAttemptedLoad(true);
-      
-      try {
-        const projects = await dataService.getProjects();
-        console.log('✅ 자동 로딩 성공:', projects.length, '개 프로젝트');
+      const autoLoadProjects = async () => {
+        setIsAutoLoading(true);
+        setHasAttemptedLoad(true);
         
-        // App.tsx의 프로젝트 목록 업데이트를 위한 콜백 호출
-        if (onCreateProject && projects.length > 0) {
-          // 상위 컴포넌트에 프로젝트 데이터 전달하는 방법이 없으므로
-          // 일단 로그만 남기고 사용자에게 새로고침 안내
-          console.log('💡 프로젝트를 불러왔습니다. 페이지를 새로고침하면 표시됩니다.');
+        try {
+          const projects = await dataService.getProjects();
+          console.log('✅ 자동 로딩 성공:', projects.length, '개 프로젝트');
+          
+          // 상위에서 이미 프로젝트를 로드하고 있을 것이므로 새로고침 메시지 제거
+          if (projects.length > 0) {
+            console.log('✅ 프로젝트 로드 완료 - 상위 컴포넌트에서 처리됨');
+          }
+        } catch (error) {
+          console.error('❌ 프로젝트 자동 로딩 실패:', error);
+          setError('프로젝트를 불러오는데 실패했습니다. 새로고침을 시도해보세요.');
+        } finally {
+          setIsAutoLoading(false);
         }
-      } catch (error) {
-        console.error('❌ 프로젝트 자동 로딩 실패:', error);
-        setError('프로젝트를 불러오는데 실패했습니다. 새로고침을 시도해보세요.');
-      } finally {
-        setIsAutoLoading(false);
-      }
-    };
+      };
 
-    autoLoadProjects();
-  }, [externalProjects, hasAttemptedLoad, isAutoLoading, onCreateProject]);
+      autoLoadProjects();
+    }
+  }, [externalProjects, hasAttemptedLoad, isAutoLoading]);
 
   // props의 user가 변경될 때 내부 상태도 업데이트
   useEffect(() => {
@@ -278,7 +281,10 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     console.log('🔍 PersonalServiceDashboard 초기화:', { 
       tabParam, 
       externalActiveTab,
-      urlSearch: window.location.search 
+      urlSearch: window.location.search,
+      externalProjects: externalProjects?.length,
+      projects: projects?.length,
+      projectsData: projects
     });
     
     if (tabParam === 'demographic-survey') {
@@ -807,7 +813,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     ]
   };
 
-  const renderOverview = () => (
+  const renderOverview = () => {
+    console.log('🎯 renderOverview 호출됨! projects 상태:', {
+      projectsLength: projects?.length,
+      projects: projects,
+      quotas: getCurrentQuotas()
+    });
+    
+    return (
     <div className="space-y-6">
 
       {/* 프로젝트 현황 대시보드 */}
@@ -824,7 +837,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               <p className="text-sm text-gray-500">{userPlan.planName}</p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-info-text)' }}>
-              <span className="text-white text-2xl">📊</span>
+              <span className="text-white text-2xl">■</span>
             </div>
           </div>
         </div>
@@ -842,7 +855,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               </p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-success-text)' }}>
-              <span className="text-white text-2xl">👥</span>
+              <span className="text-white text-2xl">●</span>
             </div>
           </div>
         </div>
@@ -853,7 +866,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'active').length}</p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--accent-primary)' }}>
-              <span className="text-white text-2xl">🚀</span>
+              <span className="text-white text-2xl">▲</span>
             </div>
           </div>
         </div>
@@ -866,7 +879,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               </p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-warning-text)' }}>
-              <span className="text-white text-2xl">✅</span>
+              <span className="text-white text-2xl">✓</span>
             </div>
           </div>
         </div>
@@ -875,12 +888,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       {/* 주요 기능 6개 인라인 배치 */}
       <div className="flex flex-wrap justify-center gap-4">
         {[
-          { id: 'creation', label: '새 프로젝트', icon: '🚀', color: 'from-blue-500 to-blue-600' },
-          { id: 'projects', label: '내 프로젝트', icon: '📂', color: 'from-green-500 to-green-600' },
-          { id: 'trash', label: '휴지통', icon: '🗑️', color: 'from-red-500 to-red-600' },
-          { id: 'evaluators', label: '평가자 관리', icon: '👥', color: 'from-purple-500 to-purple-600' },
-          { id: 'analysis', label: '결과 분석', icon: '📊', color: 'from-orange-500 to-orange-600' },
-          { id: 'export', label: '보고서', icon: '📤', color: 'from-indigo-500 to-indigo-600' }
+          { id: 'creation', label: '새 프로젝트', icon: '+', color: 'from-blue-500 to-blue-600' },
+          { id: 'projects', label: '내 프로젝트', icon: '■', color: 'from-green-500 to-green-600' },
+          { id: 'trash', label: '휴지통', icon: '×', color: 'from-red-500 to-red-600' },
+          { id: 'evaluators', label: '평가자 관리', icon: '●', color: 'from-purple-500 to-purple-600' },
+          { id: 'analysis', label: '결과 분석', icon: '▲', color: 'from-orange-500 to-orange-600' },
+          { id: 'export', label: '보고서', icon: '↑', color: 'from-indigo-500 to-indigo-600' }
         ].map((item) => (
           <button
             key={item.id}
@@ -974,7 +987,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       </div>
 
     </div>
-  );
+    );
+  };
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -1049,14 +1063,18 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           <ModelFinalization 
             projectId={selectedProjectId} 
             onFinalize={() => {
-              // 모델 확정 후 평가자 관리 페이지로 이동
-              console.log('✅ 모델 구축 완료, 평가자 관리로 이동:', selectedProjectId);
+              // 모델 확정 후 로그 출력
+              console.log('✅ 모델 구축 완료:', selectedProjectId);
+              setCurrentStep('overview');
+            }}
+            onNavigateToEvaluators={() => {
+              // 평가자 관리 페이지로 자동 이동
+              console.log('🔄 평가자 관리 페이지로 이동:', selectedProjectId);
               if (externalOnTabChange) {
                 externalOnTabChange('evaluators');
               } else {
                 setActiveMenu('evaluators');
               }
-              setCurrentStep('overview');
             }}
             isReadyToFinalize={true}
           />
@@ -1749,7 +1767,7 @@ ${project?.title} - ${type} 프레젠테이션
               <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).length}</p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-info-text)' }}>
-              <span className="text-white text-2xl">📊</span>
+              <span className="text-white text-2xl">■</span>
             </div>
           </div>
         </div>
@@ -1760,7 +1778,7 @@ ${project?.title} - ${type} 프레젠테이션
               <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'active').length}</p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-success-text)' }}>
-              <span className="text-white text-2xl">🚀</span>
+              <span className="text-white text-2xl">▲</span>
             </div>
           </div>
         </div>
@@ -1771,7 +1789,7 @@ ${project?.title} - ${type} 프레젠테이션
               <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'completed').length}</p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--accent-primary)' }}>
-              <span className="text-white text-2xl">✅</span>
+              <span className="text-white text-2xl">✓</span>
             </div>
           </div>
         </div>
@@ -1784,7 +1802,7 @@ ${project?.title} - ${type} 프레젠테이션
               </p>
             </div>
             <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-warning-text)' }}>
-              <span className="text-white text-2xl">📈</span>
+              <span className="text-white text-2xl">%</span>
             </div>
           </div>
         </div>
@@ -2797,6 +2815,7 @@ ${project?.title} - ${type} 프레젠테이션
       <EnhancedEvaluatorManagement 
         projectId={selectedProjectId || undefined}
         projectName={currentProject?.title || '프로젝트'}
+        onClose={() => handleTabChange('dashboard')}
       />
     );
   };
@@ -3728,18 +3747,48 @@ ${project?.title} - ${type} 프레젠테이션
       }
     }
     
+    console.log('🔍 PersonalServiceDashboard 렌더링 조건 체크:', {
+      userRole: user?.role,
+      isAdminEmail,
+      isSuperMode,
+      activeMenu,
+      condition1: user?.role === 'super_admin',
+      condition2: isAdminEmail,
+      condition3: isSuperMode,
+      condition4: activeMenu === 'dashboard',
+      overallCondition: (user?.role === 'super_admin' || isAdminEmail) && isSuperMode && activeMenu === 'dashboard',
+      willRedirect: (user?.role === 'super_admin' || isAdminEmail) && isSuperMode && activeMenu === 'dashboard'
+    });
+
     // 슈퍼 관리자 모드일 때는 슈퍼 관리자 대시보드로 리다이렉트
     if ((user?.role === 'super_admin' || isAdminEmail) && isSuperMode && activeMenu === 'dashboard') {
+      console.log('🔄 슈퍼 관리자 대시보드로 리다이렉트 - 조건 충족됨');
       if (externalOnTabChange) {
         externalOnTabChange('super-admin-dashboard');
       }
       return null;
     }
     
+    console.log('✅ 리다이렉트 조건 통과 - PersonalServiceDashboard 계속 렌더링');
+    
+    console.log('📊 PersonalServiceDashboard switch case:', { 
+      activeMenu, 
+      userRole: user?.role,
+      activeMenuType: typeof activeMenu,
+      activeMenuString: String(activeMenu),
+      switchComparison: {
+        'dashboard': activeMenu === 'dashboard',
+        'projects': activeMenu === 'projects', 
+        'creation': activeMenu === 'creation'
+      }
+    });
+    
     switch (activeMenu) {
       case 'dashboard':
+        console.log('🏠 Dashboard case 진입:', { userRole: user?.role, isServiceUser: user?.role === 'service_user' });
         // 사용자 역할에 따라 다른 대시보드 표시
         if (user?.role === 'service_user') {
+          console.log('👤 PersonalUserDashboard 렌더링');
           // 일반 사용자용 대시보드 표시
           return (
             <PersonalUserDashboard 
@@ -3752,6 +3801,7 @@ ${project?.title} - ${type} 프레젠테이션
             />
           );
         } else {
+          console.log('👑 관리자용 대시보드 렌더링 - renderOverview() 호출');
           // 관리자용 대시보드 표시
           return renderOverview();
         }
@@ -3918,6 +3968,7 @@ ${project?.title} - ${type} 프레젠테이션
           </div>
         );
       default:
+        console.log('🔄 Default case 진입 - renderOverview() 호출:', { activeMenu, userRole: user?.role });
         return renderOverview();
     }
   };

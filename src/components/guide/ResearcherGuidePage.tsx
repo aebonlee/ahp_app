@@ -547,102 +547,71 @@ const ResearcherGuidePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
-      <div className="max-w-7xl mx-auto space-y-8 p-4 md:p-6 lg:p-8">
-        {/* Header */}
-        <div className="text-center space-y-6 py-8">
-          <div className="space-y-3">
-            <h1 
-              className="text-4xl lg:text-5xl font-light tracking-wide"
-              style={{ 
-                color: 'var(--text-primary)',
-                fontFamily: "'Inter', 'Pretendard', system-ui, sans-serif"
-              }}
-            >
-              AHP 연구방법론
-              <span 
-                className="font-semibold ml-2"
-                style={{ color: 'var(--accent-primary)' }}
-              >
-                완전 가이드
-              </span>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      {/* 헤더 */}
+      <div className="p-6 border-b" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-light)' }}>
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
+               style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}>
+            🎓
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              AHP 연구방법론 완전 가이드
             </h1>
-            <div className="flex items-center justify-center space-x-2">
-              <div 
-                className="w-12 h-0.5 rounded-full"
-                style={{ backgroundColor: 'var(--accent-primary)' }}
-              ></div>
-              <span 
-                className="text-xs font-medium uppercase tracking-wider px-3 py-1 rounded-full border"
-                style={{ 
-                  color: 'var(--accent-primary)',
-                  borderColor: 'var(--accent-light)',
-                  backgroundColor: 'var(--accent-light)'
-                }}
-              >
-                Researcher Guide
-              </span>
-              <div 
-                className="w-12 h-0.5 rounded-full"
-                style={{ backgroundColor: 'var(--accent-primary)' }}
-              ></div>
-            </div>
-            <p 
-              className="text-lg font-light max-w-3xl mx-auto leading-relaxed"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              학술 연구와 전문 의사결정 분석을 위한 체계적 AHP 방법론 가이드
+            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+              학술 연구와 전문 의사결정 분석을 위한 체계적 방법론 가이드
             </p>
           </div>
         </div>
+      </div>
 
-        {/* Main Content Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8">
-              <div 
-                className="p-6 rounded-xl border"
-                style={{ 
-                  backgroundColor: 'var(--bg-primary)',
-                  borderColor: 'var(--border-light)'
-                }}
-              >
-                <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-                  🔬 목차
-                </h3>
-                <nav className="space-y-2">
-                  {sections.map((section) => (
-                    <button
-                      key={section.id}
-                      onClick={() => setActiveSection(section.id)}
-                      className={`w-full text-left p-3 rounded-lg flex items-center space-x-3 transition-all duration-200 ${
-                        activeSection === section.id
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                          : 'hover:bg-gray-50 text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      <span className="text-lg">{section.icon}</span>
-                      <span className="font-medium">{section.title}</span>
-                    </button>
-                  ))}
-                </nav>
-              </div>
-            </div>
+      <div className="flex">
+        {/* 사이드 네비게이션 */}
+        <div className="w-80 border-r" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-light)' }}>
+          <div className="p-6">
+            <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+              🔬 목차
+            </h3>
+            <nav className="space-y-2">
+              {sections.map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full text-left p-3 rounded-lg transition-all hover:scale-105 ${
+                    activeSection === section.id ? 'shadow-md' : ''
+                  }`}
+                  style={{
+                    backgroundColor: activeSection === section.id ? 'var(--accent-primary)' : 'var(--bg-primary)',
+                    color: activeSection === section.id ? 'white' : 'var(--text-secondary)',
+                    border: '1px solid var(--border-light)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeSection !== section.id) {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
+                      e.currentTarget.style.color = 'var(--text-primary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeSection !== section.id) {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-primary)';
+                      e.currentTarget.style.color = 'var(--text-secondary)';
+                    }
+                  }}
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xl">{section.icon}</span>
+                    <span className="font-medium">{section.title}</span>
+                  </div>
+                </button>
+              ))}
+            </nav>
           </div>
+        </div>
 
-          {/* Content Area */}
-          <div className="lg:col-span-3">
-            <div 
-              className="p-8 rounded-xl border shadow-sm"
-              style={{ 
-                backgroundColor: 'var(--bg-primary)',
-                borderColor: 'var(--border-light)'
-              }}
-            >
-              {renderContent()}
-            </div>
-          </div>
+        {/* 메인 콘텐츠 */}
+        <div className="flex-1 p-6">
+          {renderContent()}
         </div>
       </div>
     </div>

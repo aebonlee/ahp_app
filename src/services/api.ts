@@ -447,8 +447,11 @@ export const criteriaApi = {
       name: data.name,
       description: data.description || '',
       type: data.type || 'criteria',
-      parent: data.parent_id || null,
+      // parent와 parent_id 필드 모두 처리
+      parent: data.parent || data.parent_id || null,
+      parent_id: data.parent_id || data.parent || null,
       order: data.order || 0,
+      position: data.position || data.order || 0,
       level: data.level || 1,
       weight: data.weight || 0.0,
       is_active: true
