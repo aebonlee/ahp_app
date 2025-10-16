@@ -35,6 +35,7 @@ import DirectInputEvaluation from './components/evaluator/DirectInputEvaluation'
 import ComprehensiveUserGuide from './components/guide/ComprehensiveUserGuide';
 import ResearcherGuidePage from './components/guide/ResearcherGuidePage';
 import EvaluatorGuidePage from './components/guide/EvaluatorGuidePage';
+import AIResearchGuidePage from './components/guide/AIResearchGuidePage';
 import EvaluatorDashboard from './components/evaluator/EvaluatorDashboard';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
@@ -55,6 +56,7 @@ import AllProjectsManagement from './components/superadmin/AllProjectsManagement
 import SystemInfo from './components/superadmin/SystemInfo';
 import SystemMonitoring from './components/superadmin/SystemMonitoring';
 import SystemSettings from './components/superadmin/SystemSettings';
+import PaymentOptionsPage from './components/superadmin/PaymentOptionsPage';
 import AHPMethodologyPage from './components/methodology/AHPMethodologyPage';
 import FuzzyAHPMethodologyPage from './components/methodology/FuzzyAHPMethodologyPage';
 import AIPaperGenerationPage from './components/ai-paper/AIPaperGenerationPage';
@@ -1119,7 +1121,7 @@ function App() {
   };
 
   const updateUser = async (userId: string, userData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/accounts/${userId}`, {
       method: 'PUT',
       credentials: 'include',
       headers: {
@@ -1137,7 +1139,7 @@ function App() {
   };
 
   const deleteUser = async (userId: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/accounts/${userId}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -1559,6 +1561,10 @@ function App() {
         // 시스템 설정
         return <SystemSettings />;
 
+      case 'payment-options':
+        // 결제 옵션 관리
+        return <PaymentOptionsPage user={user} onTabChange={setActiveTab} />;
+
       case 'projects':
       case 'monitoring':
       case 'database':
@@ -1634,6 +1640,9 @@ function App() {
 
       case 'evaluator-guide':
         return <EvaluatorGuidePage />;
+
+      case 'ai-research-guide':
+        return <AIResearchGuidePage />;
 
       case 'evaluation-test':
         return <EvaluationTest onBack={() => setActiveTab('personal-service')} />;

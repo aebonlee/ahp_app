@@ -556,11 +556,12 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
                   </button>
                 )}
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    {projectName}
-                  </h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    평가자 관리 및 모니터링
+                  <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                    <span className="text-4xl mr-3">👥</span>
+                    평가자 관리 시스템
+                  </h1>
+                  <p className="text-gray-600 mt-2">
+                    {projectName} - 통합 평가자 관리 및 실시간 모니터링
                   </p>
                 </div>
               </div>

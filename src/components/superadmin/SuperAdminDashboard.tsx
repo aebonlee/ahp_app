@@ -247,6 +247,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
       actions: [
         { label: '시스템 정보', onClick: () => onTabChange('system-info') },
         { label: '시스템 설정', onClick: () => onTabChange('system-settings') },
+        { label: 'AI 시스템 관리', onClick: () => window.open('https://platform.openai.com/settings/organization/billing/overview', '_blank') },
         { label: '시스템 초기화', onClick: () => onTabChange('system-reset') }
       ]
     },
@@ -272,6 +273,18 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
         { label: '연결 테스트', onClick: () => onTabChange('connection-test') },
         { label: 'Django Admin', onClick: () => window.open('https://ahp-django-backend.onrender.com/admin/', '_blank') },
         { label: 'API 문서', onClick: () => window.open('/api/docs', '_blank') }
+      ]
+    },
+    {
+      id: 'payment-management',
+      title: '결제 관리',
+      description: '회원 구독 및 결제 옵션 관리',
+      icon: '💳',
+      color: 'var(--color-success)',
+      actions: [
+        { label: '결제 옵션 설정', onClick: () => onTabChange('payment-options') },
+        { label: '구독 관리', onClick: () => onTabChange('subscription-management') },
+        { label: '결제 내역', onClick: () => onTabChange('payment-history') }
       ]
     }
   ];

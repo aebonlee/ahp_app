@@ -5,8 +5,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import UIIcon from '../common/UIIcon';
-import ModernPersonalServiceDashboard from './ModernPersonalServiceDashboard';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import exportService from '../../services/exportService';
 import MyProjects from './MyProjects';
@@ -838,8 +836,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               </p>
               <p className="text-sm text-gray-500">{userPlan.planName}</p>
             </div>
-            <div className="p-3 rounded-full ui-card" style={{ backgroundColor: 'var(--ui-primary)' }}>
-              <UIIcon emoji="📊" size="2xl" color="white" />
+            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-info-text)' }}>
+              <span className="text-white text-2xl">■</span>
             </div>
           </div>
         </div>
@@ -936,7 +934,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             className="text-2xl lg:text-3xl font-bold mb-2"
             style={{ color: 'var(--accent-secondary)' }}
           >
-<UIIcon emoji="⚡" size="lg" /> 빠른 시작 및 접근
+            ⚡ 빠른 시작 및 접근
           </h2>
           <p 
             className="text-lg"
@@ -975,7 +973,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               }}
             >
               <div className={`w-12 h-12 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center mb-3`}>
-                <UIIcon emoji={item.icon} size="2xl" color="white" />
+                <span className="text-white text-2xl">{item.icon}</span>
               </div>
               <span 
                 className="text-base font-medium text-center leading-tight"
@@ -1824,7 +1822,7 @@ ${project?.title} - ${type} 프레젠테이션
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <UIIcon emoji="🔍" className="text-gray-400" />
+                <span className="text-gray-400">🔍</span>
               </div>
             </div>
           </div>
@@ -1956,7 +1954,7 @@ ${project?.title} - ${type} 프레젠테이션
                       }`}
                     >
                       <div className="flex items-center space-x-2 mb-1">
-                        <UIIcon emoji={mode.icon} size="lg" />
+                        <span className="text-lg">{mode.icon}</span>
                         <span className="font-medium text-sm">{mode.label}</span>
                       </div>
                       <p className="text-xs text-gray-600">{mode.desc}</p>
@@ -2004,7 +2002,7 @@ ${project?.title} - ${type} 프레젠테이션
           </Button>
           <div className="mt-8 grid grid-cols-3 gap-6 max-w-5xl mx-auto">
             <div className="bg-blue-50 p-4 rounded-lg">
-              <UIIcon emoji="🎯" size="2xl" className="mb-2" />
+              <div className="text-2xl mb-2">🎯</div>
               <h4 className="font-medium mb-1">목표 설정</h4>
               <p className="text-sm text-gray-600">의사결정 목표와 평가 기준을 명확히 정의</p>
             </div>
@@ -2014,7 +2012,7 @@ ${project?.title} - ${type} 프레젠테이션
               <p className="text-sm text-gray-600">기준과 대안을 체계적으로 비교 평가</p>
             </div>
             <div className="bg-purple-50 p-4 rounded-lg">
-              <UIIcon emoji="📈" size="2xl" className="mb-2" />
+              <div className="text-2xl mb-2">📈</div>
               <h4 className="font-medium mb-1">결과 분석</h4>
               <p className="text-sm text-gray-600">객관적이고 신뢰할 수 있는 우선순위 도출</p>
             </div>
@@ -2022,7 +2020,7 @@ ${project?.title} - ${type} 프레젠테이션
         </div>
       ) : filteredProjects.length === 0 ? (
         <div className="text-center py-12">
-          <UIIcon emoji="🔍" size="4xl" className="mb-4 text-gray-400" />
+          <div className="text-4xl mb-4">🔍</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">검색 결과가 없습니다</h3>
           <p className="text-gray-600 mb-4">
             다른 검색어를 시도하거나 필터를 조정해보세요.
@@ -2855,7 +2853,7 @@ ${project?.title} - ${type} 프레젠테이션
                 </button>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                    <UIIcon emoji="📈" size="3xl" className="mr-3" />
+                    <span className="text-4xl mr-3">📈</span>
                     진행률 모니터링
                   </h1>
                   <p className="text-gray-600 mt-2">평가자별 진행 상황을 실시간으로 추적합니다</p>
@@ -3237,7 +3235,7 @@ ${project?.title} - ${type} 프레젠테이션
                 </button>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                    <UIIcon emoji="🎯" size="3xl" className="mr-3" />
+                    <span className="text-4xl mr-3">🎯</span>
                     워크숍 관리
                   </h1>
                   <p className="text-gray-600 mt-2">팀 협업을 위한 의사결정 워크숍을 관리합니다</p>
@@ -3273,7 +3271,7 @@ ${project?.title} - ${type} 프레젠테이션
                 </button>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                    <UIIcon emoji="🧠" size="3xl" className="mr-3" />
+                    <span className="text-4xl mr-3">🧠</span>
                     의사결정 지원 시스템
                   </h1>
                   <p className="text-gray-600 mt-2">AHP 방법론을 활용한 과학적 의사결정을 지원합니다</p>
@@ -3609,7 +3607,7 @@ ${project?.title} - ${type} 프레젠테이션
                 </button>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                    <UIIcon emoji="⚙️" size="3xl" className="mr-3" />
+                    <span className="text-4xl mr-3">⚙️</span>
                     모델 구축
                   </h1>
                   <p className="text-gray-600 mt-2">단계별로 AHP 분석 모델을 구성합니다</p>
@@ -3803,25 +3801,9 @@ ${project?.title} - ${type} 프레젠테이션
             />
           );
         } else {
-          console.log('👑 관리자용 대시보드 렌더링 - ModernPersonalServiceDashboard 사용');
-          // 새로운 모던 대시보드 표시
-          return (
-            <ModernPersonalServiceDashboard
-              user={user}
-              projects={projects || []}
-              onCreateProject={() => handleTabChange('creation')}
-              onSelectProject={(projectId) => {
-                setSelectedProjectId(projectId);
-                handleTabChange('model-builder');
-              }}
-              onTabChange={(tab) => {
-                if (externalOnTabChange) {
-                  externalOnTabChange(tab);
-                }
-                handleTabChange(tab);
-              }}
-            />
-          );
+          console.log('👑 관리자용 대시보드 렌더링 - renderOverview() 호출');
+          // 관리자용 대시보드 표시
+          return renderOverview();
         }
       case 'projects':
         return (

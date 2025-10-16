@@ -16,6 +16,7 @@ interface MenuItem {
   label: string;
   icon?: string;
   isAiSubmenu?: boolean;
+  onClick?: () => void;
 }
 
 interface MenuCategory {
@@ -109,10 +110,11 @@ const Sidebar: React.FC<SidebarProps> = ({
       id: 'ai',
       title: 'AI 시스템 관리',
       items: [
-        { id: 'ai-system-monitor', label: 'AI 시스템 모니터' },
-        { id: 'ai-usage-analytics', label: 'AI 사용량 분석' },
-        { id: 'ai-model-management', label: 'AI 모델 관리' },
-        { id: 'ai-training-data', label: '학습 데이터 관리' }
+        { 
+          id: 'openai-billing', 
+          label: 'OpenAI 빌링 관리',
+          onClick: () => window.open('https://platform.openai.com/settings/organization/billing/overview', '_blank')
+        }
       ]
     },
     {
@@ -161,7 +163,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         { id: 'ai-ahp-methodology', label: 'AHP 이론 및 절차' },
         { id: 'ai-fuzzy-methodology', label: '퍼지 AHP 방법론' },
         { id: 'researcher-guide', label: '연구자 실무 가이드' },
-        { id: 'evaluator-guide', label: '평가자 참여 가이드' }
+        { id: 'evaluator-guide', label: '평가자 참여 가이드' },
+        { id: 'ai-research-guide', label: 'AI연구 지원 활용 가이드' }
       ]
     },
     {
@@ -283,6 +286,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   const menuCategories = getMenuCategories();
 
   const handleItemClick = (itemId: string) => {
+    // 메뉴 아이템의 onClick 처리
+    const allItems = menuCategories.flatMap(category => category.items);
+    const item = allItems.find(item => item.id === itemId);
+    if (item?.onClick) {
+      item.onClick();
+      return;
+    }
+
     // Django 관리자 링크 처리
     if (itemId === 'django-admin') {
       window.open('https://ahp-django-backend.onrender.com/admin/', '_blank');
