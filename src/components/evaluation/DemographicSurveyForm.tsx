@@ -102,7 +102,7 @@ const DemographicSurveyForm: React.FC<DemographicSurveyFormProps> = ({
 
     // 에러 클리어
     if (errors[field]) {
-      setErrors({ ...errors, [field]: undefined });
+      setErrors({ ...errors, [field]: '' });
     }
   };
 

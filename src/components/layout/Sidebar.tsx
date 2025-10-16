@@ -137,12 +137,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'dashboard', label: '연구자 대시보드' },
         { id: 'my-projects', label: '내 연구 프로젝트' },
-        { id: 'project-creation', label: '새 연구 시작' },
-        { id: 'model-builder', label: 'AHP 모델 설계' },
-        { id: 'evaluator-management', label: '평가자 관리' },
-        { id: 'progress-monitoring', label: '데이터 수집 모니터링' },
-        { id: 'results-analysis', label: '결과 분석' },
-        { id: 'export-reports', label: '연구보고서 출력' }
+        { id: 'project-wizard', label: '🚀 새 프로젝트 생성' },
+        { id: 'demographic-setup', label: '📝 인구통계 설문 설계' },
+        { id: 'model-builder', label: '🎯 AHP 모형 구성' },
+        { id: 'evaluator-invitation', label: '👥 평가자 초대 (QR/링크)' },
+        { id: 'progress-monitoring', label: '📊 실시간 수집 현황' },
+        { id: 'results-analysis', label: '📈 통합 결과 분석' },
+        { id: 'export-reports', label: '📑 보고서 출력' }
       ]
     },
     {

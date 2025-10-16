@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -35,6 +36,7 @@ interface ProjectData {
 }
 
 const EnhancedProjectCreationWizard: React.FC = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
@@ -89,7 +91,10 @@ const EnhancedProjectCreationWizard: React.FC = () => {
       setLoading(true);
       
       // 1. 프로젝트 생성
-      const response = await api.project.createProject(projectData);
+      const response = await api.project.createProject({
+        ...projectData,
+        status: 'draft' as const
+      });
       const createdProjectId = response.data.id;
       setProjectId(createdProjectId);
       
@@ -137,6 +142,7 @@ const EnhancedProjectCreationWizard: React.FC = () => {
             qrCodeUrl={qrCodeUrl}
             shortLink={shortLink}
             projectTitle={projectData.title}
+            onNavigate={navigate}
           />
         );
       default:
@@ -435,7 +441,8 @@ const CompletionStep: React.FC<{
   qrCodeUrl: string;
   shortLink: string;
   projectTitle: string;
-}> = ({ projectId, qrCodeUrl, shortLink, projectTitle }) => {
+  onNavigate: (path: string) => void;
+}> = ({ projectId, qrCodeUrl, shortLink, projectTitle, onNavigate }) => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     alert('클립보드에 복사되었습니다!');
@@ -483,15 +490,23 @@ const CompletionStep: React.FC<{
       )}
 
       <div className="flex justify-center gap-4">
-        <a
-          href={`/projects/${projectId}`}
+        <button
+          onClick={() => {
+            // 프로젝트 관리 대시보드로 이동
+            if (projectId) {
+              // 프로젝트가 생성되면 프로젝트 목록으로 이동
+              onNavigate('/');
+              // 실제로는 메인 대시보드의 프로젝트 관리 탭으로 이동해야 함
+              window.location.reload();
+            }
+          }}
           className="btn btn-primary"
         >
-          프로젝트 대시보드로 이동
-        </a>
-        <a href="/projects" className="btn btn-secondary">
-          프로젝트 목록으로
-        </a>
+          프로젝트 관리로 이동
+        </button>
+        <button onClick={() => window.location.reload()} className="btn btn-secondary">
+          새 프로젝트 생성
+        </button>
       </div>
     </div>
   );

@@ -223,7 +223,7 @@ const DemographicSurveyConfig: React.FC<DemographicSurveyConfigProps> = ({
                       type="checkbox"
                       checked={config[field as keyof DemographicConfig] as boolean}
                       onChange={(e) =>
-                        handleBasicFieldChange(field, e.target.checked)
+                        handleBasicFieldChange(field as keyof DemographicConfig, e.target.checked)
                       }
                       className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
                     />

@@ -253,11 +253,7 @@ const IntegratedEvaluationFlow: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <div className="max-w-6xl mx-auto px-4 py-8">
-          <AnonymousEvaluator
-            projectId={project.id}
-            sessionId={sessionId}
-            onComplete={handleAHPComplete}
-          />
+          <AnonymousEvaluator />
         </div>
       </div>
     );
