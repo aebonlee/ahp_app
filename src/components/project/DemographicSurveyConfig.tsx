@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DocumentTextIcon,
   PlusIcon,
@@ -6,6 +6,7 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
+import DemographicSurveyTemplates, { SurveyTemplate, SURVEY_TEMPLATES } from './DemographicSurveyTemplates';
 
 export interface DemographicConfig {
   enabled: boolean;
@@ -39,6 +40,8 @@ const DemographicSurveyConfig: React.FC<DemographicSurveyConfigProps> = ({
   onChange,
 }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [showTemplates, setShowTemplates] = useState(true);
   const [newQuestion, setNewQuestion] = useState<CustomQuestion>({
     id: '',
     type: 'text',
@@ -46,6 +49,31 @@ const DemographicSurveyConfig: React.FC<DemographicSurveyConfigProps> = ({
     options: [],
     required: false,
   });
+
+  // 템플릿 선택 핸들러
+  const handleTemplateSelect = (template: SurveyTemplate | null) => {
+    if (template) {
+      // 기본 템플릿 적용
+      setSelectedTemplateId(template.id);
+      onChange({
+        ...config,
+        ...template.config,
+        enabled: true,
+      } as DemographicConfig);
+      setShowTemplates(false);
+    } else {
+      // 직접 만들기
+      setSelectedTemplateId('custom');
+      onChange({
+        ...config,
+        enabled: true,
+        surveyTitle: '맞춤형 설문조사',
+        surveyDescription: '연구에 필요한 정보를 수집합니다.',
+        estimatedTime: 3,
+      });
+      setShowTemplates(false);
+    }
+  };
 
   const handleBasicFieldChange = (field: keyof DemographicConfig, value: any) => {
     onChange({
@@ -101,8 +129,34 @@ const DemographicSurveyConfig: React.FC<DemographicSurveyConfigProps> = ({
           </label>
         </div>
 
-        {config.enabled && (
+        {config.enabled && showTemplates && (
+          <DemographicSurveyTemplates
+            onSelectTemplate={handleTemplateSelect}
+            selectedTemplateId={selectedTemplateId}
+          />
+        )}
+
+        {config.enabled && !showTemplates && (
           <>
+            {/* 템플릿 변경 버튼 */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm text-gray-600">
+                {selectedTemplateId && selectedTemplateId !== 'custom' && (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                      {SURVEY_TEMPLATES.find(t => t.id === selectedTemplateId)?.name} 템플릿 적용됨
+                    </span>
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setShowTemplates(true)}
+                className="text-sm text-primary hover:text-primary/80"
+              >
+                템플릿 다시 선택
+              </button>
+            </div>
+
             {/* 설문 기본 정보 */}
             <div className="space-y-4 mb-6">
               <div>
