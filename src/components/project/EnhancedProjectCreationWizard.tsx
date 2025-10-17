@@ -127,12 +127,6 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
       case 1:
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">2단계: 인구통계 설문 설정</h2>
-              <p className="text-gray-600">
-                평가자의 인구통계학적 정보를 수집하여 더욱 심층적인 분석을 수행할 수 있습니다.
-              </p>
-            </div>
 
             {/* 단계 설명 카드 */}
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
@@ -194,62 +188,91 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
     }
   };
 
+  // 단계별 타이틀과 아이콘 매핑
+  const getStepInfo = () => {
+    switch (currentStep) {
+      case 0:
+        return {
+          icon: '📝',
+          title: '프로젝트 기본 정보',
+          description: '프로젝트의 기본 정보와 평가 방식을 설정합니다'
+        };
+      case 1:
+        return {
+          icon: '👥',
+          title: '인구통계 설문 설계',
+          description: '평가자의 인구통계학적 정보를 수집할 설문을 설계합니다'
+        };
+      case 2:
+        return {
+          icon: '📊',
+          title: 'AHP 모형 설계',
+          description: '평가 기준과 대안을 설정하여 AHP 계층 구조를 만듭니다'
+        };
+      case 3:
+        return {
+          icon: '✉️',
+          title: '평가자 초대',
+          description: '프로젝트에 참여할 평가자를 초대하고 링크를 생성합니다'
+        };
+      case 4:
+        return {
+          icon: '✅',
+          title: '프로젝트 생성 완료',
+          description: '프로젝트가 성공적으로 생성되었습니다'
+        };
+      default:
+        return {
+          icon: '📝',
+          title: '프로젝트 생성',
+          description: '새로운 AHP 프로젝트를 생성합니다'
+        };
+    }
+  };
+
+  const stepInfo = getStepInfo();
+
   return (
     <div className="min-h-screen bg-gradient-subtle py-8">
       <div className="max-w-5xl mx-auto px-4">
-        {/* 상단 헤더 섹션 */}
-        <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-3">
-                {/* 뒤로가기 버튼 */}
-                <button
-                  onClick={() => onTabChange?.('personal-service')}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  title="이전 페이지로"
-                >
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                {/* 페이지 경로 (Breadcrumb) */}
-                <div className="flex items-center text-sm text-gray-500">
-                  <span>홈</span>
-                  <svg className="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                  <span>프로젝트 관리</span>
-                  <svg className="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                  <span className="text-gray-900 font-medium">프로젝트 생성 워크플로우</span>
-                </div>
+        {/* 새로운 헤더 디자인 */}
+        <div className="py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <button 
+                onClick={() => {
+                  if (currentStep > 0) {
+                    handlePrevious();
+                  } else {
+                    onTabChange?.('personal-service');
+                  }
+                }}
+                className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
+              >
+                ←
+              </button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                  <span className="text-4xl mr-3">{stepInfo.icon}</span>
+                  {stepInfo.title}
+                </h1>
+                <p className="text-gray-600 mt-2">
+                  {stepInfo.description}
+                </p>
               </div>
-              
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                통합 프로젝트 생성 워크플로우
-              </h1>
-              <p className="text-gray-600">
-                인구통계 설문과 AHP 평가를 통합한 체계적인 프로젝트 생성 과정입니다.
-                각 단계를 순차적으로 진행하며 언제든 이전 단계로 돌아갈 수 있습니다.
-              </p>
             </div>
             
-            {/* 우측 액션 버튼들 */}
-            <div className="flex space-x-2 ml-6">
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md"
-                onClick={() => {
-                  // 도움말 또는 가이드 표시
-                  alert('워크플로우 가이드: 각 단계별로 필요한 정보를 입력해주세요.');
-                }}
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                사용 가이드
-              </button>
+            {/* 우측 진행 상태 표시 */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">
+                {currentStep + 1} / {steps.length}
+              </span>
+              <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
+                  style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -359,12 +382,6 @@ const BasicInfoStep: React.FC<{
 }> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">1단계: 프로젝트 기본 정보</h2>
-        <p className="text-gray-600">
-          프로젝트의 기본 정보를 입력해주세요. 이 정보는 평가자에게 표시됩니다.
-        </p>
-      </div>
 
       {/* 단계 설명 카드 */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -485,12 +502,6 @@ const AHPModelStep: React.FC<{
 }> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">3단계: AHP 모형 설계</h2>
-        <p className="text-gray-600">
-          평가 기준과 대안을 설정하세요. 프로젝트 생성 후에도 상세 설정이 가능합니다.
-        </p>
-      </div>
 
       {/* 단계 설명 카드 */}
       <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
@@ -554,10 +565,6 @@ const InvitationStep: React.FC<{
 }> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">4단계: 평가자 초대 설정</h2>
-        <p className="text-gray-600">평가자 초대 방법과 메시지를 설정하세요.</p>
-      </div>
 
       {/* 단계 설명 카드 */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
