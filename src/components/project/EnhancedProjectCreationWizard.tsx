@@ -254,6 +254,18 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
                   <p className="text-gray-600 mt-2">
                     {stepInfo.description}
                   </p>
+                  {/* 진행률 표시 */}
+                  <div className="flex items-center space-x-3 mt-3">
+                    <span className="text-sm text-gray-500">
+                      단계 {currentStep + 1} / {steps.length}
+                    </span>
+                    <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
+                        style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -270,17 +282,24 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
 
         {/* 진행 단계 표시 */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between relative">
+            {/* 연결선 배경 */}
+            <div className="absolute top-6 left-0 right-0 flex items-center" style={{ zIndex: 0 }}>
+              <div className="flex-1 h-0.5 bg-gray-200"></div>
+            </div>
+            
+            {/* 단계별 아이콘과 텍스트 */}
             {steps.map((step, index) => {
               const isActive = index === currentStep;
               const isCompleted = index < currentStep;
               
               return (
-                <div key={step.id} className="flex items-center flex-1">
+                <div key={step.id} className="flex flex-col items-center flex-1 relative">
+                  {/* 아이콘 */}
                   <div
-                    className={`flex items-center justify-center w-12 h-12 rounded-full transition-colors ${
+                    className={`flex items-center justify-center w-12 h-12 rounded-full transition-colors mb-2 bg-white z-10 ${
                       isActive
-                        ? 'bg-blue-500 text-white'
+                        ? 'bg-blue-500 text-white ring-4 ring-blue-100'
                         : isCompleted
                         ? 'bg-green-500 text-white'
                         : 'bg-gray-200 text-gray-500'
@@ -292,28 +311,17 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
                       <span className="text-xl">{step.emoji}</span>
                     )}
                   </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-1 mx-2 transition-colors ${
-                        isCompleted ? 'bg-green-500' : 'bg-gray-200'
-                      }`}
-                    />
-                  )}
+                  {/* 텍스트 */}
+                  <div
+                    className={`text-sm font-medium text-center ${
+                      isActive ? 'text-blue-600 font-semibold' : 'text-gray-500'
+                    }`}
+                  >
+                    {step.title}
+                  </div>
                 </div>
               );
             })}
-          </div>
-          <div className="flex justify-between mt-4">
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className={`text-sm font-medium flex-1 text-center ${
-                  index === currentStep ? 'text-primary' : 'text-gray-500'
-                }`}
-              >
-                {step.title}
-              </div>
-            ))}
           </div>
         </div>
 
