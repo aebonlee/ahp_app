@@ -4152,33 +4152,30 @@ ${project?.title} - ${type} 프레젠테이션
   // activeMenu와 externalActiveTab 둘 다 체크
   const currentTab = externalActiveTab || activeMenu;
   
-  if (currentTab && currentTab !== 'personal-service' && currentTab !== 'dashboard') {
-    // project-wizard 관련 메뉴들은 전체 화면 사용
-    if (['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(currentTab)) {
-      return renderProjectWizardFullPage();
-    }
-    
-    return (
-      <>
-        {currentTab === 'my-projects' && renderMyProjectsFullPage()}
-        {currentTab === 'project-creation' && renderProjectCreationFullPage()}
-        {currentTab === 'model-builder' && renderModelBuilderFullPage()}
-        {currentTab === 'evaluator-management' && renderEvaluatorManagementFullPage()}
-        {currentTab === 'progress-monitoring' && renderProgressMonitoringFullPage()}
-        {currentTab === 'results-analysis' && renderResultsAnalysisFullPage()}
-        {currentTab === 'ai-paper-assistant' && renderPaperManagementFullPage()}
-        {currentTab === 'export-reports' && renderExportReportsFullPage()}
-        {currentTab === 'workshop-management' && renderWorkshopManagementFullPage()}
-        {currentTab === 'decision-support-system' && renderDecisionSupportSystemFullPage()}
-        {currentTab === 'personal-settings' && renderPersonalSettingsFullPage()}
-        {currentTab === 'demographic-survey' && renderDemographicSurveyFullPage()}
-      </>
-    );
+  // project-wizard 관련 메뉴들은 전체 화면 사용
+  if (['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(currentTab)) {
+    return renderProjectWizardFullPage();
   }
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* 환영 메시지 + 요금제 정보 통합 */}
+  
+  // 다른 전체 화면 페이지들
+  if (currentTab === 'my-projects') return renderMyProjectsFullPage();
+  if (currentTab === 'project-creation') return renderProjectCreationFullPage();
+  if (currentTab === 'model-builder') return renderModelBuilderFullPage();
+  if (currentTab === 'evaluator-management') return renderEvaluatorManagementFullPage();
+  if (currentTab === 'progress-monitoring') return renderProgressMonitoringFullPage();
+  if (currentTab === 'results-analysis') return renderResultsAnalysisFullPage();
+  if (currentTab === 'ai-paper-assistant') return renderPaperManagementFullPage();
+  if (currentTab === 'export-reports') return renderExportReportsFullPage();
+  if (currentTab === 'workshop-management') return renderWorkshopManagementFullPage();
+  if (currentTab === 'decision-support-system') return renderDecisionSupportSystemFullPage();
+  if (currentTab === 'personal-settings') return renderPersonalSettingsFullPage();
+  if (currentTab === 'demographic-survey') return renderDemographicSurveyFullPage();
+  
+  // 대시보드 컨텐츠 렌더링
+  if (currentTab === 'personal-service' || currentTab === 'dashboard' || !currentTab) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* 환영 메시지 + 요금제 정보 통합 */}
       <div className="py-6">
         {/* 환영 메시지 (기존 스타일) */}
         <div className="text-center lg:text-left space-y-6">
@@ -5171,6 +5168,18 @@ ${project?.title} - ${type} 프레젠테이션
           onCancel={handleProjectSelectorCancel}
         />
       )}
+    </div>
+  );
+  }
+  
+  // 이외의 경우 메뉴 컨텐츠 렌더링
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="bg-white rounded-lg border border-gray-200">
+        <div className="p-6">
+          {renderMenuContent()}
+        </div>
+      </div>
     </div>
   );
 };
