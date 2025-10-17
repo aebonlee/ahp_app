@@ -3244,37 +3244,10 @@ ${project?.title} - ${type} 프레젠테이션
     switch(currentTab) {
       case 'project-wizard':
         return (
-          <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
-            <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="py-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <button 
-                        onClick={() => handleTabChange('dashboard')}
-                        className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
-                      >
-                        ←
-                      </button>
-                      <div>
-                        <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                          <span className="text-4xl mr-3">🚀</span>
-                          새 프로젝트 생성
-                        </h1>
-                        <p className="text-gray-600 mt-2">인구통계 설문과 AHP 평가를 통합한 프로젝트를 생성합니다</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <EnhancedProjectCreationWizard 
-                onTabChange={handleTabChange}
-                onNavigate={() => handleTabChange('dashboard')}
-              />
-            </div>
-          </div>
+          <EnhancedProjectCreationWizard 
+            onTabChange={handleTabChange}
+            onNavigate={() => handleTabChange('dashboard')}
+          />
         );
         
       case 'demographic-setup':
