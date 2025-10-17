@@ -233,49 +233,53 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
   const stepInfo = getStepInfo();
 
   return (
-    <div className="min-h-screen bg-gradient-subtle py-8">
-      <div className="max-w-5xl mx-auto px-4">
-        {/* 새로운 헤더 디자인 */}
-        <div className="py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <button 
-                onClick={() => {
-                  if (currentStep > 0) {
-                    handlePrevious();
-                  } else {
-                    onTabChange?.('personal-service');
-                  }
-                }}
-                className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
-              >
-                ←
-              </button>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <span className="text-4xl mr-3">{stepInfo.icon}</span>
-                  {stepInfo.title}
-                </h1>
-                <p className="text-gray-600 mt-2">
-                  {stepInfo.description}
-                </p>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <button 
+                  onClick={() => {
+                    if (currentStep > 0) {
+                      handlePrevious();
+                    } else {
+                      onTabChange?.('personal-service');
+                    }
+                  }}
+                  className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
+                >
+                  ←
+                </button>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                    <span className="text-4xl mr-3">{stepInfo.icon}</span>
+                    {stepInfo.title}
+                  </h1>
+                  <p className="text-gray-600 mt-2">
+                    {stepInfo.description}
+                  </p>
+                </div>
               </div>
-            </div>
-            
-            {/* 우측 진행 상태 표시 */}
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500">
-                {currentStep + 1} / {steps.length}
-              </span>
-              <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
-                  style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-                />
+              
+              {/* 우측 진행 상태 표시 */}
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-500">
+                  {currentStep + 1} / {steps.length}
+                </span>
+                <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
+                    style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* 진행 단계 표시 */}
         <div className="mb-8">
@@ -410,8 +414,8 @@ const BasicInfoStep: React.FC<{
         </ul>
       </div>
 
-      <div className="space-y-4">
-        <div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="lg:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             프로젝트 제목 *
           </label>
@@ -424,7 +428,7 @@ const BasicInfoStep: React.FC<{
           />
         </div>
 
-        <div>
+        <div className="lg:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             프로젝트 설명 *
           </label>
@@ -437,7 +441,7 @@ const BasicInfoStep: React.FC<{
           />
         </div>
 
-        <div>
+        <div className="lg:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             연구 목표
           </label>
@@ -533,7 +537,7 @@ const AHPModelStep: React.FC<{
       </div>
 
       {/* 기준 및 대안 설정 UI */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h4 className="font-medium text-gray-900 mb-4">평가 기준 설정</h4>
           <p className="text-sm text-gray-600 mb-4">
@@ -599,8 +603,8 @@ const InvitationStep: React.FC<{
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="lg:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             초대 메시지
           </label>
@@ -626,6 +630,17 @@ const InvitationStep: React.FC<{
         </div>
 
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            평가 예상 시간
+          </label>
+          <input
+            type="text"
+            placeholder="예: 10-15분"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <div className="lg:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             평가자 이메일 (선택)
           </label>
@@ -657,47 +672,59 @@ const CompletionStep: React.FC<{
   };
 
   return (
-    <div className="text-center py-12">
-      <CheckCircleIcon className="h-20 w-20 text-green-500 mx-auto mb-4" />
-      <h2 className="text-3xl font-bold text-gray-900 mb-2">
-        프로젝트 생성 완료!
-      </h2>
-      <p className="text-gray-600 mb-8">
-        "{projectTitle}" 프로젝트가 성공적으로 생성되었습니다.
-      </p>
+    <div className="py-8">
+      <div className="text-center mb-8">
+        <CheckCircleIcon className="h-20 w-20 text-green-500 mx-auto mb-4" />
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          프로젝트 생성 완료!
+        </h2>
+        <p className="text-gray-600">
+          "{projectTitle}" 프로젝트가 성공적으로 생성되었습니다.
+        </p>
+      </div>
 
-      {shortLink && (
-        <div className="bg-gray-50 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">평가자 초대 링크</h3>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <input
-              type="text"
-              value={shortLink}
-              readOnly
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-white"
-            />
-            <button
-              onClick={() => copyToClipboard(shortLink)}
-              className="btn btn-secondary"
-            >
-              복사
-            </button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {shortLink && (
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-semibold mb-4">평가자 초대 링크</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                type="text"
+                value={shortLink}
+                readOnly
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-white"
+              />
+              <button
+                onClick={() => copyToClipboard(shortLink)}
+                className="btn btn-secondary whitespace-nowrap"
+              >
+                복사
+              </button>
+            </div>
+            <p className="text-sm text-gray-600">
+              이 링크를 평가자에게 공유하여 평가에 참여하도록 안내하세요.
+            </p>
           </div>
-        </div>
-      )}
+        )}
 
-      {qrCodeUrl && (
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">QR 코드</h3>
-          <img
-            src={qrCodeUrl}
-            alt="평가자 초대 QR코드"
-            className="mx-auto w-64 h-64"
-          />
-        </div>
-      )}
+        {qrCodeUrl && (
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-semibold mb-4">QR 코드</h3>
+            <div className="flex justify-center mb-4">
+              <img
+                src={qrCodeUrl}
+                alt="평가자 초대 QR코드"
+                className="w-48 h-48"
+              />
+            </div>
+            <p className="text-sm text-gray-600">
+              오프라인 평가나 모바일 기기에서 QR코드를 스캔하여 바로 평가를 시작할 수 있습니다.
+            </p>
+          </div>
+        )}
+      </div>
 
-      <div className="flex justify-center gap-4">
+      <div className="flex justify-center gap-4 mt-8">
         <button
           onClick={() => {
             // 프로젝트 관리 대시보드로 이동
