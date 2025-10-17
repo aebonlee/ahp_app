@@ -126,16 +126,54 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
         return <BasicInfoStep data={projectData} onChange={setProjectData} />;
       case 1:
         return (
-          <DemographicSurveyConfig
-            config={projectData.demographic_survey_config}
-            onChange={(config) =>
-              setProjectData({
-                ...projectData,
-                demographic_survey_config: config,
-                require_demographics: config.enabled,
-              })
-            }
-          />
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">2단계: 인구통계 설문 설정</h2>
+              <p className="text-gray-600">
+                평가자의 인구통계학적 정보를 수집하여 더욱 심층적인 분석을 수행할 수 있습니다.
+              </p>
+            </div>
+
+            {/* 단계 설명 카드 */}
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <h3 className="font-semibold text-orange-900 mb-2">📊 이 단계에서 설정하는 항목</h3>
+              <ul className="text-sm text-orange-800 space-y-1">
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span><strong>기본 정보 항목</strong>: 나이, 성별, 학력, 직업, 산업, 경력 등</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span><strong>맞춤형 질문</strong>: 연구에 필요한 추가 설문 항목 설정</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span><strong>설문 템플릿</strong>: 사전 정의된 템플릿 선택 또는 직접 구성</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span><strong>설문 순서</strong>: 인구통계 → AHP 또는 AHP → 인구통계</span>
+                </li>
+              </ul>
+              <div className="mt-3 p-3 bg-orange-100 rounded-md">
+                <p className="text-xs text-orange-700">
+                  💡 <strong>팁</strong>: 인구통계 정보를 수집하면 그룹별 비교 분석, 상관관계 분석 등 
+                  더욱 풍부한 연구 결과를 얻을 수 있습니다. 필요없다면 건너뛸 수도 있습니다.
+                </p>
+              </div>
+            </div>
+
+            <DemographicSurveyConfig
+              config={projectData.demographic_survey_config}
+              onChange={(config) =>
+                setProjectData({
+                  ...projectData,
+                  demographic_survey_config: config,
+                  require_demographics: config.enabled,
+                })
+              }
+            />
+          </div>
         );
       case 2:
         return <AHPModelStep data={projectData} onChange={setProjectData} />;
@@ -158,7 +196,64 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
 
   return (
     <div className="min-h-screen bg-gradient-subtle py-8">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-5xl mx-auto px-4">
+        {/* 상단 헤더 섹션 */}
+        <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <div className="flex items-center space-x-3 mb-3">
+                {/* 뒤로가기 버튼 */}
+                <button
+                  onClick={() => onTabChange?.('personal-service')}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="이전 페이지로"
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                {/* 페이지 경로 (Breadcrumb) */}
+                <div className="flex items-center text-sm text-gray-500">
+                  <span>홈</span>
+                  <svg className="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  <span>프로젝트 관리</span>
+                  <svg className="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  <span className="text-gray-900 font-medium">프로젝트 생성 워크플로우</span>
+                </div>
+              </div>
+              
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                통합 프로젝트 생성 워크플로우
+              </h1>
+              <p className="text-gray-600">
+                인구통계 설문과 AHP 평가를 통합한 체계적인 프로젝트 생성 과정입니다.
+                각 단계를 순차적으로 진행하며 언제든 이전 단계로 돌아갈 수 있습니다.
+              </p>
+            </div>
+            
+            {/* 우측 액션 버튼들 */}
+            <div className="flex space-x-2 ml-6">
+              <button
+                type="button"
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md"
+                onClick={() => {
+                  // 도움말 또는 가이드 표시
+                  alert('워크플로우 가이드: 각 단계별로 필요한 정보를 입력해주세요.');
+                }}
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                사용 가이드
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* 진행 단계 표시 */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -265,10 +360,37 @@ const BasicInfoStep: React.FC<{
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">프로젝트 기본 정보</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">1단계: 프로젝트 기본 정보</h2>
         <p className="text-gray-600">
           프로젝트의 기본 정보를 입력해주세요. 이 정보는 평가자에게 표시됩니다.
         </p>
+      </div>
+
+      {/* 단계 설명 카드 */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="font-semibold text-blue-900 mb-2">📋 이 단계에서 설정하는 항목</h3>
+        <ul className="text-sm text-blue-800 space-y-1">
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>프로젝트 제목</strong>: 평가자가 쉽게 이해할 수 있는 명확한 제목</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>프로젝트 설명</strong>: 연구의 배경과 목적을 구체적으로 설명</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>연구 목표</strong>: 이 분석을 통해 달성하고자 하는 구체적인 목표</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>평가 모드</strong>: 평가 방식 선택 (실용적/이론적/직접입력/퍼지)</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>평가 진행 순서</strong>: 인구통계 설문과 AHP 평가의 순서 결정</span>
+          </li>
+        </ul>
       </div>
 
       <div className="space-y-4">
@@ -364,22 +486,62 @@ const AHPModelStep: React.FC<{
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">AHP 모형 설계</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">3단계: AHP 모형 설계</h2>
         <p className="text-gray-600">
-          평가 기준과 대안을 설정하세요. 나중에 상세 설정이 가능합니다.
+          평가 기준과 대안을 설정하세요. 프로젝트 생성 후에도 상세 설정이 가능합니다.
         </p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
-          💡 이 단계에서는 기본 구조만 설정합니다. 프로젝트 생성 후 상세 설정 페이지에서
-          계층 구조와 세부 기준을 추가할 수 있습니다.
-        </p>
+      {/* 단계 설명 카드 */}
+      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+        <h3 className="font-semibold text-purple-900 mb-2">📊 이 단계에서 설정하는 항목</h3>
+        <ul className="text-sm text-purple-800 space-y-1">
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>평가 기준</strong>: 의사결정을 위한 주요 평가 요소 (예: 비용, 품질, 시간)</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>하위 기준</strong>: 각 주요 기준의 세부 평가 항목</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>대안 목록</strong>: 비교 평가할 선택지들 (예: 제품 A, B, C)</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>계층 구조</strong>: 기준과 하위 기준의 관계 설정</span>
+          </li>
+        </ul>
+        <div className="mt-3 p-3 bg-purple-100 rounded-md">
+          <p className="text-xs text-purple-700">
+            💡 <strong>팁</strong>: 논문 작성 시에는 3개 기준 × 3개 대안 구조를 권장합니다. 
+            이는 일관성 검증(CR ≤ 0.1) 충족 확률이 높고 쌍대비교 횟수를 최소화할 수 있습니다.
+          </p>
+        </div>
       </div>
 
-      {/* 기준 및 대안 설정 UI는 기존 컴포넌트 재사용 또는 새로 구현 */}
-      <div className="text-center py-12 text-gray-500">
-        [기준 및 대안 설정 UI - 구현 예정]
+      {/* 기준 및 대안 설정 UI */}
+      <div className="space-y-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="font-medium text-gray-900 mb-4">평가 기준 설정</h4>
+          <p className="text-sm text-gray-600 mb-4">
+            프로젝트 생성 후 상세 페이지에서 기준을 추가하고 계층 구조를 설정할 수 있습니다.
+          </p>
+          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            → 기본 템플릿 사용하기
+          </button>
+        </div>
+        
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="font-medium text-gray-900 mb-4">대안 설정</h4>
+          <p className="text-sm text-gray-600 mb-4">
+            평가할 대안들을 나중에 추가할 수 있습니다.
+          </p>
+          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            → 예시 대안 보기
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -393,8 +555,41 @@ const InvitationStep: React.FC<{
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">평가자 초대 설정</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">4단계: 평가자 초대 설정</h2>
         <p className="text-gray-600">평가자 초대 방법과 메시지를 설정하세요.</p>
+      </div>
+
+      {/* 단계 설명 카드 */}
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <h3 className="font-semibold text-green-900 mb-2">👥 이 단계에서 설정하는 항목</h3>
+        <ul className="text-sm text-green-800 space-y-1">
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>초대 메시지</strong>: 평가자에게 전달될 연구 참여 안내 메시지</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>평가 마감일</strong>: 평가 완료 기한 설정</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>평가자 이메일</strong>: 초대할 평가자들의 이메일 주소 목록</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>초대 링크 생성</strong>: QR코드 및 단축 URL 자동 생성</span>
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            <span><strong>알림 설정</strong>: 평가 진행 상황 알림 옵션</span>
+          </li>
+        </ul>
+        <div className="mt-3 p-3 bg-green-100 rounded-md">
+          <p className="text-xs text-green-700">
+            💡 <strong>팁</strong>: 프로젝트 생성 후에도 평가자 관리 페이지에서 추가 초대가 가능합니다.
+            QR코드는 오프라인 평가 수집에 유용하며, 링크는 온라인 배포에 적합합니다.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-4">
