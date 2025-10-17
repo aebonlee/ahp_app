@@ -4172,8 +4172,16 @@ ${project?.title} - ${type} 프레젠테이션
   // activeMenu와 externalActiveTab 둘 다 체크
   const currentTab = externalActiveTab || activeMenu;
   
+  console.log('🎯 PersonalServiceDashboard 메인 렌더링:', {
+    currentTab,
+    externalActiveTab,
+    activeMenu,
+    isWizardMenu: ['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(currentTab)
+  });
+  
   // project-wizard 관련 메뉴들은 전체 화면 사용
   if (['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(currentTab)) {
+    console.log('🚀 Wizard 페이지 렌더링:', currentTab);
     return renderProjectWizardFullPage();
   }
   
@@ -5193,6 +5201,7 @@ ${project?.title} - ${type} 프레젠테이션
   }
   
   // 이외의 경우 메뉴 컨텐츠 렌더링
+  console.log('⚠️ Fallback 렌더링 - 예상치 못한 currentTab:', currentTab);
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="bg-white rounded-lg border border-gray-200">
