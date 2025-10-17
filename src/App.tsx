@@ -2183,18 +2183,10 @@ function App() {
         );
         
       default:
-        return (
-          <Card title="환영합니다">
-            <div className="text-center py-8">
-              <h3 className="text-xl font-medium text-gray-900 mb-4">
-                AHP 의사결정 지원 시스템에 오신 것을 환영합니다!
-              </h3>
-              <p className="text-gray-600">
-                다기준 의사결정 분석을 위한 전문 도구입니다.
-              </p>
-            </div>
-          </Card>
-        );
+        console.warn('⚠️ 처리되지 않은 activeTab:', activeTab);
+        // personal-service로 리다이렉트
+        setActiveTab('personal-service');
+        return null;
     }
   };
 
