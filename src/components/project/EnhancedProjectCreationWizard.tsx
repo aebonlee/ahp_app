@@ -254,18 +254,6 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
                   <p className="text-gray-600 mt-2">
                     {stepInfo.description}
                   </p>
-                  {/* 진행 상태를 설명 아래로 이동 */}
-                  <div className="flex items-center space-x-3 mt-3">
-                    <span className="text-sm text-gray-500">
-                      단계: {currentStep + 1} / {steps.length}
-                    </span>
-                    <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
-                        style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-                      />
-                    </div>
-                  </div>
                 </div>
               </div>
               

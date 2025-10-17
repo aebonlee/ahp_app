@@ -4151,14 +4151,10 @@ ${project?.title} - ${type} 프레젠테이션
   // 각 전체 화면 페이지들을 개별적으로 처리
   if (currentTab === 'project-wizard') {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <EnhancedProjectCreationWizard 
-            onTabChange={handleTabChange}
-            onNavigate={() => handleTabChange('dashboard')}
-          />
-        </div>
-      </div>
+      <EnhancedProjectCreationWizard 
+        onTabChange={handleTabChange}
+        onNavigate={() => handleTabChange('dashboard')}
+      />
     );
   }
   
