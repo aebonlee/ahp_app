@@ -5200,13 +5200,35 @@ ${project?.title} - ${type} 프레젠테이션
   );
   }
   
-  // 이외의 경우 메뉴 컨텐츠 렌더링
-  console.log('⚠️ Fallback 렌더링 - 예상치 못한 currentTab:', currentTab);
+  // 이외의 경우 - 환영 메시지 표시 (이것이 문제의 원인!)
+  console.error('🚨 예상치 못한 currentTab으로 환영 메시지 표시:', currentTab);
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-6">
-          {renderMenuContent()}
+      <div className="py-6">
+        <div className="text-center space-y-6">
+          <div className="space-y-3 p-6 rounded-xl" 
+               style={{
+                 border: '1px solid var(--border-light)',
+                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+               }}>
+            <h1 className="text-3xl font-bold text-gray-900">
+              환영합니다
+            </h1>
+            <h2 className="text-xl text-gray-700">
+              AHP 의사결정 지원 시스템에 오신 것을 환영합니다!
+            </h2>
+            <p className="text-gray-600">
+              다기준 의사결정 분석을 위한 전문 도구입니다.
+            </p>
+            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 font-semibold">
+                ⚠️ 디버그: 잘못된 라우팅 - currentTab: "{currentTab}"
+              </p>
+              <p className="text-red-600 text-sm mt-2">
+                이 메시지가 보인다면 라우팅에 문제가 있습니다.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
