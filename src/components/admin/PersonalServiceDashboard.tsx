@@ -4155,6 +4155,14 @@ ${project?.title} - ${type} 프레젠테이션
             />
           </div>
         );
+      
+      // 전체 화면으로 렌더링되는 메뉴들은 여기서 null 반환
+      case 'project-wizard':
+      case 'demographic-setup':
+      case 'evaluator-invitation':
+        console.log('🚀 전체 화면 메뉴 감지 - null 반환:', activeMenu);
+        return null;
+        
       default:
         console.log('🔄 Default case 진입 - renderOverview() 호출:', { activeMenu, userRole: user?.role });
         return renderOverview();
