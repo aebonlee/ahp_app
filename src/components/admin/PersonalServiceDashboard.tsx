@@ -848,7 +848,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              안녕하세요, {user?.name || '연구자'}님 👋
+              안녕하세요, {user?.first_name || user?.username || '연구자'}님 👋
             </h2>
             <p className="text-gray-600">
               오늘도 성공적인 AHP 분석을 시작해보세요
