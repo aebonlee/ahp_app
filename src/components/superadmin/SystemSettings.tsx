@@ -247,26 +247,31 @@ const SystemSettings: React.FC = () => {
         </div>
       </div>
 
-      {/* 탭 네비게이션 */}
-      <div className="flex space-x-4 mb-6 border-b overflow-x-auto">
-        {(['general', 'security', 'email', 'backup', 'api', 'maintenance'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 font-medium whitespace-nowrap ${
-              activeTab === tab
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            {tab === 'general' && '일반'}
-            {tab === 'security' && '보안'}
-            {tab === 'email' && '이메일'}
-            {tab === 'backup' && '백업'}
-            {tab === 'api' && 'API'}
-            {tab === 'maintenance' && '유지보수'}
-          </button>
-        ))}
+      {/* 개선된 탭 네비게이션 */}
+      <div className="bg-white rounded-lg shadow-sm mb-6">
+        <div className="flex space-x-0 border-b overflow-x-auto">
+          {[
+            { id: 'general', label: '일반', icon: '🌐' },
+            { id: 'security', label: '보안', icon: '🔒' },
+            { id: 'email', label: '이메일', icon: '📧' },
+            { id: 'backup', label: '백업', icon: '💾' },
+            { id: 'api', label: 'API', icon: '🔌' },
+            { id: 'maintenance', label: '유지보수', icon: '🔧' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-6 py-3 font-medium whitespace-nowrap transition-colors ${
+                activeTab === tab.id
+                  ? 'border-b-3 border-blue-600 text-blue-600 bg-blue-50'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <span className="mr-2">{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* 일반 설정 */}
