@@ -10,6 +10,7 @@ import exportService from '../../services/exportService';
 import MyProjects from './MyProjects';
 import ProjectCreation from './ProjectCreation';
 import EnhancedProjectCreationWizard from '../project/EnhancedProjectCreationWizard';
+import DemographicSurveyConfig from '../project/DemographicSurveyConfig';
 import CriteriaManagement from './CriteriaManagement';
 import AlternativeManagement from './AlternativeManagement';
 import EvaluatorAssignment from './EvaluatorAssignment';
@@ -3224,36 +3225,175 @@ ${project?.title} - ${type} 프레젠테이션
     </div>
   );
 
-  const renderProjectWizardFullPage = () => (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <button 
-                  onClick={() => handleTabChange('dashboard')}
-                  className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
-                >
-                  ←
-                </button>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                    <span className="text-4xl mr-3">🚀</span>
-                    새 프로젝트 생성
-                  </h1>
-                  <p className="text-gray-600 mt-2">인구통계 설문과 AHP 평가를 통합한 프로젝트를 생성합니다</p>
+  const renderProjectWizardFullPage = () => {
+    const currentTab = externalActiveTab || activeMenu;
+    
+    if (currentTab === 'project-wizard') {
+      return (
+        <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+          <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="py-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <button 
+                      onClick={() => handleTabChange('dashboard')}
+                      className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
+                    >
+                      ←
+                    </button>
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                        <span className="text-4xl mr-3">🚀</span>
+                        새 프로젝트 생성
+                      </h1>
+                      <p className="text-gray-600 mt-2">인구통계 설문과 AHP 평가를 통합한 프로젝트를 생성합니다</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <EnhancedProjectCreationWizard />
+          </div>
+        </div>
+      );
+    } else if (currentTab === 'demographic-setup') {
+      return (
+        <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+          <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="py-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <button 
+                      onClick={() => handleTabChange('dashboard')}
+                      className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
+                    >
+                      ←
+                    </button>
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                        <span className="text-4xl mr-3">📝</span>
+                        인구통계 설문 설계
+                      </h1>
+                      <p className="text-gray-600 mt-2">평가자의 인구통계학적 정보를 수집할 설문을 설계합니다</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <DemographicSurveyConfig
+              config={{
+                enabled: true,
+                useAge: true,
+                useGender: true,
+                useEducation: true,
+                useOccupation: true,
+                useIndustry: true,
+                useExperience: true,
+                customQuestions: [],
+                surveyTitle: '인구통계학적 기본 정보 조사',
+                surveyDescription: '본 설문은 연구 참여자의 기본 정보를 수집하기 위한 것입니다.',
+                estimatedTime: 2,
+              }}
+              onChange={(config) => {
+                console.log('인구통계 설문 설정 변경:', config);
+              }}
+            />
+          </div>
+        </div>
+      );
+    } else if (currentTab === 'evaluator-invitation') {
+      return (
+        <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+          <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="py-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <button 
+                      onClick={() => handleTabChange('dashboard')}
+                      className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
+                    >
+                      ←
+                    </button>
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                        <span className="text-4xl mr-3">👥</span>
+                        평가자 초대
+                      </h1>
+                      <p className="text-gray-600 mt-2">QR코드와 링크를 통해 평가자를 초대합니다</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <div className="text-center space-y-6">
+                {/* QR 코드 섹션 */}
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-semibold text-gray-900">QR코드로 초대</h2>
+                  <div className="inline-block p-4 bg-gray-50 rounded-lg">
+                    <div className="w-64 h-64 bg-gray-200 flex items-center justify-center rounded">
+                      <span className="text-gray-500">QR 코드가 여기에 표시됩니다</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">평가자가 QR코드를 스캔하면 평가 페이지로 바로 이동합니다</p>
+                </div>
+                
+                {/* 링크 섹션 */}
+                <div className="space-y-4 border-t pt-6">
+                  <h2 className="text-2xl font-semibold text-gray-900">링크로 초대</h2>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value="https://ahp-platform.com/eval/abc123"
+                      readOnly
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                    />
+                    <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                      복사
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-600">링크를 복사하여 이메일이나 메신저로 공유할 수 있습니다</p>
+                </div>
+                
+                {/* 이메일 초대 섹션 */}
+                <div className="space-y-4 border-t pt-6">
+                  <h2 className="text-2xl font-semibold text-gray-900">이메일로 초대</h2>
+                  <div className="space-y-3">
+                    <textarea
+                      placeholder="평가자 이메일을 입력하세요 (한 줄에 하나씩)"
+                      rows={5}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    />
+                    <button className="w-full px-6 py-3 bg-tertiary text-white rounded-lg hover:bg-tertiary-dark transition-colors">
+                      초대 이메일 발송
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      );
+    }
+    
+    // 기본값으로 프로젝트 위자드 반환
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <EnhancedProjectCreationWizard />
+        </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <EnhancedProjectCreationWizard />
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderWorkshopManagementFullPage = () => (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
@@ -3899,12 +4039,6 @@ ${project?.title} - ${type} 프레젠테이션
         );
       case 'creation':
         return renderProjectCreation();
-      case 'project-wizard':
-        return <EnhancedProjectCreationWizard />;
-      case 'demographic-setup':
-        return <EnhancedProjectCreationWizard />;
-      case 'evaluator-invitation':
-        return <EnhancedProjectCreationWizard />;
       case 'model-builder':
         return currentStep !== 'overview' ? renderStepContent() : (
           <Card title="모델 구축">
@@ -4015,24 +4149,29 @@ ${project?.title} - ${type} 프레젠테이션
   };
 
   // 개별 메뉴 페이지들은 전체 화면을 사용
-  if (externalActiveTab && externalActiveTab !== 'personal-service') {
+  // activeMenu와 externalActiveTab 둘 다 체크
+  const currentTab = externalActiveTab || activeMenu;
+  
+  if (currentTab && currentTab !== 'personal-service' && currentTab !== 'dashboard') {
+    // project-wizard 관련 메뉴들은 전체 화면 사용
+    if (['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(currentTab)) {
+      return renderProjectWizardFullPage();
+    }
+    
     return (
       <>
-        {externalActiveTab === 'my-projects' && renderMyProjectsFullPage()}
-        {externalActiveTab === 'project-creation' && renderProjectCreationFullPage()}
-        {externalActiveTab === 'project-wizard' && renderProjectWizardFullPage()}
-        {externalActiveTab === 'demographic-setup' && renderProjectWizardFullPage()}
-        {externalActiveTab === 'evaluator-invitation' && renderProjectWizardFullPage()}
-        {externalActiveTab === 'model-builder' && renderModelBuilderFullPage()}
-        {externalActiveTab === 'evaluator-management' && renderEvaluatorManagementFullPage()}
-        {externalActiveTab === 'progress-monitoring' && renderProgressMonitoringFullPage()}
-        {externalActiveTab === 'results-analysis' && renderResultsAnalysisFullPage()}
-        {externalActiveTab === 'ai-paper-assistant' && renderPaperManagementFullPage()}
-        {externalActiveTab === 'export-reports' && renderExportReportsFullPage()}
-        {externalActiveTab === 'workshop-management' && renderWorkshopManagementFullPage()}
-        {externalActiveTab === 'decision-support-system' && renderDecisionSupportSystemFullPage()}
-        {externalActiveTab === 'personal-settings' && renderPersonalSettingsFullPage()}
-        {externalActiveTab === 'demographic-survey' && renderDemographicSurveyFullPage()}
+        {currentTab === 'my-projects' && renderMyProjectsFullPage()}
+        {currentTab === 'project-creation' && renderProjectCreationFullPage()}
+        {currentTab === 'model-builder' && renderModelBuilderFullPage()}
+        {currentTab === 'evaluator-management' && renderEvaluatorManagementFullPage()}
+        {currentTab === 'progress-monitoring' && renderProgressMonitoringFullPage()}
+        {currentTab === 'results-analysis' && renderResultsAnalysisFullPage()}
+        {currentTab === 'ai-paper-assistant' && renderPaperManagementFullPage()}
+        {currentTab === 'export-reports' && renderExportReportsFullPage()}
+        {currentTab === 'workshop-management' && renderWorkshopManagementFullPage()}
+        {currentTab === 'decision-support-system' && renderDecisionSupportSystemFullPage()}
+        {currentTab === 'personal-settings' && renderPersonalSettingsFullPage()}
+        {currentTab === 'demographic-survey' && renderDemographicSurveyFullPage()}
       </>
     );
   }
