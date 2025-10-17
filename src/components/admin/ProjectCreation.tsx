@@ -150,30 +150,63 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
         />
       )}
       <div className="max-w-6xl mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            단계 1 — 프로젝트 추가
-          </h1>
-          <p className="text-gray-600">
-            새로운 AHP 의사결정 분석 프로젝트를 생성합니다.
-          </p>
-          
-          {/* 예시 프로젝트 버튼 */}
-          <div className="mt-4">
-            <button
-              type="button"
-              onClick={loadExampleProject}
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-md"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-              예시: 대학원생의 연구 역량 프로젝트
-            </button>
+        {/* 상단 헤더 섹션 */}
+        <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <div className="flex items-center space-x-3 mb-3">
+                {/* 뒤로가기 버튼 */}
+                <button
+                  onClick={onCancel}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="이전 페이지로"
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                {/* 페이지 경로 (Breadcrumb) */}
+                <div className="flex items-center text-sm text-gray-500">
+                  <span>홈</span>
+                  <svg className="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  <span>프로젝트 관리</span>
+                  <svg className="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  <span className="text-gray-900 font-medium">새 프로젝트 생성</span>
+                </div>
+              </div>
+              
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                새 프로젝트 생성
+              </h1>
+              <p className="text-gray-600">
+                AHP 의사결정 분석을 위한 새로운 프로젝트를 생성합니다. 
+                프로젝트 정보와 분석 방법을 설정해주세요.
+              </p>
+            </div>
+            
+            {/* 우측 액션 버튼들 */}
+            <div className="flex space-x-2 ml-6">
+              {/* 예시 프로젝트 버튼 */}
+              <button
+                type="button"
+                onClick={loadExampleProject}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-md"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                예시 프로젝트
+              </button>
+            </div>
           </div>
+        </div>
 
-          {/* 논문 작성 권장 구조 안내 */}
-          <div className="mt-6 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-6 rounded-r-lg shadow-sm">
+        {/* 논문 작성 권장 구조 안내 */}
+        <div className="mb-6 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-6 rounded-r-lg shadow-sm">
             <div className="flex items-start justify-between">
               <div className="flex items-start flex-1">
                 <div className="flex-shrink-0">
@@ -268,8 +301,8 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
               </div>
             </div>
           </div>
-        </div>
 
+        {/* 메인 폼 섹션 */}
         <div className="mt-8">
           <Card className="p-8 shadow-lg">
             {errors.general && (
