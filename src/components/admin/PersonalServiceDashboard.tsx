@@ -3269,7 +3269,10 @@ ${project?.title} - ${type} 프레젠테이션
               </div>
             </div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <EnhancedProjectCreationWizard />
+              <EnhancedProjectCreationWizard 
+                onTabChange={handleTabChange}
+                onNavigate={() => handleTabChange('dashboard')}
+              />
             </div>
           </div>
         );
@@ -4177,7 +4180,10 @@ ${project?.title} - ${type} 프레젠테이션
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <EnhancedProjectCreationWizard />
+          <EnhancedProjectCreationWizard 
+            onTabChange={handleTabChange}
+            onNavigate={() => handleTabChange('dashboard')}
+          />
         </div>
       </div>
     );

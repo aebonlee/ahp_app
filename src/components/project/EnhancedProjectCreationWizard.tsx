@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -35,8 +34,15 @@ interface ProjectData {
   deadline?: string;
 }
 
-const EnhancedProjectCreationWizard: React.FC = () => {
-  const navigate = useNavigate();
+interface EnhancedProjectCreationWizardProps {
+  onNavigate?: (path: string) => void;
+  onTabChange?: (tab: string) => void;
+}
+
+const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps> = ({ 
+  onNavigate,
+  onTabChange 
+}) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
@@ -142,7 +148,7 @@ const EnhancedProjectCreationWizard: React.FC = () => {
             qrCodeUrl={qrCodeUrl}
             shortLink={shortLink}
             projectTitle={projectData.title}
-            onNavigate={navigate}
+            onNavigate={onNavigate || (() => {})}
           />
         );
       default:
@@ -441,7 +447,7 @@ const CompletionStep: React.FC<{
   qrCodeUrl: string;
   shortLink: string;
   projectTitle: string;
-  onNavigate: (path: string) => void;
+  onNavigate?: (path: string) => void;
 }> = ({ projectId, qrCodeUrl, shortLink, projectTitle, onNavigate }) => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -493,7 +499,7 @@ const CompletionStep: React.FC<{
         <button
           onClick={() => {
             // 프로젝트 관리 대시보드로 이동
-            if (projectId) {
+            if (projectId && onNavigate) {
               // 프로젝트가 생성되면 프로젝트 목록으로 이동
               onNavigate('/');
               // 실제로는 메인 대시보드의 프로젝트 관리 탭으로 이동해야 함
