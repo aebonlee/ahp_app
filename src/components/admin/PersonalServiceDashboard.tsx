@@ -4172,17 +4172,118 @@ ${project?.title} - ${type} 프레젠테이션
   // activeMenu와 externalActiveTab 둘 다 체크
   const currentTab = externalActiveTab || activeMenu;
   
-  console.log('🎯 PersonalServiceDashboard 메인 렌더링:', {
-    currentTab,
-    externalActiveTab,
-    activeMenu,
-    isWizardMenu: ['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(currentTab)
-  });
+  // 각 전체 화면 페이지들을 개별적으로 처리
+  if (currentTab === 'project-wizard') {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <EnhancedProjectCreationWizard />
+        </div>
+      </div>
+    );
+  }
   
-  // project-wizard 관련 메뉴들은 전체 화면 사용
-  if (['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(currentTab)) {
-    console.log('🚀 Wizard 페이지 렌더링:', currentTab);
-    return renderProjectWizardFullPage();
+  if (currentTab === 'demographic-setup') {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <button 
+                    onClick={() => handleTabChange('dashboard')}
+                    className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
+                  >
+                    ←
+                  </button>
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                      <span className="text-4xl mr-3">📝</span>
+                      인구통계 설문 설계
+                    </h1>
+                    <p className="text-gray-600 mt-2">평가자의 인구통계학적 정보를 수집할 설문을 설계합니다</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <DemographicSurveyConfig
+            config={{
+              enabled: true,
+              useAge: true,
+              useGender: true,
+              useEducation: true,
+              useOccupation: true,
+              useIndustry: true,
+              useExperience: true,
+              customQuestions: [],
+              surveyTitle: '인구통계학적 기본 정보 조사',
+              surveyDescription: '본 설문은 연구 참여자의 기본 정보를 수집하기 위한 것입니다.',
+              estimatedTime: 2,
+            }}
+            onChange={(config) => {
+              console.log('인구통계 설문 설정 변경:', config);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+  
+  if (currentTab === 'evaluator-invitation') {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <button 
+                    onClick={() => handleTabChange('dashboard')}
+                    className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
+                  >
+                    ←
+                  </button>
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                      <span className="text-4xl mr-3">👥</span>
+                      평가자 초대
+                    </h1>
+                    <p className="text-gray-600 mt-2">QR코드와 링크를 통해 평가자를 초대합니다</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {selectedProjectId ? (
+            <EnhancedEvaluatorManagement 
+              projectId={selectedProjectId}
+              projectName={projects.find(p => p.id === selectedProjectId)?.title || '프로젝트'}
+              onClose={() => handleTabChange('dashboard')}
+            />
+          ) : (
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <div className="text-center">
+                <div className="text-4xl mb-4">📂</div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">프로젝트를 선택해주세요</h2>
+                <p className="text-gray-600 mb-6">평가자를 초대할 프로젝트를 먼저 선택해야 합니다</p>
+                <button 
+                  onClick={() => handleTabChange('projects')}
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                >
+                  프로젝트 목록으로 이동
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
   
   // 다른 전체 화면 페이지들
@@ -5200,35 +5301,12 @@ ${project?.title} - ${type} 프레젠테이션
   );
   }
   
-  // 이외의 경우 - 환영 메시지 표시 (이것이 문제의 원인!)
-  console.error('🚨 예상치 못한 currentTab으로 환영 메시지 표시:', currentTab);
+  // 이외의 경우 메뉴 컨텐츠 렌더링
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="py-6">
-        <div className="text-center space-y-6">
-          <div className="space-y-3 p-6 rounded-xl" 
-               style={{
-                 border: '1px solid var(--border-light)',
-                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-               }}>
-            <h1 className="text-3xl font-bold text-gray-900">
-              환영합니다
-            </h1>
-            <h2 className="text-xl text-gray-700">
-              AHP 의사결정 지원 시스템에 오신 것을 환영합니다!
-            </h2>
-            <p className="text-gray-600">
-              다기준 의사결정 분석을 위한 전문 도구입니다.
-            </p>
-            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 font-semibold">
-                ⚠️ 디버그: 잘못된 라우팅 - currentTab: "{currentTab}"
-              </p>
-              <p className="text-red-600 text-sm mt-2">
-                이 메시지가 보인다면 라우팅에 문제가 있습니다.
-              </p>
-            </div>
-          </div>
+      <div className="bg-white rounded-lg border border-gray-200">
+        <div className="p-6">
+          {renderMenuContent()}
         </div>
       </div>
     </div>
