@@ -1740,7 +1740,10 @@ function App() {
         
       case 'my-projects':
       case 'project-creation':
-        console.log('🎯 PersonalServiceDashboard_Enhanced 렌더링 (my-projects/project-creation):', { activeTab, userId: user.id, userRole: user.role });
+      case 'project-wizard':
+      case 'demographic-setup':
+      case 'evaluator-invitation':
+        console.log('🎯 PersonalServiceDashboard_Enhanced 렌더링 (my-projects/project-creation/wizard):', { activeTab, userId: user.id, userRole: user.role });
         return (
           <PersonalServiceDashboard 
             user={user}

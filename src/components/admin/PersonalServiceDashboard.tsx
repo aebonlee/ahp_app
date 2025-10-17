@@ -276,6 +276,11 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   }, [onCreateProject]);
   
   const [activeMenu, setActiveMenu] = useState<'dashboard' | 'projects' | 'creation' | 'project-wizard' | 'demographic-setup' | 'evaluator-invitation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash'>(() => {
+    // externalActiveTab이 있으면 그것을 우선 사용
+    if (externalActiveTab && ['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(externalActiveTab)) {
+      return externalActiveTab as any;
+    }
+    
     // URL 파라미터에서 직접 demographic-survey 확인
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
@@ -366,6 +371,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     academic: { name: '연구 분석', desc: '학술 연구용 템플릿' }
   };
 
+  // externalActiveTab이 변경되면 activeMenu도 업데이트
+  useEffect(() => {
+    if (externalActiveTab && ['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(externalActiveTab)) {
+      console.log('🔄 externalActiveTab 변경 감지:', externalActiveTab);
+      setActiveMenu(externalActiveTab as any);
+    }
+  }, [externalActiveTab]);
+  
   // 슈퍼 관리자 모드 체크 및 리다이렉트
   useEffect(() => {
     const storedUserStr = localStorage.getItem('ahp_user');
