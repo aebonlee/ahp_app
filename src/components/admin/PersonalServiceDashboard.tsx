@@ -835,103 +835,230 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       quotas: getCurrentQuotas()
     });
     
+    // 최근 프로젝트 가져오기 (최대 3개)
+    const recentProjects = (projects || [])
+      .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
+      .slice(0, 3);
+      
     return (
     <div className="space-y-6">
 
-      {/* 프로젝트 현황 대시보드 */}
+      {/* 환영 메시지 및 빠른 시작 영역 */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              안녕하세요, {user?.name || '연구자'}님 👋
+            </h2>
+            <p className="text-gray-600">
+              오늘도 성공적인 AHP 분석을 시작해보세요
+            </p>
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => handleTabChange('project-wizard')}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl flex items-center"
+            >
+              <span className="text-xl mr-2">➕</span>
+              새 프로젝트 시작
+            </button>
+            <button
+              onClick={() => handleTabChange('user-guide')}
+              className="px-6 py-3 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-all shadow border border-gray-200 flex items-center"
+            >
+              <span className="text-xl mr-2">📚</span>
+              사용 가이드
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 주요 통계 카드 - 개선된 디자인 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+        <div className="bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--status-info-text)' }}>프로젝트</p>
-              <p className="text-3xl font-bold" style={{ 
-                color: (projects || []).length >= getCurrentQuotas().maxProjects ? 'var(--status-error-text)' : 'var(--text-primary)' 
-              }}>
-                {(projects || []).length}<span className="text-lg text-gray-500">/{getCurrentQuotas().maxProjects}</span>
+              <p className="text-sm font-medium text-gray-500 mb-1">전체 프로젝트</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {(projects || []).length}
+                <span className="text-lg text-gray-400 ml-1">/{getCurrentQuotas().maxProjects}</span>
               </p>
-              <p className="text-sm text-gray-500">{userPlan.planName}</p>
+              {getCurrentQuotas().maxProjects - (projects || []).length <= 2 && (
+                <p className="text-xs text-orange-600 mt-1">
+                  {getCurrentQuotas().maxProjects - (projects || []).length}개 남음
+                </p>
+              )}
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-info-text)' }}>
-              <span className="text-white text-2xl">■</span>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">📊</span>
             </div>
           </div>
         </div>
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+
+        <div className="bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--status-success-text)' }}>평가자</p>
-              <p className="text-3xl font-bold" style={{ 
-                color: getCurrentQuotas().currentEvaluators >= getCurrentQuotas().maxEvaluators ? 'var(--status-error-text)' : 'var(--text-primary)' 
-              }}>
-                {getCurrentQuotas().currentEvaluators}<span className="text-lg text-gray-500">/{getCurrentQuotas().maxEvaluators}</span>
+              <p className="text-sm font-medium text-gray-500 mb-1">진행중</p>
+              <p className="text-3xl font-bold text-green-600">
+                {(projects || []).filter(p => p.status === 'active').length}
               </p>
-              <p className="text-sm text-gray-500">
-                {userPlan.additionalEvaluators > 0 && `+${userPlan.additionalEvaluators * 10}명 추가`}
+              <p className="text-xs text-gray-500 mt-1">
+                활성 프로젝트
               </p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-success-text)' }}>
-              <span className="text-white text-2xl">●</span>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">🔄</span>
             </div>
           </div>
         </div>
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+
+        <div className="bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--accent-primary)' }}>진행중</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{(projects || []).filter(p => p.status === 'active').length}</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">평가자 현황</p>
+              <p className="text-3xl font-bold text-purple-600">
+                {getCurrentQuotas().currentEvaluators}
+                <span className="text-lg text-gray-400 ml-1">명</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                최대 {getCurrentQuotas().maxEvaluators}명
+              </p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--accent-primary)' }}>
-              <span className="text-white text-2xl">▲</span>
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">👥</span>
             </div>
           </div>
         </div>
-        <div className="rounded-lg p-4" style={{ border: '1px solid var(--border-light)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+
+        <div className="bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-base font-medium" style={{ color: 'var(--status-warning-text)' }}>완료됨</p>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              <p className="text-sm font-medium text-gray-500 mb-1">완료됨</p>
+              <p className="text-3xl font-bold text-orange-600">
                 {(projects || []).filter(p => p.status === 'completed').length}
               </p>
+              <p className="text-xs text-gray-500 mt-1">
+                분석 완료
+              </p>
             </div>
-            <div className="p-3 rounded-full" style={{ backgroundColor: 'var(--status-warning-text)' }}>
-              <span className="text-white text-2xl">✓</span>
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">✅</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 주요 기능 6개 인라인 배치 */}
-      <div className="flex flex-wrap justify-center gap-4">
+      {/* 최근 프로젝트 섹션 */}
+      {recentProjects.length > 0 && (
+        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-800 flex items-center">
+              <span className="text-xl mr-2">📋</span>
+              최근 프로젝트
+            </h3>
+            <button
+              onClick={() => handleTabChange('projects')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              모두 보기 →
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {recentProjects.map((project) => (
+              <div
+                key={project.id}
+                className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all cursor-pointer border border-gray-200"
+                onClick={() => {
+                  setSelectedProjectId(project.id);
+                  handleTabChange('model-builder');
+                }}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-semibold text-gray-800 text-sm line-clamp-1">
+                    {project.title}
+                  </h4>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    project.status === 'active' 
+                      ? 'bg-green-100 text-green-700' 
+                      : project.status === 'completed'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {project.status === 'active' ? '진행중' : 
+                     project.status === 'completed' ? '완료' : '준비중'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                  {project.description || '설명 없음'}
+                </p>
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>평가자: {project.evaluators_count || 0}명</span>
+                  <span>진행률: {project.completion_rate || 0}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* AHP 워크플로우 가이드 */}
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
+        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+          <span className="text-xl mr-2">🚀</span>
+          AHP 분석 워크플로우
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          {[
+            { step: 1, title: '프로젝트 생성', icon: '📝', desc: '목표 설정', action: 'project-wizard' },
+            { step: 2, title: '계층 구성', icon: '🏗️', desc: '기준/대안 설정', action: 'model-builder' },
+            { step: 3, title: '평가자 초대', icon: '👥', desc: '참여자 관리', action: 'evaluators' },
+            { step: 4, title: '데이터 수집', icon: '📊', desc: '평가 진행', action: 'monitoring' },
+            { step: 5, title: '결과 분석', icon: '📈', desc: '의사결정', action: 'analysis' }
+          ].map((item, index) => (
+            <button
+              key={item.step}
+              onClick={() => handleTabChange(item.action)}
+              className="relative bg-white p-4 rounded-lg hover:shadow-md transition-all border border-gray-200 text-left"
+            >
+              {index < 4 && (
+                <div className="absolute top-1/2 -right-3 transform -translate-y-1/2 text-gray-400 hidden md:block">
+                  →
+                </div>
+              )}
+              <div className="flex items-center mb-2">
+                <span className="text-2xl mr-2">{item.icon}</span>
+                <span className="text-xs font-bold text-gray-400">STEP {item.step}</span>
+              </div>
+              <h4 className="font-semibold text-sm text-gray-800">{item.title}</h4>
+              <p className="text-xs text-gray-600 mt-1">{item.desc}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 빠른 접근 메뉴 - 개선된 디자인 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { id: 'creation', label: '새 프로젝트', icon: '+', color: 'from-blue-500 to-blue-600' },
-          { id: 'projects', label: '내 프로젝트', icon: '■', color: 'from-green-500 to-green-600' },
-          { id: 'trash', label: '휴지통', icon: '×', color: 'from-red-500 to-red-600' },
-          { id: 'evaluators', label: '평가자 관리', icon: '●', color: 'from-purple-500 to-purple-600' },
-          { id: 'analysis', label: '결과 분석', icon: '▲', color: 'from-orange-500 to-orange-600' },
-          { id: 'export', label: '보고서', icon: '↑', color: 'from-indigo-500 to-indigo-600' }
+          { id: 'projects', label: '내 프로젝트', icon: '📁', color: 'bg-blue-500' },
+          { id: 'evaluators', label: '평가자 관리', icon: '👥', color: 'bg-purple-500' },
+          { id: 'analysis', label: '결과 분석', icon: '📊', color: 'bg-green-500' },
+          { id: 'export', label: '보고서 출력', icon: '📄', color: 'bg-orange-500' },
+          { id: 'workshop', label: '워크숍', icon: '🎯', color: 'bg-pink-500' },
+          { id: 'decision-support', label: '의사결정', icon: '🧠', color: 'bg-indigo-500' },
+          { id: 'survey-links', label: '설문 링크', icon: '🔗', color: 'bg-teal-500' },
+          { id: 'trash', label: '휴지통', icon: '🗑️', color: 'bg-red-500' }
         ].map((item) => (
           <button
             key={item.id}
             onClick={() => handleTabChange(item.id)}
-            className="inline-flex items-center px-6 py-3 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            style={{
-              backgroundColor: 'var(--bg-secondary)',
-              borderColor: 'var(--border-light)',
-              color: 'var(--text-primary)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-              e.currentTarget.style.borderColor = 'var(--border-light)';
-            }}
+            className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-100 text-left group"
           >
-            <div className={`w-8 h-8 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center mr-3`}>
-              <span className="text-white text-lg">{item.icon}</span>
+            <div className="flex items-center space-x-3">
+              <div className={`w-10 h-10 ${item.color} bg-opacity-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                <span className="text-xl">{item.icon}</span>
+              </div>
+              <span className="font-medium text-gray-800">{item.label}</span>
             </div>
-            <span className="font-medium">{item.label}</span>
           </button>
         ))}
       </div>
@@ -998,6 +1125,77 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
               </span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* 도움말 및 리소스 섹션 */}
+      <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+          <span className="text-xl mr-2">💡</span>
+          도움말 및 리소스
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white bg-opacity-70 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
+              <span className="text-lg mr-2">📖</span>
+              사용자 매뉴얼
+            </h4>
+            <p className="text-sm text-gray-600 mb-3">
+              AHP 플랫폼의 모든 기능을 자세히 알아보세요
+            </p>
+            <button
+              onClick={() => handleTabChange('user-guide')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              매뉴얼 보기 →
+            </button>
+          </div>
+
+          <div className="bg-white bg-opacity-70 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
+              <span className="text-lg mr-2">🎥</span>
+              비디오 튜토리얼
+            </h4>
+            <p className="text-sm text-gray-600 mb-3">
+              동영상으로 쉽게 따라하는 AHP 분석 과정
+            </p>
+            <button
+              onClick={() => window.open('https://youtube.com/playlist?list=AHP_Tutorial', '_blank')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              동영상 보기 →
+            </button>
+          </div>
+
+          <div className="bg-white bg-opacity-70 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
+              <span className="text-lg mr-2">💬</span>
+              고객 지원
+            </h4>
+            <p className="text-sm text-gray-600 mb-3">
+              궁금한 점이 있으신가요? 전문가가 도와드립니다
+            </p>
+            <button
+              onClick={() => handleTabChange('support')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              문의하기 →
+            </button>
+          </div>
+        </div>
+
+        {/* 공지사항 또는 팁 */}
+        <div className="mt-4 p-4 bg-yellow-50 bg-opacity-70 rounded-lg border border-yellow-200">
+          <div className="flex items-start">
+            <span className="text-xl mr-2">💡</span>
+            <div>
+              <h4 className="font-semibold text-gray-800 text-sm mb-1">오늘의 팁</h4>
+              <p className="text-xs text-gray-600">
+                AHP 분석에서 일관성 비율(CR)이 0.1 이하일 때 결과의 신뢰성이 높습니다. 
+                평가 시 일관된 판단을 유지하는 것이 중요합니다.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
