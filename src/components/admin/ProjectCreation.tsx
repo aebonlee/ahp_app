@@ -33,31 +33,6 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
     evaluationMode: "practical" as EvaluationMode,
     ahpType: "general" as "general" | "fuzzy",
   });
-  
-  // 예시 프로젝트 설정
-  const loadExampleProject = () => {
-    setFormData({
-      title: "대학원생의 연구 역량",
-      description: "대학원생들의 연구 역량을 평가하기 위한 AHP 분석 프로젝트입니다. 연구 능력, 분석력, 창의성 등 주요 역량 요소를 체계적으로 평가합니다.",
-      objective: "우수한 연구 역량을 갖춘 대학원생을 선발하고 육성하기 위한 객관적 평가 기준 수립",
-      evaluationMode: "theoretical" as EvaluationMode,
-      ahpType: "general" as "general" | "fuzzy",
-    });
-    // 기준과 대안 정보 저장
-    const templateData = {
-      criteria: [
-        { name: "연구 능력", description: "문헌 조사, 연구 설계, 방법론 적용 능력" },
-        { name: "분석력", description: "데이터 분석, 통계 처리, 결과 해석 능력" },
-        { name: "창의성", description: "독창적 아이디어, 문제 해결 능력, 혁신적 접근" }
-      ],
-      alternatives: [
-        { name: "학생 A", description: "박사과정 2년차, 논문 3편 게재" },
-        { name: "학생 B", description: "박사과정 1년차, 연구 프로젝트 2개 참여" },
-        { name: "학생 C", description: "석사과정 2년차, 학회 발표 5회" }
-      ]
-    };
-    sessionStorage.setItem('projectTemplate', JSON.stringify(templateData));
-  };
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showWorkflowGuide, setShowWorkflowGuide] = useState(false);
 
@@ -157,20 +132,6 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
           <p className="text-gray-600">
             새로운 AHP 의사결정 분석 프로젝트를 생성합니다.
           </p>
-          
-          {/* 예시 프로젝트 버튼 */}
-          <div className="mt-4">
-            <button
-              type="button"
-              onClick={loadExampleProject}
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-md"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-              예시: 대학원생의 연구 역량 프로젝트
-            </button>
-          </div>
 
           {/* 논문 작성 권장 구조 안내 */}
           <div className="mt-6 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-6 rounded-r-lg shadow-sm">
