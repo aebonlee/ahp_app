@@ -2,11 +2,6 @@ import React, { useState } from 'react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  CheckCircleIcon,
-  DocumentTextIcon,
-  UsersIcon,
-  ChartBarIcon,
-  LinkIcon,
 } from '@heroicons/react/24/outline';
 import DemographicSurveyConfig, { DemographicConfig } from './DemographicSurveyConfig';
 import api from '../../services/api';
@@ -73,10 +68,10 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
   });
 
   const steps = [
-    { id: 'basic', title: '기본 정보', icon: DocumentTextIcon },
-    { id: 'demographic', title: '인구통계 설정', icon: UsersIcon },
-    { id: 'model', title: 'AHP 모형', icon: ChartBarIcon },
-    { id: 'invitation', title: '평가자 초대', icon: LinkIcon },
+    { id: 'basic', title: '기본 정보', icon: '📝', emoji: '📝' },
+    { id: 'demographic', title: '인구통계 설정', icon: '👥', emoji: '👥' },
+    { id: 'model', title: 'AHP 모형', icon: '📊', emoji: '📊' },
+    { id: 'invitation', title: '평가자 초대', icon: '✉️', emoji: '✉️' },
   ];
 
   const handleNext = async () => {
@@ -289,7 +284,6 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
         <div className="mb-8">
           <div className="flex items-center justify-between">
             {steps.map((step, index) => {
-              const Icon = step.icon;
               const isActive = index === currentStep;
               const isCompleted = index < currentStep;
               
@@ -298,16 +292,16 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
                   <div
                     className={`flex items-center justify-center w-12 h-12 rounded-full transition-colors ${
                       isActive
-                        ? 'bg-primary text-white'
+                        ? 'bg-blue-500 text-white'
                         : isCompleted
                         ? 'bg-green-500 text-white'
                         : 'bg-gray-200 text-gray-500'
                     }`}
                   >
                     {isCompleted ? (
-                      <CheckCircleIcon className="h-6 w-6" />
+                      <span className="text-xl">✅</span>
                     ) : (
-                      <Icon className="h-6 w-6" />
+                      <span className="text-xl">{step.emoji}</span>
                     )}
                   </div>
                   {index < steps.length - 1 && (
@@ -367,7 +361,7 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
               ) : currentStep === steps.length - 1 ? (
                 <>
                   프로젝트 생성
-                  <CheckCircleIcon className="h-5 w-5" />
+                  <span className="ml-1">✅</span>
                 </>
               ) : (
                 <>
@@ -678,7 +672,7 @@ const CompletionStep: React.FC<{
   return (
     <div className="py-8">
       <div className="text-center mb-8">
-        <CheckCircleIcon className="h-20 w-20 text-green-500 mx-auto mb-4" />
+        <div className="text-6xl mx-auto mb-4">✅</div>
         <h2 className="text-3xl font-bold text-gray-900 mb-2">
           프로젝트 생성 완료!
         </h2>
