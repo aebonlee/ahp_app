@@ -72,8 +72,6 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
 
     if (!formData.description.trim()) {
       newErrors.description = "프로젝트 설명을 입력해주세요.";
-    } else if (formData.description.length < 10) {
-      newErrors.description = "설명은 10자 이상 입력해주세요.";
     }
 
     if (!formData.objective.trim()) {

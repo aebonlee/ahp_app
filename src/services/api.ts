@@ -41,6 +41,22 @@ export interface ProjectData {
   ahp_type?: 'general' | 'fuzzy';
   created_at?: string;
   updated_at?: string;
+  // 인구통계 관련 필드들
+  demographic_data?: {
+    age: string;
+    gender: string;
+    education: string;
+    occupation: string;
+    experience: string;
+    department: string;
+    position: string;
+    projectExperience: string;
+    decisionRole: string;
+    additionalInfo: string;
+  };
+  demographic_survey_config?: any;
+  require_demographics?: boolean;
+  evaluation_flow_type?: 'survey_first' | 'ahp_first' | 'parallel';
   deleted_at?: string;
   criteria_count?: number;
   alternatives_count?: number;
@@ -276,6 +292,17 @@ export const projectApi = {
       evaluation_mode: data.evaluation_mode,
       workflow_stage: data.workflow_stage,
       deadline: data.dueDate, // dueDate → deadline 매핑
+      settings: {
+        // ahp_type을 settings에 포함
+        ahp_type: data.ahp_type || 'general',
+        // 인구통계 데이터도 포함 (있는 경우)
+        ...(data.demographic_data && { demographic_data: data.demographic_data }),
+        // 기타 설정 정보
+        ...(data.demographic_survey_config && { demographic_survey_config: data.demographic_survey_config }),
+      },
+      // 인구통계 관련 필드들 직접 매핑
+      require_demographics: data.require_demographics,
+      evaluation_flow_type: data.evaluation_flow_type,
     };
     
     const response = await makeRequest<DjangoProjectResponse>('/api/service/projects/projects/', {

@@ -171,7 +171,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">프로젝트 정보 로듩 중...</div>
+        <div className="text-gray-500">프로젝트 정보 로딩 중...</div>
       </div>
     );
   }

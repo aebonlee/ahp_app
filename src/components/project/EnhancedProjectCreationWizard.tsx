@@ -4,7 +4,16 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import DemographicSurveyConfig, { DemographicConfig } from './DemographicSurveyConfig';
+import DemographicSurvey from '../survey/DemographicSurvey';
+import Card from '../common/Card';
+import Button from '../common/Button';
+import Input from '../common/Input';
+import EvaluationModeSelector, {
+  EvaluationMode,
+} from '../evaluation/EvaluationModeSelector';
+import PaperWorkflowGuide from '../guide/PaperWorkflowGuide';
 import api from '../../services/api';
+import dataService from '../../services/dataService_clean';
 
 interface ProjectData {
   // 기본 정보
@@ -12,12 +21,27 @@ interface ProjectData {
   description: string;
   objective: string;
   evaluation_mode: 'practical' | 'theoretical' | 'direct_input' | 'fuzzy_ahp';
+  ahp_type: 'general' | 'fuzzy';
   workflow_stage: 'creating' | 'waiting' | 'evaluating' | 'completed';
   
   // 인구통계 설정
   demographic_survey_config: DemographicConfig;
   require_demographics: boolean;
   evaluation_flow_type: 'survey_first' | 'ahp_first' | 'parallel';
+  
+  // 인구통계 데이터
+  demographic_data?: {
+    age: string;
+    gender: string;
+    education: string;
+    occupation: string;
+    experience: string;
+    department: string;
+    position: string;
+    projectExperience: string;
+    decisionRole: string;
+    additionalInfo: string;
+  };
   
   // 기준 및 대안 (다음 단계에서 설정)
   criteria?: any[];
@@ -49,6 +73,7 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
     description: '',
     objective: '',
     evaluation_mode: 'practical',
+    ahp_type: 'general',
     workflow_stage: 'creating',
     demographic_survey_config: {
       enabled: true,
@@ -65,6 +90,18 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
     },
     require_demographics: true,
     evaluation_flow_type: 'survey_first',
+    demographic_data: {
+      age: '',
+      gender: '',
+      education: '',
+      occupation: '',
+      experience: '',
+      department: '',
+      position: '',
+      projectExperience: '',
+      decisionRole: '',
+      additionalInfo: ''
+    }
   });
 
   const steps = [
@@ -91,23 +128,35 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
     try {
       setLoading(true);
       
-      // 1. 프로젝트 생성
-      const response = await api.project.createProject({
-        ...projectData,
-        status: 'draft' as const
+      // 1. 프로젝트 생성 - ProjectWorkflow 방식 사용
+      const createdProject = await dataService.createProject({
+        title: projectData.title,
+        description: projectData.description,
+        objective: projectData.objective,
+        ahp_type: projectData.ahp_type,
+        status: 'active',
+        evaluation_mode: projectData.evaluation_mode,
+        workflow_stage: 'creating'
       });
-      const createdProjectId = response.data.id;
-      setProjectId(createdProjectId);
       
-      // 2. QR코드 및 링크 생성
-      const linkResponse = await api.post(`/projects/${createdProjectId}/generate_links/`);
-      if (linkResponse.data) {
-        setQrCodeUrl(linkResponse.data.qr_code);
-        setShortLink(linkResponse.data.short_link);
+      if (createdProject && createdProject.id) {
+        const createdProjectId = createdProject.id;
+        setProjectId(createdProjectId);
+        
+        // 2. QR코드 및 링크 생성
+        try {
+          const linkResponse = await api.post(`/projects/${createdProjectId}/generate_links/`);
+          if (linkResponse.data) {
+            setQrCodeUrl(linkResponse.data.qr_code);
+            setShortLink(linkResponse.data.short_link);
+          }
+        } catch (linkError) {
+          console.warn('링크 생성 실패, 프로젝트는 생성됨:', linkError);
+        }
+        
+        // 다음 단계로 이동 (완료 화면)
+        setCurrentStep(currentStep + 1);
       }
-      
-      // 다음 단계로 이동 (완료 화면)
-      setCurrentStep(currentStep + 1);
     } catch (error) {
       console.error('프로젝트 생성 실패:', error);
     } finally {
@@ -122,43 +171,48 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
       case 1:
         return (
           <div className="space-y-6">
-
             {/* 단계 설명 카드 */}
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <h3 className="font-semibold text-orange-900 mb-2">📊 이 단계에서 설정하는 항목</h3>
+              <h3 className="font-semibold text-orange-900 mb-2">📊 인구통계 설문 미리보기</h3>
               <ul className="text-sm text-orange-800 space-y-1">
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span><strong>기본 정보 항목</strong>: 나이, 성별, 학력, 직업, 산업, 경력 등</span>
+                  <span><strong>기본 정보</strong>: 연령대, 성별, 학력, 직업</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span><strong>맞춤형 질문</strong>: 연구에 필요한 추가 설문 항목 설정</span>
+                  <span><strong>전문 정보</strong>: 경력, 부서, 직급, AHP 경험</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span><strong>설문 템플릿</strong>: 사전 정의된 템플릿 선택 또는 직접 구성</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span><strong>설문 순서</strong>: 인구통계 → AHP 또는 AHP → 인구통계</span>
+                  <span><strong>의사결정 역할</strong>: 프로젝트에서의 역할</span>
                 </li>
               </ul>
               <div className="mt-3 p-3 bg-orange-100 rounded-md">
                 <p className="text-xs text-orange-700">
-                  💡 <strong>팁</strong>: 인구통계 정보를 수집하면 그룹별 비교 분석, 상관관계 분석 등 
-                  더욱 풍부한 연구 결과를 얻을 수 있습니다. 필요없다면 건너뛸 수도 있습니다.
+                  💡 <strong>팁</strong>: 이 설문은 평가자가 실제로 응답할 양식입니다. 
+                  필요 없다면 다음 단계에서 비활성화할 수 있습니다.
                 </p>
               </div>
             </div>
 
-            <DemographicSurveyConfig
-              config={projectData.demographic_survey_config}
-              onChange={(config) =>
+            <DemographicSurveyStep 
+              data={projectData.demographic_data || {
+                age: '',
+                gender: '',
+                education: '',
+                occupation: '',
+                experience: '',
+                department: '',
+                position: '',
+                projectExperience: '',
+                decisionRole: '',
+                additionalInfo: ''
+              }}
+              onChange={(demographicData) =>
                 setProjectData({
                   ...projectData,
-                  demographic_survey_config: config,
-                  require_demographics: config.enabled,
+                  demographic_data: demographicData,
                 })
               }
             />
@@ -369,123 +423,338 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
   );
 };
 
-// 기본 정보 입력 단계
+// 기본 정보 입력 단계 - ProjectCreation 기반
 const BasicInfoStep: React.FC<{
   data: ProjectData;
   onChange: (data: ProjectData) => void;
 }> = ({ data, onChange }) => {
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [showWorkflowGuide, setShowWorkflowGuide] = useState(false);
+
+  // 예시 프로젝트 설정
+  const loadExampleProject = () => {
+    onChange({
+      ...data,
+      title: "대학원생의 연구 역량",
+      description: "대학원생들의 연구 역량을 평가하기 위한 AHP 분석 프로젝트입니다. 연구 능력, 분석력, 창의성 등 주요 역량 요소를 체계적으로 평가합니다.",
+      objective: "우수한 연구 역량을 갖춘 대학원생을 선발하고 육성하기 위한 객관적 평가 기준 수립",
+      evaluation_mode: "theoretical",
+      ahp_type: "general",
+    });
+    // 기준과 대안 정보 저장
+    const templateData = {
+      criteria: [
+        { name: "연구 능력", description: "문헌 조사, 연구 설계, 방법론 적용 능력" },
+        { name: "분석력", description: "데이터 분석, 통계 처리, 결과 해석 능력" },
+        { name: "창의성", description: "독창적 아이디어, 문제 해결 능력, 혁신적 접근" }
+      ],
+      alternatives: [
+        { name: "학생 A", description: "박사과정 2년차, 논문 3편 게재" },
+        { name: "학생 B", description: "박사과정 1년차, 연구 프로젝트 2개 참여" },
+        { name: "학생 C", description: "석사과정 2년차, 학회 발표 5회" }
+      ]
+    };
+    sessionStorage.setItem('projectTemplate', JSON.stringify(templateData));
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    onChange({
+      ...data,
+      [field]: value,
+    });
+
+    // Clear error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [field]: "",
+      }));
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <>
+      {showWorkflowGuide && (
+        <PaperWorkflowGuide
+          currentStep={1}
+          criteriaCount={3}
+          alternativesCount={3}
+          onClose={() => setShowWorkflowGuide(false)}
+        />
+      )}
+      <div className="space-y-6">
+        {/* 논문 작성 권장 구조 안내 */}
+        <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 p-6 rounded-r-lg shadow-sm">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start flex-1">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-yellow-600 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-semibold text-yellow-800">
+                  📄 논문 작성 권장 구조
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p className="mb-2">
+                    학술 논문 작성 시 <strong>3개 기준 × 3개 대안</strong>{" "}
+                    구조를 권장합니다.
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>명확한 연구 설계와 결과 해석이 용이</li>
+                    <li>일관성 검증(CR ≤ 0.1) 충족 확률 향상</li>
+                    <li>쌍대비교 횟수 최소화 (기준 3회, 대안 9회)</li>
+                    <li>추가 기준/대안은 다음 단계에서 선택 가능</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
 
-      {/* 단계 설명 카드 */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">📋 이 단계에서 설정하는 항목</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li className="flex items-start">
-            <span className="mr-2">•</span>
-            <span><strong>프로젝트 제목</strong>: 평가자가 쉽게 이해할 수 있는 명확한 제목</span>
-          </li>
-          <li className="flex items-start">
-            <span className="mr-2">•</span>
-            <span><strong>프로젝트 설명</strong>: 연구의 배경과 목적을 구체적으로 설명</span>
-          </li>
-          <li className="flex items-start">
-            <span className="mr-2">•</span>
-            <span><strong>연구 목표</strong>: 이 분석을 통해 달성하고자 하는 구체적인 목표</span>
-          </li>
-          <li className="flex items-start">
-            <span className="mr-2">•</span>
-            <span><strong>평가 모드</strong>: 평가 방식 선택 (실용적/이론적/직접입력/퍼지)</span>
-          </li>
-          <li className="flex items-start">
-            <span className="mr-2">•</span>
-            <span><strong>평가 진행 순서</strong>: 인구통계 설문과 AHP 평가의 순서 결정</span>
-          </li>
-        </ul>
-      </div>
+            {/* 워크플로우 가이드 버튼 */}
+            <div className="ml-6 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowWorkflowGuide(true)}
+                className="group relative inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-400 text-white font-bold text-sm rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300"
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                워크플로우 가이드
+              </button>
+              <button
+                type="button"
+                onClick={loadExampleProject}
+                className="mt-2 w-full inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-md"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                예시 프로젝트
+              </button>
+            </div>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="lg:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            프로젝트 제목 *
-          </label>
-          <input
-            type="text"
+        {/* 프로젝트 기본 정보 폼 */}
+        <div className="space-y-6">
+          <Input
+            id="title"
+            label="프로젝트명"
+            placeholder="프로젝트 이름을 입력하세요"
             value={data.title}
-            onChange={(e) => onChange({ ...data, title: e.target.value })}
-            placeholder="예: 신제품 개발 우선순위 결정"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+            onChange={(value) => handleInputChange("title", value)}
+            error={formErrors.title}
+            required
           />
-        </div>
 
-        <div className="lg:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            프로젝트 설명 *
-          </label>
-          <textarea
-            value={data.description}
-            onChange={(e) => onChange({ ...data, description: e.target.value })}
-            placeholder="프로젝트의 배경과 목적을 설명해주세요."
-            rows={4}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
+          <div>
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              프로젝트 설명 <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="description"
+              rows={4}
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                formErrors.description ? "border-red-300" : "border-gray-300"
+              }`}
+              placeholder="프로젝트에 대한 상세한 설명을 입력하세요"
+              value={data.description}
+              onChange={(e) =>
+                handleInputChange("description", e.target.value)
+              }
+              required
+            />
+            {formErrors.description && (
+              <p className="mt-1 text-sm text-red-600">
+                {formErrors.description}
+              </p>
+            )}
+          </div>
 
-        <div className="lg:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            연구 목표
-          </label>
-          <textarea
+          <Input
+            id="objective"
+            label="프로젝트 목표"
+            placeholder="이 프로젝트로 달성하고자 하는 목표를 입력하세요"
             value={data.objective}
-            onChange={(e) => onChange({ ...data, objective: e.target.value })}
-            placeholder="이 연구를 통해 달성하고자 하는 목표를 작성해주세요."
-            rows={3}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+            onChange={(value) => handleInputChange("objective", value)}
+            error={formErrors.objective}
+            required
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            평가 모드
-          </label>
-          <select
-            value={data.evaluation_mode}
-            onChange={(e) =>
-              onChange({
-                ...data,
-                evaluation_mode: e.target.value as ProjectData['evaluation_mode'],
-              })
-            }
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            <option value="practical">실용적 평가 (슬라이더)</option>
-            <option value="theoretical">이론적 평가 (9점 척도)</option>
-            <option value="direct_input">직접 입력</option>
-            <option value="fuzzy_ahp">퍼지 AHP</option>
-          </select>
-        </div>
+          {/* AHP 분석 유형 선택 */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-base font-semibold text-gray-800 mb-2">
+                AHP 분석 유형 선택 <span className="text-red-500">*</span>
+              </label>
+              <p className="text-sm text-gray-600 mb-4">
+                프로젝트에 적합한 분석 방법을 선택하세요
+              </p>
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            평가 진행 순서
-          </label>
-          <select
-            value={data.evaluation_flow_type}
-            onChange={(e) =>
-              onChange({
-                ...data,
-                evaluation_flow_type: e.target.value as ProjectData['evaluation_flow_type'],
-              })
-            }
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            <option value="survey_first">인구통계 설문 → AHP 평가</option>
-            <option value="ahp_first">AHP 평가 → 인구통계 설문</option>
-            <option value="parallel">병렬 진행 (순서 무관)</option>
-          </select>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 일반 AHP 카드 */}
+              <button
+                type="button"
+                onClick={() => handleInputChange("ahp_type", "general")}
+                className={`relative group transition-all duration-300 ${
+                  data.ahp_type === "general"
+                    ? "transform scale-[1.02]"
+                    : "hover:transform hover:scale-[1.01]"
+                }`}
+              >
+                <div
+                  className={`p-6 rounded-2xl h-full transition-all duration-300 ${
+                    data.ahp_type === "general"
+                      ? "bg-gradient-to-br from-blue-500 to-cyan-500 shadow-2xl"
+                      : "bg-white border-2 border-gray-200 hover:border-blue-300 hover:shadow-xl"
+                  }`}
+                >
+                  {data.ahp_type === "general" && (
+                    <div className="absolute -top-3 -right-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      선택됨
+                    </div>
+                  )}
+                  <div className="text-left space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">📊</span>
+                      <h3 className={`font-bold text-lg ${data.ahp_type === "general" ? "text-white" : "text-gray-900"}`}>
+                        일반 AHP
+                      </h3>
+                    </div>
+                    <p className={`text-sm ${data.ahp_type === "general" ? "text-white/90" : "text-gray-600"}`}>
+                      전통적인 쌍대비교 방법으로 명확한 의사결정을 지원합니다
+                    </p>
+                    <div className="space-y-2">
+                      {["Saaty의 1-9 척도 사용", "명확한 가중치 산출", "일관성 검증 (CR ≤ 0.1)"].map((feature, idx) => (
+                        <div key={idx} className={`flex items-center space-x-2 text-sm ${data.ahp_type === "general" ? "text-white/85" : "text-gray-600"}`}>
+                          <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${data.ahp_type === "general" ? "bg-white/25 text-white" : "bg-blue-50 text-blue-700"}`}>
+                      👍 입문자 추천
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              {/* 퍼지 AHP 카드 */}
+              <button
+                type="button"
+                onClick={() => handleInputChange("ahp_type", "fuzzy")}
+                className={`relative group transition-all duration-300 ${
+                  data.ahp_type === "fuzzy"
+                    ? "transform scale-[1.02]"
+                    : "hover:transform hover:scale-[1.01]"
+                }`}
+              >
+                <div
+                  className={`p-6 rounded-2xl h-full transition-all duration-300 ${
+                    data.ahp_type === "fuzzy"
+                      ? "bg-gradient-to-br from-purple-500 to-pink-500 shadow-2xl"
+                      : "bg-white border-2 border-gray-200 hover:border-purple-300 hover:shadow-xl"
+                  }`}
+                >
+                  {data.ahp_type === "fuzzy" && (
+                    <div className="absolute -top-3 -right-3 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      선택됨
+                    </div>
+                  )}
+                  <div className="text-left space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">🔮</span>
+                      <h3 className={`font-bold text-lg ${data.ahp_type === "fuzzy" ? "text-white" : "text-gray-900"}`}>
+                        퍼지 AHP
+                      </h3>
+                    </div>
+                    <p className={`text-sm ${data.ahp_type === "fuzzy" ? "text-white/90" : "text-gray-600"}`}>
+                      불확실성과 애매모호함을 수학적으로 처리하는 고급 분석 방법입니다
+                    </p>
+                    <div className="space-y-2">
+                      {["삼각 퍼지수 활용", "불확실성 범위 표현", "민감도 분석 강화"].map((feature, idx) => (
+                        <div key={idx} className={`flex items-center space-x-2 text-sm ${data.ahp_type === "fuzzy" ? "text-white/85" : "text-gray-600"}`}>
+                          <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${data.ahp_type === "fuzzy" ? "bg-white/25 text-white" : "bg-purple-50 text-purple-700"}`}>
+                      🎯 전문가용
+                    </span>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* 평가 모드 선택 */}
+          <div className="mt-8">
+            <EvaluationModeSelector
+              selectedMode={data.evaluation_mode as EvaluationMode}
+              onModeChange={(mode) =>
+                handleInputChange("evaluation_mode", mode)
+              }
+            />
+          </div>
+
+          {/* 평가 진행 순서 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              평가 진행 순서
+            </label>
+            <select
+              value={data.evaluation_flow_type}
+              onChange={(e) =>
+                onChange({
+                  ...data,
+                  evaluation_flow_type: e.target.value as ProjectData['evaluation_flow_type'],
+                })
+              }
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="survey_first">인구통계 설문 → AHP 평가</option>
+              <option value="ahp_first">AHP 평가 → 인구통계 설문</option>
+              <option value="parallel">병렬 진행 (순서 무관)</option>
+            </select>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -732,6 +1001,232 @@ const CompletionStep: React.FC<{
         <button onClick={() => window.location.reload()} className="btn btn-secondary">
           새 프로젝트 생성
         </button>
+      </div>
+    </div>
+  );
+};
+
+// 인구통계 설문 단계 - DemographicSurvey 기반
+const DemographicSurveyStep: React.FC<{
+  data: {
+    age: string;
+    gender: string;
+    education: string;
+    occupation: string;
+    experience: string;
+    department: string;
+    position: string;
+    projectExperience: string;
+    decisionRole: string;
+    additionalInfo: string;
+  };
+  onChange: (data: any) => void;
+}> = ({ data, onChange }) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    onChange({
+      ...data,
+      [name]: value,
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* 기본 정보 섹션 */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          기본 정보
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              연령대
+            </label>
+            <select 
+              name="age"
+              value={data.age}
+              onChange={handleInputChange}
+              className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            >
+              <option value="">선택하세요</option>
+              <option value="20s">20대</option>
+              <option value="30s">30대</option>
+              <option value="40s">40대</option>
+              <option value="50s">50대</option>
+              <option value="60s">60대 이상</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              성별
+            </label>
+            <select 
+              name="gender"
+              value={data.gender}
+              onChange={handleInputChange}
+              className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            >
+              <option value="">선택하세요</option>
+              <option value="male">남성</option>
+              <option value="female">여성</option>
+              <option value="other">기타</option>
+              <option value="prefer-not">응답하지 않음</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              최종 학력
+            </label>
+            <select 
+              name="education"
+              value={data.education}
+              onChange={handleInputChange}
+              className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            >
+              <option value="">선택하세요</option>
+              <option value="high-school">고등학교 졸업</option>
+              <option value="bachelor">학사</option>
+              <option value="master">석사</option>
+              <option value="phd">박사</option>
+              <option value="other">기타</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              직업
+            </label>
+            <input 
+              type="text"
+              name="occupation"
+              value={data.occupation}
+              onChange={handleInputChange}
+              placeholder="예: 소프트웨어 엔지니어"
+              className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 전문 정보 섹션 */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          전문 정보
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              해당 분야 경력
+            </label>
+            <select 
+              name="experience"
+              value={data.experience}
+              onChange={handleInputChange}
+              className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            >
+              <option value="">선택하세요</option>
+              <option value="less-1">1년 미만</option>
+              <option value="1-3">1-3년</option>
+              <option value="3-5">3-5년</option>
+              <option value="5-10">5-10년</option>
+              <option value="more-10">10년 이상</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              소속 부서
+            </label>
+            <input 
+              type="text"
+              name="department"
+              value={data.department}
+              onChange={handleInputChange}
+              placeholder="예: 연구개발부"
+              className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              직급/직책
+            </label>
+            <input 
+              type="text"
+              name="position"
+              value={data.position}
+              onChange={handleInputChange}
+              placeholder="예: 선임연구원"
+              className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              AHP 프로젝트 경험
+            </label>
+            <select 
+              name="projectExperience"
+              value={data.projectExperience}
+              onChange={handleInputChange}
+              className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            >
+              <option value="">선택하세요</option>
+              <option value="none">없음</option>
+              <option value="1-2">1-2회</option>
+              <option value="3-5">3-5회</option>
+              <option value="more-5">5회 이상</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* 의사결정 역할 */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          의사결정 역할
+        </h3>
+        
+        <div>
+          <label className="block text-sm font-medium mb-2 text-gray-700">
+            프로젝트에서의 역할
+          </label>
+          <select 
+            name="decisionRole"
+            value={data.decisionRole}
+            onChange={handleInputChange}
+            className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          >
+            <option value="">선택하세요</option>
+            <option value="decision-maker">최종 의사결정권자</option>
+            <option value="advisor">자문/조언자</option>
+            <option value="analyst">분석가</option>
+            <option value="evaluator">평가자</option>
+            <option value="observer">관찰자</option>
+          </select>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-2 text-gray-700">
+            추가 정보 (선택사항)
+          </label>
+          <textarea 
+            name="additionalInfo"
+            value={data.additionalInfo}
+            onChange={handleInputChange}
+            rows={4}
+            placeholder="프로젝트와 관련된 추가 정보나 특별한 전문 분야가 있다면 입력해주세요."
+            className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          />
+        </div>
       </div>
     </div>
   );
