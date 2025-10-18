@@ -60,3 +60,4 @@ htmlcov/
 *.tmp
 *.bak
 *~django_backend/
+ahp-django-security-backup/
