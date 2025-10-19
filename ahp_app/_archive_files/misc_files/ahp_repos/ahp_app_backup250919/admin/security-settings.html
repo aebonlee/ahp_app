@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보안 설정 - AHP Admin</title>
+    <link rel="stylesheet" href="../styles/layout.css">
+    <style>
+        .security-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .security-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .security-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .security-subtitle {
+            color: var(--text-secondary);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .security-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .security-sections {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .security-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .security-status {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .status-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .security-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .score-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .score-excellent {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .score-good {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .score-fair {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .score-poor {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .score-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .settings-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .setting-item {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .setting-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--accent-primary);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-input {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(200, 169, 104, 0.1);
+        }
+
+        .form-select {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .threat-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .threat-item {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .threat-severity {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .severity-critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .severity-high {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .severity-medium {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        .severity-low {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .threat-info {
+            flex: 1;
+        }
+
+        .threat-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .threat-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .threat-timestamp {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .ssl-info {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            margin-bottom: 1rem;
+        }
+
+        .ssl-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .ssl-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .ssl-valid {
+            background: #10b981;
+        }
+
+        .ssl-warning {
+            background: #f59e0b;
+        }
+
+        .ssl-invalid {
+            background: #ef4444;
+        }
+
+        .ssl-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .ssl-detail {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--border-light);
+        }
+
+        .firewall-rules {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .rule-item {
+            background: var(--bg-primary);
+            border-radius: 6px;
+            padding: 0.75rem;
+            border: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rule-info {
+            flex: 1;
+        }
+
+        .rule-source {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .rule-description {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .rule-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .alert-banner {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert-banner.active {
+            display: block;
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-icon {
+            font-size: 1.2rem;
+        }
+
+        .alert-text {
+            flex: 1;
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.6;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-light);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @media (max-width: 768px) {
+            .security-container {
+                padding: 1rem;
+            }
+
+            .security-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .security-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .security-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .setting-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            .setting-control {
+                justify-content: flex-start;
+            }
+
+            .ssl-details {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="security-container">
+        <div class="security-header">
+            <div>
+                <h1 class="security-title">🔒 보안 설정</h1>
+                <p class="security-subtitle">시스템 보안 정책과 방화벽 설정을 관리합니다</p>
+            </div>
+            <div class="security-actions">
+                <button class="btn btn-secondary" id="securityScan">
+                    🔍 보안 검사
+                </button>
+                <button class="btn btn-primary" id="saveSettings">
+                    💾 설정 저장
+                </button>
+            </div>
+        </div>
+
+        <div id="alertBanner" class="alert-banner">
+            <div class="alert-content">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-text">
+                    <strong>보안 위협 탐지!</strong> 비정상적인 로그인 시도가 감지되었습니다.
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="dismissAlert()">닫기</button>
+            </div>
+        </div>
+
+        <div class="security-sections">
+            <!-- 보안 상태 개요 -->
+            <div class="security-section">
+                <div class="section-header">
+                    <div class="section-icon">📊</div>
+                    <div>
+                        <h3 class="section-title">보안 상태 개요</h3>
+                        <p class="section-description">현재 시스템의 전반적인 보안 수준을 확인합니다</p>
+                    </div>
+                </div>
+
+                <div class="security-status">
+                    <div class="status-header">
+                        <h4 class="status-title">종합 보안 점수</h4>
+                        <div class="security-score">
+                            <div class="score-circle score-good" id="securityScore">85</div>
+                            <div>
+                                <div style="font-weight: 600; color: var(--text-primary);">양호</div>
+                                <div class="score-text">100점 만점</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: 600; color: #10b981;">15</div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">활성 보안 정책</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: 600; color: #f59e0b;">3</div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">주의 항목</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: 600; color: #ef4444;">1</div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">위험 항목</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">24시간</div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">마지막 검사</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 인증 및 접근 제어 -->
+            <div class="security-section">
+                <div class="section-header">
+                    <div class="section-icon">🔐</div>
+                    <div>
+                        <h3 class="section-title">인증 및 접근 제어</h3>
+                        <p class="section-description">사용자 인증과 접근 권한 정책을 설정합니다</p>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <div class="setting-header">
+                            <div class="setting-info">
+                                <div class="setting-title">2단계 인증 (2FA) 강제</div>
+                                <div class="setting-description">모든 사용자에게 2단계 인증을 필수로 요구합니다. 보안성을 크게 향상시킵니다.</div>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enforce2FA">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-header">
+                            <div class="setting-info">
+                                <div class="setting-title">비밀번호 정책</div>
+                                <div class="setting-description">사용자 비밀번호의 최소 요구사항을 설정합니다.</div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div class="input-group">
+                                <label style="font-size: 0.9rem; font-weight: 500;">최소 길이</label>
+                                <input type="number" class="form-input" id="minPasswordLength" value="8" min="6" max="32">
+                            </div>
+                            <div class="input-group">
+                                <label style="font-size: 0.9rem; font-weight: 500;">복잡도 요구</label>
+                                <select class="form-select" id="passwordComplexity">
+                                    <option value="basic">기본 (숫자 포함)</option>
+                                    <option value="medium" selected>보통 (숫자, 특수문자)</option>
+                                    <option value="high">높음 (대소문자, 숫자, 특수문자)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label style="font-size: 0.9rem; font-weight: 500;">만료 기간 (일)</label>
+                                <input type="number" class="form-input" id="passwordExpiry" value="90" min="0" max="365">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-header">
+                            <div class="setting-info">
+                                <div class="setting-title">계정 잠금 정책</div>
+                                <div class="setting-description">연속된 로그인 실패 시 계정을 임시 잠금합니다.</div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div class="input-group">
+                                <label style="font-size: 0.9rem; font-weight: 500;">최대 시도 횟수</label>
+                                <input type="number" class="form-input" id="maxLoginAttempts" value="5" min="3" max="10">
+                            </div>
+                            <div class="input-group">
+                                <label style="font-size: 0.9rem; font-weight: 500;">잠금 시간 (분)</label>
+                                <input type="number" class="form-input" id="lockoutDuration" value="15" min="5" max="1440">
+                            </div>
+                            <div class="input-group">
+                                <label style="font-size: 0.9rem; font-weight: 500;">잠금 해제 방법</label>
+                                <select class="form-select" id="unlockMethod">
+                                    <option value="auto">자동 해제</option>
+                                    <option value="admin" selected>관리자 해제</option>
+                                    <option value="email">이메일 인증</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-header">
+                            <div class="setting-info">
+                                <div class="setting-title">세션 관리</div>
+                                <div class="setting-description">사용자 세션의 보안 정책을 설정합니다.</div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div class="input-group">
+                                <label style="font-size: 0.9rem; font-weight: 500;">세션 만료 (분)</label>
+                                <input type="number" class="form-input" id="sessionTimeout" value="60" min="5" max="480">
+                            </div>
+                            <div class="input-group">
+                                <label style="font-size: 0.9rem; font-weight: 500;">동시 세션 수</label>
+                                <input type="number" class="form-input" id="maxSessions" value="3" min="1" max="10">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="secureSession" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span style="font-size: 0.9rem;">보안 쿠키 사용</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SSL/TLS 설정 -->
+            <div class="security-section">
+                <div class="section-header">
+                    <div class="section-icon">🔐</div>
+                    <div>
+                        <h3 class="section-title">SSL/TLS 인증서</h3>
+                        <p class="section-description">HTTPS 연결을 위한 SSL 인증서를 관리합니다</p>
+                    </div>
+                </div>
+
+                <div class="ssl-info">
+                    <div class="ssl-status">
+                        <div class="ssl-indicator ssl-valid"></div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--text-primary);">SSL 인증서 활성</div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">인증서가 유효하고 정상 작동 중입니다</div>
+                        </div>
+                    </div>
+                    
+                    <div class="ssl-details">
+                        <div class="ssl-detail">
+                            <span>발급자:</span>
+                            <span>Let's Encrypt</span>
+                        </div>
+                        <div class="ssl-detail">
+                            <span>도메인:</span>
+                            <span>ahp-platform.onrender.com</span>
+                        </div>
+                        <div class="ssl-detail">
+                            <span>발급일:</span>
+                            <span>2025-09-01</span>
+                        </div>
+                        <div class="ssl-detail">
+                            <span>만료일:</span>
+                            <span>2025-12-01</span>
+                        </div>
+                        <div class="ssl-detail">
+                            <span>알고리즘:</span>
+                            <span>RSA 2048</span>
+                        </div>
+                        <div class="ssl-detail">
+                            <span>프로토콜:</span>
+                            <span>TLS 1.3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="renewCertificate()">🔄 인증서 갱신</button>
+                    <button class="btn btn-secondary" onclick="downloadCertificate()">📥 인증서 다운로드</button>
+                    <button class="btn btn-secondary" onclick="uploadCertificate()">📤 인증서 업로드</button>
+                </div>
+            </div>
+
+            <!-- 방화벽 설정 -->
+            <div class="security-section">
+                <div class="section-header">
+                    <div class="section-icon">🛡️</div>
+                    <div>
+                        <h3 class="section-title">방화벽 규칙</h3>
+                        <p class="section-description">네트워크 접근 제어 규칙을 관리합니다</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <button class="btn btn-primary" onclick="addFirewallRule()">➕ 규칙 추가</button>
+                </div>
+
+                <div class="firewall-rules">
+                    <div class="rule-item">
+                        <div class="rule-info">
+                            <div class="rule-source">모든 IP (0.0.0.0/0)</div>
+                            <div class="rule-description">포트 80, 443 (HTTP/HTTPS) 허용</div>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="editRule(1)">편집</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteRule(1)">삭제</button>
+                        </div>
+                    </div>
+                    
+                    <div class="rule-item">
+                        <div class="rule-info">
+                            <div class="rule-source">관리 네트워크 (192.168.1.0/24)</div>
+                            <div class="rule-description">포트 22, 5432 (SSH, PostgreSQL) 허용</div>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="editRule(2)">편집</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteRule(2)">삭제</button>
+                        </div>
+                    </div>
+                    
+                    <div class="rule-item">
+                        <div class="rule-info">
+                            <div class="rule-source">의심스러운 IP (45.123.45.67)</div>
+                            <div class="rule-description">모든 포트 차단</div>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="editRule(3)">편집</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteRule(3)">삭제</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 보안 위협 모니터링 -->
+            <div class="security-section">
+                <div class="section-header">
+                    <div class="section-icon">🚨</div>
+                    <div>
+                        <h3 class="section-title">보안 위협 모니터링</h3>
+                        <p class="section-description">실시간으로 탐지된 보안 위협을 확인합니다</p>
+                    </div>
+                </div>
+
+                <div class="threat-list">
+                    <div class="threat-item">
+                        <div class="threat-severity severity-high">높음</div>
+                        <div class="threat-info">
+                            <div class="threat-title">비정상적인 로그인 시도</div>
+                            <div class="threat-description">IP 203.45.67.89에서 5분 내 15회 로그인 실패</div>
+                        </div>
+                        <div class="threat-timestamp">2025-09-13 10:35:22</div>
+                        <button class="btn btn-sm btn-danger" onclick="blockIP('203.45.67.89')">IP 차단</button>
+                    </div>
+                    
+                    <div class="threat-item">
+                        <div class="threat-severity severity-medium">보통</div>
+                        <div class="threat-info">
+                            <div class="threat-title">SQL 인젝션 시도</div>
+                            <div class="threat-description">사용자 입력에서 의심스러운 SQL 패턴 탐지</div>
+                        </div>
+                        <div class="threat-timestamp">2025-09-13 10:28:15</div>
+                        <button class="btn btn-sm btn-secondary" onclick="viewDetails('sql_injection_001')">상세보기</button>
+                    </div>
+                    
+                    <div class="threat-item">
+                        <div class="threat-severity severity-low">낮음</div>
+                        <div class="threat-info">
+                            <div class="threat-title">비정상적인 트래픽 패턴</div>
+                            <div class="threat-description">평소보다 높은 API 요청 빈도 감지</div>
+                        </div>
+                        <div class="threat-timestamp">2025-09-13 10:15:43</div>
+                        <button class="btn btn-sm btn-secondary" onclick="analyzeTraffic()">분석</button>
+                    </div>
+                    
+                    <div class="threat-item">
+                        <div class="threat-severity severity-critical">긴급</div>
+                        <div class="threat-info">
+                            <div class="threat-title">데이터베이스 접근 시도</div>
+                            <div class="threat-description">권한 없는 사용자의 직접 DB 연결 시도</div>
+                        </div>
+                        <div class="threat-timestamp">2025-09-13 09:52:11</div>
+                        <button class="btn btn-sm btn-danger" onclick="emergencyBlock()">긴급 차단</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="clearResolvedThreats()">해결된 위협 정리</button>
+                    <button class="btn btn-primary" onclick="exportThreatReport()">위협 보고서 내보내기</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-secondary" id="resetToDefaults">기본값 복원</button>
+            <button class="btn btn-success" id="applySettings">설정 적용</button>
+        </div>
+    </div>
+
+    <script src="../scripts/api-service.js"></script>
+    <script>
+        let settings = {};
+        let hasUnsavedChanges = false;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 보안 설정 페이지 초기화');
+            await loadSecuritySettings();
+            setupEventListeners();
+            checkSecurityThreats();
+        });
+
+        async function loadSecuritySettings() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/security/settings/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    settings = await response.json();
+                    populateSettings(settings);
+                } else {
+                    console.warn('API로 보안 설정 로드 실패, 기본값 사용');
+                    loadDefaultSettings();
+                }
+            } catch (error) {
+                console.error('보안 설정 로드 실패:', error);
+                loadDefaultSettings();
+            }
+        }
+
+        function loadDefaultSettings() {
+            settings = {
+                enforce2FA: false,
+                minPasswordLength: 8,
+                passwordComplexity: 'medium',
+                passwordExpiry: 90,
+                maxLoginAttempts: 5,
+                lockoutDuration: 15,
+                unlockMethod: 'admin',
+                sessionTimeout: 60,
+                maxSessions: 3,
+                secureSession: true
+            };
+            populateSettings(settings);
+        }
+
+        function populateSettings(settings) {
+            document.getElementById('enforce2FA').checked = settings.enforce2FA || false;
+            document.getElementById('minPasswordLength').value = settings.minPasswordLength || 8;
+            document.getElementById('passwordComplexity').value = settings.passwordComplexity || 'medium';
+            document.getElementById('passwordExpiry').value = settings.passwordExpiry || 90;
+            document.getElementById('maxLoginAttempts').value = settings.maxLoginAttempts || 5;
+            document.getElementById('lockoutDuration').value = settings.lockoutDuration || 15;
+            document.getElementById('unlockMethod').value = settings.unlockMethod || 'admin';
+            document.getElementById('sessionTimeout').value = settings.sessionTimeout || 60;
+            document.getElementById('maxSessions').value = settings.maxSessions || 3;
+            document.getElementById('secureSession').checked = settings.secureSession !== false;
+        }
+
+        function setupEventListeners() {
+            // 설정 변경 감지
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    hasUnsavedChanges = true;
+                    updateSaveButton();
+                });
+            });
+
+            document.getElementById('saveSettings').addEventListener('click', saveSecuritySettings);
+            document.getElementById('securityScan').addEventListener('click', performSecurityScan);
+            document.getElementById('resetToDefaults').addEventListener('click', resetToDefaults);
+            document.getElementById('applySettings').addEventListener('click', applySecuritySettings);
+
+            // 페이지 이탈 경고
+            window.addEventListener('beforeunload', (e) => {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        }
+
+        function updateSaveButton() {
+            const saveBtn = document.getElementById('saveSettings');
+            if (hasUnsavedChanges) {
+                saveBtn.textContent = '💾 설정 저장 *';
+                saveBtn.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            } else {
+                saveBtn.textContent = '💾 설정 저장';
+                saveBtn.style.background = 'var(--gradient-primary)';
+            }
+        }
+
+        async function saveSecuritySettings() {
+            const saveBtn = document.getElementById('saveSettings');
+            const originalText = saveBtn.textContent;
+            
+            try {
+                saveBtn.textContent = '저장 중...';
+                saveBtn.disabled = true;
+                saveBtn.classList.add('loading');
+
+                const formData = collectFormData();
+
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/security/settings/', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    settings = formData;
+                    hasUnsavedChanges = false;
+                    updateSaveButton();
+                    showNotification('보안 설정이 저장되었습니다.', 'success');
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || '설정 저장에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('설정 저장 오류:', error);
+                showNotification(`설정 저장 실패: ${error.message}`, 'error');
+            } finally {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('loading');
+            }
+        }
+
+        function collectFormData() {
+            return {
+                enforce2FA: document.getElementById('enforce2FA').checked,
+                minPasswordLength: parseInt(document.getElementById('minPasswordLength').value),
+                passwordComplexity: document.getElementById('passwordComplexity').value,
+                passwordExpiry: parseInt(document.getElementById('passwordExpiry').value),
+                maxLoginAttempts: parseInt(document.getElementById('maxLoginAttempts').value),
+                lockoutDuration: parseInt(document.getElementById('lockoutDuration').value),
+                unlockMethod: document.getElementById('unlockMethod').value,
+                sessionTimeout: parseInt(document.getElementById('sessionTimeout').value),
+                maxSessions: parseInt(document.getElementById('maxSessions').value),
+                secureSession: document.getElementById('secureSession').checked
+            };
+        }
+
+        async function performSecurityScan() {
+            const scanBtn = document.getElementById('securityScan');
+            const originalText = scanBtn.textContent;
+            
+            try {
+                scanBtn.textContent = '검사 중...';
+                scanBtn.disabled = true;
+                scanBtn.classList.add('loading');
+
+                // 보안 검사 시뮬레이션
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // 보안 점수 업데이트
+                updateSecurityScore(Math.floor(Math.random() * 20) + 75);
+                
+                showNotification('보안 검사가 완료되었습니다.', 'success');
+            } catch (error) {
+                console.error('보안 검사 오류:', error);
+                showNotification('보안 검사 중 오류가 발생했습니다.', 'error');
+            } finally {
+                scanBtn.textContent = originalText;
+                scanBtn.disabled = false;
+                scanBtn.classList.remove('loading');
+            }
+        }
+
+        function updateSecurityScore(score) {
+            const scoreElement = document.getElementById('securityScore');
+            const parentElement = scoreElement.parentElement.nextElementSibling.firstElementChild;
+            
+            scoreElement.textContent = score;
+            
+            // 점수에 따른 클래스 및 텍스트 변경
+            scoreElement.className = 'score-circle';
+            if (score >= 90) {
+                scoreElement.classList.add('score-excellent');
+                parentElement.textContent = '최고';
+            } else if (score >= 75) {
+                scoreElement.classList.add('score-good');
+                parentElement.textContent = '양호';
+            } else if (score >= 60) {
+                scoreElement.classList.add('score-fair');
+                parentElement.textContent = '보통';
+            } else {
+                scoreElement.classList.add('score-poor');
+                parentElement.textContent = '위험';
+            }
+        }
+
+        function resetToDefaults() {
+            if (confirm('모든 보안 설정을 기본값으로 초기화하시겠습니까?')) {
+                loadDefaultSettings();
+                hasUnsavedChanges = true;
+                updateSaveButton();
+                showNotification('설정이 기본값으로 초기화되었습니다. 저장하여 적용하세요.', 'info');
+            }
+        }
+
+        async function applySecuritySettings() {
+            if (hasUnsavedChanges) {
+                alert('먼저 설정을 저장해야 적용할 수 있습니다.');
+                return;
+            }
+
+            const applyBtn = document.getElementById('applySettings');
+            const originalText = applyBtn.textContent;
+            
+            try {
+                applyBtn.textContent = '적용 중...';
+                applyBtn.disabled = true;
+                applyBtn.classList.add('loading');
+
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/security/settings/apply/', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    showNotification('보안 설정이 시스템에 적용되었습니다.', 'success');
+                } else {
+                    throw new Error('설정 적용에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('설정 적용 오류:', error);
+                showNotification('설정 적용 중 오류가 발생했습니다.', 'error');
+            } finally {
+                applyBtn.textContent = originalText;
+                applyBtn.disabled = false;
+                applyBtn.classList.remove('loading');
+            }
+        }
+
+        function checkSecurityThreats() {
+            // 5분마다 위협 확인
+            setInterval(() => {
+                const shouldShowAlert = Math.random() < 0.1; // 10% 확률로 경고 표시
+                if (shouldShowAlert) {
+                    document.getElementById('alertBanner').classList.add('active');
+                }
+            }, 300000); // 5분
+        }
+
+        function dismissAlert() {
+            document.getElementById('alertBanner').classList.remove('active');
+        }
+
+        // SSL/TLS 관련 함수들
+        async function renewCertificate() {
+            if (confirm('SSL 인증서를 갱신하시겠습니까?')) {
+                try {
+                    const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/security/settings/ssl/renew/', {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+
+                    if (response.ok) {
+                        showNotification('SSL 인증서 갱신이 시작되었습니다.', 'success');
+                    } else {
+                        throw new Error('인증서 갱신에 실패했습니다.');
+                    }
+                } catch (error) {
+                    console.error('인증서 갱신 오류:', error);
+                    showNotification('인증서 갱신 중 오류가 발생했습니다.', 'error');
+                }
+            }
+        }
+
+        function downloadCertificate() {
+            const link = document.createElement('a');
+            link.href = 'https://ahp-django-backend.onrender.com/super-admin/api/security/settings/ssl/download/';
+            link.download = 'ssl-certificate.crt';
+            link.click();
+        }
+
+        function uploadCertificate() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.crt,.pem,.p12,.pfx';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    // 실제로는 서버로 업로드
+                    showNotification(`${file.name} 인증서 업로드가 완료되었습니다.`, 'success');
+                }
+            };
+            input.click();
+        }
+
+        // 방화벽 규칙 관련 함수들
+        function addFirewallRule() {
+            // 방화벽 규칙 추가 모달 또는 폼을 표시
+            const source = prompt('소스 IP 또는 네트워크 (예: 192.168.1.0/24):');
+            const ports = prompt('포트 번호 (예: 80,443):');
+            const action = confirm('접근을 허용하시겠습니까? (취소하면 차단)') ? '허용' : '차단';
+            
+            if (source && ports) {
+                showNotification(`새 방화벽 규칙이 추가되었습니다: ${source} 포트 ${ports} ${action}`, 'success');
+            }
+        }
+
+        function editRule(ruleId) {
+            showNotification(`규칙 ${ruleId} 편집 기능은 준비 중입니다.`, 'info');
+        }
+
+        function deleteRule(ruleId) {
+            if (confirm(`규칙 ${ruleId}을(를) 삭제하시겠습니까?`)) {
+                showNotification(`규칙 ${ruleId}이(가) 삭제되었습니다.`, 'success');
+            }
+        }
+
+        // 위협 관련 함수들
+        function blockIP(ip) {
+            if (confirm(`IP 주소 ${ip}을(를) 차단하시겠습니까?`)) {
+                showNotification(`IP ${ip}이(가) 차단되었습니다.`, 'success');
+            }
+        }
+
+        function viewDetails(threatId) {
+            showNotification(`위협 ${threatId}의 상세 정보를 새 창에서 표시합니다.`, 'info');
+        }
+
+        function analyzeTraffic() {
+            showNotification('트래픽 패턴 분석을 시작했습니다.', 'info');
+        }
+
+        function emergencyBlock() {
+            if (confirm('긴급 차단을 실행하시겠습니까? 이 작업은 즉시 적용됩니다.')) {
+                showNotification('긴급 차단이 실행되었습니다.', 'success');
+            }
+        }
+
+        function clearResolvedThreats() {
+            if (confirm('해결된 위협을 모두 정리하시겠습니까?')) {
+                showNotification('해결된 위협이 정리되었습니다.', 'success');
+            }
+        }
+
+        function exportThreatReport() {
+            showNotification('위협 보고서를 생성하고 다운로드합니다.', 'info');
+            
+            // CSV 파일 생성 및 다운로드 시뮬레이션
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = '#';
+                link.download = `security-threats-${new Date().toISOString().split('T')[0]}.csv`;
+                // link.click(); // 실제 환경에서 활성화
+                showNotification('보고서 다운로드가 완료되었습니다.', 'success');
+            }, 1000);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                transform: translateX(100%);
+                transition: transform 0.3s;
+                max-width: 400px;
+            `;
+
+            switch (type) {
+                case 'success':
+                    notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    break;
+                case 'error':
+                    notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                    break;
+                case 'info':
+                    notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                    break;
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

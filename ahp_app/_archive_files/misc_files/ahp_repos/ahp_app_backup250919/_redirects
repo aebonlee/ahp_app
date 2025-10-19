@@ -1,0 +1,18 @@
+# GitHub Pages Redirects for AHP Platform
+
+# Main redirects
+/login              /public/login.html                  200
+/register           /public/register.html               200
+/dashboard          /public/super-admin-dashboard.html  200
+/admin              /public/super-admin-dashboard.html  200
+/personal           /public/personal-service-enhanced.html 200
+
+# Super Admin pages
+/admin/*            /public/admin/:splat                200
+/super-admin/*      /public/admin/:splat                200
+
+# API redirects (for development)
+/api/*              https://ahp-django-backend.onrender.com/api/:splat  200
+
+# Fallback for missing files
+/*                  /public/:splat                      200

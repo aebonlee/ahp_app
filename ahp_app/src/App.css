@@ -1,0 +1,109 @@
+/* ============================================================================
+   AHP Research Platform - App Specific Styles
+   Version: 3.0.0
+   
+   This file contains app-specific styles that complement the design system.
+   For core styles, see: src/styles/design-system.css
+   ============================================================================ */
+
+/* Import UI System Styles */
+@import './styles/ui-system.css';
+
+/* === App Container === */
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* === Main Content Area === */
+.App-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--container-2xl);
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+/* === Loading States === */
+.App-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-secondary);
+  border-top-color: var(--brand-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* === Error States === */
+.App-error {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-danger);
+}
+
+.error-message {
+  background: var(--surface-secondary);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin: var(--space-4) auto;
+  max-width: 600px;
+}
+
+/* === Page Transitions === */
+.page-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-exit {
+  opacity: 1;
+}
+
+.page-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}
+
+/* === Responsive Container === */
+@media (min-width: 640px) {
+  .App-main {
+    padding: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .App-main {
+    padding: var(--space-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .App-main {
+    padding: var(--space-10);
+  }
+}

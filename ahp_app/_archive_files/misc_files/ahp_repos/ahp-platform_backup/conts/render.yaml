@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: ahp-platform
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: |
+      npm install
+      npm run build:frontend
+      cd backend
+      npm install
+      npm run build
+    startCommand: cd backend && node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: ADMIN_EMAIL
+        value: aebon@naver.com
+      - key: SUPPORT_EMAIL
+        value: aebon@naver.com
+      - key: JWT_SECRET
+        generateValue: true
+      # DATABASE_URL은 Render Dashboard에서 기존 DB 연결

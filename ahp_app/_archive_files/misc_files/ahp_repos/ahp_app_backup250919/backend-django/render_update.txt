@@ -1,0 +1,5 @@
+Render Force Update - 2025-09-13T17:25:00
+This file triggers Render backend rebuild to apply latest fixes:
+- super-admin API 403 → 200 OK
+- Authentication backend errors resolved
+- Django PostgreSQL real-time data enabled

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - AHP System</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-elevated: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-light: #e5e7eb;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --gradient-primary: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #fafaf9 0%, #f9f7f4 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(200, 169, 104, 0.1);
+        }
+
+        .form-input:invalid {
+            border-color: #ef4444;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-primary);
+        }
+
+        .checkbox-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .forgot-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border-light);
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .social-btn:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        .register-link {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .register-link a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1rem;
+            }
+            
+            .login-card {
+                padding: 1.5rem;
+            }
+            
+            .social-login {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-section">
+                <a href="./" class="logo">
+                    <div class="logo-icon">A</div>
+                    <span>AHP System</span>
+                </a>
+            </div>
+
+            <h1 class="login-title">로그인</h1>
+            <p class="login-subtitle">계정에 로그인하여 AHP 분석을 시작하세요</p>
+
+            <div id="messageContainer"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email" class="form-label">이메일</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="이메일을 입력하세요"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">비밀번호</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-input" 
+                        placeholder="비밀번호를 입력하세요"
+                        required
+                    >
+                </div>
+
+                <div class="form-options">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="remember" name="remember" class="checkbox">
+                        <label for="remember" class="checkbox-label">로그인 상태 유지</label>
+                    </div>
+                    <a href="./forgot-password.html" class="forgot-link">비밀번호 찾기</a>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginButton">
+                    로그인
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>또는</span>
+            </div>
+
+            <div class="social-login">
+                <button class="social-btn" id="googleLogin">
+                    <span>🔍</span> Google
+                </button>
+                <button class="social-btn" id="kakaoLogin">
+                    <span>💬</span> Kakao
+                </button>
+            </div>
+
+            <p class="register-link">
+                계정이 없으신가요? <a href="./register.html">회원가입</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- API Service 모듈 로드 -->
+    <script src="scripts/api-service.js"></script>
+    
+    <script>
+        // DOM 요소
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // 메시지 표시 함수
+        function showMessage(message, type = 'error') {
+            messageContainer.innerHTML = `
+                <div class="${type}-message">
+                    ${message}
+                </div>
+            `;
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // 로그인 폼 처리
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(loginForm);
+            const loginData = {
+                email: formData.get('email'),
+                password: formData.get('password'),
+                remember: formData.get('remember') === 'on'
+            };
+
+            loginButton.disabled = true;
+            loginButton.textContent = '로그인 중...';
+
+            try {
+                // API 서비스를 통한 로그인
+                const response = await window.ahpApi.login(loginData);
+                
+                if (response.success) {
+                    // 로그인 성공 - 더 이상 localStorage 사용하지 않음
+                    const user = response.user;
+                    
+                    // 역할에 따른 리다이렉트 URL 결정 (강화된 등급별 라우팅)
+                    let redirectUrl = 'personal-service-enhanced.html';
+                    let dashboardName = '개인서비스 대시보드';
+                    
+                    if (user.role === 'admin' || user.is_superuser) {
+                        redirectUrl = 'super-admin-dashboard.html';
+                        dashboardName = '🛡️ 슈퍼 관리자 대시보드';
+                    } else if (user.user_type === 'evaluator') {
+                        redirectUrl = 'evaluator-dashboard.html';
+                        dashboardName = '🎯 전문 평가자 대시보드';
+                    } else if (user.user_type === 'personal' || user.user_type === 'personal_service_user') {
+                        redirectUrl = 'personal-service-enhanced.html';
+                        dashboardName = '👤 개인서비스 대시보드';
+                    }
+                    
+                    showMessage(`${user.name}님, 로그인에 성공했습니다! ${dashboardName}로 이동합니다.`, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 1500);
+                } else {
+                    showMessage(response.message || '로그인에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                showMessage('서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.');
+            } finally {
+                loginButton.disabled = false;
+                loginButton.textContent = '로그인';
+            }
+        });
+
+        // 소셜 로그인 버튼 이벤트
+        document.getElementById('googleLogin').addEventListener('click', function() {
+            showMessage('Google 로그인은 준비 중입니다.');
+        });
+
+        document.getElementById('kakaoLogin').addEventListener('click', function() {
+            showMessage('Kakao 로그인은 준비 중입니다.');
+        });
+
+        // 로그인 페이지는 항상 표시 - 자동 리다이렉트 제거
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔗 로그인 페이지 로드 - 자동 리다이렉트 비활성화');
+            // 사용자가 수동으로 로그인 버튼을 클릭할 때만 대시보드로 이동
+        });
+
+        // URL에서 메시지 파라미터 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        const message = urlParams.get('message');
+        if (message === 'registered') {
+            showMessage('회원가입이 완료되었습니다. 로그인해주세요.', 'success');
+        } else if (message === 'logout') {
+            showMessage('로그아웃되었습니다.', 'success');
+        } else if (message === 'session_expired') {
+            showMessage('세션이 만료되었습니다. 다시 로그인해주세요.', 'error');
+        }
+
+        console.log('✅ AHP System 로그인 페이지 로드 완료 (localStorage 제거 완료)');
+        console.log('💡 데모 계정:');
+        console.log('- admin@ahp-platform.com / ahp2025admin (관리자)');
+        console.log('- user@ahp.com / user123 (일반사용자)');
+        console.log('- demo@ahp.com / demo123 (데모사용자)');
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>JavaScript Test</title>
+</head>
+<body>
+    <div id="content">
+        <h1>Loading...</h1>
+    </div>
+    
+    <script>
+        console.log('JavaScript is executing!');
+        document.getElementById('content').innerHTML = 
+            '<h1 style="color: green;">✅ JavaScript Works on GitHub Pages!</h1>' +
+            '<p>Current time: ' + new Date().toLocaleString() + '</p>' +
+            '<p>URL: ' + window.location.href + '</p>';
+    </script>
+</body>
+</html>

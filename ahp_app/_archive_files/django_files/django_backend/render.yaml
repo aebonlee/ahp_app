@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: ahp-django-service
+    env: python
+    runtime: python-3.11.0
+    plan: free
+    buildCommand: "./django_backend/render-build.sh"
+    startCommand: "gunicorn ahp_backend.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: FLUSH_DB
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ahp-database
+          property: connectionString
+    autoDeploy: true
+
+databases:
+  - name: ahp-database
+    databaseName: ahp_app
+    user: ahp_app_user
+    plan: free

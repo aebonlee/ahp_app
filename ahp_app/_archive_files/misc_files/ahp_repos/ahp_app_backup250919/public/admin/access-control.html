@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>접근 제어 - AHP Admin</title>
+    <link rel="stylesheet" href="../styles/layout.css">
+    <style>
+        .access-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .access-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .access-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .access-subtitle {
+            color: var(--text-secondary);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .access-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .access-sections {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .access-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .role-card {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 2px solid var(--border-light);
+            transition: all 0.3s;
+        }
+
+        .role-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .role-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .role-info {
+            flex: 1;
+        }
+
+        .role-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .role-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .user-count {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .role-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .permissions-list {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .permission-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .permission-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .permission-granted {
+            background: #10b981;
+        }
+
+        .permission-denied {
+            background: #ef4444;
+        }
+
+        .permission-partial {
+            background: #f59e0b;
+        }
+
+        .user-table {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--bg-secondary);
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .table-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-box {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 20px;
+            width: 200px;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            width: 250px;
+        }
+
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            cursor: pointer;
+        }
+
+        .table-content {
+            overflow-x: auto;
+        }
+
+        .access-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .access-table th {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-light);
+            white-space: nowrap;
+        }
+
+        .access-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+        }
+
+        .access-table tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .user-email {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .role-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .role-admin {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .role-moderator {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .role-user {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        .role-guest {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .status-inactive {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .status-suspended {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .access-log {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-xs {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            min-width: 150px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-light);
+            background: var(--bg-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .page-btn:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .page-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 2px solid var(--border-light);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-primary);
+        }
+
+        .checkbox-label {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .access-container {
+                padding: 1rem;
+            }
+
+            .access-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .access-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .access-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .role-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .search-box:focus {
+                width: 100%;
+            }
+
+            .access-table {
+                font-size: 0.9rem;
+            }
+
+            .access-table th,
+            .access-table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="access-container">
+        <div class="access-header">
+            <div>
+                <h1 class="access-title">🛡️ 접근 제어</h1>
+                <p class="access-subtitle">사용자 권한과 역할을 관리하고 접근 권한을 제어합니다</p>
+            </div>
+            <div class="access-actions">
+                <button class="btn btn-secondary" id="exportReport">
+                    📊 권한 보고서
+                </button>
+                <button class="btn btn-primary" id="addUser">
+                    👤 사용자 추가
+                </button>
+            </div>
+        </div>
+
+        <div class="access-sections">
+            <!-- 역할 관리 섹션 -->
+            <div class="access-section">
+                <div class="section-header">
+                    <div class="section-icon">👑</div>
+                    <div>
+                        <h3 class="section-title">역할 관리</h3>
+                        <p class="section-description">시스템의 역할을 정의하고 권한을 설정합니다</p>
+                    </div>
+                </div>
+
+                <div class="role-grid">
+                    <div class="role-card">
+                        <div class="role-header">
+                            <div class="role-info">
+                                <div class="role-name">🔴 Super Admin</div>
+                                <div class="role-description">시스템 전체 관리 권한</div>
+                                <div class="user-count">2명의 사용자</div>
+                            </div>
+                            <div class="role-actions">
+                                <button class="btn btn-xs btn-secondary" onclick="editRole('admin')">편집</button>
+                            </div>
+                        </div>
+                        <div class="permissions-list">
+                            <div class="permission-item">
+                                <div class="permission-icon permission-granted"></div>
+                                <span>시스템 설정</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-granted"></div>
+                                <span>사용자 관리</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-granted"></div>
+                                <span>데이터베이스 접근</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-granted"></div>
+                                <span>보안 설정</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-header">
+                            <div class="role-info">
+                                <div class="role-name">🟠 Moderator</div>
+                                <div class="role-description">콘텐츠 및 사용자 관리</div>
+                                <div class="user-count">5명의 사용자</div>
+                            </div>
+                            <div class="role-actions">
+                                <button class="btn btn-xs btn-secondary" onclick="editRole('moderator')">편집</button>
+                            </div>
+                        </div>
+                        <div class="permissions-list">
+                            <div class="permission-item">
+                                <div class="permission-icon permission-granted"></div>
+                                <span>프로젝트 관리</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-granted"></div>
+                                <span>사용자 조회</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-partial"></div>
+                                <span>리포트 생성</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-denied"></div>
+                                <span>시스템 설정</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-header">
+                            <div class="role-info">
+                                <div class="role-name">🔵 User</div>
+                                <div class="role-description">일반 사용자 권한</div>
+                                <div class="user-count">1,243명의 사용자</div>
+                            </div>
+                            <div class="role-actions">
+                                <button class="btn btn-xs btn-secondary" onclick="editRole('user')">편집</button>
+                            </div>
+                        </div>
+                        <div class="permissions-list">
+                            <div class="permission-item">
+                                <div class="permission-icon permission-granted"></div>
+                                <span>프로젝트 생성</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-granted"></div>
+                                <span>자료 조회</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-denied"></div>
+                                <span>사용자 관리</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-denied"></div>
+                                <span>시스템 설정</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="role-card">
+                        <div class="role-header">
+                            <div class="role-info">
+                                <div class="role-name">⚪ Guest</div>
+                                <div class="role-description">제한된 읽기 권한</div>
+                                <div class="user-count">156명의 사용자</div>
+                            </div>
+                            <div class="role-actions">
+                                <button class="btn btn-xs btn-secondary" onclick="editRole('guest')">편집</button>
+                            </div>
+                        </div>
+                        <div class="permissions-list">
+                            <div class="permission-item">
+                                <div class="permission-icon permission-granted"></div>
+                                <span>데이터 조회</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-denied"></div>
+                                <span>프로젝트 생성</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-denied"></div>
+                                <span>데이터 수정</span>
+                            </div>
+                            <div class="permission-item">
+                                <div class="permission-icon permission-denied"></div>
+                                <span>리포트 생성</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <button class="btn btn-primary" onclick="createRole()">➕ 새 역할 만들기</button>
+                </div>
+            </div>
+
+            <!-- 사용자 접근 현황 -->
+            <div class="access-section">
+                <div class="section-header">
+                    <div class="section-icon">👥</div>
+                    <div>
+                        <h3 class="section-title">사용자 접근 현황</h3>
+                        <p class="section-description">등록된 사용자의 역할과 접근 상태를 관리합니다</p>
+                    </div>
+                </div>
+
+                <div class="user-table">
+                    <div class="table-header">
+                        <h4 class="table-title">사용자 목록</h4>
+                        <div class="table-controls">
+                            <input type="text" class="search-box" id="searchBox" placeholder="사용자 검색...">
+                            <select class="filter-select" id="roleFilter">
+                                <option value="">모든 역할</option>
+                                <option value="admin">Super Admin</option>
+                                <option value="moderator">Moderator</option>
+                                <option value="user">User</option>
+                                <option value="guest">Guest</option>
+                            </select>
+                            <select class="filter-select" id="statusFilter">
+                                <option value="">모든 상태</option>
+                                <option value="active">활성</option>
+                                <option value="inactive">비활성</option>
+                                <option value="suspended">정지</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-content">
+                        <table class="access-table">
+                            <thead>
+                                <tr>
+                                    <th>사용자</th>
+                                    <th>역할</th>
+                                    <th>상태</th>
+                                    <th>마지막 접근</th>
+                                    <th>접근 횟수</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                                <!-- 사용자 데이터가 여기에 동적으로 생성됩니다 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="pagination">
+                        <!-- 페이지네이션이 여기에 생성됩니다 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용자 추가/편집 모달 -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="userModalTitle">사용자 추가</h3>
+                <button class="modal-close" id="closeUserModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <div class="form-group">
+                        <label class="form-label">이름</label>
+                        <input type="text" class="form-input" id="userName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">이메일</label>
+                        <input type="email" class="form-input" id="userEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">역할</label>
+                        <select class="form-select" id="userRole" required>
+                            <option value="user">User</option>
+                            <option value="moderator">Moderator</option>
+                            <option value="admin">Super Admin</option>
+                            <option value="guest">Guest</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">상태</label>
+                        <select class="form-select" id="userStatus">
+                            <option value="active">활성</option>
+                            <option value="inactive">비활성</option>
+                            <option value="suspended">정지</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">권한 설정</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="checkbox" id="permissionRead">
+                                <label class="checkbox-label">데이터 읽기</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="checkbox" id="permissionWrite">
+                                <label class="checkbox-label">데이터 쓰기</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="checkbox" id="permissionDelete">
+                                <label class="checkbox-label">데이터 삭제</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="checkbox" id="permissionAdmin">
+                                <label class="checkbox-label">관리자 기능</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelUser">취소</button>
+                <button class="btn btn-primary" id="saveUser">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 역할 편집 모달 -->
+    <div class="modal" id="roleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="roleModalTitle">역할 편집</h3>
+                <button class="modal-close" id="closeRoleModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="roleForm">
+                    <div class="form-group">
+                        <label class="form-label">역할 이름</label>
+                        <input type="text" class="form-input" id="roleName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">설명</label>
+                        <input type="text" class="form-input" id="roleDescription">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">권한 설정</label>
+                        <div class="checkbox-group" id="rolePermissions">
+                            <!-- 권한 체크박스들이 여기에 생성됩니다 -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelRole">취소</button>
+                <button class="btn btn-primary" id="saveRole">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/api-service.js"></script>
+    <script>
+        let users = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let totalUsers = 0;
+        let currentFilters = {};
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 접근 제어 페이지 초기화');
+            await loadUsers();
+            setupEventListeners();
+        });
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/access/control/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    users = data.users || data;
+                    totalUsers = data.total || users.length;
+                    renderUserTable();
+                    renderPagination();
+                } else {
+                    console.warn('API로 사용자 목록 로드 실패, 데모 데이터 사용');
+                    loadDemoUsers();
+                }
+            } catch (error) {
+                console.error('사용자 목록 로드 실패:', error);
+                loadDemoUsers();
+            }
+        }
+
+        function loadDemoUsers() {
+            users = [
+                {
+                    id: '1',
+                    name: '김관리자',
+                    email: 'admin@ahp-platform.com',
+                    role: 'admin',
+                    status: 'active',
+                    lastAccess: '2025-09-13T10:30:00Z',
+                    accessCount: 145,
+                    avatar: 'K'
+                },
+                {
+                    id: '2',
+                    name: '이매니저',
+                    email: 'manager@ahp.com',
+                    role: 'moderator',
+                    status: 'active',
+                    lastAccess: '2025-09-13T09:45:00Z',
+                    accessCount: 89,
+                    avatar: 'I'
+                },
+                {
+                    id: '3',
+                    name: '박사용자',
+                    email: 'user1@ahp.com',
+                    role: 'user',
+                    status: 'active',
+                    lastAccess: '2025-09-13T08:20:00Z',
+                    accessCount: 34,
+                    avatar: 'P'
+                },
+                {
+                    id: '4',
+                    name: '최사용자',
+                    email: 'user2@ahp.com',
+                    role: 'user',
+                    status: 'inactive',
+                    lastAccess: '2025-09-12T16:15:00Z',
+                    accessCount: 12,
+                    avatar: 'C'
+                },
+                {
+                    id: '5',
+                    name: '정게스트',
+                    email: 'guest1@ahp.com',
+                    role: 'guest',
+                    status: 'active',
+                    lastAccess: '2025-09-13T07:10:00Z',
+                    accessCount: 3,
+                    avatar: 'J'
+                },
+                {
+                    id: '6',
+                    name: '강사용자',
+                    email: 'user3@ahp.com',
+                    role: 'user',
+                    status: 'suspended',
+                    lastAccess: '2025-09-10T14:25:00Z',
+                    accessCount: 67,
+                    avatar: 'K'
+                }
+            ];
+            totalUsers = users.length;
+            renderUserTable();
+            renderPagination();
+        }
+
+        function renderUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">사용자가 없습니다.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">${user.avatar || user.name[0].toUpperCase()}</div>
+                            <div class="user-details">
+                                <div class="user-name">${user.name}</div>
+                                <div class="user-email">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="role-badge role-${user.role}">${getRoleText(user.role)}</span>
+                    </td>
+                    <td>
+                        <span class="status-indicator status-${user.status}">
+                            ● ${getStatusText(user.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="access-log">${formatDateTime(user.lastAccess)}</div>
+                    </td>
+                    <td>
+                        <div style="text-align: center; font-weight: 600;">${user.accessCount}</div>
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="dropdown-toggle" onclick="toggleDropdown(${user.id})">⋮</button>
+                            <div class="dropdown-menu" id="dropdown-${user.id}">
+                                <a href="#" class="dropdown-item" onclick="editUser('${user.id}')">편집</a>
+                                <a href="#" class="dropdown-item" onclick="changeUserStatus('${user.id}')">상태 변경</a>
+                                <a href="#" class="dropdown-item" onclick="resetPassword('${user.id}')">비밀번호 재설정</a>
+                                <a href="#" class="dropdown-item" onclick="viewUserActivity('${user.id}')">활동 보기</a>
+                                <a href="#" class="dropdown-item" onclick="deleteUser('${user.id}')">삭제</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(totalUsers / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+            
+            // 이전 버튼
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">
+                    이전
+                </button>
+            `;
+
+            // 페이지 번호들
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            // 다음 버튼
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">
+                    다음
+                </button>
+            `;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('addUser').addEventListener('click', () => showUserModal());
+            document.getElementById('exportReport').addEventListener('click', exportAccessReport);
+            
+            document.getElementById('closeUserModal').addEventListener('click', closeUserModal);
+            document.getElementById('closeRoleModal').addEventListener('click', closeRoleModal);
+            document.getElementById('cancelUser').addEventListener('click', closeUserModal);
+            document.getElementById('cancelRole').addEventListener('click', closeRoleModal);
+            document.getElementById('saveUser').addEventListener('click', saveUser);
+            document.getElementById('saveRole').addEventListener('click', saveRole);
+
+            // 모달 외부 클릭시 닫기
+            document.getElementById('userModal').addEventListener('click', (e) => {
+                if (e.target.id === 'userModal') closeUserModal();
+            });
+            document.getElementById('roleModal').addEventListener('click', (e) => {
+                if (e.target.id === 'roleModal') closeRoleModal();
+            });
+
+            // 검색 및 필터
+            document.getElementById('searchBox').addEventListener('input', debounce(performSearch, 300));
+            document.getElementById('roleFilter').addEventListener('change', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
+            // 전체 클릭시 드롭다운 닫기
+            document.addEventListener('click', closeAllDropdowns);
+        }
+
+        function toggleDropdown(userId) {
+            event.stopPropagation();
+            const dropdown = document.getElementById(`dropdown-${userId}`);
+            const isShowing = dropdown.classList.contains('show');
+            
+            closeAllDropdowns();
+            
+            if (!isShowing) {
+                dropdown.classList.add('show');
+            }
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown-menu.show').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > Math.ceil(totalUsers / itemsPerPage)) return;
+            currentPage = page;
+            renderPagination();
+            // 실제로는 API 호출하여 해당 페이지 데이터 로드
+        }
+
+        function performSearch(query) {
+            if (!query.trim()) {
+                loadUsers();
+                return;
+            }
+
+            const filteredUsers = users.filter(user => 
+                user.name.toLowerCase().includes(query.toLowerCase()) ||
+                user.email.toLowerCase().includes(query.toLowerCase())
+            );
+
+            users = filteredUsers;
+            renderUserTable();
+            renderPagination();
+        }
+
+        function applyFilters() {
+            const roleFilter = document.getElementById('roleFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            currentFilters = { role: roleFilter, status: statusFilter };
+            
+            // 실제로는 API 호출하여 필터된 데이터 로드
+            loadUsers();
+        }
+
+        function showUserModal(userId = null) {
+            const modal = document.getElementById('userModal');
+            const title = document.getElementById('userModalTitle');
+            
+            if (userId) {
+                title.textContent = '사용자 편집';
+                // 사용자 데이터 로드하여 폼에 채우기
+                const user = users.find(u => u.id === userId);
+                if (user) {
+                    document.getElementById('userName').value = user.name;
+                    document.getElementById('userEmail').value = user.email;
+                    document.getElementById('userRole').value = user.role;
+                    document.getElementById('userStatus').value = user.status;
+                }
+            } else {
+                title.textContent = '사용자 추가';
+                document.getElementById('userForm').reset();
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        function showRoleModal(roleId = null) {
+            const modal = document.getElementById('roleModal');
+            const title = document.getElementById('roleModalTitle');
+            const permissionsContainer = document.getElementById('rolePermissions');
+            
+            title.textContent = roleId ? '역할 편집' : '새 역할 만들기';
+            
+            // 권한 목록 생성
+            const permissions = [
+                { id: 'read', label: '데이터 읽기' },
+                { id: 'write', label: '데이터 쓰기' },
+                { id: 'delete', label: '데이터 삭제' },
+                { id: 'user_manage', label: '사용자 관리' },
+                { id: 'system_config', label: '시스템 설정' },
+                { id: 'security', label: '보안 관리' },
+                { id: 'backup', label: '백업 관리' },
+                { id: 'reports', label: '리포트 생성' }
+            ];
+
+            permissionsContainer.innerHTML = permissions.map(perm => `
+                <div class="checkbox-item">
+                    <input type="checkbox" class="checkbox" id="perm-${perm.id}">
+                    <label class="checkbox-label">${perm.label}</label>
+                </div>
+            `).join('');
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeRoleModal() {
+            document.getElementById('roleModal').style.display = 'none';
+        }
+
+        function saveUser() {
+            const form = document.getElementById('userForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const userData = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                role: document.getElementById('userRole').value,
+                status: document.getElementById('userStatus').value,
+                permissions: {
+                    read: document.getElementById('permissionRead').checked,
+                    write: document.getElementById('permissionWrite').checked,
+                    delete: document.getElementById('permissionDelete').checked,
+                    admin: document.getElementById('permissionAdmin').checked
+                }
+            };
+
+            // 실제로는 API 호출
+            console.log('사용자 저장:', userData);
+            showNotification('사용자가 저장되었습니다.', 'success');
+            closeUserModal();
+            loadUsers();
+        }
+
+        function saveRole() {
+            const form = document.getElementById('roleForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const roleData = {
+                name: document.getElementById('roleName').value,
+                description: document.getElementById('roleDescription').value,
+                permissions: {}
+            };
+
+            // 권한 수집
+            document.querySelectorAll('#rolePermissions input[type="checkbox"]').forEach(checkbox => {
+                const permId = checkbox.id.replace('perm-', '');
+                roleData.permissions[permId] = checkbox.checked;
+            });
+
+            // 실제로는 API 호출
+            console.log('역할 저장:', roleData);
+            showNotification('역할이 저장되었습니다.', 'success');
+            closeRoleModal();
+        }
+
+        function editUser(userId) {
+            showUserModal(userId);
+        }
+
+        function editRole(roleId) {
+            showRoleModal(roleId);
+        }
+
+        function createRole() {
+            showRoleModal();
+        }
+
+        function changeUserStatus(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+
+            const newStatus = prompt('새 상태를 선택하세요:\n1. active\n2. inactive\n3. suspended', user.status);
+            if (newStatus && ['active', 'inactive', 'suspended'].includes(newStatus)) {
+                // 실제로는 API 호출
+                user.status = newStatus;
+                renderUserTable();
+                showNotification(`${user.name}의 상태가 ${getStatusText(newStatus)}(으)로 변경되었습니다.`, 'success');
+            }
+        }
+
+        function resetPassword(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+
+            if (confirm(`${user.name}의 비밀번호를 재설정하시겠습니까?`)) {
+                // 실제로는 API 호출
+                showNotification(`${user.name}에게 비밀번호 재설정 이메일이 발송되었습니다.`, 'success');
+            }
+        }
+
+        function viewUserActivity(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+
+            // 사용자 활동 페이지로 이동 또는 모달 표시
+            window.open(`/admin/user-activity.html?userId=${userId}`, '_blank');
+        }
+
+        function deleteUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+
+            if (confirm(`정말로 ${user.name} 사용자를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+                // 실제로는 API 호출
+                users = users.filter(u => u.id !== userId);
+                renderUserTable();
+                showNotification(`${user.name} 사용자가 삭제되었습니다.`, 'success');
+            }
+        }
+
+        function exportAccessReport() {
+            // 액세스 리포트 생성 및 다운로드
+            const csvContent = generateAccessReportCSV();
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `access-control-report-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showNotification('접근 제어 보고서가 다운로드되었습니다.', 'success');
+        }
+
+        function generateAccessReportCSV() {
+            const headers = ['이름', '이메일', '역할', '상태', '마지막 접근', '접근 횟수'];
+            const rows = users.map(user => [
+                user.name,
+                user.email,
+                getRoleText(user.role),
+                getStatusText(user.status),
+                formatDateTime(user.lastAccess),
+                user.accessCount
+            ]);
+
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(field => `"${field}"`).join(','))
+                .join('\n');
+
+            return '\uFEFF' + csvContent; // BOM for UTF-8
+        }
+
+        function formatDateTime(timestamp) {
+            return new Date(timestamp).toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getRoleText(role) {
+            const roles = {
+                'admin': 'Super Admin',
+                'moderator': 'Moderator',
+                'user': 'User',
+                'guest': 'Guest'
+            };
+            return roles[role] || role;
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'active': '활성',
+                'inactive': '비활성',
+                'suspended': '정지'
+            };
+            return statuses[status] || status;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                transform: translateX(100%);
+                transition: transform 0.3s;
+                max-width: 400px;
+            `;
+
+            switch (type) {
+                case 'success':
+                    notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    break;
+                case 'error':
+                    notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                    break;
+                case 'info':
+                    notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                    break;
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>

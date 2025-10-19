@@ -1,0 +1,14 @@
+# FORCE RENDER.COM DEPLOYMENT - 2025년 09월 23일 오후 12시 10분
+# 
+# 수동 배포 트리거 시도 #1
+# - PostgreSQL 테이블 생성 문제 해결
+# - simple_projects 테이블 강제 생성
+# - 마이그레이션 프로세스 개선
+# - 샘플 데이터 자동 생성
+# 
+# DATABASE CONFIGURATION:
+# - DATABASE_URL: postgresql://ahp_app_user:xEcCdn2WB32sxLYIPAncc9cHARXf1t6d@dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com/ahp_app
+# - 환경변수 강제 설정 활성화
+# - force_db_connection.py 연결 테스트 포함
+# 
+# DEPLOYMENT STATUS: PENDING

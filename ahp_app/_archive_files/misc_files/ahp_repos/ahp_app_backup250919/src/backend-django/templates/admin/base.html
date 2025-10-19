@@ -1,0 +1,520 @@
+{% load i18n static %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE|default:"ko" }}" dir="{{ LANGUAGE_BIDI|yesno:"rtl,ltr" }}">
+<head>
+    <title>{% block title %}{% endblock %} | AHP Platform 관리자</title>
+    <link rel="stylesheet" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}">
+    <link rel="stylesheet" href="{% static "admin/css/nav_sidebar.css" %}">
+    {% block dark-mode-vars %}
+        <link rel="stylesheet" href="{% static "admin/css/dark_mode.css" %}">
+    {% endblock %}
+    {% if not is_popup %}
+        <link rel="stylesheet" href="{% static "admin/css/dashboard.css" %}">
+    {% endif %}
+    {% block responsive %}
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <link rel="stylesheet" href="{% static "admin/css/responsive.css" %}">
+    {% endblock %}
+    
+    <!-- Custom Styles -->
+    <style>
+        /* Modern Design Enhancements */
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --info-color: #3b82f6;
+            --dark-bg: #1f2937;
+            --light-bg: #f8fafc;
+            --border-color: #e5e7eb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+        }
+        
+        /* Header Styling */
+        #header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            box-shadow: var(--shadow-lg);
+            padding: 1rem 2rem;
+        }
+        
+        #branding h1 {
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        #branding h1::before {
+            content: "👑";
+            font-size: 1.2rem;
+        }
+        
+        #branding h1 a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        #user-tools {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+        
+        #user-tools a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.3s ease;
+        }
+        
+        #user-tools a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        /* Navigation Styling */
+        .main > #nav-sidebar {
+            background: white;
+            border-right: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+        
+        #nav-sidebar .module {
+            border: none;
+            border-radius: var(--border-radius);
+            margin: 1rem;
+            background: var(--light-bg);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        #nav-sidebar .module caption {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            border: none;
+        }
+        
+        #nav-sidebar .module th {
+            background: none;
+            padding: 0.75rem 1rem;
+            border: none;
+        }
+        
+        #nav-sidebar .module th a {
+            color: var(--text-primary);
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.3s ease;
+        }
+        
+        #nav-sidebar .module th a:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateX(4px);
+        }
+        
+        /* Content Area */
+        .main > #content {
+            padding: 2rem;
+            background: var(--light-bg);
+            min-height: calc(100vh - 80px);
+        }
+        
+        /* Breadcrumbs */
+        .breadcrumbs {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .breadcrumbs a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .breadcrumbs a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Forms and Tables */
+        .module {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        
+        .module h2 {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem 1.5rem;
+            margin: 0;
+            font-weight: 600;
+            border: none;
+        }
+        
+        /* Buttons */
+        .button, input[type=submit], input[type=button], .submit-row input {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .button:hover, input[type=submit]:hover, input[type=button]:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .button.default, input[type=submit].default {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+        }
+        
+        /* Messages */
+        .messagelist {
+            margin: 0 0 2rem 0;
+        }
+        
+        .messagelist li {
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            border: none;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .messagelist li::before {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+        }
+        
+        .messagelist .success {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #065f46;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .messagelist .success::before {
+            content: "\f00c";
+        }
+        
+        .messagelist .warning {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .messagelist .warning::before {
+            content: "\f071";
+        }
+        
+        .messagelist .error {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            border-left: 4px solid var(--error-color);
+        }
+        
+        .messagelist .error::before {
+            content: "\f06a";
+        }
+        
+        .messagelist .info {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+            border-left: 4px solid var(--info-color);
+        }
+        
+        .messagelist .info::before {
+            content: "\f05a";
+        }
+        
+        /* Dashboard */
+        #content-main {
+            background: transparent;
+        }
+        
+        .dashboard .module table th {
+            background: var(--light-bg);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .dashboard .module table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .dashboard .module table tr:hover {
+            background: var(--light-bg);
+        }
+        
+        /* Super Admin Enhancements */
+        .super-admin-notice {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .super-admin-notice::before {
+            content: "👑";
+            font-size: 1.2rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            #header {
+                padding: 1rem;
+            }
+            
+            .main > #content {
+                padding: 1rem;
+            }
+            
+            #nav-sidebar .module {
+                margin: 0.5rem;
+            }
+        }
+        
+        /* Custom Icons */
+        .addlink::before, .changelink::before {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            margin-right: 0.5rem;
+        }
+        
+        .addlink::before {
+            content: "\f067";
+            color: var(--success-color);
+        }
+        
+        .changelink::before {
+            content: "\f044";
+            color: var(--primary-color);
+        }
+        
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    {% block extrahead %}{% endblock %}
+    {% block responsive_extrahead %}{% endblock %}
+    {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
+</head>
+
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}" data-admin-utc-offset="{% now "Z" %}">
+    <div id="container">
+        {% if not is_popup %}
+            <!-- Header -->
+            <div id="header">
+                <div id="branding">
+                    {% block branding %}
+                        <h1 id="site-name"><a href="{% url 'admin:index' %}">AHP Platform 관리자</a></h1>
+                    {% endblock %}
+                </div>
+                {% block usertools %}
+                    {% if has_permission %}
+                        <div id="user-tools">
+                            {% block welcome-msg %}
+                                {% trans 'Welcome,' %}
+                                <strong>{% firstof user.get_short_name user.get_username %}</strong>.
+                            {% endblock %}
+                            {% block userlinks %}
+                                {% if site_url %}
+                                    <a href="{{ site_url }}">{% trans 'View site' %}</a> /
+                                {% endif %}
+                                {% if user.is_active and user.is_staff %}
+                                    {% url 'django-admindocs-docroot' as docsroot %}
+                                    {% if docsroot %}
+                                        <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
+                                    {% endif %}
+                                {% endif %}
+                                {% if user.has_usable_password %}
+                                    <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
+                                {% endif %}
+                                <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
+                            {% endblock %}
+                        </div>
+                    {% endif %}
+                {% endblock %}
+            </div>
+            <!-- END Header -->
+            
+            {% block nav-global %}{% endblock %}
+        {% endif %}
+        
+        <div class="main" id="main">
+            {% if not is_popup and is_nav_sidebar_enabled %}
+                {% block nav-sidebar %}
+                    {% include "admin/nav_sidebar.html" %}
+                {% endblock %}
+            {% endif %}
+            
+            <div class="content">
+                {% if user.is_superuser %}
+                    <div class="super-admin-notice">
+                        <strong>슈퍼 관리자 모드:</strong> 모든 시스템에 대한 완전한 액세스 권한을 가지고 있습니다.
+                    </div>
+                {% endif %}
+                
+                {% block messages %}
+                    {% if messages %}
+                        <ul class="messagelist">
+                            {% for message in messages %}
+                                <li class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message|capfirst }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endblock messages %}
+                
+                <!-- Content -->
+                <div id="content" class="{% block coltype %}colM{% endblock %}">
+                    {% block pretitle %}{% endblock %}
+                    {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+                    {% block content_subtitle %}{% if subtitle %}<h2>{{ subtitle }}</h2>{% endif %}{% endblock %}
+                    {% block content %}
+                        {% block object-tools %}{% endblock %}
+                        {{ content }}
+                    {% endblock %}
+                    {% block sidebar %}{% endblock %}
+                    <br class="clear">
+                </div>
+                <!-- END Content -->
+                
+                {% block footer %}<div id="footer"></div>{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add icons to navigation links
+            const addIcons = {
+                'CustomUser': 'fas fa-users',
+                'PaymentPlan': 'fas fa-credit-card',
+                'PaymentTransaction': 'fas fa-receipt',
+                'AHPProject': 'fas fa-project-diagram',
+                'ActivityLog': 'fas fa-history',
+                'SystemSettings': 'fas fa-cog'
+            };
+            
+            document.querySelectorAll('#nav-sidebar .module th a').forEach(link => {
+                const text = link.textContent.trim();
+                for (const [model, iconClass] of Object.entries(addIcons)) {
+                    if (text.includes(model) || text.includes(model.toLowerCase())) {
+                        link.innerHTML = `<i class="${iconClass}"></i> ${text}`;
+                        break;
+                    }
+                }
+            });
+            
+            // Enhanced form interactions
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function() {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'loading-overlay';
+                    overlay.innerHTML = '<div class="loading-spinner"></div>';
+                    document.body.appendChild(overlay);
+                });
+            });
+            
+            // Auto-hide messages after 5 seconds
+            setTimeout(() => {
+                document.querySelectorAll('.messagelist li').forEach(msg => {
+                    msg.style.transition = 'opacity 0.5s ease';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500);
+                });
+            }, 5000);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Alt + H = Home
+                if (e.altKey && e.key === 'h') {
+                    e.preventDefault();
+                    window.location.href = '{% url "admin:index" %}';
+                }
+                
+                // Alt + L = Logout
+                if (e.altKey && e.key === 'l') {
+                    e.preventDefault();
+                    window.location.href = '{% url "admin:logout" %}';
+                }
+            });
+        });
+    </script>
+    
+    {% block extrajs %}{% endblock %}
+</body>
+</html>

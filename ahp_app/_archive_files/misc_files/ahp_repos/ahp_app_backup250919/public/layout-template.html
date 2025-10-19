@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - Layout Template</title>
+    <link rel="stylesheet" href="styles/layout.css">
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="./personal-service-enhanced.html" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP System</span>
+            </a>
+            <nav class="header-nav">
+                <a href="./personal-service-enhanced.html" class="header-nav-item" data-page="dashboard">대시보드</a>
+                <a href="./project-management.html" class="header-nav-item" data-page="projects">프로젝트</a>
+                <a href="./results-analysis.html" class="header-nav-item" data-page="analysis">분석</a>
+                <a href="#" class="header-nav-item" data-page="reports">보고서</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar">김</div>
+                <div>
+                    <div class="user-name">김철수</div>
+                    <div class="user-role">Personal Admin</div>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="logout-btn">로그아웃</button>
+        </div>
+    </header>
+
+    <!-- 왼쪽 사이드바 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">프로젝트 관리</div>
+            <div class="sidebar-menu">
+                <a href="./project-management.html" class="sidebar-item" data-menu="my-projects">
+                    <span class="sidebar-icon">📋</span>
+                    <span>내 프로젝트</span>
+                    <span class="sidebar-badge">3</span>
+                </a>
+                <a href="./project-management.html" class="sidebar-item" data-menu="new-project">
+                    <span class="sidebar-icon">➕</span>
+                    <span>새 프로젝트</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="trash">
+                    <span class="sidebar-icon">🗑️</span>
+                    <span>휴지통</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">모델 구축</div>
+            <div class="sidebar-menu">
+                <a href="./criteria-management.html" class="sidebar-item" data-menu="criteria">
+                    <span class="sidebar-icon">⚖️</span>
+                    <span>기준 설정</span>
+                </a>
+                <a href="./alternatives-management.html" class="sidebar-item" data-menu="alternatives">
+                    <span class="sidebar-icon">🔄</span>
+                    <span>대안 관리</span>
+                </a>
+                <a href="./pairwise-comparison.html" class="sidebar-item" data-menu="comparison">
+                    <span class="sidebar-icon">⚡</span>
+                    <span>쌍대비교</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="evaluators">
+                    <span class="sidebar-icon">👥</span>
+                    <span>평가자 관리</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">분석 및 결과</div>
+            <div class="sidebar-menu">
+                <a href="./results-analysis.html" class="sidebar-item" data-menu="results">
+                    <span class="sidebar-icon">📈</span>
+                    <span>결과 분석</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="monitoring">
+                    <span class="sidebar-icon">📊</span>
+                    <span>진행률 모니터링</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="reports">
+                    <span class="sidebar-icon">📄</span>
+                    <span>보고서 생성</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="sensitivity">
+                    <span class="sidebar-icon">🔍</span>
+                    <span>민감도 분석</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">설정</div>
+            <div class="sidebar-menu">
+                <a href="#" class="sidebar-item" data-menu="settings">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>개인 설정</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="billing">
+                    <span class="sidebar-icon">💳</span>
+                    <span>요금제 관리</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="guide">
+                    <span class="sidebar-icon">📚</span>
+                    <span>사용 가이드</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 사이드바 토글 버튼 -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <span id="toggle-icon">◀</span>
+    </button>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content" id="main-content">
+        <!-- 페이지별 콘텐츠가 여기에 들어갑니다 -->
+    </main>
+
+    <script src="scripts/layout.js"></script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - 개인 서비스 대시보드</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-light: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .menu-section {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-light);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-light);
+        }
+
+        /* 첫 번째 행: 7개 메뉴 */
+        .menu-grid-7 {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* 두 번째 행: 9개 메뉴 */
+        .menu-grid-9 {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 1rem;
+        }
+
+        /* 반응형: 작은 화면에서는 더 적은 열 */
+        @media (max-width: 1200px) {
+            .menu-grid-7 { grid-template-columns: repeat(5, 1fr); }
+            .menu-grid-9 { grid-template-columns: repeat(6, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .menu-grid-7 { grid-template-columns: repeat(3, 1fr); }
+            .menu-grid-9 { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .menu-grid-7 { grid-template-columns: repeat(2, 1fr); }
+            .menu-grid-9 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .menu-item {
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-light);
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text-primary);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menu-item:hover {
+            border-color: var(--accent-primary);
+            background: linear-gradient(135deg, var(--accent-light), #f8f6f0);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.3);
+        }
+
+        .menu-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent-primary);
+        }
+
+        .menu-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .menu-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.3;
+        }
+
+        .status-bar {
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.75rem;
+            text-align: center;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 AHP System - 개인 서비스 대시보드</h1>
+        <p>Analytic Hierarchy Process 의사결정 지원 시스템</p>
+    </div>
+
+    <div class="container">
+        <div class="status-bar">
+            ✅ JavaScript 정상 실행중 | Django 백엔드: <span id="backend-status">연결 확인중...</span> | 시간: <span id="current-time"></span>
+        </div>
+
+        <div class="menu-section">
+            <h2 class="section-title">📊 핵심 기능 메뉴 (첫 번째 행 - 7개)</h2>
+            <div class="menu-grid-7">
+                <a href="./project-management.html" class="menu-item">
+                    <div class="menu-icon">📋</div>
+                    <div class="menu-title">프로젝트 관리</div>
+                    <div class="menu-desc">새 프로젝트 생성<br>및 관리</div>
+                </a>
+                <a href="./criteria-management.html" class="menu-item">
+                    <div class="menu-icon">⚖️</div>
+                    <div class="menu-title">기준 설정</div>
+                    <div class="menu-desc">평가 기준<br>정의 및 설정</div>
+                </a>
+                <a href="./alternatives-management.html" class="menu-item">
+                    <div class="menu-icon">🔄</div>
+                    <div class="menu-title">대안 관리</div>
+                    <div class="menu-desc">선택 가능한<br>대안 관리</div>
+                </a>
+                <a href="./pairwise-comparison.html" class="menu-item">
+                    <div class="menu-icon">⚡</div>
+                    <div class="menu-title">쌍대비교</div>
+                    <div class="menu-desc">기준별 대안<br>쌍대비교 수행</div>
+                </a>
+                <a href="./results-analysis.html" class="menu-item">
+                    <div class="menu-icon">📈</div>
+                    <div class="menu-title">분석 결과</div>
+                    <div class="menu-desc">AHP 분석<br>결과 확인</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('보고서 생성')">
+                    <div class="menu-icon">📄</div>
+                    <div class="menu-title">보고서 생성</div>
+                    <div class="menu-desc">분석 결과<br>보고서 작성</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('데이터 관리')">
+                    <div class="menu-icon">💾</div>
+                    <div class="menu-title">데이터 관리</div>
+                    <div class="menu-desc">프로젝트 데이터<br>백업 및 복원</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h2 class="section-title">🔧 고급 기능 메뉴 (두 번째 행 - 9개)</h2>
+            <div class="menu-grid-9">
+                <a href="#" class="menu-item" onclick="showAlert('설문 관리')">
+                    <div class="menu-icon">📝</div>
+                    <div class="menu-title">설문 관리</div>
+                    <div class="menu-desc">온라인 설문<br>생성 및 관리</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('평가자 관리')">
+                    <div class="menu-icon">👥</div>
+                    <div class="menu-title">평가자 관리</div>
+                    <div class="menu-desc">평가 참여자<br>초대 및 관리</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('통계 분석')">
+                    <div class="menu-icon">📊</div>
+                    <div class="menu-title">통계 분석</div>
+                    <div class="menu-desc">고급 통계<br>분석 도구</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('시각화')">
+                    <div class="menu-icon">📉</div>
+                    <div class="menu-title">시각화</div>
+                    <div class="menu-desc">차트 및 그래프<br>시각화 도구</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('템플릿')">
+                    <div class="menu-icon">📋</div>
+                    <div class="menu-title">템플릿</div>
+                    <div class="menu-desc">프로젝트<br>템플릿 관리</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('공유 관리')">
+                    <div class="menu-icon">🔗</div>
+                    <div class="menu-title">공유 관리</div>
+                    <div class="menu-desc">프로젝트<br>공유 설정</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('알림 설정')">
+                    <div class="menu-icon">🔔</div>
+                    <div class="menu-title">알림 설정</div>
+                    <div class="menu-desc">시스템<br>알림 설정</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('시스템 설정')">
+                    <div class="menu-icon">⚙️</div>
+                    <div class="menu-title">시스템 설정</div>
+                    <div class="menu-desc">개인 계정<br>설정 관리</div>
+                </a>
+                <a href="#" class="menu-item" onclick="showAlert('도움말')">
+                    <div class="menu-icon">❓</div>
+                    <div class="menu-title">도움말</div>
+                    <div class="menu-desc">사용법 및<br>지원 센터</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>AHP for Paper v2.4.0 | Django + PostgreSQL + React 18.2.0</p>
+        <p>Frontend: <a href="https://github.com/aebonlee/ahp_app" target="_blank">GitHub Repository</a></p>
+        <p>Backend: Django REST Framework at https://ahp-django-backend.onrender.com</p>
+    </div>
+
+    <script>
+        console.log('🚀 개인서비스 대시보드 JavaScript 실행 성공!');
+        
+        // 현재 시간 업데이트
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('ko-KR');
+        }
+        
+        // Django 백엔드 연결 상태 확인
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/api/health/', {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                
+                if (response.ok) {
+                    document.getElementById('backend-status').textContent = '✅ 정상 연결';
+                    document.getElementById('backend-status').style.color = '#10b981';
+                } else {
+                    document.getElementById('backend-status').textContent = '⚠️ 응답 오류';
+                    document.getElementById('backend-status').style.color = '#f59e0b';
+                }
+            } catch (error) {
+                document.getElementById('backend-status').textContent = '❌ 연결 실패';
+                document.getElementById('backend-status').style.color = '#ef4444';
+            }
+        }
+        
+        // 메뉴 클릭 이벤트
+        function showAlert(menuName) {
+            alert(`${menuName} 기능이 선택되었습니다.\n\nDjango 백엔드와 연동하여 실제 기능을 구현할 예정입니다.\n\n현재 상태: 개인서비스 대시보드 정상 작동 중!`);
+        }
+        
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ PersonalService Dashboard 로드 완료');
+            console.log('✅ 2행 그리드 메뉴 시스템 (16개 메뉴) 정상 표시');
+            updateTime();
+            checkBackendStatus();
+            setInterval(updateTime, 1000); // 1초마다 시간 업데이트
+        });
+    </script>
+</body>
+</html>

@@ -19,16 +19,34 @@ jobs:
       with:
         node-version: '18'
         
+    - name: Check React app directory
+      run: |
+        if [ -d "ahp_app" ]; then
+          echo "React app found in ahp_app directory"
+          echo "REACT_DIR=ahp_app" >> $GITHUB_ENV
+        elif [ -f "package.json" ]; then
+          echo "React app found in root directory"
+          echo "REACT_DIR=." >> $GITHUB_ENV
+        else
+          echo "No React app found"
+          exit 1
+        fi
+        
     - name: Install dependencies
-      run: npm ci
+      run: |
+        cd $REACT_DIR
+        npm ci
         
     - name: Run TypeScript check and build
-      run: npm run build
+      run: |
+        cd $REACT_DIR
+        npm run build
       env:
         CI: false
       
     - name: Check if tests are available
       run: |
+        cd $REACT_DIR
         if npm run test --help > /dev/null 2>&1; then
           echo "Tests are available but skipped in CI for now"
           echo "Run 'npm test' locally to run tests"

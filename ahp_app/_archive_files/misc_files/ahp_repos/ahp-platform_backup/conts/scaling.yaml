@@ -1,0 +1,79 @@
+# Horizontal Autoscaling Configuration for Render.com Team Plan
+# This configuration enables automatic scaling based on traffic and resource usage
+
+services:
+  ahp-backend-prod:
+    scaling:
+      # 최소 및 최대 인스턴스 수
+      minInstances: 2
+      maxInstances: 10
+      
+      # 스케일링 트리거 조건
+      targetCPUPercent: 70          # CPU 사용률 70% 초과 시 스케일 업
+      targetMemoryPercent: 80        # 메모리 사용률 80% 초과 시 스케일 업
+      targetResponseTime: 1000       # 응답 시간 1초 초과 시 스케일 업 (ms)
+      
+      # 스케일링 정책
+      scaleUpPolicy:
+        cooldown: 60                # 스케일 업 후 60초 대기
+        increment: 2                 # 한 번에 2개 인스턴스 추가
+        
+      scaleDownPolicy:
+        cooldown: 300               # 스케일 다운 후 5분 대기
+        decrement: 1                # 한 번에 1개 인스턴스 감소
+        
+      # 트래픽 기반 스케일링
+      requestsPerSecond:
+        target: 100                 # 초당 100개 요청 기준
+        scaleUpThreshold: 120       # 120 RPS 초과 시 스케일 업
+        scaleDownThreshold: 50      # 50 RPS 미만 시 스케일 다운
+        
+  ahp-frontend-prod:
+    scaling:
+      # Static 사이트는 CDN을 통해 자동 스케일링됨
+      cdn:
+        enabled: true
+        cacheControl:
+          static: "public, max-age=31536000"    # 정적 파일 1년 캐싱
+          html: "public, max-age=0, must-revalidate"  # HTML은 항상 재검증
+          
+# Load Balancing Configuration
+loadBalancer:
+  algorithm: round_robin            # round_robin, least_connections, ip_hash
+  healthCheck:
+    path: /api/health
+    interval: 30                    # 30초마다 헬스 체크
+    timeout: 10                     # 10초 타임아웃
+    unhealthyThreshold: 3           # 3번 실패 시 unhealthy
+    healthyThreshold: 2             # 2번 성공 시 healthy
+    
+  sessionAffinity:
+    enabled: true                   # 세션 유지
+    cookieName: "ahp_lb_session"
+    ttl: 3600                       # 1시간 세션 유지
+    
+# Alert Configuration
+alerts:
+  - name: high-cpu-usage
+    condition: cpu > 85
+    duration: 5m
+    notification:
+      email: aebon@naver.com
+      
+  - name: high-memory-usage
+    condition: memory > 90
+    duration: 5m
+    notification:
+      email: aebon@naver.com
+      
+  - name: high-error-rate
+    condition: error_rate > 5
+    duration: 2m
+    notification:
+      email: aebon@naver.com
+      
+  - name: slow-response-time
+    condition: response_time > 2000
+    duration: 3m
+    notification:
+      email: aebon@naver.com

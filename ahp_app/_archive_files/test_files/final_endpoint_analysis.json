@@ -1,0 +1,513 @@
+{
+  "timestamp": "2025-10-12T01:00:41.502Z",
+  "baseUrl": "https://ahp-django-backend.onrender.com",
+  "summary": {
+    "total": 17,
+    "working": 10,
+    "broken": 7,
+    "categories": 5
+  },
+  "categoryAnalysis": [
+    {
+      "category": "System",
+      "total": 3,
+      "successful": 3,
+      "authRequired": 0,
+      "notFound": 0
+    },
+    {
+      "category": "Projects",
+      "total": 4,
+      "successful": 3,
+      "authRequired": 1,
+      "notFound": 0
+    },
+    {
+      "category": "Auth",
+      "total": 3,
+      "successful": 0,
+      "authRequired": 3,
+      "notFound": 0
+    },
+    {
+      "category": "Services",
+      "total": 3,
+      "successful": 3,
+      "authRequired": 0,
+      "notFound": 0
+    },
+    {
+      "category": "Requested",
+      "total": 4,
+      "successful": 0,
+      "authRequired": 0,
+      "notFound": 4
+    }
+  ],
+  "detailedResults": [
+    {
+      "category": "System",
+      "name": "API 정보",
+      "url": "/api/",
+      "method": "GET",
+      "status": 200,
+      "success": true,
+      "duration": 576,
+      "requiresAuth": false,
+      "response": {
+        "message": "AHP Platform API",
+        "version": "1.0.0",
+        "status": "operational",
+        "endpoints": {
+          "auth": {
+            "token": "https://ahp-django-backend.onrender.com/api/auth/token/",
+            "refresh": "https://ahp-django-backend.onrender.com/api/auth/token/refresh/",
+            "verify": "https://ahp-django-backend.onrender.com/api/auth/token/verify/"
+          },
+          "apps": {
+            "accounts": "https://ahp-django-backend.onrender.com/api/accounts/",
+            "projects": "https://ahp-django-backend.onrender.com/api/projects/",
+            "evaluations": "https://ahp-django-backend.onrender.com/api/evaluations/",
+            "analysis": "https://ahp-django-backend.onrender.com/api/analysis/"
+          }
+        },
+        "service_endpoints": {
+          "auth": {
+            "token": "https://ahp-django-backend.onrender.com/api/service/auth/token/",
+            "refresh": "https://ahp-django-backend.onrender.com/api/service/auth/token/refresh/",
+            "verify": "https://ahp-django-backend.onrender.com/api/service/auth/token/verify/"
+          },
+          "apps": {
+            "accounts": "https://ahp-django-backend.onrender.com/api/service/accounts/",
+            "projects": "https://ahp-django-backend.onrender.com/api/service/projects/",
+            "evaluations": "https://ahp-django-backend.onrender.com/api/service/evaluations/",
+            "analysis": "https://ahp-django-backend.onrender.com/api/service/analysis/"
+          }
+        },
+        "documentation": {
+          "admin": "https://ahp-django-backend.onrender.com/admin/",
+          "health": "https://ahp-django-backend.onrender.com/health/",
+          "db_status": "https://ahp-django-backend.onrender.com/db-status/"
+        }
+      }
+    },
+    {
+      "category": "System",
+      "name": "헬스체크",
+      "url": "/health/",
+      "method": "GET",
+      "status": 200,
+      "success": true,
+      "duration": 274,
+      "requiresAuth": false,
+      "response": {
+        "status": "healthy"
+      }
+    },
+    {
+      "category": "System",
+      "name": "DB 상태",
+      "url": "/db-status/",
+      "method": "GET",
+      "status": 200,
+      "success": true,
+      "duration": 544,
+      "requiresAuth": false,
+      "response": {
+        "connection": "OK",
+        "database_engine": "django.db.backends.postgresql",
+        "tables_count": 55,
+        "tables": [
+          "django_migrations",
+          "django_content_type",
+          "auth_permission",
+          "auth_group",
+          "auth_group_permissions",
+          "user_profiles",
+          "users",
+          "users_groups",
+          "users_user_permissions",
+          "account_emailaddress",
+          "pg_stat_statements_info",
+          "account_emailconfirmation",
+          "django_admin_log",
+          "alternatives",
+          "ahp_projects",
+          "pg_stat_statements",
+          "project_members",
+          "project_templates",
+          "criteria",
+          "project_evaluators",
+          "projects",
+          "results",
+          "direct_input_data",
+          "evaluation_mode_history",
+          "surveys",
+          "evaluations",
+          "survey_responses",
+          "evaluation_invitations",
+          "evaluation_sessions",
+          "pairwise_comparisons",
+          "demographic_surveys",
+          "comparison_matrices",
+          "consensus_metrics",
+          "authtoken_token",
+          "report_templates",
+          "sensitivity_analyses",
+          "weight_vectors",
+          "analysis_results",
+          "file_uploads",
+          "django_session",
+          "api_keys",
+          "notifications",
+          "activity_logs",
+          "system_settings",
+          "socialaccount_socialaccount",
+          "support_posts",
+          "socialaccount_socialapp",
+          "socialaccount_socialapp_sites",
+          "socialaccount_socialtoken",
+          "support_replies",
+          "django_site",
+          "news_posts",
+          "workflow_stage_history",
+          "token_blacklist_outstandingtoken",
+          "token_blacklist_blacklistedtoken"
+        ],
+        "has_migrations": true,
+        "env_vars": {
+          "DEBUG": "False",
+          "DATABASE_URL": "Set"
+        }
+      }
+    },
+    {
+      "category": "Projects",
+      "name": "프로젝트 서비스 루트",
+      "url": "/api/service/projects/",
+      "method": "GET",
+      "status": 200,
+      "success": true,
+      "duration": 526,
+      "requiresAuth": false,
+      "response": {
+        "projects": "https://ahp-django-backend.onrender.com/api/service/projects/projects/",
+        "criteria": "https://ahp-django-backend.onrender.com/api/service/projects/criteria/",
+        "templates": "https://ahp-django-backend.onrender.com/api/service/projects/templates/"
+      }
+    },
+    {
+      "category": "Projects",
+      "name": "프로젝트 목록",
+      "url": "/api/service/projects/projects/",
+      "method": "GET",
+      "status": 200,
+      "success": true,
+      "duration": 505,
+      "requiresAuth": true,
+      "response": {
+        "count": 1,
+        "next": null,
+        "previous": null,
+        "results": [
+          {
+            "id": "ac365d27-32cf-4aa3-8dda-ea7c523fe15e",
+            "title": "직업능력개발훈련교사의 역량",
+            "description": "직업능력개발훈련교사의 역량",
+            "owner": null,
+            "status": "draft",
+            "evaluation_mode": "theoretical",
+            "workflow_stage": "creating",
+            "created_at": "2025-10-10T09:25:35.917519+09:00",
+            "updated_at": "2025-10-10T09:25:36.105990+09:00",
+            "deleted_at": null,
+            "deadline": null,
+            "tags": [],
+            "criteria_count": 0,
+            "alternatives_count": 0
+          }
+        ]
+      }
+    },
+    {
+      "category": "Projects",
+      "name": "기준 관리",
+      "url": "/api/service/projects/criteria/",
+      "method": "GET",
+      "status": 200,
+      "success": true,
+      "duration": 488,
+      "requiresAuth": true,
+      "response": {
+        "count": 2,
+        "next": null,
+        "previous": null,
+        "results": [
+          {
+            "id": 80,
+            "project": "ac365d27-32cf-4aa3-8dda-ea7c523fe15e",
+            "name": "기술적 요구사항",
+            "description": "기술 스펙 충족도",
+            "type": "criteria",
+            "parent": null,
+            "order": 1,
+            "level": 1,
+            "weight": 1,
+            "is_active": true,
+            "created_at": "2025-10-10T09:48:13.827616+09:00",
+            "updated_at": "2025-10-10T09:48:13.827930+09:00",
+            "children": [],
+            "full_path": "기술적 요구사항"
+          },
+          {
+            "id": 81,
+            "project": "ac365d27-32cf-4aa3-8dda-ea7c523fe15e",
+            "name": "기준 1",
+            "description": "첫 번째 평가 기준",
+            "type": "criteria",
+            "parent": null,
+            "order": 1,
+            "level": 1,
+            "weight": 1,
+            "is_active": true,
+            "created_at": "2025-10-11T03:23:09.020052+09:00",
+            "updated_at": "2025-10-11T03:23:09.020267+09:00",
+            "children": [],
+            "full_path": "기준 1"
+          }
+        ]
+      }
+    },
+    {
+      "category": "Projects",
+      "name": "템플릿 관리",
+      "url": "/api/service/projects/templates/",
+      "method": "GET",
+      "status": 401,
+      "success": false,
+      "duration": 173,
+      "requiresAuth": true,
+      "response": {
+        "detail": "자격 인증데이터(authentication credentials)가 제공되지 않았습니다."
+      }
+    },
+    {
+      "category": "Auth",
+      "name": "JWT 토큰 발급",
+      "url": "/api/service/auth/token/",
+      "method": "POST",
+      "status": 401,
+      "success": false,
+      "duration": 1193,
+      "requiresAuth": false,
+      "response": {
+        "error": "Invalid credentials"
+      }
+    },
+    {
+      "category": "Auth",
+      "name": "JWT 토큰 새로고침",
+      "url": "/api/service/auth/token/refresh/",
+      "method": "POST",
+      "status": 401,
+      "success": false,
+      "duration": 268,
+      "requiresAuth": false,
+      "response": {
+        "detail": "유효하지 않거나 만료된 토큰",
+        "code": "token_not_valid"
+      }
+    },
+    {
+      "category": "Auth",
+      "name": "JWT 토큰 검증",
+      "url": "/api/service/auth/token/verify/",
+      "method": "POST",
+      "status": 401,
+      "success": false,
+      "duration": 225,
+      "requiresAuth": false,
+      "response": {
+        "detail": "유효하지 않거나 만료된 토큰",
+        "code": "token_not_valid"
+      }
+    },
+    {
+      "category": "Services",
+      "name": "계정 서비스",
+      "url": "/api/service/accounts/",
+      "method": "GET",
+      "status": 200,
+      "success": true,
+      "duration": 173,
+      "requiresAuth": true,
+      "response": {
+        "users": "https://ahp-django-backend.onrender.com/api/service/accounts/users/",
+        "public-users": "https://ahp-django-backend.onrender.com/api/service/accounts/public-users/"
+      }
+    },
+    {
+      "category": "Services",
+      "name": "평가 서비스",
+      "url": "/api/service/evaluations/",
+      "method": "GET",
+      "status": 200,
+      "success": true,
+      "duration": 163,
+      "requiresAuth": true,
+      "response": {
+        "evaluations": "https://ahp-django-backend.onrender.com/api/service/evaluations/evaluations/",
+        "comparisons": "https://ahp-django-backend.onrender.com/api/service/evaluations/comparisons/",
+        "invitations": "https://ahp-django-backend.onrender.com/api/service/evaluations/invitations/",
+        "demographic-surveys": "https://ahp-django-backend.onrender.com/api/service/evaluations/demographic-surveys/"
+      }
+    },
+    {
+      "category": "Services",
+      "name": "분석 서비스",
+      "url": "/api/service/analysis/",
+      "method": "GET",
+      "status": 200,
+      "success": true,
+      "duration": 161,
+      "requiresAuth": true,
+      "response": {}
+    },
+    {
+      "category": "Requested",
+      "name": "사용자 프로필",
+      "url": "/api/service/auth/profile/",
+      "method": "GET",
+      "status": 404,
+      "success": false,
+      "duration": 169,
+      "requiresAuth": true,
+      "response": {
+        "textResponse": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      }
+    },
+    {
+      "category": "Requested",
+      "name": "평가자 관리",
+      "url": "/api/service/evaluators/",
+      "method": "GET",
+      "status": 404,
+      "success": false,
+      "duration": 189,
+      "requiresAuth": true,
+      "response": {
+        "textResponse": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      }
+    },
+    {
+      "category": "Requested",
+      "name": "대안 관리",
+      "url": "/api/service/alternatives/",
+      "method": "GET",
+      "status": 404,
+      "success": false,
+      "duration": 184,
+      "requiresAuth": true,
+      "response": {
+        "textResponse": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      }
+    },
+    {
+      "category": "Requested",
+      "name": "기준 관리 (직접)",
+      "url": "/api/service/criteria/",
+      "method": "GET",
+      "status": 404,
+      "success": false,
+      "duration": 210,
+      "requiresAuth": true,
+      "response": {
+        "textResponse": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+      }
+    }
+  ],
+  "missingEndpoints": [
+    {
+      "name": "사용자 프로필",
+      "url": "/api/service/auth/profile/",
+      "method": "GET"
+    },
+    {
+      "name": "평가자 관리",
+      "url": "/api/service/evaluators/",
+      "method": "GET"
+    },
+    {
+      "name": "대안 관리",
+      "url": "/api/service/alternatives/",
+      "method": "GET"
+    },
+    {
+      "name": "기준 관리 (직접)",
+      "url": "/api/service/criteria/",
+      "method": "GET"
+    }
+  ],
+  "workingEndpoints": [
+    {
+      "name": "API 정보",
+      "url": "/api/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "헬스체크",
+      "url": "/health/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "DB 상태",
+      "url": "/db-status/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "프로젝트 서비스 루트",
+      "url": "/api/service/projects/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "프로젝트 목록",
+      "url": "/api/service/projects/projects/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "기준 관리",
+      "url": "/api/service/projects/criteria/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "템플릿 관리",
+      "url": "/api/service/projects/templates/",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "name": "계정 서비스",
+      "url": "/api/service/accounts/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "평가 서비스",
+      "url": "/api/service/evaluations/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "분석 서비스",
+      "url": "/api/service/analysis/",
+      "method": "GET",
+      "status": 200
+    }
+  ]
+}

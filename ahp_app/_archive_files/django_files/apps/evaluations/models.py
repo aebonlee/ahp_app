@@ -1,0 +1,586 @@
+"""
+Evaluation Models for AHP Platform
+"""
+from django.db import models
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import Q, Count, Avg
+import uuid
+import numpy as np
+from datetime import timedelta
+
+User = get_user_model()
+
+
+class Evaluation(models.Model):
+    """Main evaluation session model"""
+    
+    STATUS_CHOICES = [
+        ('pending', '대기중'),
+        ('in_progress', '진행중'),
+        ('completed', '완료'),
+        ('expired', '만료'),
+    ]
+    
+    # Basic information
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='evaluations')
+    evaluator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='evaluations')
+    
+    # Evaluation details
+    title = models.CharField(max_length=200, blank=True)
+    instructions = models.TextField(blank=True)
+    
+    # Status and progress
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    progress = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
+    
+    # Timing
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    
+    # Results
+    consistency_ratio = models.FloatField(null=True, blank=True)
+    is_consistent = models.BooleanField(default=False)
+    
+    # Metadata
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        db_table = 'evaluations'
+        ordering = ['-created_at']
+        unique_together = ['project', 'evaluator']
+        
+    def __str__(self):
+        return f"{self.project.title} - {self.evaluator.username}"
+        
+    def start_evaluation(self):
+        """Start the evaluation process"""
+        if self.status == 'pending':
+            self.status = 'in_progress'
+            self.started_at = timezone.now()
+            self.save()
+            
+    def complete_evaluation(self):
+        """Complete the evaluation"""
+        if self.status == 'in_progress':
+            self.status = 'completed'
+            self.completed_at = timezone.now()
+            self.progress = 100.0
+            self.save()
+            
+    @property
+    def is_expired(self):
+        if self.expires_at and timezone.now() > self.expires_at:
+            return True
+        return False
+
+        
+    def calculate_consistency_ratio(self):
+        """Calculate consistency ratio for all pairwise comparisons"""
+        comparisons = self.pairwise_comparisons.all()
+        if not comparisons:
+            return None
+            
+        # Group comparisons by criteria level
+        criteria_groups = {}
+        for comp in comparisons:
+            level = comp.criteria_a.level
+            if level not in criteria_groups:
+                criteria_groups[level] = []
+            criteria_groups[level].append(comp)
+            
+        total_cr = 0.0
+        valid_groups = 0
+        
+        for level, group_comparisons in criteria_groups.items():
+            cr = self._calculate_group_consistency_ratio(group_comparisons)
+            if cr is not None:
+                total_cr += cr
+                valid_groups += 1
+                
+        if valid_groups > 0:
+            self.consistency_ratio = total_cr / valid_groups
+            self.is_consistent = self.consistency_ratio <= 0.1
+            self.save()
+            return self.consistency_ratio
+            
+        return None
+        
+    def _calculate_group_consistency_ratio(self, comparisons):
+        """Calculate CR for a group of pairwise comparisons"""
+        if not comparisons:
+            return None
+            
+        # Create comparison matrix
+        criteria_list = list(set([comp.criteria_a for comp in comparisons] + [comp.criteria_b for comp in comparisons]))
+        n = len(criteria_list)
+        
+        if n < 2:
+            return None
+            
+        # Initialize matrix
+        matrix = np.ones((n, n))
+        
+        # Fill matrix with comparison values
+        for comp in comparisons:
+            i = criteria_list.index(comp.criteria_a)
+            j = criteria_list.index(comp.criteria_b)
+            matrix[i][j] = comp.value
+            matrix[j][i] = 1.0 / comp.value
+            
+        # Calculate consistency ratio using eigenvalue method
+        eigenvalues = np.linalg.eigvals(matrix)
+        lambda_max = max(eigenvalues.real)
+        
+        ci = (lambda_max - n) / (n - 1) if n > 1 else 0
+        
+        # Random Index values
+        ri_values = {2: 0, 3: 0.52, 4: 0.89, 5: 1.11, 6: 1.25, 7: 1.35, 8: 1.40, 9: 1.45, 10: 1.49}
+        ri = ri_values.get(n, 1.49)
+        
+        return ci / ri if ri > 0 else 0
+
+
+class PairwiseComparison(models.Model):
+    """Individual pairwise comparison between criteria"""
+    
+    evaluation = models.ForeignKey(Evaluation, on_delete=models.CASCADE, related_name='pairwise_comparisons')
+    criteria_a = models.ForeignKey('projects.Criteria', on_delete=models.CASCADE, related_name='comparisons_as_a')
+    criteria_b = models.ForeignKey('projects.Criteria', on_delete=models.CASCADE, related_name='comparisons_as_b')
+    
+    # Comparison value (1/9 to 9 scale)
+    value = models.FloatField(validators=[MinValueValidator(1/9), MaxValueValidator(9)])
+    
+    # Additional context
+    comment = models.TextField(blank=True)
+    confidence = models.IntegerField(default=5, validators=[MinValueValidator(1), MaxValueValidator(10)])
+    
+    # Timing
+    answered_at = models.DateTimeField(default=timezone.now)
+    time_spent = models.FloatField(default=0.0, help_text="Time spent in seconds")
+    
+    class Meta:
+        db_table = 'pairwise_comparisons'
+        unique_together = ['evaluation', 'criteria_a', 'criteria_b']
+        
+    def __str__(self):
+        return f"{self.criteria_a.name} vs {self.criteria_b.name}: {self.value}"
+        
+    def save(self, *args, **kwargs):
+        # Ensure criteria_a has lower ID than criteria_b for consistency
+        if self.criteria_a.id > self.criteria_b.id:
+            self.criteria_a, self.criteria_b = self.criteria_b, self.criteria_a
+            self.value = 1.0 / self.value if self.value != 0 else 0
+        super().save(*args, **kwargs)
+
+
+class EvaluationSession(models.Model):
+    """Track evaluation sessions and user activity"""
+    
+    evaluation = models.ForeignKey(Evaluation, on_delete=models.CASCADE, related_name='sessions')
+    
+    # Session info
+    started_at = models.DateTimeField(default=timezone.now)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    duration = models.FloatField(default=0.0, help_text="Duration in seconds")
+    
+    # User activity
+    page_views = models.JSONField(default=list)
+    interactions = models.JSONField(default=list)
+    
+    # Browser/device info
+    user_agent = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'evaluation_sessions'
+        ordering = ['-started_at']
+        
+    def __str__(self):
+        return f"Session {self.id} - {self.evaluation}"
+        
+    def end_session(self):
+        """End the evaluation session"""
+        if not self.ended_at:
+            self.ended_at = timezone.now()
+            self.duration = (self.ended_at - self.started_at).total_seconds()
+            self.save()
+
+
+class EvaluationInvitation(models.Model):
+    """Invitations sent to evaluators"""
+    
+    STATUS_CHOICES = [
+        ('pending', '대기중'),
+        ('accepted', '수락'),
+        ('declined', '거절'),
+        ('expired', '만료'),
+    ]
+    
+    # Basic information
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='invitations')
+    evaluator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='evaluation_invitations')
+    invited_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_invitations')
+    
+    # Invitation details
+    message = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Timing
+    sent_at = models.DateTimeField(default=timezone.now)
+    responded_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    
+    # Token for secure access
+    token = models.UUIDField(default=uuid.uuid4, unique=True)
+    
+    # Additional fields for email tracking
+    metadata = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        db_table = 'evaluation_invitations'
+        unique_together = ['project', 'evaluator']
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['project', 'status']),
+            models.Index(fields=['expires_at']),
+        ]
+        
+    def __str__(self):
+        return f"Invitation to {self.evaluator.username} for {self.project.title}"
+        
+    def accept(self):
+        """Accept the invitation"""
+        if self.status == 'pending':
+            self.status = 'accepted'
+            self.responded_at = timezone.now()
+            self.save()
+            
+            # Create evaluation instance
+            evaluation, created = Evaluation.objects.get_or_create(
+                project=self.project,
+                evaluator=self.evaluator,
+                defaults={'title': f"Evaluation for {self.project.title}"}
+            )
+            return evaluation
+        return None
+        
+    def decline(self):
+        """Decline the invitation"""
+        if self.status == 'pending':
+            self.status = 'declined'
+            self.responded_at = timezone.now()
+            self.save()
+            
+    @property
+    def is_expired(self):
+        if self.expires_at and timezone.now() > self.expires_at:
+            return True
+        return False
+
+
+class DemographicSurvey(models.Model):
+    """인구통계학적 설문조사 데이터"""
+    
+    AGE_CHOICES = [
+        ('20s', '20대'),
+        ('30s', '30대'),
+        ('40s', '40대'),
+        ('50s', '50대'),
+        ('60s', '60대 이상'),
+    ]
+    
+    GENDER_CHOICES = [
+        ('male', '남성'),
+        ('female', '여성'),
+        ('other', '기타'),
+        ('prefer-not', '응답하지 않음'),
+    ]
+    
+    EDUCATION_CHOICES = [
+        ('high-school', '고등학교 졸업'),
+        ('bachelor', '학사'),
+        ('master', '석사'),
+        ('phd', '박사'),
+        ('other', '기타'),
+    ]
+    
+    EXPERIENCE_CHOICES = [
+        ('less-1', '1년 미만'),
+        ('1-3', '1-3년'),
+        ('3-5', '3-5년'),
+        ('5-10', '5-10년'),
+        ('more-10', '10년 이상'),
+    ]
+    
+    PROJECT_EXPERIENCE_CHOICES = [
+        ('none', '없음'),
+        ('1-2', '1-2회'),
+        ('3-5', '3-5회'),
+        ('more-5', '5회 이상'),
+    ]
+    
+    DECISION_ROLE_CHOICES = [
+        ('decision-maker', '최종 의사결정권자'),
+        ('advisor', '자문/조언자'),
+        ('analyst', '분석가'),
+        ('evaluator', '평가자'),
+        ('observer', '관찰자'),
+    ]
+    
+    # 기본 정보
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    evaluator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='demographic_surveys')
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='demographic_surveys', null=True, blank=True)
+    
+    # 인구통계학적 정보
+    age = models.CharField(max_length=10, choices=AGE_CHOICES, blank=True)
+    gender = models.CharField(max_length=15, choices=GENDER_CHOICES, blank=True)
+    education = models.CharField(max_length=20, choices=EDUCATION_CHOICES, blank=True)
+    occupation = models.CharField(max_length=100, blank=True)
+    
+    # 전문 정보
+    experience = models.CharField(max_length=10, choices=EXPERIENCE_CHOICES, blank=True)
+    department = models.CharField(max_length=100, blank=True)
+    position = models.CharField(max_length=100, blank=True)
+    project_experience = models.CharField(max_length=10, choices=PROJECT_EXPERIENCE_CHOICES, blank=True)
+    
+    # 의사결정 역할
+    decision_role = models.CharField(max_length=20, choices=DECISION_ROLE_CHOICES, blank=True)
+    additional_info = models.TextField(blank=True)
+    
+    # 추가 필드 (새로 추가)
+    industry = models.CharField(max_length=100, blank=True, help_text="산업 분야")
+    custom_fields = models.JSONField(default=dict, blank=True, help_text="연구자가 추가한 커스텀 필드 응답")
+    
+    # 메타데이터
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_completed = models.BooleanField(default=False)
+    completion_timestamp = models.DateTimeField(null=True, blank=True)
+    
+    # 접속 정보 (새로 추가)
+    ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="평가자 IP 주소")
+    user_agent = models.TextField(blank=True, help_text="브라우저 정보")
+    completion_time_seconds = models.IntegerField(null=True, blank=True, help_text="설문 완료 소요 시간(초)")
+    
+    class Meta:
+        db_table = 'demographic_surveys'
+        ordering = ['-created_at']
+        unique_together = ['evaluator', 'project']
+        
+    def __str__(self):
+        project_name = self.project.title if self.project else "일반"
+        return f"{self.evaluator.username} - {project_name} 설문조사"
+        
+    def mark_completed(self):
+        """설문조사를 완료 상태로 표시"""
+        if not self.is_completed:
+            self.is_completed = True
+            self.completion_timestamp = timezone.now()
+            self.save()
+            
+    @property
+    def completion_percentage(self):
+        """설문조사 완성도 계산"""
+        required_fields = ['age', 'gender', 'education', 'occupation', 'experience', 'project_experience', 'decision_role']
+        completed_fields = sum(1 for field in required_fields if getattr(self, field))
+        return (completed_fields / len(required_fields)) * 100
+
+
+class BulkInvitation(models.Model):
+    """대량 초대 작업 추적"""
+    
+    STATUS_CHOICES = [
+        ('pending', '대기중'),
+        ('processing', '처리중'),
+        ('completed', '완료'),
+        ('failed', '실패'),
+    ]
+    
+    # Basic information
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='bulk_invitations')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bulk_invitations_created')
+    
+    # Invitation info
+    total_count = models.IntegerField(default=0)
+    sent_count = models.IntegerField(default=0)
+    failed_count = models.IntegerField(default=0)
+    accepted_count = models.IntegerField(default=0)
+    
+    # Status tracking
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    celery_task_id = models.CharField(max_length=100, blank=True)
+    
+    # Timing
+    created_at = models.DateTimeField(default=timezone.now)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    # Results
+    results = models.JSONField(default=dict)
+    error_log = models.TextField(blank=True)
+    
+    class Meta:
+        db_table = 'bulk_invitations'
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"Bulk Invitation {self.id} for {self.project.title}"
+    
+    def start_processing(self):
+        """Start processing bulk invitations"""
+        if self.status == 'pending':
+            self.status = 'processing'
+            self.started_at = timezone.now()
+            self.save()
+    
+    def complete_processing(self):
+        """Complete processing"""
+        if self.status == 'processing':
+            self.status = 'completed'
+            self.completed_at = timezone.now()
+            self.save()
+    
+    def mark_failed(self, error_message=""):
+        """Mark as failed"""
+        self.status = 'failed'
+        self.completed_at = timezone.now()
+        self.error_log = error_message
+        self.save()
+    
+    @property
+    def success_rate(self):
+        """Calculate success rate"""
+        if self.total_count > 0:
+            return (self.sent_count / self.total_count) * 100
+        return 0
+    
+    @property
+    def processing_time(self):
+        """Calculate processing time"""
+        if self.started_at and self.completed_at:
+            return (self.completed_at - self.started_at).total_seconds()
+        return None
+
+
+class EvaluationTemplate(models.Model):
+    """평가 템플릿"""
+    
+    # Basic information
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    
+    # Template content
+    instructions = models.TextField()
+    email_subject = models.CharField(max_length=200, default='AHP 평가 요청')
+    email_body = models.TextField()
+    reminder_subject = models.CharField(max_length=200, blank=True)
+    reminder_body = models.TextField(blank=True)
+    
+    # Settings
+    auto_reminder = models.BooleanField(default=True)
+    reminder_days = models.IntegerField(default=3)
+    expiry_days = models.IntegerField(default=30)
+    
+    # Metadata
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='evaluation_templates')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_default = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'evaluation_templates'
+        ordering = ['name']
+        
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        # Ensure only one default template
+        if self.is_default:
+            EvaluationTemplate.objects.filter(is_default=True).exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
+
+
+class EvaluationAccessLog(models.Model):
+    """평가 접근 로그"""
+    
+    ACTION_CHOICES = [
+        ('session_started', '세션 시작'),
+        ('comparison_saved', '비교 저장'),
+        ('evaluation_completed', '평가 완료'),
+        ('token_validated', '토큰 검증'),
+        ('access_denied', '접근 거부'),
+    ]
+    
+    # Basic information
+    evaluation = models.ForeignKey(Evaluation, on_delete=models.CASCADE, related_name='access_logs')
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    # Access information
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    # Additional data
+    metadata = models.JSONField(default=dict)
+    
+    class Meta:
+        db_table = 'evaluation_access_logs'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['evaluation', 'timestamp']),
+            models.Index(fields=['action']),
+        ]
+        
+    def __str__(self):
+        return f"{self.evaluation} - {self.action} at {self.timestamp}"
+
+
+class EmailDeliveryStatus(models.Model):
+    """이메일 발송 상태 추적"""
+    
+    STATUS_CHOICES = [
+        ('pending', '대기중'),
+        ('sent', '발송됨'),
+        ('delivered', '전달됨'),
+        ('opened', '열람됨'),
+        ('clicked', '클릭됨'),
+        ('bounced', '반송됨'),
+        ('failed', '실패'),
+    ]
+    
+    # Basic information
+    invitation = models.ForeignKey(EvaluationInvitation, on_delete=models.CASCADE, related_name='email_status')
+    bulk_invitation = models.ForeignKey(BulkInvitation, on_delete=models.CASCADE, null=True, blank=True, related_name='email_statuses')
+    
+    # Status tracking
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Timing
+    sent_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    opened_at = models.DateTimeField(null=True, blank=True)
+    clicked_at = models.DateTimeField(null=True, blank=True)
+    
+    # Error tracking
+    error_message = models.TextField(blank=True)
+    retry_count = models.IntegerField(default=0)
+    
+    # Metadata
+    metadata = models.JSONField(default=dict)
+    
+    class Meta:
+        db_table = 'email_delivery_status'
+        ordering = ['-sent_at']
+        
+    def __str__(self):
+        return f"Email to {self.invitation.evaluator.email} - {self.status}"

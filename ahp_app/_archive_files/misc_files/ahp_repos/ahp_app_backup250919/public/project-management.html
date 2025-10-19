@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - 프로젝트 관리</title>
+    <link rel="stylesheet" href="styles/layout.css">
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-light: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .status-bar {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-light);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-light);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(200, 169, 104, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(200, 169, 104, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: var(--error);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .project-card {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(200, 169, 104, 0.2);
+        }
+
+        .project-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .project-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-new {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .error {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .success {
+            background: #f0fdf4;
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="./personal-service-enhanced.html" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP System</span>
+            </a>
+            <nav class="header-nav">
+                <a href="./personal-service-enhanced.html" class="header-nav-item" data-page="dashboard">대시보드</a>
+                <a href="./project-management.html" class="header-nav-item active" data-page="projects">프로젝트</a>
+                <a href="./results-analysis.html" class="header-nav-item" data-page="analysis">분석</a>
+                <a href="#" class="header-nav-item" data-page="reports">보고서</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar">김</div>
+                <div>
+                    <div class="user-name">김철수</div>
+                    <div class="user-role">Personal Admin</div>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="logout-btn">로그아웃</button>
+        </div>
+    </header>
+
+    <!-- 왼쪽 사이드바 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">프로젝트 관리</div>
+            <div class="sidebar-menu">
+                <a href="./project-management.html" class="sidebar-item active" data-menu="my-projects">
+                    <span class="sidebar-icon">📋</span>
+                    <span>내 프로젝트</span>
+                    <span class="sidebar-badge">3</span>
+                </a>
+                <a href="./project-management.html" class="sidebar-item" data-menu="new-project">
+                    <span class="sidebar-icon">➕</span>
+                    <span>새 프로젝트</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="trash">
+                    <span class="sidebar-icon">🗑️</span>
+                    <span>휴지통</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">모델 구축</div>
+            <div class="sidebar-menu">
+                <a href="./criteria-management.html" class="sidebar-item" data-menu="criteria">
+                    <span class="sidebar-icon">⚖️</span>
+                    <span>기준 설정</span>
+                </a>
+                <a href="./alternatives-management.html" class="sidebar-item" data-menu="alternatives">
+                    <span class="sidebar-icon">🔄</span>
+                    <span>대안 관리</span>
+                </a>
+                <a href="./pairwise-comparison.html" class="sidebar-item" data-menu="comparison">
+                    <span class="sidebar-icon">⚡</span>
+                    <span>쌍대비교</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="evaluators">
+                    <span class="sidebar-icon">👥</span>
+                    <span>평가자 관리</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">분석 및 결과</div>
+            <div class="sidebar-menu">
+                <a href="./results-analysis.html" class="sidebar-item" data-menu="results">
+                    <span class="sidebar-icon">📈</span>
+                    <span>결과 분석</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="monitoring">
+                    <span class="sidebar-icon">📊</span>
+                    <span>진행률 모니터링</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="reports">
+                    <span class="sidebar-icon">📄</span>
+                    <span>보고서 생성</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="sensitivity">
+                    <span class="sidebar-icon">🔍</span>
+                    <span>민감도 분석</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">설정</div>
+            <div class="sidebar-menu">
+                <a href="#" class="sidebar-item" data-menu="settings">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>개인 설정</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="billing">
+                    <span class="sidebar-icon">💳</span>
+                    <span>요금제 관리</span>
+                </a>
+                <a href="#" class="sidebar-item" data-menu="guide">
+                    <span class="sidebar-icon">📚</span>
+                    <span>사용 가이드</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 사이드바 토글 버튼 -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <span id="toggle-icon">◀</span>
+    </button>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <div class="status-bar">
+            <div>
+                <strong>Django 백엔드:</strong> <span id="backend-status">연결 확인중...</span>
+            </div>
+            <div>
+                <strong>사용자:</strong> <span id="current-user">게스트</span>
+            </div>
+            <div>
+                <strong>시간:</strong> <span id="current-time"></span>
+            </div>
+        </div>
+
+        <!-- 새 프로젝트 생성 섹션 -->
+        <div class="section">
+            <h2 class="section-title">🆕 새 프로젝트 생성</h2>
+            <div id="create-error" class="error" style="display:none;"></div>
+            <div id="create-success" class="success" style="display:none;"></div>
+            
+            <form id="create-project-form">
+                <div class="form-group">
+                    <label for="project-title" class="form-label">프로젝트 제목 *</label>
+                    <input type="text" id="project-title" class="form-input" required 
+                           placeholder="예: 새 제품 출시 전략 선택">
+                </div>
+
+                <div class="form-group">
+                    <label for="project-description" class="form-label">프로젝트 설명</label>
+                    <textarea id="project-description" class="form-textarea" 
+                              placeholder="프로젝트의 목적과 배경을 간단히 설명해주세요..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="project-type" class="form-label">프로젝트 유형</label>
+                    <select id="project-type" class="form-select">
+                        <option value="general">일반 의사결정</option>
+                        <option value="product">제품 선택</option>
+                        <option value="strategy">전략 수립</option>
+                        <option value="investment">투자 결정</option>
+                        <option value="hr">인사 결정</option>
+                        <option value="other">기타</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn" id="create-btn">
+                    ➕ 프로젝트 생성
+                </button>
+            </form>
+        </div>
+
+        <!-- 기존 프로젝트 목록 -->
+        <div class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 class="section-title" style="margin-bottom: 0;">📂 내 프로젝트</h2>
+                <button class="btn btn-secondary" onclick="loadProjects()">
+                    🔄 새로고침
+                </button>
+            </div>
+            
+            <div id="projects-loading" class="loading">
+                프로젝트 목록을 불러오는 중...
+            </div>
+            
+            <div id="projects-error" class="error" style="display:none;"></div>
+            
+            <div id="projects-container" class="projects-grid" style="display:none;">
+                <!-- 프로젝트 카드들이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 프로젝트 상세 모달 -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">프로젝트 상세</h3>
+            <div id="modal-content">
+                <!-- 프로젝트 상세 내용이 여기에 표시됩니다 -->
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="closeModal()">닫기</button>
+                <button class="btn" id="modal-action-btn" onclick="openProject()">프로젝트 열기</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="scripts/layout.js"></script>
+    <script>
+        // 전역 변수
+        let currentProjects = [];
+        let selectedProject = null;
+        const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 프로젝트 관리 페이지 로드됨');
+            
+            // 레이아웃 초기화
+            if (window.layoutUtils) {
+                window.layoutUtils.initializePage({
+                    menuId: 'my-projects',
+                    pageId: 'projects',
+                    title: '프로젝트 관리'
+                });
+            }
+            
+            updateTime();
+            checkBackendStatus();
+            loadProjects();
+            setInterval(updateTime, 1000);
+
+            // 폼 이벤트 리스너
+            document.getElementById('create-project-form').addEventListener('submit', handleCreateProject);
+        });
+
+        // 시간 업데이트
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('ko-KR');
+        }
+
+        // 백엔드 상태 확인
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/service/status/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('backend-status').innerHTML = 
+                        '<span style="color: var(--success);">✅ 정상 연결</span>';
+                } else {
+                    document.getElementById('backend-status').innerHTML = 
+                        '<span style="color: var(--warning);">⚠️ 응답 오류</span>';
+                }
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = 
+                    '<span style="color: var(--error);">❌ 연결 실패</span>';
+                console.error('백엔드 연결 오류:', error);
+            }
+        }
+
+        // 프로젝트 생성 처리
+        async function handleCreateProject(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById('create-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '생성 중...';
+            submitBtn.disabled = true;
+
+            // 에러/성공 메시지 초기화
+            document.getElementById('create-error').style.display = 'none';
+            document.getElementById('create-success').style.display = 'none';
+
+            try {
+                const formData = {
+                    title: document.getElementById('project-title').value,
+                    description: document.getElementById('project-description').value || '',
+                    type: document.getElementById('project-type').value,
+                    created_date: new Date().toISOString()
+                };
+
+                const response = await fetch(`${API_BASE_URL}/api/service/projects/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // 성공 메시지 표시
+                    const successDiv = document.getElementById('create-success');
+                    successDiv.textContent = `✅ 프로젝트 "${formData.title}"가 성공적으로 생성되었습니다!`;
+                    successDiv.style.display = 'block';
+                    
+                    // 폼 초기화
+                    document.getElementById('create-project-form').reset();
+                    
+                    // 프로젝트 목록 새로고침
+                    setTimeout(() => {
+                        loadProjects();
+                        successDiv.style.display = 'none';
+                    }, 3000);
+
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '프로젝트 생성에 실패했습니다.');
+                }
+
+            } catch (error) {
+                console.error('프로젝트 생성 오류:', error);
+                const errorDiv = document.getElementById('create-error');
+                errorDiv.textContent = `❌ 오류: ${error.message}`;
+                errorDiv.style.display = 'block';
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // 프로젝트 목록 로드
+        async function loadProjects() {
+            const loadingDiv = document.getElementById('projects-loading');
+            const errorDiv = document.getElementById('projects-error');
+            const containerDiv = document.getElementById('projects-container');
+
+            // UI 초기화
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            containerDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/service/projects/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentProjects = Array.isArray(data) ? data : (data.projects || []);
+                    renderProjects();
+                } else {
+                    throw new Error('프로젝트 목록을 불러올 수 없습니다.');
+                }
+
+            } catch (error) {
+                console.error('프로젝트 로드 오류:', error);
+                errorDiv.textContent = `❌ ${error.message}`;
+                errorDiv.style.display = 'block';
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // 프로젝트 목록 렌더링
+        function renderProjects() {
+            const container = document.getElementById('projects-container');
+            
+            if (currentProjects.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                        <h3>아직 생성된 프로젝트가 없습니다</h3>
+                        <p>위에서 새 프로젝트를 생성해보세요!</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = currentProjects.map(project => `
+                    <div class="project-card" onclick="showProjectModal('${project.id || project.title}')">
+                        <div class="project-title">${project.title}</div>
+                        <div class="project-description">${project.description || '설명 없음'}</div>
+                        <div class="project-meta">
+                            <span>유형: ${getProjectTypeLabel(project.type)}</span>
+                            <span class="project-status ${getStatusClass(project.status || 'new')}">
+                                ${getStatusLabel(project.status || 'new')}
+                            </span>
+                        </div>
+                        <div class="project-meta" style="margin-top: 0.5rem;">
+                            <span>생성일: ${formatDate(project.created_date)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            container.style.display = 'grid';
+        }
+
+        // 프로젝트 모달 표시
+        function showProjectModal(projectId) {
+            const project = currentProjects.find(p => (p.id || p.title) === projectId);
+            if (!project) return;
+
+            selectedProject = project;
+            
+            document.getElementById('modal-title').textContent = project.title;
+            document.getElementById('modal-content').innerHTML = `
+                <div style="margin: 1rem 0;">
+                    <strong>설명:</strong><br>
+                    ${project.description || '설명이 없습니다.'}
+                </div>
+                <div style="margin: 1rem 0;">
+                    <strong>유형:</strong> ${getProjectTypeLabel(project.type)}
+                </div>
+                <div style="margin: 1rem 0;">
+                    <strong>상태:</strong> <span class="project-status ${getStatusClass(project.status || 'new')}">${getStatusLabel(project.status || 'new')}</span>
+                </div>
+                <div style="margin: 1rem 0;">
+                    <strong>생성일:</strong> ${formatDate(project.created_date)}
+                </div>
+            `;
+            
+            document.getElementById('project-modal').classList.add('active');
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('project-modal').classList.remove('active');
+            selectedProject = null;
+        }
+
+        // 프로젝트 열기
+        function openProject() {
+            if (selectedProject) {
+                // 선택된 프로젝트 정보를 세션에 저장 (실제 구현에서는 URL 파라미터나 로컬 스토리지 사용)
+                sessionStorage.setItem('currentProject', JSON.stringify(selectedProject));
+                
+                // 기준 설정 페이지로 이동
+                window.location.href = '/ahp_app/criteria-management.html';
+                closeModal();
+            }
+        }
+
+        // 유틸리티 함수들
+        function getProjectTypeLabel(type) {
+            const types = {
+                'general': '일반 의사결정',
+                'product': '제품 선택',
+                'strategy': '전략 수립',
+                'investment': '투자 결정',
+                'hr': '인사 결정',
+                'other': '기타'
+            };
+            return types[type] || '일반';
+        }
+
+        function getStatusLabel(status) {
+            const statuses = {
+                'new': '신규',
+                'progress': '진행중',
+                'completed': '완료'
+            };
+            return statuses[status] || '신규';
+        }
+
+        function getStatusClass(status) {
+            return `status-${status}`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '날짜 없음';
+            try {
+                return new Date(dateString).toLocaleDateString('ko-KR');
+            } catch {
+                return '날짜 없음';
+            }
+        }
+
+        // 모달 외부 클릭시 닫기
+        document.getElementById('project-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

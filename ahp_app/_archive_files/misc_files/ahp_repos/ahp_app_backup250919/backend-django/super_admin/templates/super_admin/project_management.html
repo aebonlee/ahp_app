@@ -1,0 +1,444 @@
+{% extends 'super_admin/base.html' %}
+
+{% block title %}프로젝트 관리 - AHP Platform 총 관리자{% endblock %}
+
+{% block page_title %}프로젝트 관리{% endblock %}
+
+{% block content %}
+<!-- Search and Filter -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">상태</label>
+                        <select class="form-select" name="status">
+                            <option value="">전체</option>
+                            {% for value, display in project_statuses %}
+                                <option value="{{ value }}" 
+                                        {% if request.GET.status == value %}selected{% endif %}>
+                                    {{ display }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">검색</label>
+                        <input type="text" class="form-control" name="search" 
+                               value="{{ request.GET.search }}" 
+                               placeholder="프로젝트명, 소유자로 검색">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">공개 여부</label>
+                        <select class="form-select" name="is_public">
+                            <option value="">전체</option>
+                            <option value="true" {% if request.GET.is_public == 'true' %}selected{% endif %}>공개</option>
+                            <option value="false" {% if request.GET.is_public == 'false' %}selected{% endif %}>비공개</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">시작 날짜</label>
+                        <input type="date" class="form-control" name="date_from" 
+                               value="{{ request.GET.date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> 검색
+                            </button>
+                            <a href="{% url 'super_admin:project_management' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-refresh"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-project-diagram fa-2x mb-2"></i>
+                <h6>전체 프로젝트</h6>
+                <h4 id="totalProjects">-</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-play-circle fa-2x mb-2"></i>
+                <h6>진행중</h6>
+                <h4 id="activeProjects">-</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h6>완료됨</h6>
+                <h4 id="completedProjects">-</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-globe fa-2x mb-2"></i>
+                <h6>공개 프로젝트</h6>
+                <h4 id="publicProjects">-</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-project-diagram me-2"></i>프로젝트 목록</h5>
+                <div>
+                    <button class="btn btn-info btn-sm" onclick="exportProjects()">
+                        <i class="fas fa-download"></i> 내보내기
+                    </button>
+                    <button class="btn btn-success btn-sm" onclick="refreshStats()">
+                        <i class="fas fa-sync-alt"></i> 통계 새로고침
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if projects %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th>프로젝트명</th>
+                                    <th>소유자</th>
+                                    <th>상태</th>
+                                    <th>평가자</th>
+                                    <th>공개여부</th>
+                                    <th>생성일</th>
+                                    <th>마감일</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in projects %}
+                                    <tr>
+                                        <td><input type="checkbox" class="project-checkbox" value="{{ project.id }}"></td>
+                                        <td>
+                                            <strong>{{ project.title }}</strong>
+                                            {% if project.description %}
+                                                <br>
+                                                <small class="text-muted">{{ project.description|truncatechars:50 }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ project.owner.get_full_name|default:project.owner.email }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ project.owner.email }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}primary{% elif project.status == 'evaluation' %}warning{% else %}secondary{% endif %}">
+                                                {{ project.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ project.evaluators.count }}명</span>
+                                            {% if project.evaluators.count > 0 %}
+                                                <button class="btn btn-outline-primary btn-sm ms-1" 
+                                                        onclick="showEvaluators('{{ project.id }}')" 
+                                                        title="평가자 목록">
+                                                    <i class="fas fa-users"></i>
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if project.is_public %}
+                                                <span class="badge bg-success">공개</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">비공개</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ project.created_at|date:"Y-m-d" }}</td>
+                                        <td>
+                                            {% if project.deadline %}
+                                                {{ project.deadline|date:"Y-m-d" }}
+                                                {% if project.deadline < now %}
+                                                    <i class="fas fa-exclamation-triangle text-warning ms-1" title="마감일 초과"></i>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary" 
+                                                        onclick="viewProject('{{ project.id }}')"
+                                                        title="상세 보기">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-outline-warning" 
+                                                        onclick="editProject('{{ project.id }}')"
+                                                        title="수정">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                {% if project.status == 'draft' %}
+                                                    <button class="btn btn-outline-success" 
+                                                            onclick="activateProject('{{ project.id }}')"
+                                                            title="활성화">
+                                                        <i class="fas fa-play"></i>
+                                                    </button>
+                                                {% endif %}
+                                                <button class="btn btn-outline-danger" 
+                                                        onclick="archiveProject('{{ project.id }}')"
+                                                        title="보관">
+                                                    <i class="fas fa-archive"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Bulk Actions -->
+                    <div class="mt-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-success" onclick="bulkProjectAction('activate')">
+                                        <i class="fas fa-play"></i> 활성화
+                                    </button>
+                                    <button class="btn btn-outline-warning" onclick="bulkProjectAction('pause')">
+                                        <i class="fas fa-pause"></i> 일시정지
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="bulkProjectAction('complete')">
+                                        <i class="fas fa-check"></i> 완료처리
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="bulkProjectAction('archive')">
+                                        <i class="fas fa-archive"></i> 보관
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <small class="text-muted">총 {{ projects|length }}개의 프로젝트</small>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">프로젝트를 찾을 수 없습니다.</h5>
+                        <p class="text-muted">검색 조건을 변경해보세요.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Detail Modal -->
+<div class="modal fade" id="projectDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">프로젝트 상세 정보</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="projectDetailContent">
+                <!-- Project details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Evaluators Modal -->
+<div class="modal fade" id="evaluatorsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">프로젝트 평가자</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="evaluatorsContent">
+                <!-- Evaluators list will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Load project statistics on page load
+document.addEventListener('DOMContentLoaded', function() {
+    refreshStats();
+});
+
+// Select All Checkbox
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.project-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+});
+
+function refreshStats() {
+    fetch('/super-admin/api/stats/projects/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalProjects').textContent = data.total_projects || 0;
+            document.getElementById('activeProjects').textContent = data.active_projects || 0;
+            document.getElementById('completedProjects').textContent = data.completed_projects || 0;
+            document.getElementById('publicProjects').textContent = data.public_projects || 0;
+        })
+        .catch(error => console.error('Error loading stats:', error));
+}
+
+function exportProjects() {
+    const params = new URLSearchParams(window.location.search);
+    window.location.href = '/super-admin/api/admin/export-projects/?' + params.toString();
+}
+
+function viewProject(projectId) {
+    fetch(`/super-admin/api/projects/${projectId}/`)
+        .then(response => response.json())
+        .then(project => {
+            document.getElementById('projectDetailContent').innerHTML = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6><i class="fas fa-info-circle"></i> 기본 정보</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>제목:</strong></td><td>${project.title}</td></tr>
+                            <tr><td><strong>설명:</strong></td><td>${project.description || '-'}</td></tr>
+                            <tr><td><strong>소유자:</strong></td><td>${project.owner_info.full_name}</td></tr>
+                            <tr><td><strong>상태:</strong></td><td>${project.status_display}</td></tr>
+                            <tr><td><strong>공개여부:</strong></td><td>${project.is_public ? '공개' : '비공개'}</td></tr>
+                            <tr><td><strong>생성일:</strong></td><td>${new Date(project.created_at).toLocaleString()}</td></tr>
+                            <tr><td><strong>마감일:</strong></td><td>${project.deadline ? new Date(project.deadline).toLocaleString() : '-'}</td></tr>
+                        </table>
+                        
+                        <h6><i class="fas fa-list"></i> 평가 기준 (${project.criteria.length}개)</h6>
+                        <ul class="list-group list-group-flush">
+                            ${project.criteria.map(criterion => `<li class="list-group-item">${criterion}</li>`).join('') || '<li class="list-group-item text-muted">설정된 기준이 없습니다.</li>'}
+                        </ul>
+                        
+                        <h6 class="mt-3"><i class="fas fa-tasks"></i> 대안 (${project.alternatives.length}개)</h6>
+                        <ul class="list-group list-group-flush">
+                            ${project.alternatives.map(alt => `<li class="list-group-item">${alt}</li>`).join('') || '<li class="list-group-item text-muted">설정된 대안이 없습니다.</li>'}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-users"></i> 평가자 정보</h6>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <h4>${project.evaluator_count}</h4>
+                                    <p class="mb-0">총 평가자</p>
+                                </div>
+                                <hr>
+                                <div class="text-center">
+                                    <h4>${project.completion_rate}%</h4>
+                                    <p class="mb-0">완료율</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${project.consistency_ratio ? `
+                        <h6 class="mt-3"><i class="fas fa-chart-line"></i> 일관성 지수</h6>
+                        <div class="card ${project.consistency_ratio <= 0.1 ? 'bg-success' : 'bg-warning'} text-white">
+                            <div class="card-body text-center">
+                                <h4>${project.consistency_ratio.toFixed(3)}</h4>
+                                <p class="mb-0">${project.consistency_ratio <= 0.1 ? '양호' : '검토 필요'}</p>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            new bootstrap.Modal(document.getElementById('projectDetailModal')).show();
+        })
+        .catch(error => console.error('Error loading project details:', error));
+}
+
+function showEvaluators(projectId) {
+    fetch(`/super-admin/api/projects/${projectId}/`)
+        .then(response => response.json())
+        .then(project => {
+            const evaluatorsHtml = project.evaluators_info.map(evaluator => `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${evaluator.evaluator_info.full_name}</strong>
+                        <br>
+                        <small class="text-muted">${evaluator.evaluator_info.email}</small>
+                    </div>
+                    <div>
+                        <span class="badge bg-${evaluator.status === 'completed' ? 'success' : evaluator.status === 'accepted' ? 'primary' : 'secondary'}">
+                            ${evaluator.status_display}
+                        </span>
+                        ${evaluator.completed_at ? `<br><small class="text-muted">완료: ${new Date(evaluator.completed_at).toLocaleDateString()}</small>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('evaluatorsContent').innerHTML = `
+                <div class="list-group">
+                    ${evaluatorsHtml || '<div class="text-center text-muted py-3">평가자가 없습니다.</div>'}
+                </div>
+            `;
+            new bootstrap.Modal(document.getElementById('evaluatorsModal')).show();
+        })
+        .catch(error => console.error('Error loading evaluators:', error));
+}
+
+function editProject(projectId) {
+    // Implement project editing functionality
+    alert('프로젝트 수정 기능을 구현 중입니다.');
+}
+
+function activateProject(projectId) {
+    if (confirm('이 프로젝트를 활성화하시겠습니까?')) {
+        // Implement project activation
+        alert('프로젝트 활성화 기능을 구현 중입니다.');
+    }
+}
+
+function archiveProject(projectId) {
+    if (confirm('이 프로젝트를 보관하시겠습니까?')) {
+        // Implement project archiving
+        alert('프로젝트 보관 기능을 구현 중입니다.');
+    }
+}
+
+function bulkProjectAction(action) {
+    const selectedProjects = Array.from(document.querySelectorAll('.project-checkbox:checked')).map(cb => cb.value);
+    
+    if (selectedProjects.length === 0) {
+        alert('작업할 프로젝트를 선택해주세요.');
+        return;
+    }
+    
+    if (confirm(`선택된 ${selectedProjects.length}개의 프로젝트에 대해 ${action} 작업을 수행하시겠습니까?`)) {
+        // Implement bulk actions
+        alert('대량 작업 기능을 구현 중입니다.');
+    }
+}
+</script>
+{% endblock %}

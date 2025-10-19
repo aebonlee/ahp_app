@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - 개인 서비스 대시보드 (Enhanced)</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-elevated: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-light: #e5e7eb;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --header-height: 60px;
+            --sidebar-width: 260px;
+        }
+
+        /* 다크 모드 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-subtle: #0f172a;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* 상단 헤더 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: white;
+            border-bottom: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .logo:hover {
+            color: var(--accent-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .header-nav-item {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .header-nav-item:hover {
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+        }
+
+        .header-nav-item.active {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* 왼쪽 사이드바 */
+        .sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background: white;
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+            z-index: 999;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-200px);
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: calc(var(--header-height) + 1rem);
+            left: calc(var(--sidebar-width) + 1rem);
+            width: 36px;
+            height: 36px;
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            z-index: 998;
+            transition: all 0.3s;
+        }
+
+        .sidebar.collapsed + .sidebar-toggle {
+            left: 3rem;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .sidebar-section {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .sidebar-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            padding: 0 0.5rem;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+        }
+
+        .sidebar-item.active {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .sidebar-badge {
+            margin-left: auto;
+            padding: 0.125rem 0.5rem;
+            background: var(--accent-primary);
+            color: white;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* 메인 콘텐츠 영역 */
+        .main-content {
+            margin-top: var(--header-height);
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 60px;
+        }
+
+        /* 대시보드 그리드 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+        }
+
+        .dashboard-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+            margin: 0.5rem 0;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* 빠른 액션 버튼 */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-btn {
+            background: white;
+            border: 2px solid var(--accent-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .action-btn:hover {
+            background: var(--accent-light);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .action-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .theme-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 1rem;
+        }
+
+        .theme-toggle {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-light);
+            background: var(--bg-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-light);
+            border-color: var(--accent-primary);
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-toggle {
+                left: 1rem;
+            }
+            
+            .header-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/ahp_app/" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP System</span>
+            </a>
+            <nav class="header-nav">
+                <a href="#" class="header-nav-item active">대시보드</a>
+                <a href="#" class="header-nav-item">프로젝트</a>
+                <a href="#" class="header-nav-item">분석</a>
+                <a href="#" class="header-nav-item">보고서</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="theme-controls">
+                <button class="theme-toggle" onclick="toggleColorTheme()" title="컬러테마 변경">🎨</button>
+                <button class="theme-toggle" onclick="toggleDarkMode()" title="다크모드 전환">🌓</button>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">김</div>
+                <div>
+                    <div class="user-name">김철수</div>
+                    <div class="user-role">Personal Admin</div>
+                </div>
+            </div>
+            <button onclick="handleLogout()" style="padding: 0.5rem 1rem; background: var(--bg-secondary); border: none; border-radius: 6px; cursor: pointer;">
+                로그아웃
+            </button>
+        </div>
+    </header>
+
+    <!-- 왼쪽 사이드바 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">프로젝트 관리</div>
+            <div class="sidebar-menu">
+                <a href="/ahp_app/project-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">📋</span>
+                    <span>내 프로젝트</span>
+                    <span class="sidebar-badge">3</span>
+                </a>
+                <a href="/ahp_app/project-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">➕</span>
+                    <span>새 프로젝트</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="sidebar-icon">🗑️</span>
+                    <span>휴지통</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">모델 구축</div>
+            <div class="sidebar-menu">
+                <a href="/ahp_app/criteria-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">⚖️</span>
+                    <span>기준 설정</span>
+                </a>
+                <a href="/ahp_app/alternatives-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">🔄</span>
+                    <span>대안 관리</span>
+                </a>
+                <a href="/ahp_app/pairwise-comparison.html" class="sidebar-item">
+                    <span class="sidebar-icon">⚡</span>
+                    <span>쌍대비교</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="sidebar-icon">👥</span>
+                    <span>평가자 관리</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">분석 및 결과</div>
+            <div class="sidebar-menu">
+                <a href="/ahp_app/results-analysis.html" class="sidebar-item">
+                    <span class="sidebar-icon">📈</span>
+                    <span>결과 분석</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="sidebar-icon">📊</span>
+                    <span>진행률 모니터링</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="sidebar-icon">📄</span>
+                    <span>보고서 생성</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="sidebar-icon">🔍</span>
+                    <span>민감도 분석</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">설정</div>
+            <div class="sidebar-menu">
+                <a href="#" class="sidebar-item">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>개인 설정</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="sidebar-icon">💳</span>
+                    <span>요금제 관리</span>
+                </a>
+                <a href="#" class="sidebar-item">
+                    <span class="sidebar-icon">📚</span>
+                    <span>사용 가이드</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 사이드바 토글 버튼 -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <span id="toggle-icon">◀</span>
+    </button>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem;">안녕하세요, 김철수님 👋</h1>
+            <p style="color: var(--text-secondary);">전문적인 AHP 의사결정 분석으로 복잡한 문제를 체계적으로 해결해보세요</p>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-title">활성 프로젝트</div>
+                    <div class="card-icon">📊</div>
+                </div>
+                <div class="stats-value">3</div>
+                <div class="stats-label">진행중인 프로젝트</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 60%;"></div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-title">평가 진행률</div>
+                    <div class="card-icon">📈</div>
+                </div>
+                <div class="stats-value">78%</div>
+                <div class="stats-label">전체 평균 진행률</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 78%;"></div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-title">평가자 수</div>
+                    <div class="card-icon">👥</div>
+                </div>
+                <div class="stats-value">45</div>
+                <div class="stats-label">활성 평가자</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 45%;"></div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-title">완료된 분석</div>
+                    <div class="card-icon">✅</div>
+                </div>
+                <div class="stats-value">12</div>
+                <div class="stats-label">이번 달 완료</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 빠른 액션 -->
+        <h2 style="margin-top: 3rem; margin-bottom: 1rem; font-size: 1.5rem;">빠른 액션</h2>
+        <div class="quick-actions">
+            <a href="/ahp_app/project-management.html" class="action-btn">
+                <div class="action-icon">🆕</div>
+                <div class="action-title">새 프로젝트 생성</div>
+                <div class="action-desc">AHP 분석을 시작하세요</div>
+            </a>
+            <a href="/ahp_app/criteria-management.html" class="action-btn">
+                <div class="action-icon">⚖️</div>
+                <div class="action-title">기준 설정</div>
+                <div class="action-desc">평가 기준을 정의하세요</div>
+            </a>
+            <a href="/ahp_app/pairwise-comparison.html" class="action-btn">
+                <div class="action-icon">⚡</div>
+                <div class="action-title">쌍대비교 수행</div>
+                <div class="action-desc">비교 평가를 진행하세요</div>
+            </a>
+            <a href="/ahp_app/results-analysis.html" class="action-btn">
+                <div class="action-icon">📈</div>
+                <div class="action-title">결과 확인</div>
+                <div class="action-desc">분석 결과를 확인하세요</div>
+            </a>
+        </div>
+
+        <!-- 최근 프로젝트 -->
+        <h2 style="margin-top: 3rem; margin-bottom: 1rem; font-size: 1.5rem;">최근 프로젝트</h2>
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-light);">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-light);">
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600;">프로젝트명</th>
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600;">상태</th>
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600;">진행률</th>
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600;">마지막 수정</th>
+                        <th style="text-align: left; padding: 0.75rem; font-weight: 600;">작업</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--border-light);">
+                        <td style="padding: 0.75rem;">신제품 출시 전략</td>
+                        <td style="padding: 0.75rem;"><span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">진행중</span></td>
+                        <td style="padding: 0.75rem;">65%</td>
+                        <td style="padding: 0.75rem;">2025-01-10</td>
+                        <td style="padding: 0.75rem;"><a href="#" style="color: var(--accent-primary); text-decoration: none;">계속하기 →</a></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-light);">
+                        <td style="padding: 0.75rem;">공급업체 선정</td>
+                        <td style="padding: 0.75rem;"><span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">완료</span></td>
+                        <td style="padding: 0.75rem;">100%</td>
+                        <td style="padding: 0.75rem;">2025-01-08</td>
+                        <td style="padding: 0.75rem;"><a href="#" style="color: var(--accent-primary); text-decoration: none;">결과보기 →</a></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.75rem;">투자 포트폴리오 평가</td>
+                        <td style="padding: 0.75rem;"><span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">준비중</span></td>
+                        <td style="padding: 0.75rem;">15%</td>
+                        <td style="padding: 0.75rem;">2025-01-12</td>
+                        <td style="padding: 0.75rem;"><a href="#" style="color: var(--accent-primary); text-decoration: none;">편집하기 →</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // 사이드바 토글
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        // 로그아웃
+        function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                // 로그인 정보 삭제
+                localStorage.removeItem('ahp_user');
+                localStorage.removeItem('ahp_token');
+                localStorage.removeItem('login_method');
+                window.location.href = '/ahp_app/';
+            }
+        }
+
+        // 로그인 상태 확인
+        function checkLoginStatus() {
+            const token = localStorage.getItem('ahp_token');
+            const user = localStorage.getItem('ahp_user');
+            
+            if (!token || !user) {
+                // 로그인하지 않은 경우 로그인 페이지로 이동
+                window.location.href = '/ahp_app/login.html';
+                return false;
+            }
+            
+            try {
+                const userData = JSON.parse(user);
+                // 사용자 이름 표시
+                const userNameElement = document.querySelector('.header-user .user-name');
+                if (userNameElement && userData.name) {
+                    userNameElement.textContent = userData.name;
+                }
+            } catch (error) {
+                console.error('사용자 정보 파싱 오류:', error);
+                // 잘못된 데이터인 경우 로그인 페이지로 이동
+                localStorage.removeItem('ahp_user');
+                localStorage.removeItem('ahp_token');
+                window.location.href = '/ahp_app/login.html';
+                return false;
+            }
+            
+            return true;
+        }
+
+        // 사이드바 메뉴 활성화
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (this.getAttribute('href') === '#') {
+                    e.preventDefault();
+                }
+                
+                // 모든 항목에서 active 클래스 제거
+                document.querySelectorAll('.sidebar-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                // 클릭한 항목에 active 클래스 추가
+                this.classList.add('active');
+            });
+        });
+
+        // 현재 시간 업데이트 (옵션)
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('ko-KR');
+            // 시간 표시가 필요한 경우 여기에 구현
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 로그인 상태 확인
+            if (!checkLoginStatus()) {
+                return; // 로그인되지 않은 경우 리다이렉트
+            }
+            
+            // 테마 적용
+            loadSavedTheme();
+            
+            // 다크모드 설정 복원
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode) {
+                document.documentElement.setAttribute('data-theme', savedDarkMode);
+            }
+            
+            console.log('✅ Enhanced Personal Service Dashboard 로드 완료');
+            
+            // Django API 연동 초기화
+            checkBackendStatus();
+            syncUserData();
+            loadUserProjects();
+        });
+
+        // 컬러 테마 변경
+        function toggleColorTheme() {
+            const themes = [
+                { name: 'default', primary: '#C8A968', secondary: '#A98C4B', light: '#E5D5AA', hover: '#B59A4D' },
+                { name: 'blue', primary: '#3B82F6', secondary: '#2563EB', light: '#DBEAFE', hover: '#1D4ED8' },
+                { name: 'green', primary: '#10B981', secondary: '#059669', light: '#D1FAE5', hover: '#047857' },
+                { name: 'purple', primary: '#8B5CF6', secondary: '#7C3AED', light: '#EDE9FE', hover: '#6D28D9' },
+                { name: 'rose', primary: '#F43F5E', secondary: '#E11D48', light: '#FFE4E6', hover: '#BE123C' }
+            ];
+            
+            const currentTheme = localStorage.getItem('colorTheme') || 'default';
+            const currentIndex = themes.findIndex(t => t.name === currentTheme);
+            const nextIndex = (currentIndex + 1) % themes.length;
+            const nextTheme = themes[nextIndex];
+            
+            // CSS 변수 업데이트
+            const root = document.documentElement;
+            root.style.setProperty('--accent-primary', nextTheme.primary);
+            root.style.setProperty('--accent-secondary', nextTheme.secondary);
+            root.style.setProperty('--accent-light', nextTheme.light);
+            root.style.setProperty('--accent-hover', nextTheme.hover);
+            
+            // 테마 저장
+            localStorage.setItem('colorTheme', nextTheme.name);
+            
+            console.log(`컬러 테마 변경: ${nextTheme.name}`);
+        }
+
+        // 저장된 테마 적용
+        function loadSavedTheme() {
+            const themes = [
+                { name: 'default', primary: '#C8A968', secondary: '#A98C4B', light: '#E5D5AA', hover: '#B59A4D' },
+                { name: 'blue', primary: '#3B82F6', secondary: '#2563EB', light: '#DBEAFE', hover: '#1D4ED8' },
+                { name: 'green', primary: '#10B981', secondary: '#059669', light: '#D1FAE5', hover: '#047857' },
+                { name: 'purple', primary: '#8B5CF6', secondary: '#7C3AED', light: '#EDE9FE', hover: '#6D28D9' },
+                { name: 'rose', primary: '#F43F5E', secondary: '#E11D48', light: '#FFE4E6', hover: '#BE123C' }
+            ];
+            
+            const savedTheme = localStorage.getItem('colorTheme') || 'default';
+            const theme = themes.find(t => t.name === savedTheme);
+            
+            if (theme) {
+                const root = document.documentElement;
+                root.style.setProperty('--accent-primary', theme.primary);
+                root.style.setProperty('--accent-secondary', theme.secondary);
+                root.style.setProperty('--accent-light', theme.light);
+                root.style.setProperty('--accent-hover', theme.hover);
+            }
+        }
+
+        // 다크모드 토글
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('darkMode', newTheme);
+            console.log(`다크모드 변경: ${newTheme}`);
+        }
+
+        // API 기본 설정
+        const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
+        
+        // 인증 헤더 생성
+        function getAuthHeaders() {
+            const token = localStorage.getItem('ahp_token');
+            const loginMethod = localStorage.getItem('login_method');
+            
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            };
+            
+            if (token && loginMethod === 'django') {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            return headers;
+        }
+
+        // 사용자 프로젝트 데이터 로드
+        async function loadUserProjects() {
+            const loginMethod = localStorage.getItem('login_method');
+            
+            if (loginMethod === 'django') {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/service/projects/`, {
+                        method: 'GET',
+                        headers: getAuthHeaders()
+                    });
+                    
+                    if (response.ok) {
+                        const projects = await response.json();
+                        updateProjectsUI(projects);
+                        console.log('✅ Django에서 프로젝트 데이터 로드 완료');
+                    } else {
+                        console.warn('⚠️ Django 프로젝트 데이터 로드 실패, 데모 데이터 사용');
+                        loadDemoData();
+                    }
+                } catch (error) {
+                    console.error('❌ Django API 연결 실패:', error);
+                    loadDemoData();
+                }
+            } else {
+                loadDemoData();
+            }
+        }
+        
+        // 프로젝트 UI 업데이트
+        function updateProjectsUI(projects) {
+            if (projects && projects.length > 0) {
+                // 실제 Django 데이터로 대시보드 통계 업데이트
+                const activeProjects = projects.filter(p => p.status === 'active').length;
+                const completedProjects = projects.filter(p => p.status === 'completed').length;
+                
+                // 통계 카드 업데이트
+                const projectCountElement = document.querySelector('.dashboard-card .stats-value');
+                if (projectCountElement) {
+                    projectCountElement.textContent = activeProjects.toString();
+                }
+                
+                console.log(`📊 Django 프로젝트 데이터: ${activeProjects}개 활성, ${completedProjects}개 완료`);
+            }
+        }
+        
+        // 데모 데이터 로드
+        function loadDemoData() {
+            console.log('📝 데모 데이터 모드 사용');
+        }
+
+        // 백엔드 상태 확인
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health/`, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                
+                if (response.ok) {
+                    const healthData = await response.json();
+                    console.log('✅ Django 백엔드 정상 연결');
+                    console.log('📊 백엔드 상태:', healthData);
+                    
+                    // PostgreSQL 연결 상태 표시
+                    if (healthData.database?.status === 'connected') {
+                        console.log('🗄️ PostgreSQL 데이터베이스 정상 연결');
+                    }
+                } else {
+                    console.warn('⚠️ Django 백엔드 응답 오류');
+                }
+            } catch (error) {
+                console.error('❌ Django 백엔드 연결 실패:', error);
+            }
+        }
+        
+        // 사용자 데이터 동기화
+        async function syncUserData() {
+            const loginMethod = localStorage.getItem('login_method');
+            
+            if (loginMethod === 'django') {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/user/`, {
+                        method: 'GET',
+                        headers: getAuthHeaders()
+                    });
+                    
+                    if (response.ok) {
+                        const userData = await response.json();
+                        
+                        // 로컬 스토리지의 사용자 정보 업데이트
+                        const currentUser = JSON.parse(localStorage.getItem('ahp_user') || '{}');
+                        const updatedUser = {
+                            ...currentUser,
+                            name: userData.first_name || userData.username || currentUser.name,
+                            email: userData.email || currentUser.email,
+                            id: userData.id || currentUser.id
+                        };
+                        
+                        localStorage.setItem('ahp_user', JSON.stringify(updatedUser));
+                        console.log('✅ Django에서 사용자 데이터 동기화 완료');
+                    }
+                } catch (error) {
+                    console.error('❌ 사용자 데이터 동기화 실패:', error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

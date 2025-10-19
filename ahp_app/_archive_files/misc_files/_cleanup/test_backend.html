@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백엔드 테스트</title>
+</head>
+<body>
+    <h1>백엔드 연결 테스트</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testBackend() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>테스트 시작...</p>';
+            
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/api/service/projects/projects/', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                
+                resultsDiv.innerHTML += `<p>응답 상태: ${response.status} ${response.statusText}</p>`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML += '<p style="color: green;">✅ 백엔드 연결 성공!</p>';
+                    resultsDiv.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    resultsDiv.innerHTML += '<p style="color: red;">❌ 백엔드 응답 오류</p>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += '<p style="color: red;">❌ 연결 실패: ' + error.message + '</p>';
+            }
+        }
+        
+        // 페이지 로드 시 자동 테스트
+        window.onload = testBackend;
+    </script>
+</body>
+</html>

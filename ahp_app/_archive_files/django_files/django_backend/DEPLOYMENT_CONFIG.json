@@ -1,0 +1,40 @@
+{
+  "deployment_required": true,
+  "urgency": "CRITICAL",
+  "timestamp": "2025-09-23T15:25:00",
+  "last_deployed": "2025-09-16T21:58:00",
+  "current_commit": "a9b3211",
+  "commits_behind": 23,
+  "missing_commits": [
+    "a9b3211 - EMERGENCY DEPLOY - PostgreSQL 만료 + 테이블 생성 문제 해결",
+    "c4b9a59 - FORCE RENDER.COM DEPLOYMENT - PostgreSQL 테이블 생성 수정",
+    "1cc0021 - 백엔드 PostgreSQL 테이블 생성 문제 해결",
+    "cd86c31 - Step 4 진단 전용 테스트",
+    "cdd5208 - Step 4-6 수정 - 환경변수 설정 및 파일 복사 개선",
+    "bd05067 - GitHub Actions GitHub Pages 배포 완성",
+    "65e5662 - GitHub Actions React 빌드 과정 구현",
+    "75f4ee7 - 프로젝트 구조 준비 및 의존성 설치",
+    "bc3cdad - Node.js 환경 설정 추가",
+    "e0adc2b - 프로젝트 구조 감지 기능 추가",
+    "7d03956 - GitHub Actions 기본 구조",
+    "80fa737 - 초간단 워크플로우 - 정적 파일 직접 배포",
+    "54c13ec - GitHub Actions 완전 재작성",
+    "628e1d4 - 워크플로우 단계별 분리",
+    "846a335 - GitHub Actions 빌드 실패 해결",
+    "fd58200 - PostgreSQL 환경변수 강제 설정",
+    "758dacb - 전체 시스템 재구성",
+    "d68b6d7 - PostgreSQL 연결 확인",
+    "bf50dc5 - PostgreSQL 연결 강화",
+    "dca4175 - DATABASE_URL 하드코딩",
+    "f9c09ee - PostgreSQL 전용 시스템 완성",
+    "88535fe - PostgreSQL 환경변수 설정 가이드",
+    "bc47193 - PostgreSQL 전용 시스템"
+  ],
+  "critical_fixes": [
+    "PostgreSQL 테이블 생성 로직",
+    "DATABASE_URL 환경변수 강제 설정",
+    "마이그레이션 --run-syncdb 추가",
+    "simple_projects 테이블 수동 생성",
+    "긴급 샘플 데이터 생성"
+  ]
+}

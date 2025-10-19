@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 관리 - AHP System</title>
+    <link rel="stylesheet" href="styles/layout.css">
+    <style>
+        /* 다크 모드 추가 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-subtle: #0f172a;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            background-color: var(--bg-secondary);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-icon {
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-right: 1rem;
+        }
+
+        .stat-icon.users { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .stat-icon.admins { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .stat-icon.active { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-icon.new { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .controls-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-light);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .users-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--bg-elevated);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .users-table th {
+            background: var(--bg-elevated);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-details h4 {
+            margin: 0;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .user-details p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .role-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .role-admin {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .role-manager {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .role-user {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: var(--bg-elevated);
+        }
+
+        .pagination button {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-light);
+            background: white;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            margin: 1rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-light);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+            
+            .users-table-container {
+                overflow-x: auto;
+            }
+            
+            .users-table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <span id="toggle-icon">◀</span>
+            </button>
+            <div class="header-logo">
+                <span class="logo-icon">A</span>
+                <span class="logo-text">AHP System</span>
+                <span class="header-subtitle">사용자 관리</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <nav class="header-nav">
+                <a href="super-admin-dashboard.html" class="nav-item" data-page="admin">슈퍼 관리자</a>
+                <a href="personal-service-enhanced.html" class="nav-item" data-page="personal">개인 서비스</a>
+                <a href="system-monitoring.html" class="nav-item" data-page="system">시스템 모니터링</a>
+                <a href="analytics.html" class="nav-item" data-page="analytics">분석</a>
+            </nav>
+        </div>
+        
+        <div class="header-right">
+            <div class="theme-controls">
+                <button class="theme-toggle" onclick="toggleColorTheme()" title="컬러테마 변경">🎨</button>
+                <button class="theme-toggle" onclick="toggleDarkMode()" title="다크모드 전환">🌓</button>
+            </div>
+            <div class="header-notifications">
+                <button class="notification-btn">
+                    <span>🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+            </div>
+            <div class="header-user">
+                <div class="user-avatar">👤</div>
+                <div class="user-info">
+                    <div class="user-name">슈퍼 관리자</div>
+                    <div class="user-role">System Admin</div>
+                </div>
+                <button class="user-menu-btn" onclick="handleLogout()">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 사이드바 -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <!-- 관리자 메뉴 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">시스템 관리</div>
+                <a href="user-management.html" class="sidebar-item active">
+                    <span class="sidebar-icon">👥</span>
+                    <span class="sidebar-text">사용자 관리</span>
+                </a>
+                <a href="project-overview.html" class="sidebar-item">
+                    <span class="sidebar-icon">📊</span>
+                    <span class="sidebar-text">프로젝트 현황</span>
+                </a>
+                <a href="admin/system-settings.html" class="sidebar-item">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span class="sidebar-text">시스템 설정</span>
+                </a>
+                <a href="admin/audit-log.html" class="sidebar-item">
+                    <span class="sidebar-icon">📋</span>
+                    <span class="sidebar-text">감사 로그</span>
+                </a>
+            </div>
+
+            <!-- 데이터 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">데이터 관리</div>
+                <a href="admin/backup-restore.html" class="sidebar-item">
+                    <span class="sidebar-icon">💾</span>
+                    <span class="sidebar-text">백업 및 복원</span>
+                </a>
+                <a href="admin/database-management.html" class="sidebar-item">
+                    <span class="sidebar-icon">🗄️</span>
+                    <span class="sidebar-text">데이터베이스 관리</span>
+                </a>
+                <a href="admin/data-migration.html" class="sidebar-item">
+                    <span class="sidebar-icon">📤</span>
+                    <span class="sidebar-text">데이터 마이그레이션</span>
+                </a>
+            </div>
+
+            <!-- 보안 관리 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">보안 관리</div>
+                <a href="admin/security-settings.html" class="sidebar-item">
+                    <span class="sidebar-icon">🔒</span>
+                    <span class="sidebar-text">보안 설정</span>
+                </a>
+                <a href="admin/access-control.html" class="sidebar-item">
+                    <span class="sidebar-icon">🛡️</span>
+                    <span class="sidebar-text">접근 제어</span>
+                </a>
+                <a href="admin/security-log.html" class="sidebar-item">
+                    <span class="sidebar-icon">🚨</span>
+                    <span class="sidebar-text">보안 로그</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <span class="page-icon">👥</span>
+                사용자 관리
+            </h1>
+            <button class="btn btn-primary" onclick="openAddUserModal()">
+                <span>➕</span> 새 사용자 추가
+            </button>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon users">👥</div>
+                    <div>
+                        <div class="stat-value" id="totalUsers">-</div>
+                        <div class="stat-label">전체 사용자</div>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon admins">👑</div>
+                    <div>
+                        <div class="stat-value" id="totalAdmins">-</div>
+                        <div class="stat-label">관리자</div>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon active">🟢</div>
+                    <div>
+                        <div class="stat-value" id="activeUsers">-</div>
+                        <div class="stat-label">활성 사용자</div>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon new">✨</div>
+                    <div>
+                        <div class="stat-value" id="newUsers">-</div>
+                        <div class="stat-label">이번 달 신규</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 검색 및 필터 -->
+        <div class="controls-section">
+            <div class="controls-header">
+                <h3>사용자 검색 및 필터</h3>
+            </div>
+            <div class="search-filters">
+                <input type="text" id="searchInput" class="search-input" placeholder="이름, 이메일로 검색...">
+                <select id="roleFilter" class="filter-select">
+                    <option value="">모든 역할</option>
+                    <option value="admin">관리자</option>
+                    <option value="manager">매니저</option>
+                    <option value="user">일반 사용자</option>
+                </select>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">모든 상태</option>
+                    <option value="active">활성</option>
+                    <option value="inactive">비활성</option>
+                    <option value="pending">대기중</option>
+                </select>
+                <button class="btn btn-secondary" onclick="clearFilters()">
+                    🔄 필터 초기화
+                </button>
+            </div>
+        </div>
+
+        <!-- 사용자 테이블 -->
+        <div class="users-table-container">
+            <div class="table-header">
+                <h3>사용자 목록</h3>
+                <div>
+                    <select id="pageSize" class="filter-select" onchange="changePageSize()">
+                        <option value="10">10개씩 보기</option>
+                        <option value="25">25개씩 보기</option>
+                        <option value="50">50개씩 보기</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="loadingContainer" class="loading">
+                <div class="loading-spinner"></div>
+                <p>사용자 데이터를 불러오는 중...</p>
+            </div>
+
+            <table class="users-table" id="usersTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>사용자</th>
+                        <th>역할</th>
+                        <th>상태</th>
+                        <th>가입일</th>
+                        <th>마지막 로그인</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- 동적으로 채워짐 -->
+                </tbody>
+            </table>
+
+            <div class="pagination" id="pagination">
+                <!-- 동적으로 채워짐 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 사용자 추가/편집 모달 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">새 사용자 추가</h3>
+                <button class="modal-close" onclick="closeUserModal()">×</button>
+            </div>
+            
+            <form id="userForm">
+                <div class="form-group">
+                    <label class="form-label">이름</label>
+                    <input type="text" id="userName" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">이메일</label>
+                    <input type="email" id="userEmail" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">역할</label>
+                    <select id="userRole" class="form-select" required>
+                        <option value="user">일반 사용자</option>
+                        <option value="manager">매니저</option>
+                        <option value="admin">관리자</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">상태</label>
+                    <select id="userStatus" class="form-select" required>
+                        <option value="active">활성</option>
+                        <option value="inactive">비활성</option>
+                        <option value="pending">대기중</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="passwordGroup">
+                    <label class="form-label">비밀번호</label>
+                    <input type="password" id="userPassword" class="form-input">
+                </div>
+                
+                <input type="hidden" id="userId">
+            </form>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeUserModal()">취소</button>
+                <button class="btn btn-primary" onclick="saveUser()">
+                    <span id="saveButtonText">저장</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Service 및 레이아웃 스크립트 -->
+    <script src="scripts/api-service.js"></script>
+    <script src="scripts/layout.js"></script>
+    <script>
+        // 전역 변수
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+        let currentFilters = {
+            search: '',
+            role: '',
+            status: ''
+        };
+        let isEditing = false;
+
+        // 페이지 초기화
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 관리자 인증 확인
+            const authResult = await window.ahpApi.getCurrentUser();
+            if (!authResult.success || authResult.user.role !== 'admin') {
+                alert('관리자 권한이 필요합니다.');
+                window.location.href = '/ahp_app/public/login.html';
+                return;
+            }
+
+            await initializePage();
+            setupEventListeners();
+        });
+
+        // 페이지 초기화
+        async function initializePage() {
+            await loadUserStats();
+            await loadUsers();
+        }
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 검색 입력
+            document.getElementById('searchInput').addEventListener('input', debounce(handleSearch, 300));
+            
+            // 필터 변경
+            document.getElementById('roleFilter').addEventListener('change', handleFilterChange);
+            document.getElementById('statusFilter').addEventListener('change', handleFilterChange);
+            
+            // 모달 배경 클릭으로 닫기
+            document.getElementById('userModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeUserModal();
+                }
+            });
+        }
+
+        // 사용자 통계 로드
+        async function loadUserStats() {
+            try {
+                const response = await fetch('https://ahp-django-backend.onrender.com/super-admin/api/users/stats/', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('totalUsers').textContent = stats.total_users || 0;
+                    document.getElementById('totalAdmins').textContent = stats.total_admins || 0;
+                    document.getElementById('activeUsers').textContent = stats.active_users || 0;
+                    document.getElementById('newUsers').textContent = stats.new_users_this_month || 0;
+                } else {
+                    console.error('통계 조회 실패:', response.status);
+                }
+            } catch (error) {
+                console.error('통계 로드 오류:', error);
+                // 기본값 표시
+                document.getElementById('totalUsers').textContent = '-';
+                document.getElementById('totalAdmins').textContent = '-';
+                document.getElementById('activeUsers').textContent = '-';
+                document.getElementById('newUsers').textContent = '-';
+            }
+        }
+
+        // 사용자 목록 로드
+        async function loadUsers() {
+            const loadingContainer = document.getElementById('loadingContainer');
+            const usersTable = document.getElementById('usersTable');
+            
+            loadingContainer.style.display = 'block';
+            usersTable.style.display = 'none';
+
+            try {
+                const queryParams = new URLSearchParams({
+                    page: currentPage,
+                    page_size: pageSize,
+                    ...currentFilters
+                });
+
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/users/?${queryParams}`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayUsers(data.results);
+                    updatePagination(data);
+                    
+                    loadingContainer.style.display = 'none';
+                    usersTable.style.display = 'table';
+                } else {
+                    throw new Error(`사용자 목록 조회 실패: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('사용자 로드 오류:', error);
+                loadingContainer.innerHTML = `
+                    <p style="color: var(--error);">
+                        사용자 데이터를 불러올 수 없습니다. 
+                        <button onclick="loadUsers()" class="btn btn-secondary btn-sm">다시 시도</button>
+                    </p>
+                `;
+            }
+        }
+
+        // 사용자 목록 표시
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-secondary);">
+                            사용자가 없습니다.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                ${user.first_name ? user.first_name.charAt(0).toUpperCase() : '?'}
+                            </div>
+                            <div class="user-details">
+                                <h4>${user.first_name} ${user.last_name || ''}</h4>
+                                <p>${user.email}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="role-badge role-${user.role}">
+                            ${getRoleLabel(user.role)}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${user.is_active ? 'active' : 'inactive'}">
+                            ${user.is_active ? '활성' : '비활성'}
+                        </span>
+                    </td>
+                    <td>${formatDate(user.date_joined)}</td>
+                    <td>${user.last_login ? formatDate(user.last_login) : '없음'}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-secondary btn-sm" onclick="editUser(${user.id})">
+                                ✏️ 편집
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id}, '${user.first_name}')">
+                                🗑️ 삭제
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 페이지네이션 업데이트
+        function updatePagination(data) {
+            totalPages = Math.ceil(data.count / pageSize);
+            const pagination = document.getElementById('pagination');
+            
+            let paginationHTML = '';
+            
+            // 이전 버튼
+            paginationHTML += `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    ◀ 이전
+                </button>
+            `;
+            
+            // 페이지 번호들
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button onclick="changePage(${i})" ${i === currentPage ? 'class="current"' : ''}>
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            // 다음 버튼
+            paginationHTML += `
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    다음 ▶
+                </button>
+            `;
+            
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // 페이지 변경
+        function changePage(page) {
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                loadUsers();
+            }
+        }
+
+        // 페이지 크기 변경
+        function changePageSize() {
+            pageSize = parseInt(document.getElementById('pageSize').value);
+            currentPage = 1;
+            loadUsers();
+        }
+
+        // 검색 처리
+        function handleSearch(e) {
+            currentFilters.search = e.target.value;
+            currentPage = 1;
+            loadUsers();
+        }
+
+        // 필터 변경 처리
+        function handleFilterChange() {
+            currentFilters.role = document.getElementById('roleFilter').value;
+            currentFilters.status = document.getElementById('statusFilter').value;
+            currentPage = 1;
+            loadUsers();
+        }
+
+        // 필터 초기화
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('roleFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            
+            currentFilters = { search: '', role: '', status: '' };
+            currentPage = 1;
+            loadUsers();
+        }
+
+        // 새 사용자 추가 모달 열기
+        function openAddUserModal() {
+            isEditing = false;
+            document.getElementById('modalTitle').textContent = '새 사용자 추가';
+            document.getElementById('saveButtonText').textContent = '추가';
+            document.getElementById('passwordGroup').style.display = 'block';
+            document.getElementById('userForm').reset();
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        // 사용자 편집 모달 열기
+        async function editUser(userId) {
+            isEditing = true;
+            document.getElementById('modalTitle').textContent = '사용자 편집';
+            document.getElementById('saveButtonText').textContent = '수정';
+            document.getElementById('passwordGroup').style.display = 'none';
+            
+            try {
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/users/${userId}/`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    
+                    document.getElementById('userId').value = user.id;
+                    document.getElementById('userName').value = user.first_name;
+                    document.getElementById('userEmail').value = user.email;
+                    document.getElementById('userRole').value = user.role;
+                    document.getElementById('userStatus').value = user.is_active ? 'active' : 'inactive';
+                    
+                    document.getElementById('userModal').classList.add('active');
+                } else {
+                    alert('사용자 정보를 불러올 수 없습니다.');
+                }
+            } catch (error) {
+                console.error('사용자 편집 오류:', error);
+                alert('사용자 정보 로드 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 사용자 모달 닫기
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('active');
+            document.getElementById('userForm').reset();
+        }
+
+        // 사용자 저장
+        async function saveUser() {
+            const saveButton = document.querySelector('#userModal .btn-primary');
+            const originalText = saveButton.innerHTML;
+            
+            saveButton.innerHTML = '<div class="loading-spinner"></div> 저장 중...';
+            saveButton.disabled = true;
+
+            try {
+                const userData = {
+                    first_name: document.getElementById('userName').value,
+                    email: document.getElementById('userEmail').value,
+                    role: document.getElementById('userRole').value,
+                    is_active: document.getElementById('userStatus').value === 'active'
+                };
+
+                if (!isEditing) {
+                    userData.password = document.getElementById('userPassword').value;
+                    if (!userData.password) {
+                        alert('비밀번호를 입력해주세요.');
+                        return;
+                    }
+                }
+
+                const url = isEditing 
+                    ? `https://ahp-django-backend.onrender.com/super-admin/api/users/${document.getElementById('userId').value}/`
+                    : 'https://ahp-django-backend.onrender.com/super-admin/api/users/';
+                
+                const method = isEditing ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(userData)
+                });
+
+                if (response.ok) {
+                    closeUserModal();
+                    await loadUsers();
+                    await loadUserStats();
+                    alert(isEditing ? '사용자가 수정되었습니다.' : '사용자가 추가되었습니다.');
+                } else {
+                    const errorData = await response.json();
+                    alert(`오류: ${errorData.message || '사용자 저장에 실패했습니다.'}`);
+                }
+            } catch (error) {
+                console.error('사용자 저장 오류:', error);
+                alert('사용자 저장 중 오류가 발생했습니다.');
+            } finally {
+                saveButton.innerHTML = originalText;
+                saveButton.disabled = false;
+            }
+        }
+
+        // 사용자 삭제
+        async function deleteUser(userId, userName) {
+            if (!confirm(`정말로 "${userName}" 사용자를 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://ahp-django-backend.onrender.com/super-admin/api/users/${userId}/`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    await loadUsers();
+                    await loadUserStats();
+                    alert('사용자가 삭제되었습니다.');
+                } else {
+                    alert('사용자 삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('사용자 삭제 오류:', error);
+                alert('사용자 삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 유틸리티 함수들
+        function getRoleLabel(role) {
+            const roleLabels = {
+                'admin': '관리자',
+                'manager': '매니저',
+                'user': '일반 사용자'
+            };
+            return roleLabels[role] || role;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 사이드바 토글
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleIcon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        // 다크모드 토글
+        async function toggleDarkMode() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            
+            try {
+                await window.ahpApi.saveUserSettings({ theme: newTheme });
+            } catch (error) {
+                console.error('테마 설정 저장 오류:', error);
+            }
+        }
+
+        // 컬러 테마 변경
+        function toggleColorTheme() {
+            // 컬러 테마 변경 로직 구현
+            console.log('컬러 테마 변경');
+        }
+
+        // 로그아웃
+        async function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                try {
+                    await window.ahpApi.logout();
+                    window.location.href = '/ahp_app/public/login.html?message=logout';
+                } catch (error) {
+                    console.error('로그아웃 오류:', error);
+                    window.location.href = '/ahp_app/public/login.html?message=logout';
+                }
+            }
+        }
+
+        console.log('✅ 사용자 관리 페이지 로드 완료');
+    </script>
+</body>
+</html>

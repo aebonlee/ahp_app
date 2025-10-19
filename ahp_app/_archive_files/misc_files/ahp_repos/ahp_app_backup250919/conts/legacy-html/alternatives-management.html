@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대안 관리 - AHP for Paper</title>
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-elevated: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        /* 다크 모드 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Pretendard', sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* 헤더 */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--accent-primary);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* 메인 레이아웃 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .content-area {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* 프로젝트 정보 */
+        .project-info {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .project-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* 진행 상황 */
+        .progress-section {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .progress-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .progress-step.current {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .progress-step.completed {
+            color: var(--success);
+        }
+
+        .step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .step-icon.current {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .step-icon.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-icon.pending {
+            background: var(--bg-elevated);
+            color: var(--text-muted);
+        }
+
+        /* 대안 관리 폼 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .alternatives-form {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            padding: 0.75rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(200, 169, 104, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* 대안 목록 */
+        .alternatives-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .alternative-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .alternative-item:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .alternative-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .alternative-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .alternative-score {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .alternative-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .alternative-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        /* 대안 비교 시각화 */
+        .comparison-visualization {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .comparison-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .alternatives-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .alternative-preview {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .alternative-preview:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .alternative-preview.selected {
+            border-color: var(--accent-primary);
+            background: var(--accent-light);
+            color: var(--accent-primary);
+        }
+
+        /* 빈 상태 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-description {
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header-left {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .breadcrumb {
+                font-size: 0.8rem;
+            }
+
+            .alternatives-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/ahp_app/" class="logo">
+                <div class="logo-icon">A</div>
+                <span>AHP for Paper</span>
+            </a>
+            <div>
+                <div class="breadcrumb">
+                    <a href="/ahp_app/project-management.html">프로젝트 관리</a>
+                    <span>→</span>
+                    <a href="/ahp_app/criteria-management.html">기준 설정</a>
+                    <span>→</span>
+                    <span>대안 관리</span>
+                </div>
+                <h1 class="page-title">대안 관리</h1>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-secondary" onclick="saveAndNext()">
+                다음 단계: 쌍대비교
+            </button>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <!-- 메인 콘텐츠 -->
+        <div class="content-area">
+            <div class="section-header">
+                <h2 class="section-title">대안 정의</h2>
+                <button class="btn btn-primary" onclick="toggleAlternativesForm()">
+                    <span id="form-toggle-text">새 대안 추가</span>
+                </button>
+            </div>
+
+            <!-- 대안 비교 시각화 -->
+            <div class="comparison-visualization">
+                <h3 class="comparison-title">대안 미리보기</h3>
+                <div id="alternativesGrid" class="alternatives-grid">
+                    <!-- 동적으로 생성됩니다 -->
+                </div>
+            </div>
+
+            <!-- 대안 추가 폼 -->
+            <div id="alternativesForm" class="alternatives-form" style="display: none;">
+                <form id="addAlternativeForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="alternativeName">대안 이름 *</label>
+                            <input type="text" id="alternativeName" class="form-input" 
+                                   placeholder="예: 제품 A, 전략 1, 옵션 A" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="alternativeDescription">대안 설명</label>
+                            <textarea id="alternativeDescription" class="form-textarea" 
+                                      placeholder="이 대안의 특징과 장점을 상세히 설명하세요..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="alternativeType">대안 유형</label>
+                            <select id="alternativeType" class="form-select">
+                                <option value="product">제품/서비스</option>
+                                <option value="strategy">전략/계획</option>
+                                <option value="option">선택지/옵션</option>
+                                <option value="solution">해결방안</option>
+                                <option value="other">기타</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn btn-secondary" onclick="resetAlternativesForm()">
+                            초기화
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            대안 추가
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 대안 목록 -->
+            <div id="alternativesList" class="alternatives-list">
+                <!-- 동적으로 생성됩니다 -->
+            </div>
+
+            <!-- 빈 상태 -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">🔄</div>
+                <h3 class="empty-title">아직 대안이 설정되지 않았습니다</h3>
+                <p class="empty-description">
+                    비교 분석할 대안들을 추가하여 AHP 분석을 준비하세요.<br>
+                    일반적으로 2-7개의 대안을 설정하는 것이 좋습니다.
+                </p>
+                <button class="btn btn-primary" onclick="toggleAlternativesForm()">
+                    첫 번째 대안 추가하기
+                </button>
+            </div>
+        </div>
+
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <!-- 프로젝트 정보 -->
+            <div class="project-info">
+                <h3 class="project-title" id="currentProjectTitle">프로젝트 로딩 중...</h3>
+                <p class="project-description" id="currentProjectDescription">설명을 불러오는 중...</p>
+                <div class="project-meta">
+                    <span id="currentProjectGoal">목표: 로딩 중...</span>
+                    <span id="currentProjectDate">생성일: 로딩 중...</span>
+                    <span id="currentCriteriaCount">기준 수: 0개</span>
+                </div>
+            </div>
+
+            <!-- 진행 상황 -->
+            <div class="progress-section">
+                <h3 class="progress-title">AHP 분석 단계</h3>
+                <div class="progress-steps">
+                    <div class="progress-step completed">
+                        <div class="step-icon completed">1</div>
+                        <span>프로젝트 생성</span>
+                    </div>
+                    <div class="progress-step completed">
+                        <div class="step-icon completed">2</div>
+                        <span>기준 설정</span>
+                    </div>
+                    <div class="progress-step current">
+                        <div class="step-icon current">3</div>
+                        <span>대안 관리</span>
+                    </div>
+                    <div class="progress-step">
+                        <div class="step-icon pending">4</div>
+                        <span>쌍대비교</span>
+                    </div>
+                    <div class="progress-step">
+                        <div class="step-icon pending">5</div>
+                        <span>결과 분석</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 대안 설정 가이드 -->
+            <div class="project-info">
+                <h3 class="project-title">💡 대안 설정 가이드</h3>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                    <p><strong>좋은 대안의 특징:</strong></p>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.2rem;">
+                        <li>명확하게 구분 가능</li>
+                        <li>실현 가능한 옵션</li>
+                        <li>상호 배타적</li>
+                        <li>의사결정 목표와 관련성 높음</li>
+                    </ul>
+                    <p><strong>권장 대안 수:</strong> 2-7개</p>
+                    <p><strong>주의사항:</strong> 너무 많은 대안은 비교를 복잡하게 만듭니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProject = null;
+        let alternatives = [];
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentProject();
+            loadAlternatives();
+            setupEventListeners();
+        });
+
+        // URL에서 프로젝트 ID 가져오기
+        function getProjectIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('project');
+        }
+
+        // 현재 프로젝트 로드
+        function loadCurrentProject() {
+            const projectId = getProjectIdFromUrl();
+            if (!projectId) {
+                alert('프로젝트가 지정되지 않았습니다.');
+                window.location.href = '/ahp_app/project-management.html';
+                return;
+            }
+
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            currentProject = projects.find(p => p.id === projectId);
+
+            if (!currentProject) {
+                alert('프로젝트를 찾을 수 없습니다.');
+                window.location.href = '/ahp_app/project-management.html';
+                return;
+            }
+
+            // 프로젝트 정보 표시
+            document.getElementById('currentProjectTitle').textContent = currentProject.title;
+            document.getElementById('currentProjectDescription').textContent = 
+                currentProject.description || '설명이 없습니다.';
+            document.getElementById('currentProjectGoal').textContent = 
+                `목표: ${currentProject.goal || '설정되지 않음'}`;
+            document.getElementById('currentProjectDate').textContent = 
+                `생성일: ${new Date(currentProject.createdAt).toLocaleDateString('ko-KR')}`;
+            document.getElementById('currentCriteriaCount').textContent = 
+                `기준 수: ${currentProject.criteria ? currentProject.criteria.length : 0}개`;
+        }
+
+        // 대안 데이터 로드
+        function loadAlternatives() {
+            if (!currentProject) return;
+            
+            alternatives = currentProject.alternatives || [];
+            renderAlternatives();
+            renderAlternativesGrid();
+        }
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            document.getElementById('addAlternativeForm').addEventListener('submit', addAlternative);
+        }
+
+        // 대안 추가
+        function addAlternative(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('alternativeName').value.trim();
+            const description = document.getElementById('alternativeDescription').value.trim();
+            const type = document.getElementById('alternativeType').value;
+
+            if (!name) {
+                alert('대안 이름을 입력해주세요.');
+                return;
+            }
+
+            // 중복 이름 체크
+            if (alternatives.some(a => a.name.toLowerCase() === name.toLowerCase())) {
+                alert('이미 존재하는 대안 이름입니다.');
+                return;
+            }
+
+            const newAlternative = {
+                id: Date.now().toString(),
+                name: name,
+                description: description,
+                type: type,
+                scores: {}, // 각 기준별 점수 (나중에 쌍대비교에서 계산됨)
+                totalScore: null, // 최종 점수
+                createdAt: new Date().toISOString()
+            };
+
+            alternatives.push(newAlternative);
+            saveAlternatives();
+            renderAlternatives();
+            renderAlternativesGrid();
+            resetAlternativesForm();
+            toggleAlternativesForm();
+
+            showNotification('대안이 성공적으로 추가되었습니다!', 'success');
+        }
+
+        // 대안 렌더링
+        function renderAlternatives() {
+            const alternativesList = document.getElementById('alternativesList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (alternatives.length === 0) {
+                alternativesList.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            alternativesList.style.display = 'flex';
+            emptyState.style.display = 'none';
+
+            alternativesList.innerHTML = alternatives.map(alternative => createAlternativeItem(alternative)).join('');
+        }
+
+        // 대안 항목 생성
+        function createAlternativeItem(alternative) {
+            const typeLabels = {
+                product: '제품/서비스',
+                strategy: '전략/계획',
+                option: '선택지/옵션',
+                solution: '해결방안',
+                other: '기타'
+            };
+
+            return `
+                <div class="alternative-item" data-alternative-id="${alternative.id}">
+                    <div class="alternative-header">
+                        <div>
+                            <h3 class="alternative-name">${alternative.name}</h3>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">
+                                ${typeLabels[alternative.type]} • ${new Date(alternative.createdAt).toLocaleDateString('ko-KR')}
+                            </span>
+                        </div>
+                        <div class="alternative-score">
+                            ${alternative.totalScore ? `점수: ${(alternative.totalScore * 100).toFixed(1)}` : '미평가'}
+                        </div>
+                    </div>
+                    
+                    <p class="alternative-description">
+                        ${alternative.description || '설명이 없습니다.'}
+                    </p>
+                    
+                    <div class="alternative-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editAlternative('${alternative.id}')">
+                            편집
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAlternative('${alternative.id}')">
+                            삭제
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 대안 그리드 시각화
+        function renderAlternativesGrid() {
+            const alternativesGrid = document.getElementById('alternativesGrid');
+            
+            if (alternatives.length === 0) {
+                alternativesGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-style: italic;">
+                        대안을 추가하면 비교 미리보기가 표시됩니다
+                    </div>
+                `;
+                return;
+            }
+
+            alternativesGrid.innerHTML = alternatives.map(alternative => `
+                <div class="alternative-preview" onclick="selectAlternative('${alternative.id}')">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">${alternative.name}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        ${alternative.totalScore ? `점수: ${(alternative.totalScore * 100).toFixed(1)}` : '미평가'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 대안 선택
+        function selectAlternative(alternativeId) {
+            // 모든 대안에서 선택 상태 제거
+            document.querySelectorAll('.alternative-preview').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // 선택된 대안에 선택 상태 추가
+            const selectedElement = document.querySelector(`[onclick="selectAlternative('${alternativeId}')"]`);
+            if (selectedElement) {
+                selectedElement.classList.add('selected');
+            }
+
+            // 선택된 대안 정보 표시 (필요시 구현)
+        }
+
+        // 대안 편집
+        function editAlternative(alternativeId) {
+            const alternative = alternatives.find(a => a.id === alternativeId);
+            if (!alternative) return;
+
+            const newName = prompt('대안 이름을 수정하세요:', alternative.name);
+            if (newName && newName.trim() && newName !== alternative.name) {
+                // 중복 체크
+                if (alternatives.some(a => a.id !== alternativeId && a.name.toLowerCase() === newName.toLowerCase())) {
+                    alert('이미 존재하는 대안 이름입니다.');
+                    return;
+                }
+
+                alternative.name = newName.trim();
+                alternative.updatedAt = new Date().toISOString();
+                saveAlternatives();
+                renderAlternatives();
+                renderAlternativesGrid();
+                showNotification('대안이 수정되었습니다!', 'success');
+            }
+        }
+
+        // 대안 삭제
+        function deleteAlternative(alternativeId) {
+            if (!confirm('정말로 이 대안을 삭제하시겠습니까?')) return;
+
+            alternatives = alternatives.filter(a => a.id !== alternativeId);
+            saveAlternatives();
+            renderAlternatives();
+            renderAlternativesGrid();
+            showNotification('대안이 삭제되었습니다.', 'info');
+        }
+
+        // 대안 데이터 저장
+        function saveAlternatives() {
+            if (!currentProject) return;
+
+            currentProject.alternatives = alternatives;
+            currentProject.updatedAt = new Date().toISOString();
+
+            const projects = JSON.parse(localStorage.getItem('ahp_projects')) || [];
+            const projectIndex = projects.findIndex(p => p.id === currentProject.id);
+            
+            if (projectIndex !== -1) {
+                projects[projectIndex] = currentProject;
+                localStorage.setItem('ahp_projects', JSON.stringify(projects));
+            }
+        }
+
+        // 폼 토글
+        function toggleAlternativesForm() {
+            const form = document.getElementById('alternativesForm');
+            const toggleText = document.getElementById('form-toggle-text');
+            
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                toggleText.textContent = '폼 닫기';
+                document.getElementById('alternativeName').focus();
+            } else {
+                form.style.display = 'none';
+                toggleText.textContent = '새 대안 추가';
+            }
+        }
+
+        // 폼 초기화
+        function resetAlternativesForm() {
+            document.getElementById('addAlternativeForm').reset();
+        }
+
+        // 다음 단계로 이동
+        function saveAndNext() {
+            if (alternatives.length === 0) {
+                if (confirm('대안이 설정되지 않았습니다. 그래도 다음 단계로 이동하시겠습니까?')) {
+                    window.location.href = `/ahp_app/pairwise-comparison.html?project=${currentProject.id}`;
+                }
+                return;
+            }
+
+            if (alternatives.length < 2) {
+                alert('AHP 분석을 위해서는 최소 2개 이상의 대안이 필요합니다.');
+                return;
+            }
+
+            if (!currentProject.criteria || currentProject.criteria.length === 0) {
+                alert('먼저 평가 기준을 설정해주세요.');
+                window.location.href = `/ahp_app/criteria-management.html?project=${currentProject.id}`;
+                return;
+            }
+
+            saveAlternatives();
+            window.location.href = `/ahp_app/pairwise-comparison.html?project=${currentProject.id}`;
+        }
+
+        // 알림 시스템
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--info)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: var(--shadow-lg);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        console.log('✅ AHP 대안 관리 시스템 로드 완료');
+    </script>
+</body>
+</html>

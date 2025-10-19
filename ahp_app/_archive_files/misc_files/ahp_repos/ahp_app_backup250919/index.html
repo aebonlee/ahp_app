@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP for Paper - 논문 연구를 위한 AHP 분석 도구</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        /* Header */
+        .header {
+            background: #fff;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #4b5563;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #2563eb;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #2563eb;
+            border: 1px solid #2563eb;
+        }
+        
+        .btn-secondary:hover {
+            background: #2563eb;
+            color: white;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .hero-emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .hero .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        .hero p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            line-height: 1.7;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+        
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            margin-top: 2rem;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 4rem 0;
+            background: #f8fafc;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        
+        .section-title p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+        
+        .feature-card p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        /* Process Section */
+        .process {
+            padding: 4rem 0;
+            background: white;
+        }
+        
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .process-step {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        }
+        
+        .process-step h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        
+        .process-step p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        /* Guides Section */
+        .guides {
+            padding: 4rem 0;
+            background: #f8fafc;
+        }
+        
+        .guides-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .guide-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .guide-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        
+        .guide-card p {
+            color: #6b7280;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        
+        .guide-list {
+            list-style: none;
+            margin-bottom: 1rem;
+        }
+        
+        .guide-list li {
+            padding: 0.25rem 0;
+            color: #6b7280;
+        }
+        
+        /* User Types Section */
+        .user-types {
+            padding: 4rem 0;
+            background: white;
+        }
+        
+        .user-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .user-type-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .user-type-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .user-type-card p {
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .user-type-card .btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .user-type-card .btn:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        /* Pricing Section */
+        .pricing {
+            padding: 4rem 0;
+            background: #f8fafc;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .price-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            position: relative;
+        }
+        
+        .price-card.popular {
+            border-color: #2563eb;
+            transform: scale(1.05);
+        }
+        
+        .popular-badge {
+            background: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .price-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+        
+        .price-card .subtitle {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+        
+        .price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+        
+        .price-features {
+            list-style: none;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        .price-features li {
+            padding: 0.5rem 0;
+            color: #4b5563;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1f2937;
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+        
+        .footer h3 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+        
+        .footer p {
+            color: #9ca3af;
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            text-align: center;
+            color: #6b7280;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .price-card.popular {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">AHP for Paper</div>
+            <ul class="nav-links">
+                <li><a href="#features">기능 및 이용방법</a></li>
+                <li><a href="#guides">사용 가이드</a></li>
+                <li><a href="#pricing">요금제</a></li>
+                <li><a href="#news">소식 및 사례</a></li>
+                <li><a href="#contact">고객지원</a></li>
+            </ul>
+            <div class="auth-buttons">
+                <a href="public/login.html?t=20250114" class="btn btn-secondary">💻 로그인</a>
+                <a href="public/register.html" class="btn btn-primary">🌊 시작하기</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>AHP 전문 연구 분석 플랫폼</h1>
+            <p class="subtitle">논문 연구를 위한 AHP 분석 도구</p>
+            <p>체계적인 의사결정 분석으로 연구의 신뢰성을 높이고<br>논문에 바로 활용할 수 있는 결과를 얻으세요</p>
+            
+            <div class="hero-buttons">
+                <a href="public/register.html" class="btn btn-primary btn-large">연구 시작하기</a>
+                <a href="public/personal-service-enhanced.html" class="btn btn-secondary btn-large">🚀 데모 체험</a>
+                <a href="#guides" class="btn btn-secondary btn-large">사용 가이드</a>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-number">1,000+</span>
+                    <span class="stat-label">논문 활용</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">98%</span>
+                    <span class="stat-label">연구자 만족도</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>주요 기능</h2>
+                <p>연구에 필요한 모든 도구를 하나의 플랫폼에서 제공합니다</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🏗️</div>
+                    <h3>계층 구조 설계</h3>
+                    <p>목표-기준-대안의 체계적 구조화</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚖️</div>
+                    <h3>쌍대 비교 분석</h3>
+                    <p>1:1 비교를 통한 정량적 평가</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>결과 시각화</h3>
+                    <p>차트와 표로 명확한 결과 제시</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>협업 연구</h3>
+                    <p>다중 평가자 의견 수집 및 통합</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="process">
+        <div class="container">
+            <div class="section-title">
+                <h2>이용 방법</h2>
+                <p>3단계 간단한 프로세스로 전문적인 AHP 분석을 완성하세요</p>
+            </div>
+            <div class="process-grid">
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <h3>계층 구조 설계</h3>
+                    <p>연구 목표와 평가 기준, 대안을 체계적으로 구성합니다</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <h3>쌍대 비교</h3>
+                    <p>각 요소들을 1:1로 비교하여 상대적 중요도를 평가합니다</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <h3>결과 분석</h3>
+                    <p>우선순위와 일관성 비율을 확인하고 최적 대안을 도출합니다</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Guides Section -->
+    <section id="guides" class="guides">
+        <div class="container">
+            <div class="section-title">
+                <h2>사용 가이드</h2>
+                <p>수준별 맞춤 가이드로 AHP 분석을 완벽하게 마스터하세요</p>
+            </div>
+            <div class="guides-grid">
+                <div class="guide-card">
+                    <h3>초보자 가이드</h3>
+                    <p>AHP 기초부터 첫 프로젝트 완성까지</p>
+                    <ul class="guide-list">
+                        <li>→ AHP 방법론 이해</li>
+                        <li>→ 프로젝트 생성</li>
+                        <li>→ 기준과 대안 설정</li>
+                        <li>→ 쌍대비교 수행</li>
+                        <li>→ 결과 해석</li>
+                    </ul>
+                </div>
+                <div class="guide-card">
+                    <h3>실무 활용 가이드</h3>
+                    <p>연구 프로젝트 고급 기능 활용법</p>
+                    <ul class="guide-list">
+                        <li>→ 다중 평가자 관리</li>
+                        <li>→ 복잡한 계층구조</li>
+                        <li>→ 일관성 향상 기법</li>
+                        <li>→ 민감도 분석</li>
+                        <li>→ 보고서 작성</li>
+                    </ul>
+                </div>
+                <div class="guide-card">
+                    <h3>논문 작성 가이드</h3>
+                    <p>학술 논문에서의 AHP 활용법</p>
+                    <ul class="guide-list">
+                        <li>→ 연구방법론 서술</li>
+                        <li>→ 일관성 비율 보고</li>
+                        <li>→ 표와 그래프 작성</li>
+                        <li>→ 결과 해석 방법</li>
+                        <li>→ 참고문헌 인용</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Types Section -->
+    <section class="user-types">
+        <div class="container">
+            <div class="section-title">
+                <h2>역할에 맞는 서비스 이용하기</h2>
+            </div>
+            <div class="user-types-grid">
+                <div class="user-type-card">
+                    <h3>연구자 모드</h3>
+                    <p>프로젝트 생성, 기준 설정, 평가자 관리 등 연구 전체를 책임지는 관리자 역할</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="public/register.html?type=personal" class="btn">연구자 계정 가입</a>
+                        <a href="public/personal-service-enhanced.html" class="btn" style="background: rgba(255,255,255,0.3);">🚀 데모 체험</a>
+                    </div>
+                </div>
+                <div class="user-type-card">
+                    <h3>평가자 모드</h3>
+                    <p>배정받은 프로젝트의 쌍대비교를 수행하고 평가 데이터를 제공하는 역할</p>
+                    <a href="public/register.html?type=evaluator" class="btn">평가자 계정 가입</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <div class="section-title">
+                <h2>연구 규모에 맞는 요금제</h2>
+                <p>개인 연구자부터 대형 연구기관까지, 모든 연구 환경에 최적화된 플랜을 제공합니다</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <h3>Single Project Pack</h3>
+                    <p class="subtitle">단일 프로젝트용 (기본 연구자 모드)</p>
+                    <div class="price">₩200,000</div>
+                    <ul class="price-features">
+                        <li>사용 기간: 7일</li>
+                        <li>프로젝트 수: 1개</li>
+                        <li>평가자 인원: 30명</li>
+                        <li>대상: 대학원 논문, 단기 과제</li>
+                    </ul>
+                    <a href="public/register.html" class="btn btn-primary">기본 플랜 시작</a>
+                </div>
+                <div class="price-card popular">
+                    <div class="popular-badge">가장 인기</div>
+                    <h3>Team Project Pack</h3>
+                    <p class="subtitle">소규모 연구팀 단기 이용 (프로 연구자)</p>
+                    <div class="price">₩500,000</div>
+                    <ul class="price-features">
+                        <li>사용 기간: 15일</li>
+                        <li>프로젝트 수: 3개</li>
+                        <li>평가자 인원: 50명</li>
+                        <li>대상: 기업·기관 연구과제</li>
+                    </ul>
+                    <a href="public/register.html" class="btn btn-primary">프로 플랜 시작</a>
+                </div>
+                <div class="price-card">
+                    <h3>Institution Pack</h3>
+                    <p class="subtitle">기관 단위 단기 프로젝트</p>
+                    <div class="price">₩1,000,000</div>
+                    <ul class="price-features">
+                        <li>사용 기간: 1개월</li>
+                        <li>프로젝트 수: 3개</li>
+                        <li>평가자 인원: 100명</li>
+                        <li>대상: 공공기관·대규모 연구</li>
+                    </ul>
+                    <a href="public/register.html" class="btn btn-primary">연구기관 문의</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <h3>AHP for Paper</h3>
+            <p>한국직업능력개발센터</p>
+            <p>사업자등록번호: 601-45-20154</p>
+            <p>경기도 수원시 팔달구 매산로 45, 419호</p>
+            <p>대표이사: 이애본 | 통신판매신고: 제2024-수원팔달-0584호</p>
+            <p>고객지원: aebon@naver.com</p>
+            <p>전화: 010-3700-0629 (평일: 09:00 ~ 18:00)</p>
+            <p>카카오톡 상담 - ID: aebon</p>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 AHP for Paper. All rights reserved.</p>
+            <p>이 웹사이트의 모든 콘텐츠는 저작권법의 보호를 받습니다.</p>
+            <p>Last updated: 2024.08.31</p>
+        </div>
+    </footer>
+
+    <script src="public/scripts/api-service.js"></script>
+    <script>
+        // 홈페이지는 항상 표시 - 자동 리다이렉트 제거
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏠 AHP 홈페이지 로드 완료 - 자동 리다이렉트 비활성화');
+            
+            // 로그인 버튼 클릭 시 항상 로그인 페이지로 이동 (자동 리다이렉트 제거)
+            console.log('🔗 로그인 버튼 클릭 이벤트: 항상 로그인 페이지로 이동하도록 설정됨');
+        });
+
+        // 부드러운 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

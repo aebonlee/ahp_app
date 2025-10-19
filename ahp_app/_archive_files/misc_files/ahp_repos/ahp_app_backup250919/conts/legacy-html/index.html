@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP for Paper - 연구 논문을 위한 AHP 의사결정 분석</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent-primary: #C8A968;
+            --accent-secondary: #A98C4B;
+            --accent-light: #E5D5AA;
+            --accent-hover: #B59A4D;
+            --accent-primary-rgb: 200, 169, 104;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-subtle: #fafbfc;
+            --bg-elevated: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --border-medium: #d1d5db;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        /* 다크 모드 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-subtle: #0f172a;
+            --bg-elevated: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-light: #374151;
+            --border-medium: #4b5563;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 헤더 스타일 - AURI 스타일 적용 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            transition: all 0.3s;
+            background-color: transparent;
+        }
+
+        .header.scrolled {
+            backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 4rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: none;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-actions {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-light);
+            background: var(--bg-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        .divider {
+            width: 1px;
+            height: 1.5rem;
+            background-color: var(--border-light);
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-login {
+            color: var(--text-secondary);
+            background: none;
+        }
+
+        .btn-login:hover {
+            color: var(--accent-primary);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(var(--accent-primary-rgb), 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(var(--accent-primary-rgb), 0.4);
+        }
+
+        /* 모바일 메뉴 */
+        .mobile-menu-btn {
+            display: block;
+            width: 2rem;
+            height: 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        /* 히어로 섹션 */
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-subtle) 50%, var(--bg-secondary) 100%);
+        }
+
+        .hero-bg-effect {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .mouse-gradient {
+            position: absolute;
+            width: 24rem;
+            height: 24rem;
+            border-radius: 50%;
+            opacity: 0.2;
+            transition: all 1s ease-out;
+            background: radial-gradient(circle, var(--accent-primary) 0%, transparent 70%);
+            filter: blur(40px);
+            transform: translate(-50%, -50%);
+        }
+
+        .floating-element {
+            position: absolute;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .floating-circle-1 {
+            top: 15%;
+            left: 10%;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            opacity: 0.1;
+        }
+
+        .floating-square {
+            top: 25%;
+            right: 15%;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            background: linear-gradient(45deg, var(--accent-light), var(--accent-secondary));
+            opacity: 0.15;
+            animation-delay: -2s;
+        }
+
+        .floating-circle-2 {
+            bottom: 30%;
+            left: 15%;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--accent-light), var(--accent-primary));
+            opacity: 0.1;
+            animation-delay: -4s;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--border-light);
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+            margin-bottom: 2rem;
+        }
+
+        .badge-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title-accent {
+            color: var(--accent-primary);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            font-weight: 300;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            max-width: 64rem;
+            margin: 0 auto 3rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .btn-hero-primary {
+            padding: 1rem 3rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            background: var(--accent-primary);
+            color: white;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(var(--accent-primary-rgb), 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-hero-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(var(--accent-primary-rgb), 0.4);
+        }
+
+        .btn-hero-secondary {
+            padding: 1rem 3rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            border: 2px solid var(--border-medium);
+            border-radius: 0.75rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-hero-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        .arrow-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            transition: transform 0.3s;
+        }
+
+        .btn-hero-primary:hover .arrow-icon {
+            transform: translateX(4px);
+        }
+
+        /* 기능 섹션 */
+        .features-section {
+            padding: 5rem 1.5rem;
+            background: var(--bg-primary);
+        }
+
+        .section-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-desc {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* 가이드 섹션 */
+        .guide-section {
+            padding: 5rem 1.5rem;
+            background: var(--bg-secondary);
+        }
+
+        .guide-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .guide-step {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            position: relative;
+            border: 1px solid var(--border-light);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -1rem;
+            left: 2rem;
+            background: var(--accent-primary);
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* CTA 섹션 */
+        .cta-section {
+            padding: 5rem 1.5rem;
+            background: var(--accent-primary);
+            color: white;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .btn-cta {
+            background: white;
+            color: var(--accent-primary);
+            padding: 1rem 3rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 푸터 */
+        .footer {
+            background: var(--text-primary);
+            color: white;
+            padding: 3rem 1.5rem 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--accent-light);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section p, .footer-section a {
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-light);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            color: #9ca3af;
+        }
+
+        /* 반응형 디자인 */
+        @media (min-width: 768px) {
+            .nav-menu {
+                display: flex;
+            }
+            
+            .nav-actions {
+                display: flex;
+            }
+            
+            .mobile-menu-btn {
+                display: none;
+            }
+            
+            .hero-title {
+                font-size: 4rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.5rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: row;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .hero-title {
+                font-size: 5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header" id="header">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>AHP for Paper</h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-link" onclick="scrollToSection('features')">기능 및 이용방법</button>
+                <button class="nav-link" onclick="scrollToSection('guide')">사용 가이드</button>
+                <a href="/ahp_app/pricing.html" class="nav-link">요금제</a>
+                <a href="/ahp_app/news.html" class="nav-link">소식 및 사례</a>
+                <a href="/ahp_app/support.html" class="nav-link">고객지원</a>
+            </nav>
+            
+            <div class="nav-actions">
+                <div class="theme-controls">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="다크모드 전환">🌓</button>
+                    <button class="theme-toggle" onclick="toggleColorTheme()" title="컬러테마 변경">🎨</button>
+                </div>
+                <div class="divider"></div>
+                <a href="/ahp_app/login.html" class="btn btn-login">로그인</a>
+                <a href="/ahp_app/login.html" class="btn btn-primary">시작하기</a>
+            </div>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- 히어로 섹션 -->
+    <section class="hero-section">
+        <!-- 동적 배경 효과 -->
+        <div class="hero-bg-effect">
+            <div class="mouse-gradient" id="mouseGradient"></div>
+        </div>
+        
+        <!-- 플로팅 요소들 -->
+        <div class="floating-element floating-circle-1"></div>
+        <div class="floating-element floating-square"></div>
+        <div class="floating-element floating-circle-2"></div>
+        
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                AHP 전문 연구 분석 플랫폼
+            </div>
+            
+            <h1 class="hero-title">
+                논문 연구를 위한<br>
+                <span class="hero-title-accent">AHP 분석 도구</span>
+            </h1>
+            
+            <p class="hero-subtitle">
+                체계적인 의사결정 분석으로 연구의 신뢰성을 높이고<br>
+                논문에 바로 활용할 수 있는 결과를 얻으세요
+            </p>
+            
+            <div class="hero-buttons">
+                <a href="/ahp_app/login.html" class="btn-hero-primary">
+                    연구 시작하기
+                    <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </a>
+                <a href="#features" class="btn-hero-secondary">
+                    사용 가이드
+                </a>
+            </div>
+            
+            <!-- 통계 배지 -->
+            <div style="display: flex; justify-content: center; gap: 3rem; margin-top: 3rem; flex-wrap: wrap;">
+                <div style="text-align: center;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-primary);">1,000+</div>
+                    <div style="font-size: 1rem; color: var(--text-secondary);">논문 활용</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-primary);">98%</div>
+                    <div style="font-size: 1rem; color: var(--text-secondary);">연구자 만족도</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 기능 섹션 -->
+    <section id="features" class="features-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">주요 기능</h2>
+                <p class="section-subtitle">
+                    연구에 필요한 모든 도구를 하나의 플랫폼에서 제공합니다
+                </p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🏗️</div>
+                    <h3 class="feature-title">계층 구조 설계</h3>
+                    <p class="feature-desc">
+                        목표-기준-대안의 체계적 구조화
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚖️</div>
+                    <h3 class="feature-title">쌍대 비교 분석</h3>
+                    <p class="feature-desc">
+                        1:1 비교를 통한 정량적 평가
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">결과 시각화</h3>
+                    <p class="feature-desc">
+                        차트와 표로 명확한 결과 제시
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3 class="feature-title">협업 연구</h3>
+                    <p class="feature-desc">
+                        다중 평가자 의견 수집 및 통합
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 사용 가이드 섹션 -->
+    <section id="guide" class="guide-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">이용 방법</h2>
+                <p class="section-subtitle">
+                    3단계 간단한 프로세스로 전문적인 AHP 분석을 완성하세요
+                </p>
+            </div>
+            
+            <div class="guide-steps">
+                <div class="guide-step">
+                    <div class="step-number">1</div>
+                    <h3 class="feature-title">계층 구조 설계</h3>
+                    <p class="feature-desc">
+                        연구 목표와 평가 기준, 대안을 체계적으로 구성합니다
+                    </p>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">2</div>
+                    <h3 class="feature-title">쌍대 비교</h3>
+                    <p class="feature-desc">
+                        각 요소들을 1:1로 비교하여 상대적 중요도를 평가합니다
+                    </p>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">3</div>
+                    <h3 class="feature-title">결과 분석</h3>
+                    <p class="feature-desc">
+                        우선순위와 일관성 비율을 확인하고 최적 대안을 도출합니다
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA 섹션 -->
+    <section class="cta-section">
+        <div class="section-container">
+            <h2 class="cta-title">지금 바로 연구를 시작하세요</h2>
+            <p class="cta-subtitle">
+                전문적인 AHP 분석으로 연구의 품질을 높이세요
+            </p>
+            <a href="/ahp_app/login.html" class="btn-cta">가이드 안내</a>
+        </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>AHP for Paper</h3>
+                <p>한국직업능력개발센터</p>
+                <p>사업자등록번호: 601-45-20154</p>
+                <p>경기도 수원시 팔달구 매산로 45, 419호</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>연락처</h3>
+                <p>대표이사: 이애본</p>
+                <p>통신판매신고: 제2024-수원팔달-0584호</p>
+                <p>고객지원: aebon@naver.com</p>
+                <p>전화: 010-3700-0629 (평일: 09:00 ~ 18:00)</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>고객지원</h3>
+                <p>카카오톡 상담 - ID: aebon</p>
+                <a href="/ahp_app/support.html">이용약관</a>
+                <a href="/ahp_app/support.html">개인정보처리방침</a>
+                <a href="/ahp_app/support.html">환불정책</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3>정보</h3>
+                <p>© 2024 AHP for Paper. All rights reserved.</p>
+                <p>이 웹사이트의 모든 콘텐츠는 저작권법의 보호를 받습니다.</p>
+                <p>Last updated: 2024.08.31</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 헤더 스크롤 효과
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 10) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // 마우스 따라가는 그라디언트 효과
+        document.addEventListener('mousemove', function(e) {
+            const mouseGradient = document.getElementById('mouseGradient');
+            if (mouseGradient) {
+                mouseGradient.style.left = e.clientX + 'px';
+                mouseGradient.style.top = e.clientY + 'px';
+            }
+        });
+
+        // 부드러운 스크롤
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // 테마 토글 (기본 기능)
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            html.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
+        }
+
+        // 컬러 테마 변경
+        function toggleColorTheme() {
+            const themes = [
+                {
+                    name: 'default',
+                    primary: '#C8A968',
+                    secondary: '#A98C4B', 
+                    light: '#E5D5AA',
+                    hover: '#B59A4D'
+                },
+                {
+                    name: 'blue',
+                    primary: '#3B82F6',
+                    secondary: '#2563EB',
+                    light: '#DBEAFE', 
+                    hover: '#1D4ED8'
+                },
+                {
+                    name: 'green',
+                    primary: '#10B981',
+                    secondary: '#059669',
+                    light: '#D1FAE5',
+                    hover: '#047857'
+                },
+                {
+                    name: 'purple',
+                    primary: '#8B5CF6',
+                    secondary: '#7C3AED',
+                    light: '#EDE9FE',
+                    hover: '#6D28D9'
+                },
+                {
+                    name: 'rose',
+                    primary: '#F43F5E',
+                    secondary: '#E11D48',
+                    light: '#FFE4E6',
+                    hover: '#BE123C'
+                }
+            ];
+            
+            const currentTheme = localStorage.getItem('colorTheme') || 'default';
+            const currentIndex = themes.findIndex(t => t.name === currentTheme);
+            const nextIndex = (currentIndex + 1) % themes.length;
+            const nextTheme = themes[nextIndex];
+            
+            // CSS 변수 업데이트
+            const root = document.documentElement;
+            root.style.setProperty('--accent-primary', nextTheme.primary);
+            root.style.setProperty('--accent-secondary', nextTheme.secondary);
+            root.style.setProperty('--accent-light', nextTheme.light);
+            root.style.setProperty('--accent-hover', nextTheme.hover);
+            
+            // 테마 저장
+            localStorage.setItem('colorTheme', nextTheme.name);
+            
+            console.log(`컬러 테마 변경: ${nextTheme.name}`);
+        }
+
+        // 저장된 테마 적용
+        function loadSavedTheme() {
+            const themes = [
+                { name: 'default', primary: '#C8A968', secondary: '#A98C4B', light: '#E5D5AA', hover: '#B59A4D' },
+                { name: 'blue', primary: '#3B82F6', secondary: '#2563EB', light: '#DBEAFE', hover: '#1D4ED8' },
+                { name: 'green', primary: '#10B981', secondary: '#059669', light: '#D1FAE5', hover: '#047857' },
+                { name: 'purple', primary: '#8B5CF6', secondary: '#7C3AED', light: '#EDE9FE', hover: '#6D28D9' },
+                { name: 'rose', primary: '#F43F5E', secondary: '#E11D48', light: '#FFE4E6', hover: '#BE123C' }
+            ];
+            
+            const savedTheme = localStorage.getItem('colorTheme') || 'default';
+            const theme = themes.find(t => t.name === savedTheme);
+            
+            if (theme) {
+                const root = document.documentElement;
+                root.style.setProperty('--accent-primary', theme.primary);
+                root.style.setProperty('--accent-secondary', theme.secondary);
+                root.style.setProperty('--accent-light', theme.light);
+                root.style.setProperty('--accent-hover', theme.hover);
+            }
+        }
+
+        // 모바일 메뉴 토글
+        function toggleMobileMenu() {
+            // 모바일 메뉴 구현 (필요시)
+            console.log('모바일 메뉴 토글');
+        }
+
+        // 부드러운 스크롤 링크 처리
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 로그인 상태 확인 및 헤더 업데이트
+        function checkLoginStatusAndUpdateHeader() {
+            const token = localStorage.getItem('ahp_token');
+            const user = localStorage.getItem('ahp_user');
+            
+            if (token && user) {
+                try {
+                    const userData = JSON.parse(user);
+                    updateHeaderForLoggedInUser(userData);
+                } catch (error) {
+                    console.error('사용자 정보 파싱 오류:', error);
+                }
+            }
+        }
+        
+        // 로그인된 사용자를 위한 헤더 업데이트
+        function updateHeaderForLoggedInUser(userData) {
+            const navActions = document.querySelector('.nav-actions');
+            if (!navActions) return;
+            
+            // 기존 버튼들을 대시보드 및 사용자 정보로 교체
+            const dashboardUrl = userData.role === 'admin' 
+                ? '/ahp_app/super-admin-dashboard.html'
+                : '/ahp_app/personal-service-enhanced.html';
+            
+            navActions.innerHTML = `
+                <div class="theme-controls">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="다크모드 전환">🌓</button>
+                    <button class="theme-toggle" onclick="toggleColorTheme()" title="컬러테마 변경">🎨</button>
+                </div>
+                <div class="divider"></div>
+                <span class="nav-link" style="color: var(--text-primary); font-weight: 500;">안녕하세요, ${userData.name}님</span>
+                <a href="${dashboardUrl}" class="btn btn-primary">대시보드</a>
+                <button onclick="handleLogout()" class="btn btn-login">로그아웃</button>
+            `;
+            
+            console.log(`👋 로그인된 사용자: ${userData.name} (${userData.role})`);
+        }
+        
+        // 로그아웃 처리
+        function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                localStorage.removeItem('ahp_user');
+                localStorage.removeItem('ahp_token');
+                localStorage.removeItem('login_method');
+                location.reload(); // 페이지 새로고침으로 헤더 복원
+            }
+        }
+
+        // 페이지 로드 시 저장된 테마 적용
+        loadSavedTheme();
+        
+        // 로그인 상태 확인 및 헤더 업데이트
+        checkLoginStatusAndUpdateHeader();
+        
+        console.log('✅ AHP for Paper 홈페이지 로드 완료');
+    </script>
+</body>
+</html>

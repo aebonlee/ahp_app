@@ -1,0 +1,38 @@
+name: React Frontend CI
+
+on:
+  push:
+    branches: [ main, chore/repository-organization ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  frontend-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+        
+    - name: Run ESLint
+      run: npm run lint --max-warnings=300
+        
+    - name: Run TypeScript check
+      run: npm run build
+      
+    - name: Run tests (if available)
+      run: |
+        if npm run test --help > /dev/null 2>&1; then
+          npm run test -- --watchAll=false --coverage
+        else
+          echo "No tests configured, skipping"
+        fi

@@ -49,6 +49,10 @@ ahp-platform_0908/
 ahp_build/
 backupdata/
 
+# Organized folders with embedded git repositories
+_organized/repositories/ahp_app_251014/
+ahp_app/.git/
+
 # Testing
 coverage/
 .coverage

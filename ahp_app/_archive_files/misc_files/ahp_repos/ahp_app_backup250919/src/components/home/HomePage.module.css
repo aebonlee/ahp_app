@@ -1,0 +1,488 @@
+/* HomePage Specific Styles - 완전한 스타일 정의 */
+
+.homeContainer {
+  min-height: 100vh;
+  width: 100%;
+  background: #ffffff;
+  color: #1f2937;
+  position: relative;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Header Styles */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.headerScrolled {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.headerTransparent {
+  background: transparent;
+}
+
+.headerContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4rem;
+  width: 100%;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: linear-gradient(to right, #C8A968, #A98C4B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+}
+
+.navLink {
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s;
+  font-size: 1rem;
+}
+
+.navLink:hover {
+  color: #C8A968;
+}
+
+.headerButtons {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .headerButtons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.loginButton {
+  padding: 0.5rem 1.25rem;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.loginButton:hover {
+  color: #C8A968;
+}
+
+.ctaButton {
+  padding: 0.625rem 1.5rem;
+  background: #C8A968;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ctaButton:hover {
+  background: #B59A4D;
+  transform: scale(1.05);
+}
+
+/* Hero Section */
+.heroSection {
+  padding: 6rem 1.5rem 5rem;
+  position: relative;
+  width: 100%;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  overflow: hidden;
+}
+
+.heroBackground {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, rgba(249, 250, 251, 0.6), rgba(255, 255, 255, 0.4), rgba(243, 244, 246, 0.6));
+}
+
+.heroContent {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  text-align: center;
+  z-index: 10;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: #E5D5AA;
+  color: #C8A968;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  color: #1f2937;
+}
+
+@media (min-width: 768px) {
+  .heroTitle {
+    font-size: 4rem;
+  }
+}
+
+.heroHighlight {
+  background: linear-gradient(to right, #C8A968, #A98C4B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  color: #6b7280;
+  margin-bottom: 2.5rem;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.heroButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .heroButtons {
+    flex-direction: row;
+  }
+}
+
+.primaryButton {
+  padding: 1rem 2rem;
+  background: #C8A968;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.primaryButton:hover {
+  background: #B59A4D;
+  transform: scale(1.05);
+}
+
+.secondaryButton {
+  padding: 1rem 2rem;
+  background: white;
+  color: #1f2937;
+  border: 2px solid #d1d5db;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.secondaryButton:hover {
+  background: #f9fafb;
+}
+
+/* Features Section */
+.featuresSection {
+  padding: 5rem 1.5rem;
+  width: 100%;
+  background: #f9fafb;
+}
+
+.featuresContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.sectionSubtitle {
+  font-size: 1.25rem;
+  color: #6b7280;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .featuresGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.featureCard {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s;
+}
+
+.featureCard:hover {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+}
+
+.featureIcon {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: #E5D5AA;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  color: #C8A968;
+}
+
+.featureTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  color: #1f2937;
+}
+
+.featureDescription {
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+/* Process Section */
+.processSection {
+  padding: 5rem 1.5rem;
+  width: 100%;
+  background: white;
+}
+
+.processContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.processGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .processGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.processStep {
+  text-align: center;
+  position: relative;
+}
+
+.stepNumber {
+  width: 4rem;
+  height: 4rem;
+  background: #C8A968;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0 auto 1rem;
+}
+
+.stepTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  color: #1f2937;
+}
+
+.stepDescription {
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* CTA Section */
+.ctaSection {
+  padding: 5rem 1.5rem;
+  width: 100%;
+  background: linear-gradient(to right, #C8A968, #A98C4B);
+  text-align: center;
+}
+
+.ctaContainer {
+  max-width: 1024px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.ctaSubtitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2rem;
+}
+
+.ctaButtonWhite {
+  padding: 1rem 2.5rem;
+  background: white;
+  color: #C8A968;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.ctaButtonWhite:hover {
+  background: #f9fafb;
+  transform: scale(1.05);
+}
+
+/* Mobile Menu */
+.mobileMenuButton {
+  display: block;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .mobileMenuButton {
+    display: none;
+  }
+}
+
+.mobileMenu {
+  position: fixed;
+  top: 4rem;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 1.5rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  z-index: 40;
+}
+
+.mobileNavLink {
+  display: block;
+  padding: 0.75rem 0;
+  color: #6b7280;
+  text-decoration: none;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mobileNavLink:hover {
+  color: #C8A968;
+}
+
+/* Scroll to Top Button */
+.scrollToTop {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3rem;
+  height: 3rem;
+  background: #C8A968;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  z-index: 40;
+}
+
+.scrollToTop:hover {
+  background: #B59A4D;
+  transform: translateY(-2px);
+}
+
+.scrollToTop.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(1rem);
+}

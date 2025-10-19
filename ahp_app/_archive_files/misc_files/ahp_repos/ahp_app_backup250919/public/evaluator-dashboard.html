@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP System - 평가자 대시보드</title>
+    <link rel="stylesheet" href="styles/layout.css">
+    <style>
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            background-color: var(--bg-secondary);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .evaluation-list {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .evaluation-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .evaluation-item:last-child {
+            border-bottom: none;
+        }
+
+        .evaluation-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .evaluation-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .evaluation-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-in-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <span id="toggle-icon">◀</span>
+            </button>
+            <div class="header-logo">
+                <span class="logo-icon">A</span>
+                <span class="logo-text">AHP System</span>
+                <span class="header-subtitle">평가자</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <nav class="header-nav">
+                <a href="./public/evaluator-dashboard.html" class="nav-item active">평가자</a>
+                <a href="./public/personal-service-enhanced.html" class="nav-item">개인서비스</a>
+                <a href="#" class="nav-item" onclick="alert('프로젝트 페이지는 준비 중입니다.'); return false;">프로젝트</a>
+                <a href="#" class="nav-item" onclick="alert('도움말 페이지는 준비 중입니다.'); return false;">도움말</a>
+            </nav>
+        </div>
+        
+        <div class="header-right">
+            <div class="header-notifications">
+                <button class="notification-btn">
+                    <span>🔔</span>
+                    <span class="notification-badge">2</span>
+                </button>
+            </div>
+            <div class="header-user">
+                <div class="user-avatar">👤</div>
+                <div class="user-info">
+                    <div class="user-name">평가자</div>
+                    <div class="user-role">Evaluator</div>
+                </div>
+                <button class="user-menu-btn" onclick="handleLogout()">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 사이드바 -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <!-- 평가자 메뉴 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">평가 관리</div>
+                <div class="sidebar-item active" onclick="loadContent('dashboard')">
+                    <span class="sidebar-icon">🏠</span>
+                    <span class="sidebar-text">대시보드</span>
+                </div>
+                <div class="sidebar-item" onclick="loadContent('assigned-projects')">
+                    <span class="sidebar-icon">📋</span>
+                    <span class="sidebar-text">할당된 프로젝트</span>
+                </div>
+                <div class="sidebar-item" onclick="loadContent('evaluations')">
+                    <span class="sidebar-icon">✍️</span>
+                    <span class="sidebar-text">평가 수행</span>
+                </div>
+                <div class="sidebar-item" onclick="loadContent('history')">
+                    <span class="sidebar-icon">📊</span>
+                    <span class="sidebar-text">평가 이력</span>
+                </div>
+            </div>
+
+            <!-- 분석 도구 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">분석 도구</div>
+                <div class="sidebar-item" onclick="loadContent('comparison')">
+                    <span class="sidebar-icon">⚖️</span>
+                    <span class="sidebar-text">쌍대 비교</span>
+                </div>
+                <div class="sidebar-item" onclick="loadContent('consistency')">
+                    <span class="sidebar-icon">✅</span>
+                    <span class="sidebar-text">일관성 검사</span>
+                </div>
+                <div class="sidebar-item" onclick="loadContent('results')">
+                    <span class="sidebar-icon">📈</span>
+                    <span class="sidebar-text">결과 분석</span>
+                </div>
+            </div>
+
+            <!-- 설정 -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">설정</div>
+                <div class="sidebar-item" onclick="loadContent('profile')">
+                    <span class="sidebar-icon">👤</span>
+                    <span class="sidebar-text">프로필</span>
+                </div>
+                <div class="sidebar-item" onclick="loadContent('settings')">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span class="sidebar-text">설정</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <!-- 대시보드 통계 -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>📋</span> 할당된 프로젝트
+                    </div>
+                </div>
+                <div class="card-value">5</div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                    진행 중인 평가
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>✅</span> 완료된 평가
+                    </div>
+                </div>
+                <div class="card-value">23</div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                    이번 달 완료
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>⏰</span> 대기 중
+                    </div>
+                </div>
+                <div class="card-value">2</div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                    평가 대기
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>📊</span> 일관성 비율
+                    </div>
+                </div>
+                <div class="card-value">0.08</div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                    평균 일관성
+                </div>
+            </div>
+        </div>
+
+        <!-- 최근 평가 목록 -->
+        <div class="evaluation-list">
+            <h2 style="margin-bottom: 1.5rem; color: var(--text-primary);">진행 중인 평가</h2>
+            
+            <div class="evaluation-item">
+                <div>
+                    <div class="evaluation-title">신제품 개발 우선순위 분석</div>
+                    <div class="evaluation-meta">프로젝트 관리자: 김철수 | 마감일: 2025-01-20</div>
+                </div>
+                <span class="evaluation-status status-in-progress">진행 중</span>
+            </div>
+
+            <div class="evaluation-item">
+                <div>
+                    <div class="evaluation-title">공급업체 선정 평가</div>
+                    <div class="evaluation-meta">프로젝트 관리자: 이영희 | 마감일: 2025-01-22</div>
+                </div>
+                <span class="evaluation-status status-pending">대기 중</span>
+            </div>
+
+            <div class="evaluation-item">
+                <div>
+                    <div class="evaluation-title">투자 우선순위 결정</div>
+                    <div class="evaluation-meta">프로젝트 관리자: 박민수 | 완료일: 2025-01-12</div>
+                </div>
+                <span class="evaluation-status status-completed">완료</span>
+            </div>
+        </div>
+    </main>
+
+    <script src="scripts/api-service.js"></script>
+    <script src="scripts/layout.js"></script>
+    <script>
+        // 로딩 상태 표시 함수
+        function showLoadingState() {
+            document.body.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                           background: white; z-index: 9999; display: flex; 
+                           align-items: center; justify-content: center; flex-direction: column;">
+                    <div style="text-align: center;">
+                        <div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; 
+                                   border-top: 4px solid #2563eb; border-radius: 50%; 
+                                   animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                        <h2 style="color: #2563eb; margin: 0; font-family: Arial, sans-serif;">AHP 시스템 로딩 중...</h2>
+                        <p style="color: #666; margin: 10px 0 0; font-family: Arial, sans-serif;">평가자 대시보드를 준비하고 있습니다.</p>
+                    </div>
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                </div>
+            `;
+        }
+
+        // 인증 오류 상태 표시 함수
+        function showAuthErrorState(message, redirectUrl) {
+            document.body.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                           background: white; z-index: 9999; display: flex; 
+                           align-items: center; justify-content: center; flex-direction: column;">
+                    <div style="text-align: center; max-width: 400px; padding: 2rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">🔒</div>
+                        <h2 style="color: #dc2626; margin: 0 0 1rem; font-family: Arial, sans-serif;">${message}</h2>
+                        <p style="color: #666; margin: 0 0 2rem; font-family: Arial, sans-serif;">
+                            로그인이 필요한 페이지입니다. 로그인 페이지로 이동합니다.
+                        </p>
+                        <button onclick="window.location.href='${redirectUrl}'" 
+                                style="background: #2563eb; color: white; border: none; 
+                                       padding: 12px 24px; border-radius: 6px; cursor: pointer; 
+                                       font-size: 16px; font-family: Arial, sans-serif;">
+                            로그인 하기
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // 3초 후 자동 리다이렉트
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 3000);
+        }
+
+        // 페이지 초기화
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🛡️ 평가자 대시보드 초기화 시작');
+            
+            // 로딩 상태 표시
+            showLoadingState();
+            
+            // 사용자 정보 캐싱 초기화
+            window.currentUser = null;
+            window.sessionChecked = false;
+            
+            // API 서비스 로드 대기
+            let apiLoadAttempts = 0;
+            while (typeof window.ahpApi === 'undefined' && apiLoadAttempts < 10) {
+                console.log('⏳ API 서비스 로드 대기 중...');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                apiLoadAttempts++;
+            }
+            
+            if (typeof window.ahpApi === 'undefined') {
+                console.error('❌ API 서비스 로드 실패');
+                showAuthErrorState('시스템 초기화 실패', '/ahp_app/public/login.html');
+                return;
+            }
+            
+            // 로그인 상태 확인
+            try {
+                const response = await window.ahpApi.getCurrentUser();
+                
+                if (!response || !response.success || !response.user) {
+                    console.error('❌ 로그인되지 않음 - 즉시 차단');
+                    showAuthErrorState('로그인이 필요합니다', '/ahp_app/public/login.html');
+                    return;
+                }
+                
+                // 평가자 권한 확인
+                if (response.user.user_type !== 'evaluator' && response.user.role !== 'admin' && !response.user.is_superuser) {
+                    console.error('❌ 평가자 권한 없음');
+                    showAuthErrorState('평가자 권한이 필요합니다', '/ahp_app/public/personal-service-enhanced.html');
+                    return;
+                }
+                
+                window.currentUser = response.user;
+                console.log('✅ 인증 성공 - 평가자 대시보드 표시');
+                
+                // 페이지를 다시 로드하여 올바른 콘텐츠 표시
+                window.location.reload();
+                
+            } catch (error) {
+                console.error('❌ 인증 확인 실패:', error);
+                showAuthErrorState('인증 확인에 실패했습니다', '/ahp_app/public/login.html');
+                return;
+            }
+        });
+
+        // 사이드바 토글
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+                toggleIcon.textContent = '◀';
+            } else {
+                sidebar.classList.add('collapsed');
+                toggleIcon.textContent = '▶';
+            }
+        }
+
+        // 콘텐츠 로딩 함수
+        function loadContent(contentType) {
+            // 로그인 체크
+            if (!window.currentUser) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/ahp_app/public/login.html';
+                return;
+            }
+            
+            const mainContent = document.querySelector('.main-content');
+            
+            // 활성 메뉴 표시
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // 콘텐츠 타입별 처리
+            switch(contentType) {
+                case 'dashboard':
+                    window.location.reload();
+                    break;
+                default:
+                    mainContent.innerHTML = `
+                        <div style="text-align: center; padding: 4rem;">
+                            <h2>${contentType} 페이지</h2>
+                            <p style="color: var(--text-secondary); margin-top: 1rem;">
+                                이 페이지는 현재 개발 중입니다.
+                            </p>
+                        </div>
+                    `;
+            }
+        }
+
+        // 로그아웃
+        async function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                try {
+                    await window.ahpApi.logout();
+                    window.location.href = '/ahp_app/public/login.html?message=logout';
+                } catch (error) {
+                    console.error('로그아웃 오류:', error);
+                    window.location.href = '/ahp_app/public/login.html';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
