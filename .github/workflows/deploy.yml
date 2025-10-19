@@ -36,29 +36,42 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
+        
+    - name: Check React app directory
+      run: |
+        if [ -d "ahp_app" ]; then
+          echo "React app found in ahp_app directory"
+          echo "REACT_DIR=ahp_app" >> $GITHUB_ENV
+        elif [ -f "package.json" ]; then
+          echo "React app found in root directory"
+          echo "REACT_DIR=." >> $GITHUB_ENV
+        else
+          echo "No React app found"
+          exit 1
+        fi
         
     - name: Install dependencies
       run: |
+        cd $REACT_DIR
         echo "🔧 Installing dependencies..."
-        npm ci --legacy-peer-deps
-      working-directory: ahp_app
+        npm install
       
     - name: Quick test (optional)
       if: ${{ !inputs.skip_tests }}
       run: |
+        cd $REACT_DIR
         echo "🧪 Running quick tests..."
         npm test -- --coverage --watchAll=false --testTimeout=5000 --maxWorkers=2 --passWithNoTests
-      working-directory: ahp_app
       continue-on-error: true
       env:
         CI: true
         
     - name: Build application
       run: |
+        cd $REACT_DIR
         echo "🏗️ Building application..."
         npm run build
-      working-directory: ahp_app
       env:
         CI: false
         PUBLIC_URL: /ahp_app
@@ -67,6 +80,7 @@ jobs:
         
     - name: Verify build
       run: |
+        cd $REACT_DIR
         if [ -d "build" ]; then 
           echo "✅ Build completed successfully"
           echo "📊 Build stats:"
@@ -77,7 +91,6 @@ jobs:
           echo "❌ Build failed"
           exit 1
         fi
-      working-directory: ahp_app
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
@@ -85,7 +98,7 @@ jobs:
     - name: Upload to GitHub Pages
       uses: actions/upload-pages-artifact@v4
       with:
-        path: ./ahp_app/build
+        path: ./${{ env.REACT_DIR }}/build
         
     - name: Deploy to GitHub Pages
       id: deployment
