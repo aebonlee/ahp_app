@@ -21,15 +21,12 @@ jobs:
         
     - name: Install dependencies
       run: npm ci
-      working-directory: ahp_app
         
     - name: Run ESLint
       run: npm run lint
-      working-directory: ahp_app
         
     - name: Run TypeScript check
       run: npm run build
-      working-directory: ahp_app
       env:
         CI: false
       
@@ -40,4 +37,3 @@ jobs:
         else
           echo "No tests configured, skipping"
         fi
-      working-directory: ahp_app
