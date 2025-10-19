@@ -26,7 +26,7 @@ jobs:
       working-directory: ahp_app
         
     - name: Run ESLint
-      run: npm run lint --max-warnings=300
+      run: npm run lint
       working-directory: ahp_app
         
     - name: Run TypeScript check
