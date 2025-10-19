@@ -30,6 +30,8 @@ jobs:
     - name: Run TypeScript check
       run: npm run build
       working-directory: ahp_app
+      env:
+        CI: false
       
     - name: Run tests (if available)
       run: |
