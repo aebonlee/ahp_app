@@ -4,7 +4,8 @@
 
 전문가급 의사결정 지원을 위한 현대적이고 확장 가능한 웹 애플리케이션
 
-**시스템 상태**: ✅ **완전 가동 중** | **종합 평가**: 88/100점
+**시스템 상태**: ✅ **완전 가동 중** | **종합 평가**: 90/100점  
+**최근 업데이트**: 2025-10-19 - 계층구조 문제 완전 해결 및 저장소 정리
 
 [![Deploy Status](https://img.shields.io/badge/deploy-success-brightgreen)](https://aebonlee.github.io/ahp_app/)
 [![Backend Status](https://img.shields.io/badge/backend-online-brightgreen)](https://ahp-django-backend.onrender.com)
@@ -124,27 +125,56 @@ python manage.py runserver  # http://localhost:8000
 
 ---
 
-## 📂 주요 디렉토리 설명
+## 📂 프로젝트 구조 (2025-10-19 정리 완료)
 
-### **프론트엔드 (`ahp-frontend-clean/src/`)**
+### **✅ 메인 개발 폴더 (루트)**
+```
+📁 ahp/
+├── 📂 ahp_app/                 # 🚀 메인 프론트엔드 리포지토리
+├── 📂 ahp-django-service-repo/ # 🚀 메인 백엔드 리포지토리  
+├── 📂 Dev_md/                  # 📝 개발 일지 (최신 50+ 문서)
+├── 📄 CLAUDE.md                # 🎯 프로젝트 마스터 가이드
+├── 📄 README.md                # 📖 이 파일
+└── 📄 DEPLOYMENT_GUIDE.md      # 🚀 배포 가이드
+```
+
+### **🗂️ 정리된 아카이브 (_organized/)**
+```
+📁 _organized/
+├── 📂 repositories/     # 백업 리포지토리들
+│   ├── ahp-django-security-backup/  # 백엔드 보안 백업
+│   ├── ahp_app_251014/             # 10월 14일 프론트엔드 백업
+│   └── ahp_repos/                  # 기타 리포지토리 백업
+├── 📂 documentation/    # 과거 문서들
+│   ├── _documentation/             # 기존 문서 폴더
+│   └── DevDocs/                    # 개발 문서들
+├── 📂 archives/         # 아카이브 파일들
+│   ├── _archive/                   # 기존 아카이브
+│   └── _cleanup/                   # 정리용 파일들
+├── 📂 backups/          # 백업 파일들
+├── 📂 scripts/          # 정리용 스크립트들
+└── 📂 temp_files/       # 임시 파일들
+```
+
+### **🎯 메인 프론트엔드 구조 (ahp_app/src/)**
 ```
 src/
-├── components/           # React 컴포넌트 (50+ 컴포넌트)
-│   ├── admin/           # 관리자 대시보드 & 프로젝트 관리
-│   ├── evaluator/       # 평가자 인터페이스 & 워크플로우
-│   ├── comparison/      # AHP 쌍대비교 로직
-│   ├── results/         # 결과 분석 & 시각화
-│   ├── ai-*/           # AI 기반 분석 도구들
-│   ├── auth/           # 인증 & 사용자 관리
-│   └── common/         # 재사용 가능한 UI 컴포넌트
-├── services/           # API 통신 & 데이터 서비스
-├── utils/              # AHP 계산 & 유틸리티
-├── types/              # TypeScript 타입 정의
-├── hooks/              # 커스텀 React Hooks
-└── config/             # 설정 파일 (API, 환경변수)
+├── components/          # React 컴포넌트 (50+ 컴포넌트)
+│   ├── admin/          # 관리자 대시보드 & 프로젝트 관리
+│   ├── evaluator/      # 평가자 인터페이스 & 워크플로우
+│   ├── comparison/     # AHP 쌍대비교 로직
+│   ├── results/        # 결과 분석 & 시각화
+│   ├── ai-*/          # AI 기반 분석 도구들
+│   ├── auth/          # 인증 & 사용자 관리
+│   └── common/        # 재사용 가능한 UI 컴포넌트
+├── services/          # API 통신 & 데이터 서비스
+├── utils/             # AHP 계산 & 유틸리티 (UUID 포함)
+├── types/             # TypeScript 타입 정의
+├── hooks/             # 커스텀 React Hooks
+└── config/            # 설정 파일 (API, 환경변수)
 ```
 
-### **백엔드 (`ahp-django-service/apps/`)**
+### **🔧 메인 백엔드 구조 (ahp-django-service-repo/apps/)**
 ```
 apps/
 ├── accounts/           # 사용자 관리 & JWT 인증

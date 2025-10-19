@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criteria API 테스트</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            padding: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto;
+        }
+        .test-section {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>PostgreSQL DB Criteria API 테스트</h1>
+    
+    <div class="test-section">
+        <h2>1. 프로젝트 목록 조회</h2>
+        <div id="projects-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 기준 생성 테스트</h2>
+        <div id="criteria-create-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 기준 목록 조회</h2>
+        <div id="criteria-list-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://ahp-django-backend.onrender.com';
+        let testProjectId = null;
+
+        async function testAPI() {
+            // 1. 프로젝트 목록 조회
+            const projectsDiv = document.getElementById('projects-result');
+            projectsDiv.innerHTML = '<p class="info">프로젝트 조회 중...</p>';
+            
+            try {
+                const projectsResponse = await fetch(`${API_BASE}/api/service/projects/projects/`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (projectsResponse.ok) {
+                    const projectsData = await projectsResponse.json();
+                    projectsDiv.innerHTML = `
+                        <p class="success">✅ 프로젝트 조회 성공</p>
+                        <pre>${JSON.stringify(projectsData, null, 2)}</pre>
+                    `;
+                    
+                    // 첫 번째 프로젝트 ID 저장
+                    if (projectsData.results && projectsData.results.length > 0) {
+                        testProjectId = projectsData.results[0].id;
+                        console.log('테스트용 프로젝트 ID:', testProjectId);
+                    }
+                } else {
+                    projectsDiv.innerHTML = `<p class="error">❌ 프로젝트 조회 실패: ${projectsResponse.status}</p>`;
+                }
+            } catch (error) {
+                projectsDiv.innerHTML = `<p class="error">❌ 오류: ${error.message}</p>`;
+            }
+            
+            // 프로젝트 ID가 있으면 기준 테스트 진행
+            if (testProjectId) {
+                await testCriteriaCreation(testProjectId);
+                await testCriteriaList(testProjectId);
+            }
+        }
+        
+        async function testCriteriaCreation(projectId) {
+            const createDiv = document.getElementById('criteria-create-result');
+            createDiv.innerHTML = '<p class="info">기준 생성 테스트 중...</p>';
+            
+            // 테스트 1: 일반 엔드포인트
+            const test1Data = {
+                project: projectId,
+                name: `Test Criteria ${Date.now()}`,
+                description: 'PostgreSQL DB 테스트',
+                type: 'criteria',
+                parent: null,
+                order: 0,
+                level: 1,
+                weight: 0,
+                is_active: true
+            };
+            
+            try {
+                let results = [];
+                
+                // 방법 1: /api/service/projects/criteria/
+                console.log('방법 1 시도:', '/api/service/projects/criteria/');
+                const response1 = await fetch(`${API_BASE}/api/service/projects/criteria/`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(test1Data)
+                });
+                results.push({
+                    method: '방법 1: /api/service/projects/criteria/',
+                    status: response1.status,
+                    ok: response1.ok,
+                    data: response1.ok ? await response1.json() : await response1.text()
+                });
+                
+                // 방법 2: nested route
+                console.log('방법 2 시도:', `/api/service/projects/projects/${projectId}/criteria/`);
+                const test2Data = {
+                    name: `Test Criteria 2 ${Date.now()}`,
+                    description: 'Nested route test',
+                    type: 'criteria',
+                    parent: null,
+                    order: 0,
+                    level: 1,
+                    weight: 0
+                };
+                
+                const response2 = await fetch(`${API_BASE}/api/service/projects/projects/${projectId}/criteria/`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(test2Data)
+                });
+                results.push({
+                    method: `방법 2: /api/service/projects/projects/${projectId}/criteria/`,
+                    status: response2.status,
+                    ok: response2.ok,
+                    data: response2.ok ? await response2.json() : await response2.text()
+                });
+                
+                // 방법 3: nested route + project field
+                console.log('방법 3 시도: nested + project field');
+                const test3Data = {
+                    project: projectId,
+                    name: `Test Criteria 3 ${Date.now()}`,
+                    description: 'Nested + project field test',
+                    type: 'criteria',
+                    parent: null,
+                    order: 0,
+                    level: 1,
+                    weight: 0
+                };
+                
+                const response3 = await fetch(`${API_BASE}/api/service/projects/projects/${projectId}/criteria/`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(test3Data)
+                });
+                results.push({
+                    method: '방법 3: nested + project field',
+                    status: response3.status,
+                    ok: response3.ok,
+                    data: response3.ok ? await response3.json() : await response3.text()
+                });
+                
+                // 결과 표시
+                let html = '<h3>테스트 결과:</h3>';
+                results.forEach(result => {
+                    const statusClass = result.ok ? 'success' : 'error';
+                    const icon = result.ok ? '✅' : '❌';
+                    html += `
+                        <div style="margin: 10px 0;">
+                            <p class="${statusClass}">${icon} ${result.method}</p>
+                            <p>Status: ${result.status}</p>
+                            <pre>${typeof result.data === 'object' ? JSON.stringify(result.data, null, 2) : result.data}</pre>
+                        </div>
+                    `;
+                });
+                
+                createDiv.innerHTML = html;
+                
+            } catch (error) {
+                createDiv.innerHTML = `<p class="error">❌ 테스트 오류: ${error.message}</p>`;
+            }
+        }
+        
+        async function testCriteriaList(projectId) {
+            const listDiv = document.getElementById('criteria-list-result');
+            listDiv.innerHTML = '<p class="info">기준 목록 조회 중...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/service/projects/projects/${projectId}/criteria/`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    listDiv.innerHTML = `
+                        <p class="success">✅ 기준 목록 조회 성공</p>
+                        <p>총 ${Array.isArray(data) ? data.length : data.results?.length || 0}개의 기준</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    listDiv.innerHTML = `<p class="error">❌ 기준 조회 실패: ${response.status}</p>`;
+                }
+            } catch (error) {
+                listDiv.innerHTML = `<p class="error">❌ 오류: ${error.message}</p>`;
+            }
+        }
+        
+        // 페이지 로드 시 자동 테스트
+        window.onload = testAPI;
+    </script>
+</body>
+</html>

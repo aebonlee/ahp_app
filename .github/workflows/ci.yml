@@ -1,0 +1,43 @@
+name: React Frontend CI
+
+on:
+  push:
+    branches: [ main, fix/ci-cd-pipeline ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  frontend-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'ahp_app/package-lock.json'
+        
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ahp_app
+        
+    - name: Run ESLint
+      run: npm run lint --max-warnings=300
+      working-directory: ahp_app
+        
+    - name: Run TypeScript check
+      run: npm run build
+      working-directory: ahp_app
+      
+    - name: Run tests (if available)
+      run: |
+        if npm run test --help > /dev/null 2>&1; then
+          npm run test -- --watchAll=false --coverage
+        else
+          echo "No tests configured, skipping"
+        fi
+      working-directory: ahp_app

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모든 API 엔드포인트 테스트</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .endpoint { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        pre { overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Django API 엔드포인트 탐색</h1>
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'https://ahp-django-backend.onrender.com';
+        const endpoints = [
+            // Root endpoints
+            { method: 'GET', url: '/api/', name: 'API Root' },
+            { method: 'GET', url: '/api/service/', name: 'Service API Root' },
+            { method: 'GET', url: '/api/service/projects/', name: 'Projects Root' },
+            
+            // Criteria endpoints - various possibilities
+            { method: 'GET', url: '/api/criteria/', name: 'Criteria List (root)' },
+            { method: 'POST', url: '/api/criteria/', name: 'Criteria Create (root)' },
+            { method: 'GET', url: '/api/service/criteria/', name: 'Service Criteria List' },
+            { method: 'POST', url: '/api/service/criteria/', name: 'Service Criteria Create' },
+            { method: 'GET', url: '/api/service/projects/criteria/', name: 'Projects Criteria List' },
+            { method: 'POST', url: '/api/service/projects/criteria/', name: 'Projects Criteria Create' },
+            
+            // DRF browsable API
+            { method: 'GET', url: '/api/service/projects/api/', name: 'DRF Browsable API' },
+            { method: 'OPTIONS', url: '/api/service/projects/criteria/', name: 'Criteria OPTIONS' },
+            
+            // Project-specific criteria endpoints
+            { method: 'GET', url: '/api/service/projects/projects/', name: 'Projects List' },
+        ];
+
+        async function testEndpoints() {
+            const resultsDiv = document.getElementById('results');
+            let html = '';
+            
+            // First get a project ID
+            let projectId = null;
+            try {
+                const projectsResp = await fetch(`${API_BASE}/api/service/projects/projects/`);
+                if (projectsResp.ok) {
+                    const projectsData = await projectsResp.json();
+                    if (projectsData.results && projectsData.results[0]) {
+                        projectId = projectsData.results[0].id;
+                        html += `<div class="endpoint success">
+                            <h3>✅ Found Project ID: ${projectId}</h3>
+                        </div>`;
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to get project ID:', e);
+            }
+            
+            // Add project-specific endpoints if we have a project ID
+            if (projectId) {
+                endpoints.push(
+                    { method: 'GET', url: `/api/service/projects/projects/${projectId}/`, name: 'Project Detail' },
+                    { method: 'GET', url: `/api/service/projects/projects/${projectId}/criteria/`, name: 'Project Criteria List' },
+                    { method: 'POST', url: `/api/service/projects/projects/${projectId}/criteria/`, name: 'Project Criteria Create' },
+                    { method: 'POST', url: `/api/service/projects/projects/${projectId}/add_criteria/`, name: 'Project Add Criteria Action' },
+                    { method: 'OPTIONS', url: `/api/service/projects/projects/${projectId}/criteria/`, name: 'Project Criteria OPTIONS' }
+                );
+            }
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${API_BASE}${endpoint.url}`, {
+                        method: endpoint.method,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        // Add minimal body for POST requests
+                        body: endpoint.method === 'POST' ? JSON.stringify({
+                            name: 'Test',
+                            project: projectId
+                        }) : undefined
+                    });
+                    
+                    const statusClass = response.ok ? 'success' : 'error';
+                    const icon = response.ok ? '✅' : '❌';
+                    
+                    let responseText = '';
+                    try {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            const data = await response.json();
+                            responseText = JSON.stringify(data, null, 2);
+                        } else {
+                            responseText = await response.text();
+                        }
+                    } catch (e) {
+                        responseText = 'Could not parse response';
+                    }
+                    
+                    html += `
+                        <div class="endpoint ${statusClass}">
+                            <h3>${icon} ${endpoint.name}</h3>
+                            <p><strong>${endpoint.method}</strong> ${endpoint.url}</p>
+                            <p>Status: ${response.status} ${response.statusText}</p>
+                            ${endpoint.method === 'OPTIONS' ? `<p>Allowed: ${response.headers.get('allow')}</p>` : ''}
+                            ${responseText && responseText.length < 500 ? `<pre>${responseText}</pre>` : ''}
+                        </div>
+                    `;
+                } catch (error) {
+                    html += `
+                        <div class="endpoint error">
+                            <h3>❌ ${endpoint.name}</h3>
+                            <p><strong>${endpoint.method}</strong> ${endpoint.url}</p>
+                            <p>Error: ${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        window.onload = testEndpoints;
+    </script>
+</body>
+</html>

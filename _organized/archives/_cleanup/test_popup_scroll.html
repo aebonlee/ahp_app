@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>팝업 스크롤 테스트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-2xl font-bold mb-4">BulkCriteriaInput 팝업 스크롤 테스트</h1>
+    
+    <button onclick="openPopup()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        팝업 열기
+    </button>
+    
+    <!-- 팝업 모달 -->
+    <div id="popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="p-6 border-b">
+                <h2 class="text-xl font-bold">🗂️ 계층구조 일괄 입력</h2>
+            </div>
+            
+            <div class="flex flex-col h-full max-h-[80vh]">
+                <!-- 탭 메뉴 - 고정 -->
+                <div class="flex border-b flex-shrink-0">
+                    <button class="px-4 py-2 font-medium text-gray-500 hover:text-gray-700" onclick="switchTab('input')">
+                        텍스트 입력
+                    </button>
+                    <button class="px-4 py-2 font-medium border-b-2 border-blue-500 text-blue-600" onclick="switchTab('examples')">
+                        입력 예제
+                    </button>
+                </div>
+                
+                <!-- 스크롤 가능한 콘텐츠 영역 -->
+                <div class="flex-1 overflow-y-scroll p-6 space-y-6 pb-20">
+                    <!-- 입력 예제 콘텐츠 -->
+                    <div class="space-y-6 pb-8">
+                        <div class="text-center">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">입력 형식 예제</h3>
+                            <p class="text-gray-600 text-sm">
+                                아래 예제를 클릭하면 입력창에 자동으로 복사됩니다.
+                            </p>
+                        </div>
+                        
+                        <div class="grid gap-4 mb-8">
+                            <!-- 마크다운 예제 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium text-gray-900">📝 마크다운 리스트 형식</h4>
+                                    <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                                        사용하기
+                                    </button>
+                                </div>
+                                <pre class="text-xs bg-gray-50 p-3 rounded border overflow-x-auto">
+- 기술 품질
+  - 성능 - 시스템 처리 속도와 응답 시간
+  - 안정성 - 오류 발생률과 복구 능력  
+  - 확장성 - 향후 기능 추가 및 규모 확대 가능성
+- 경제성
+  - 초기 비용 - 도입 및 구축에 필요한 투자 비용
+  - 운영 비용 - 월별 유지보수 및 관리 비용
+  - ROI - 투자 대비 수익률과 회수 기간
+- 사용자 경험
+  - 사용 편의성 - 인터페이스 직관성과 학습 용이성
+  - 접근성 - 다양한 사용자층의 접근 가능성
+  - 만족도 - 전반적인 사용자 만족 수준
+                                </pre>
+                            </div>
+                            
+                            <!-- 번호 매기기 예제 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium text-gray-900">🔢 번호 매기기 형식</h4>
+                                    <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                                        사용하기
+                                    </button>
+                                </div>
+                                <pre class="text-xs bg-gray-50 p-3 rounded border overflow-x-auto">
+1. 교육 효과성
+  1.1. 학습 성과 - 학생들의 성적 향상 정도
+  1.2. 이해도 증진 - 개념 이해의 깊이와 폭
+  1.3. 참여도 - 수업 참여 적극성과 집중도
+2. 교사 역량
+  2.1. 전문성 - 해당 분야의 전문 지식과 경험
+  2.2. 교수법 - 효과적인 교육 방법 활용 능력
+  2.3. 소통 능력 - 학생과의 원활한 의사소통
+3. 환경 요인
+  3.1. 시설 환경 - 교실과 실습실의 물리적 환경
+  3.2. 교육 자료 - 교재와 멀티미디어 자료의 질
+  3.3. 학급 규모 - 적정한 학생 수와 개별 지도 가능성
+                                </pre>
+                            </div>
+                            
+                            <!-- 들여쓰기 예제 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium text-gray-900">📐 들여쓰기 형식</h4>
+                                    <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                                        사용하기
+                                    </button>
+                                </div>
+                                <pre class="text-xs bg-gray-50 p-3 rounded border overflow-x-auto">
+기업 평가 기준
+    재무 성과
+        수익성 - 매출액과 순이익 증가율
+        안정성 - 부채비율과 유동비율
+        성장성 - 전년 대비 성장률과 시장 점유율
+    운영 효율성
+        생산성 - 인당 매출액과 설비 가동률
+        품질 관리 - 불량률과 고객 만족도
+        혁신 역량 - R&D 투자와 신제품 개발력
+    지속가능성
+        환경 경영 - 친환경 정책과 탄소 배출 감소
+        사회적 책임 - 사회공헌 활동과 윤리 경영
+        거버넌스 - 투명한 경영과 이해관계자 소통
+                                </pre>
+                            </div>
+                        </div>
+                        
+                        <!-- 하단 여백 확보를 위한 추가 공간 -->
+                        <div class="h-16"></div>
+                    </div>
+                </div>
+                
+                <!-- 액션 버튼 - 고정 영역 -->
+                <div class="flex justify-end space-x-3 pt-4 px-6 pb-6 border-t flex-shrink-0 bg-white">
+                    <button onclick="closePopup()" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50">
+                        취소
+                    </button>
+                    <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        ✨ 3개 기준 추가
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openPopup() {
+            document.getElementById('popup').classList.remove('hidden');
+        }
+        
+        function closePopup() {
+            document.getElementById('popup').classList.add('hidden');
+        }
+        
+        function switchTab(tab) {
+            // 탭 전환 로직 (현재는 예제 탭만 표시)
+            console.log('Tab switched to:', tab);
+        }
+        
+        // ESC 키로 팝업 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePopup();
+            }
+        });
+    </script>
+    
+    <div class="mt-8 p-4 bg-white rounded border">
+        <h2 class="font-bold mb-2">테스트 방법:</h2>
+        <ol class="list-decimal list-inside space-y-1 text-sm">
+            <li>"팝업 열기" 버튼을 클릭합니다</li>
+            <li>"입력 예제" 탭에서 스크롤을 아래로 내려봅니다</li>
+            <li>모든 예제를 확인한 후 하단의 "취소", "기준 추가" 버튼이 보이는지 확인합니다</li>
+            <li>스크롤이 원활하게 작동하는지 확인합니다</li>
+        </ol>
+    </div>
+</body>
+</html>
