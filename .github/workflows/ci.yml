@@ -17,7 +17,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         
     - name: Check React app directory
       run: |
@@ -35,7 +35,7 @@ jobs:
     - name: Install dependencies
       run: |
         cd $REACT_DIR
-        npm ci
+        npm install
         
     - name: Run TypeScript check and build
       run: |
