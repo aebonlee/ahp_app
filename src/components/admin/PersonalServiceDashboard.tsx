@@ -3436,10 +3436,6 @@ ${project?.title} - ${type} 프레젠테이션
     </div>
   );
 
-  const renderProjectWizardFullPage = () => {
-    const currentTab = externalActiveTab || activeMenu;
-    
-    switch(currentTab) {
       case 'project-wizard':
         return (
           <EnhancedProjectCreationWizard 

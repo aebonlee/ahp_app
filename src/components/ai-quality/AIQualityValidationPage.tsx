@@ -3,7 +3,7 @@
  * 작성된 논문의 학술적 품질을 AI가 다각도로 검증하고 개선 제안을 제공하는 시스템
  */
 
-import React, { useState, Suspense } from 'react';
+import React, { useState } from 'react';
 import PageHeader from '../common/PageHeader';
 import { getAIService } from '../../services/aiService';
 import FileUpload from '../common/FileUpload';

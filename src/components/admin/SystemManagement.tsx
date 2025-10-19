@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { CheckCircleIcon, ExclamationTriangleIcon, CogIcon, ClockIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useCallback } from 'react';
+import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
@@ -29,19 +29,17 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
   const [backups, setBackups] = useState<BackupStatus[]>([]);
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([]);
-  const [availableUpdates, setAvailableUpdates] = useState<SystemUpdate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
-  const [runningTasks, setRunningTasks] = useState<Set<string>>(new Set());
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ action: () => Promise<void>; message: string } | null>(null);
 
   useEffect(() => {
     loadSystemData();
-  }, []);
+  }, [loadSystemData]);
 
-  const loadSystemData = async () => {
+  const loadSystemData = useCallback(async () => {
     setLoading(true);
     setError('');
     
@@ -98,7 +96,7 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [onError]);
 
   // Default configurations for fallback
   const getDefaultConfigurations = (): SystemConfiguration[] => [
@@ -318,7 +316,7 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         const response = await systemManagementService.getTaskStatus(taskId);
         
         if (response.success && response.data) {
-          const { status, progress, message } = response.data;
+          const { status, message } = response.data;
           
           if (status === 'completed') {
             clearInterval(checkInterval);
