@@ -46,7 +46,6 @@ media/
 # Backup folders (treat as regular folders, not submodules)
 ahp-platform/
 ahp-platform_0908/
-ahp_app/
 ahp_build/
 backupdata/
 
