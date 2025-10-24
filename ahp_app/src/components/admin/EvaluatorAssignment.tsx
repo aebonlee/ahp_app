@@ -24,6 +24,9 @@ interface Evaluator {
   completedAt?: string;
   totalComparisons?: number;
   completedComparisons?: number;
+  demographicSurveyUrl?: string;
+  demographicSurveyCompleted?: boolean;
+  qrCodeData?: string;
 }
 
 interface EvaluatorAssignmentProps {
@@ -57,17 +60,28 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
         const evaluatorsData = await cleanDataService.getEvaluators(projectId);
         
         // EvaluatorData를 Evaluator 인터페이스로 변환
-        const convertedEvaluators: Evaluator[] = evaluatorsData.map((evaluator: EvaluatorData) => ({
-          id: evaluator.id,
-          project_id: evaluator.project_id,
-          name: evaluator.name,
-          email: evaluator.email,
-          access_key: evaluator.access_key,
-          status: evaluator.status,
-          progress: 0,
-          code: evaluator.access_key || `EVL${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`,
-          inviteLink: evaluator.access_key ? `${window.location.origin}/evaluator?project=${projectId}&key=${evaluator.access_key}` : undefined
-        }));
+        const convertedEvaluators: Evaluator[] = evaluatorsData.map((evaluator: EvaluatorData) => {
+          const evalLink = evaluator.access_key 
+            ? `${window.location.origin}/evaluator?project=${projectId}&key=${evaluator.access_key}` 
+            : undefined;
+          const surveyUrl = evaluator.access_key 
+            ? `${window.location.origin}/demographic-survey?project=${projectId}&evaluator=${evaluator.id}&key=${evaluator.access_key}`
+            : undefined;
+          
+          return {
+            id: evaluator.id,
+            project_id: evaluator.project_id,
+            name: evaluator.name,
+            email: evaluator.email,
+            access_key: evaluator.access_key,
+            status: evaluator.status,
+            progress: 0,
+            code: evaluator.access_key || `EVL${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`,
+            inviteLink: evalLink,
+            demographicSurveyUrl: surveyUrl,
+            demographicSurveyCompleted: false
+          };
+        });
         
         setEvaluators(convertedEvaluators);
         console.log(`✅ Loaded ${convertedEvaluators.length} evaluators from DB for project ${projectId}`);
@@ -170,6 +184,9 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
         console.log('✅ 평가자 생성 성공:', createdEvaluator.id);
         
         // 생성된 평가자를 목록에 추가
+        const evalLink = `${window.location.origin}/evaluator?project=${projectId}&key=${createdEvaluator.access_key}`;
+        const surveyUrl = `${window.location.origin}/demographic-survey?project=${projectId}&evaluator=${createdEvaluator.id}&key=${createdEvaluator.access_key}`;
+        
         const newEval: Evaluator = {
           id: createdEvaluator.id,
           project_id: createdEvaluator.project_id,
@@ -179,7 +196,9 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
           status: createdEvaluator.status,
           progress: 0,
           code: createdEvaluator.access_key,
-          inviteLink: `${window.location.origin}/evaluator?project=${projectId}&key=${createdEvaluator.access_key}`
+          inviteLink: evalLink,
+          demographicSurveyUrl: surveyUrl,
+          demographicSurveyCompleted: false
         };
         
         setEvaluators(prev => [...prev, newEval]);
@@ -270,6 +289,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
             <ul className="text-sm text-purple-700 space-y-1">
               <li>• 각 평가자에게 고유한 코드와 초대 링크가 부여됩니다</li>
               <li>• QR코드를 통해 모바일에서도 쉽게 평가에 참여할 수 있습니다</li>
+              <li>• 인구통계학적 설문조사와 평가 링크가 함께 제공됩니다</li>
               <li>• 이메일을 통해 평가 참여 초대를 보낼 수 있습니다</li>
               <li>• 평가자별 진행률을 실시간으로 모니터링할 수 있습니다</li>
             </ul>
@@ -346,6 +366,14 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
                                 {evaluator.inviteLink}
                               </code>
                             </div>
+                            {evaluator.demographicSurveyUrl && (
+                              <div className="flex items-center space-x-2">
+                                <span className="text-xs text-gray-500">설문조사:</span>
+                                <code className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded border border-yellow-200">
+                                  {evaluator.demographicSurveyUrl}
+                                </code>
+                              </div>
+                            )}
                             <div className="flex items-center space-x-2">
                               <button
                                 onClick={() => window.open(evaluator.inviteLink, '_blank')}
@@ -368,15 +396,30 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
                             </div>
                             {evaluator.showQR && evaluator.inviteLink && (
                               <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                                <QRCode 
-                                  value={evaluator.inviteLink} 
-                                  size={128}
-                                  level="M"
-                                  includeMargin={true}
-                                />
-                                <p className="text-xs text-gray-500 mt-2">
-                                  모바일 기기로 스캔하여 평가 시작
-                                </p>
+                                <div className="text-center">
+                                  <h5 className="text-sm font-medium text-gray-700 mb-2">평가 정보 QR 코드</h5>
+                                  <div className="inline-block p-2 bg-white rounded border border-gray-200">
+                                    <QRCode 
+                                      value={JSON.stringify({
+                                        evaluationUrl: evaluator.inviteLink,
+                                        surveyUrl: evaluator.demographicSurveyUrl,
+                                        projectId: projectId,
+                                        evaluatorId: evaluator.id,
+                                        accessKey: evaluator.access_key
+                                      })} 
+                                      size={200}
+                                      level="M"
+                                      includeMargin={true}
+                                    />
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-2">
+                                    QR 코드를 스캔하여 설문조사 후 평가 시작
+                                  </p>
+                                  <div className="mt-2 space-y-1">
+                                    <p className="text-xs text-blue-600">1. 인구통계학적 설문조사</p>
+                                    <p className="text-xs text-green-600">2. AHP 평가 진행</p>
+                                  </div>
+                                </div>
                               </div>
                             )}
                           </div>

@@ -92,13 +92,61 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     // 파싱된 기준을 실제 Criterion 객체로 변환 (평면 구조로)
     const convertedCriteria = convertParsedCriteriaFlat(parseResult.criteria);
     
-    console.log('✅ 변환된 기준:', {
+    console.log('✅ BulkCriteriaInput: 변환된 기준 onImport 전달 준비:', {
       total: convertedCriteria.length,
-      flatList: convertedCriteria
+      flatList: convertedCriteria.map(c => ({
+        id: c.id,
+        name: c.name,
+        level: c.level,
+        parent_id: c.parent_id,
+        order: c.order
+      })),
+      데이터검증: {
+        모든아이디존재: convertedCriteria.every(c => c.id),
+        모든이름존재: convertedCriteria.every(c => c.name),
+        레벨범위: {
+          최소: Math.min(...convertedCriteria.map(c => c.level)),
+          최대: Math.max(...convertedCriteria.map(c => c.level))
+        },
+        parent_id설정상태: convertedCriteria.reduce((acc, c) => {
+          const key = c.parent_id ? 'parent_id있음' : 'parent_id없음';
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      }
     });
+    
+    // 데이터 무결성 검증
+    const validationErrors: string[] = [];
+    
+    // 1. 기본 필드 검증
+    convertedCriteria.forEach((criterion, index) => {
+      if (!criterion.id) validationErrors.push(`${index + 1}번째 기준: ID가 비어있음`);
+      if (!criterion.name || criterion.name.trim() === '') validationErrors.push(`${index + 1}번째 기준: 이름이 비어있음`);
+      if (!criterion.level || criterion.level < 1) validationErrors.push(`${index + 1}번째 기준: 레벨이 잘못됨 (${criterion.level})`);
+    });
+    
+    // 2. parent_id 참조 무결성 검증
+    const idSet = new Set(convertedCriteria.map(c => c.id));
+    convertedCriteria.forEach((criterion, index) => {
+      if (criterion.parent_id && !idSet.has(criterion.parent_id)) {
+        console.warn(`⚠️ parent_id 참조 오류: ${criterion.name} (parent_id: ${criterion.parent_id})가 존재하지 않는 부모를 참조`);
+        validationErrors.push(`${index + 1}번째 기준 '${criterion.name}': 존재하지 않는 부모 ID (${criterion.parent_id})`);
+      }
+    });
+    
+    if (validationErrors.length > 0) {
+      console.error('❌ 데이터 검증 실패:', validationErrors);
+      alert(`데이터 검증 오류:\n${validationErrors.join('\n')}`);
+      return;
+    }
+    
+    console.log('🚀 BulkCriteriaInput: onImport 호출 시작');
     
     // 평면 구조의 전체 기준 리스트를 import
     onImport(convertedCriteria);
+    
+    console.log('🚀 BulkCriteriaInput: onImport 호출 완료');
   };
 
   // 평면 구조로 변환 (CriteriaManagement에서 기대하는 형식)
@@ -106,9 +154,13 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     const allCriteria: Criterion[] = [];
     const levelParentMap: Map<number, Criterion> = new Map();
     
+    console.log('🔄 BulkCriteriaInput: convertParsedCriteriaFlat 시작', {
+      입력데이터: parsedCriteria.map(p => ({ name: p.name, level: p.level, description: p.description }))
+    });
+    
     // 원본 순서대로 처리
     parsedCriteria.forEach((parsed, index) => {
-      const id = `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      const id = `temp_${Date.now()}_${index}_${Math.floor(Math.random() * 1000)}`;
       
       // 부모 찾기: 현재 레벨보다 1 낮은 레벨의 마지막 노드
       let parent_id: string | null = null;
@@ -117,7 +169,13 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
         const parentNode = levelParentMap.get(parentLevel);
         if (parentNode) {
           parent_id = parentNode.id;
+          console.log(`🔗 부모 연결: ${parsed.name} (L${parsed.level}) → ${parentNode.name} (L${parentLevel})`);
+        } else {
+          console.warn(`⚠️ 부모 노드 누락: ${parsed.name} (L${parsed.level})의 부모 L${parentLevel}을 찾을 수 없음`);
+          console.log('현재 levelParentMap:', Array.from(levelParentMap.entries()).map(([k, v]) => `L${k}: ${v.name}`));
         }
+      } else {
+        console.log(`🌳 루트 노드: ${parsed.name} (L${parsed.level})`);
       }
       
       const criterion: Criterion = {
@@ -137,8 +195,28 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
       levelParentMap.set(parsed.level, criterion);
       
       // 더 높은 레벨들은 제거 (더 이상 부모가 될 수 없음)
-      for (let level = parsed.level + 1; level <= 5; level++) {
+      for (let level = parsed.level + 1; level <= 10; level++) {
         levelParentMap.delete(level);
+      }
+      
+      console.log(`📝 추가된 기준: ${criterion.name}`, {
+        id: criterion.id,
+        level: criterion.level,
+        parent_id: criterion.parent_id,
+        order: criterion.order,
+        현잮levelParentMap: Array.from(levelParentMap.keys())
+      });
+    });
+    
+    console.log('🔄 BulkCriteriaInput: convertParsedCriteriaFlat 완료', {
+      총개수: allCriteria.length,
+      레벨별개수: allCriteria.reduce((acc, c) => {
+        acc[c.level] = (acc[c.level] || 0) + 1;
+        return acc;
+      }, {} as Record<number, number>),
+      parent_id설정상태: {
+        루트: allCriteria.filter(c => !c.parent_id).length,
+        자식: allCriteria.filter(c => c.parent_id).length
       }
     });
     

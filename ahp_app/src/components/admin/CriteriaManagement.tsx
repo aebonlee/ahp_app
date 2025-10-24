@@ -184,17 +184,24 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           
           console.log(`🔗 자식 연결 성공: ${criterionObj.name} (level ${criterionObj.level}) → ${parent.name} (level ${parentLevel})`);
         }
-      } else if (parentIdString) {
-        console.warn(`⚠️ 부모를 찾을 수 없음: ${criterionObj.name}의 parent_id=${parentIdString}`, {
-          parentIdString,
-          parentIdType: typeof parentIdString,
-          mapKeys: Array.from(criteriaMap.keys()),
-          mapKeysTypes: Array.from(criteriaMap.keys()).map(k => typeof k)
-        });
-        // 부모가 없는 경우 루트로 처리하고 level 1 보장
+      } else {
+        // parent_id가 없거나 부모를 찾을 수 없는 경우 루트로 처리
+        if (parentIdString) {
+          console.warn(`⚠️ 부모를 찾을 수 없음: ${criterionObj.name}의 parent_id=${parentIdString}`, {
+            parentIdString,
+            parentIdType: typeof parentIdString,
+            mapKeys: Array.from(criteriaMap.keys()),
+            mapKeysTypes: Array.from(criteriaMap.keys()).map(k => typeof k)
+          });
+          console.log(`🌳 루트 기준으로 처리: ${criterionObj.name} - 이유: 부모를 맵에서 찾을 수 없음`);
+        } else {
+          console.log(`🌳 루트 기준으로 처리: ${criterionObj.name} - 이유: parent_id 없음`);
+        }
+        
+        // 루트 레벨로 설정하고 rootCriteria에 추가
         criterionObj.level = 1;
+        criterionObj.parent_id = null; // 루트이므로 parent_id를 명시적으로 null로 설정
         rootCriteria.push(criterionObj);
-        console.log(`🌳 루트 기준으로 처리: ${criterionObj.name} (level: ${criterionObj.level}) - 이유: ${parentIdString ? '부모를 맵에서 찾을 수 없음' : 'parent_id 없음'}`);
       }
     });
 
@@ -210,7 +217,12 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     
     sortByOrder(rootCriteria);
     
-    console.log('✅ 계층구조 구성 완료:', rootCriteria);
+    console.log('✅ 계층구조 구성 완료:', {
+      rootCount: rootCriteria.length,
+      rootCriteria: rootCriteria.map(r => ({ name: r.name, level: r.level, childrenCount: r.children?.length || 0 })),
+      totalItems: flatCriteria.length
+    });
+    
     return rootCriteria;
   };
 
@@ -751,26 +763,98 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
 
   // 일괄 입력 처리
   const handleBulkImport = (importedCriteria: Criterion[]) => {
-    // parent_id, level, order 필드 정규화
-    const normalizedCriteria = importedCriteria.map((criterion, index) => ({
-      ...criterion,
-      id: criterion.id || generateUUID(),
-      level: criterion.level || 1,
-      order: criterion.order || index + 1,
-      parent_id: criterion.parent_id || null,
-      type: 'criteria' as const
-    }));
+    console.log('📥 일괄 입력 데이터 수신:', {
+      total: importedCriteria.length,
+      criteria: importedCriteria.map(c => ({
+        id: c.id,
+        name: c.name,
+        level: c.level,
+        parent_id: c.parent_id,
+        order: c.order
+      }))
+    });
     
+    // 데이터 검증
+    if (!importedCriteria || importedCriteria.length === 0) {
+      console.warn('⚠️ 비어있는 일괄 입력 데이터');
+      alert('가져올 데이터가 비어있습니다.');
+      return;
+    }
+    
+    // parent_id, level, order 필드 정규화
+    const normalizedCriteria = importedCriteria.map((criterion, index) => {
+      const normalized = {
+        ...criterion,
+        id: criterion.id || generateUUID(),
+        level: criterion.level || 1,
+        order: criterion.order || index + 1,
+        parent_id: criterion.parent_id || null,
+        type: 'criteria' as const
+      };
+      
+      console.log(`🔄 정규화: ${criterion.name}`, {
+        원본: { id: criterion.id, level: criterion.level, parent_id: criterion.parent_id, order: criterion.order },
+        정규화후: { id: normalized.id, level: normalized.level, parent_id: normalized.parent_id, order: normalized.order }
+      });
+      
+      return normalized;
+    });
+    
+    console.log('🔄 정규화된 기준 데이터:', normalizedCriteria);
+    
+    // 계층 구조 구성
+    console.log('🌳 계층 구조 구성 시작...');
     const hierarchicalCriteria = buildHierarchy(normalizedCriteria);
     
-    // 임시 저장소에 저장
+    console.log('🌳 계층 구조 구성 완료:', {
+      입력데이터: normalizedCriteria.length,
+      계층구조: hierarchicalCriteria.length,
+      루트노드: hierarchicalCriteria.map(r => ({ name: r.name, level: r.level, children: r.children?.length || 0 }))
+    });
+    
+    // 계층 구조가 비어있는 경우 fallback 처리
+    if (hierarchicalCriteria.length === 0 && normalizedCriteria.length > 0) {
+      console.warn('⚠️ 계층 구조 구성 실패, fallback 처리 실행');
+      
+      // 모든 기준을 루트 레벨로 설정하여 fallback
+      const fallbackCriteria = normalizedCriteria.map(criterion => ({
+        ...criterion,
+        level: 1,
+        parent_id: null,
+        children: []
+      }));
+      
+      console.log('🔄 Fallback 처리 완료:', fallbackCriteria);
+      
+      setTempCriteria(fallbackCriteria);
+      setCriteria(fallbackCriteria);
+      setHasTempChanges(true);
+      setShowBulkInput(false);
+      setActiveInputMode(null);
+      
+      alert(`계층 구조 구성에 문제가 있어 모든 기준을 루트 레벨로 추가했습니다. (${normalizedCriteria.length}개)\n수동으로 계층 구조를 조정할 수 있습니다.`);
+      return;
+    }
+    
+    // 정상적으로 계층 구조가 구성된 경우
     setTempCriteria(hierarchicalCriteria);
     setCriteria(hierarchicalCriteria);
     setHasTempChanges(true);
     setShowBulkInput(false);
     setActiveInputMode(null);
     
-    alert(`${normalizedCriteria.length}개의 기준이 추가되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+    // 성공 메시지에 계층 구조 정보 포함
+    const totalFlat = flattenCriteria(hierarchicalCriteria);
+    const levelStats = totalFlat.reduce((acc, c) => {
+      acc[c.level] = (acc[c.level] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
+    
+    const statsText = Object.entries(levelStats)
+      .map(([level, count]) => `레벨 ${level}: ${count}개`)
+      .join(', ');
+      
+    alert(`${normalizedCriteria.length}개의 기준이 추가되었습니다.\n${statsText}\n'저장하기' 버튼을 눌러 최종 저장하세요.`);
   };
 
   // 시각적 빌더 데이터 변환
