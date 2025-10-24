@@ -249,6 +249,10 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
           <EvaluatorAssignment
             projectId={workflowState.projectId}
             onComplete={handleEvaluatorsComplete}
+            onEvaluatorsChange={(count) => setWorkflowState(prev => ({
+              ...prev,
+              evaluatorsCount: count
+            }))}
           />
         ) : null;
       

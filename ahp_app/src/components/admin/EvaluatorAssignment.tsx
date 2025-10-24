@@ -32,6 +32,7 @@ interface Evaluator {
 interface EvaluatorAssignmentProps {
   projectId: string;
   onComplete: () => void;
+  onEvaluatorsChange?: (count: number) => void;
   maxEvaluators?: number; // 최대 평가자 수 제한
   currentPlan?: string; // 현재 요금제
 }
@@ -39,6 +40,7 @@ interface EvaluatorAssignmentProps {
 const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({ 
   projectId, 
   onComplete,
+  onEvaluatorsChange,
   maxEvaluators = 50, // 기본값: Standard Plan
   currentPlan = 'Standard Plan'
 }) => {
@@ -88,10 +90,18 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
         
         // 통계 업데이트
         updateEvaluationStats(convertedEvaluators);
+        
+        // 부모 컴포넌트에 평가자 수 전달
+        if (onEvaluatorsChange) {
+          onEvaluatorsChange(convertedEvaluators.length);
+        }
       } catch (error) {
         console.error('❌ Failed to load evaluators from DB:', error);
         setEvaluators([]);
         console.log(`⚠️ Starting with empty evaluator list for project ${projectId} due to DB error`);
+        if (onEvaluatorsChange) {
+          onEvaluatorsChange(0);
+        }
       }
     };
 
@@ -121,6 +131,11 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
       completed: evaluatorList.filter(e => e.status === 'completed').length
     };
     setEvaluationStats(stats);
+    
+    // 부모 컴포넌트에 평가자 수 업데이트
+    if (onEvaluatorsChange) {
+      onEvaluatorsChange(evaluatorList.length);
+    }
   };
 
   const toggleQRCode = (evaluatorId: string) => {
@@ -201,9 +216,15 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
           demographicSurveyCompleted: false
         };
         
-        setEvaluators(prev => [...prev, newEval]);
+        const updatedEvaluators = [...evaluators, newEval];
+        setEvaluators(updatedEvaluators);
         setNewEvaluator({ name: '', email: '' });
         setErrors({});
+        
+        // 부모 컴포넌트에 평가자 수 업데이트
+        if (onEvaluatorsChange) {
+          onEvaluatorsChange(updatedEvaluators.length);
+        }
         
         console.log('✅ 평가자가 성공적으로 추가되었습니다.');
       } else {
@@ -239,7 +260,14 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
       await cleanDataService.deleteEvaluator(id, projectId);
       
       // 로컬 상태에서도 제거
-      setEvaluators(prev => prev.filter(e => e.id !== id));
+      const updatedEvaluators = evaluators.filter(e => e.id !== id);
+      setEvaluators(updatedEvaluators);
+      
+      // 부모 컴포넌트에 평가자 수 업데이트
+      if (onEvaluatorsChange) {
+        onEvaluatorsChange(updatedEvaluators.length);
+      }
+      
       console.log('✅ 평가자가 삭제되었습니다.');
     } catch (error) {
       console.error('❌ 평가자 삭제 실패:', error);
