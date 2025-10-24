@@ -877,7 +877,8 @@ function App() {
   // 기준(Criteria) CRUD 함수들
   const fetchCriteria = async (projectId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/criteria`, {
+      // Django 백엔드의 실제 경로 사용
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -915,7 +916,8 @@ function App() {
   // 대안(Alternatives) CRUD 함수들
   const fetchAlternatives = async (projectId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/alternatives`, {
+      // Django 백엔드의 실제 경로 사용 (대안도 criteria API에서 type=alternative로 조회)
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}&type=alternative`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

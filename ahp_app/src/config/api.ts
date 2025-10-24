@@ -29,18 +29,18 @@ export const API_ENDPOINTS = {
     PROFILE: '/api/service/auth/profile/',
     REFRESH: '/api/service/auth/token/refresh/'
   },
-  // Projects - 실제 Django REST Framework 라우터 경로 (확인됨)
+  // Projects - 실제 Django REST Framework 라우터 경로 (수정됨)
   PROJECTS: {
-    LIST: '/api/service/projects/projects/',
-    CREATE: '/api/service/projects/projects/',
-    GET: (id: string) => `/api/service/projects/projects/${id}/`,
-    UPDATE: (id: string) => `/api/service/projects/projects/${id}/`,
-    DELETE: (id: string) => `/api/service/projects/projects/${id}/`
+    LIST: '/api/service/projects/',
+    CREATE: '/api/service/projects/',
+    GET: (id: string) => `/api/service/projects/${id}/`,
+    UPDATE: (id: string) => `/api/service/projects/${id}/`,
+    DELETE: (id: string) => `/api/service/projects/${id}/`
   },
   // Criteria - Django REST Framework 프로젝트 액션 경로
   CRITERIA: {
-    LIST: (projectId: string) => `/api/service/projects/projects/${projectId}/criteria/`,
-    CREATE: (projectId: string) => `/api/service/projects/projects/${projectId}/add_criteria/`,
+    LIST: (projectId: string) => `/api/service/projects/${projectId}/criteria/`,
+    CREATE: (projectId: string) => `/api/service/projects/${projectId}/add_criteria/`,
     UPDATE: (id: string) => `/api/service/projects/criteria/${id}/`,
     DELETE: (id: string) => `/api/service/projects/criteria/${id}/`
   },

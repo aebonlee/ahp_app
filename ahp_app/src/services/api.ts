@@ -253,7 +253,7 @@ const makeRequest = async <T>(
 export const projectApi = {
   // 프로젝트 목록 조회 (정규화 적용)
   getProjects: async () => {
-    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/projects/');
+    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/');
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProjects = normalizeProjectListResponse(response.data);
@@ -268,7 +268,7 @@ export const projectApi = {
 
   // 프로젝트 상세 조회 (정규화 적용)
   getProject: async (id: string) => {
-    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`);
+    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/${id}/`);
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProject = normalizeProjectData(response.data);
@@ -305,7 +305,7 @@ export const projectApi = {
       evaluation_flow_type: data.evaluation_flow_type,
     };
     
-    const response = await makeRequest<DjangoProjectResponse>('/api/service/projects/projects/', {
+    const response = await makeRequest<DjangoProjectResponse>('/api/service/projects/', {
       method: 'POST',
       body: JSON.stringify(djangoData)
     });
@@ -356,7 +356,7 @@ export const projectApi = {
     console.log('  - objective:', typeof djangoData.objective, djangoData.objective);
     console.log('  - settings:', typeof djangoData.settings, djangoData.settings ? 'exists' : 'null');
     
-    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`, {
+    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(djangoData)
     });
@@ -382,13 +382,13 @@ export const projectApi = {
 
   // 프로젝트 삭제 (휴지통으로 이동)
   deleteProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/${id}/`, {
+    makeRequest<void>(`/api/service/projects/${id}/`, {
       method: 'DELETE'
     }),
 
   // 휴지통 프로젝트 조회 (정규화 적용) - 임시로 일반 프로젝트 목록 반환
   getTrashedProjects: async () => {
-    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/projects/');
+    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/');
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProjects = normalizeProjectListResponse(response.data);
@@ -403,14 +403,14 @@ export const projectApi = {
 
   // 프로젝트 복원 - 임시로 업데이트로 대체
   restoreProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/${id}/`, {
+    makeRequest<void>(`/api/service/projects/${id}/`, {
       method: 'PATCH',
       body: JSON.stringify({ is_active: true })
     }),
 
   // 프로젝트 영구 삭제 - 일반 삭제와 동일
   permanentDeleteProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/${id}/`, {
+    makeRequest<void>(`/api/service/projects/${id}/`, {
       method: 'DELETE'
     })
 };
@@ -588,7 +588,7 @@ export const criteriaApi = {
 
   // 기준 순서 변경
   reorderCriteria: (projectId: string, criteriaIds: string[]) =>
-    makeRequest<void>(`/api/service/projects/projects/${projectId}/criteria/reorder/`, {
+    makeRequest<void>(`/api/service/projects/${projectId}/criteria/reorder/`, {
       method: 'PUT',
       body: JSON.stringify({ criteriaIds })
     })
@@ -598,7 +598,7 @@ export const criteriaApi = {
 export const alternativeApi = {
   // 프로젝트의 대안 목록 조회
   getAlternatives: (projectId: string) =>
-    makeRequest<AlternativeData[]>(`/api/service/projects/projects/${projectId}/alternatives/`),
+    makeRequest<AlternativeData[]>(`/api/service/projects/${projectId}/alternatives/`),
 
   // 대안 생성
   createAlternative: (data: Omit<AlternativeData, 'id'>) =>
@@ -622,7 +622,7 @@ export const alternativeApi = {
 
   // 대안 순서 변경
   reorderAlternatives: (projectId: string, alternativeIds: string[]) =>
-    makeRequest<void>(`/api/service/projects/projects/${projectId}/alternatives/reorder/`, {
+    makeRequest<void>(`/api/service/projects/${projectId}/alternatives/reorder/`, {
       method: 'PUT',
       body: JSON.stringify({ alternativeIds })
     })
@@ -632,7 +632,7 @@ export const alternativeApi = {
 export const evaluatorApi = {
   // 프로젝트의 평가자(멤버) 목록 조회
   getEvaluators: (projectId: string) =>
-    makeRequest<EvaluatorData[]>(`/api/service/projects/projects/${projectId}/members/`),
+    makeRequest<EvaluatorData[]>(`/api/service/projects/${projectId}/members/`),
 
   // 평가자(멤버) 추가 - Django의 add_member action 사용
   addEvaluator: (data: Omit<EvaluatorData, 'id'>) => {
@@ -646,7 +646,7 @@ export const evaluatorApi = {
     };
     
     return makeRequest<EvaluatorData>(
-      `/api/service/projects/projects/${data.project_id}/add_member/`, 
+      `/api/service/projects/${data.project_id}/add_member/`, 
       {
         method: 'POST',
         body: JSON.stringify(memberData)
@@ -656,20 +656,20 @@ export const evaluatorApi = {
 
   // 평가자(멤버) 수정
   updateEvaluator: (id: string, data: Partial<EvaluatorData>) =>
-    makeRequest<EvaluatorData>(`/api/service/projects/projects/${data.project_id}/update_member/`, {
+    makeRequest<EvaluatorData>(`/api/service/projects/${data.project_id}/update_member/`, {
       method: 'PATCH',
       body: JSON.stringify({ member_id: id, ...data })
     }),
 
   // 평가자(멤버) 삭제
   removeEvaluator: (id: string) =>
-    makeRequest<void>(`/api/service/projects/projects/remove_member/?member_id=${id}`, {
+    makeRequest<void>(`/api/service/projects/remove_member/?member_id=${id}`, {
       method: 'DELETE'
     }),
 
   // 평가 초대 이메일 발송 (임시 - 향후 구현)
   sendInvitation: (projectId: string, evaluatorIds: string[]) =>
-    makeRequest<void>(`/api/service/projects/projects/${projectId}/send_invitations/`, {
+    makeRequest<void>(`/api/service/projects/${projectId}/send_invitations/`, {
       method: 'POST',
       body: JSON.stringify({ evaluatorIds })
     })

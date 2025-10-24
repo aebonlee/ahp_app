@@ -97,7 +97,8 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
   const loadEvaluators = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/evaluators/?project=${projectId}`, {
+      // Django 백엔드의 실제 경로 사용
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/evaluators/?project=${projectId}`, {
         credentials: 'include',
       });
       if (response.ok) {
