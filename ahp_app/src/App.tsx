@@ -68,6 +68,7 @@ import TestPage from './pages/TestPage';
 import SystemHealthPage from './pages/SystemHealthPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
+import projectDebugger from './utils/projectDebugger';
 import { useTheme } from './hooks/useTheme';
 // DEMO 데이터 제거 - 실제 DB만 사용
 
@@ -844,6 +845,13 @@ function App() {
   const createProject = async (projectData: any) => {
     console.log('🚀 App.tsx createProject 호출됨:', projectData);
     
+    // 디버깅 모드 활성화
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 프로젝트 생성 디버깅 시작...');
+      const debugReport = await projectDebugger.debugProjectCreation(projectData);
+      console.log('📊 디버그 보고서:', debugReport);
+    }
+    
     try {
       // dataService_clean.ts의 createProject 사용 (자동 fallback 포함)
       const newProject = await cleanDataService.createProject({
@@ -852,7 +860,10 @@ function App() {
         objective: projectData.objective || '',
         status: projectData.status || 'draft',
         evaluation_mode: projectData.evaluation_mode || 'practical',
-        workflow_stage: projectData.workflow_stage || 'creating'
+        workflow_stage: projectData.workflow_stage || 'creating',
+        ahp_type: projectData.ahp_type || 'general',
+        require_demographics: projectData.require_demographics || false,
+        evaluation_flow_type: projectData.evaluation_flow_type || 'ahp_first'
       });
       
       if (newProject) {
@@ -866,10 +877,20 @@ function App() {
         
         return newProject;
       } else {
-        throw new Error('프로젝트 생성에 실패했습니다.');
+        console.error('❌ 프로젝트 생성 실패: newProject가 null');
+        throw new Error('프로젝트 생성에 실패했습니다. 다시 시도해주세요.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ createProject 실패:', error);
+      console.error('오류 상세:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
+      
+      // 사용자에게 구체적인 오류 메시지 제공
+      alert(`프로젝트 생성 실패: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+      
       // 에러를 다시 throw하지 않고 null 반환 (사용자에게 친화적)
       return null;
     }
