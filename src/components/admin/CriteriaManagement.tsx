@@ -66,6 +66,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   const [activeInputMode, setActiveInputMode] = useState<'template' | 'bulk' | 'visual' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
@@ -80,6 +82,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   const loadCriteria = useCallback(async () => {
     try {
       setIsLoading(true);
+      setErrorMessage(null);
       const loadedCriteria = await cleanDataService.getCriteria(projectId);
       
       console.log('🔍 백엔드에서 로드된 기준 데이터:', loadedCriteria);
@@ -135,10 +138,18 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       setSavedCriteria(hierarchicalCriteria);
       setTempCriteria([]);
       setHasTempChanges(false);
+      
+      // 성공 메시지 표시 (초기 로드 시에는 표시하지 않음)
+      if (hierarchicalCriteria.length > 0 && savedCriteria.length > 0) {
+        setSuccessMessage(`${hierarchicalCriteria.length}개의 평가 기준을 성공적으로 불러왔습니다.`);
+        setTimeout(() => setSuccessMessage(null), 3000);
+      }
     } catch (error) {
       console.error('기준 로드 실패:', error);
       setCriteria([]);
       setSavedCriteria([]);
+      setErrorMessage('평가 기준을 불러오는데 실패했습니다. 다시 시도해주세요.');
+      setTimeout(() => setErrorMessage(null), 5000);
     } finally {
       setIsLoading(false);
     }
@@ -294,6 +305,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     }
 
     setIsSaving(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
     try {
       console.log('💾 계층 구조 저장 시작:', {
         originalHierarchy: criteriaToSave,
@@ -431,13 +444,15 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         // 저장 후 다시 로드하여 동기화
         await loadCriteria();
         
-        alert('기준이 성공적으로 저장되었습니다.');
+        setSuccessMessage(`${flatCriteria.length}개의 평가 기준이 성공적으로 저장되었습니다.`);
+        setTimeout(() => setSuccessMessage(null), 3000);
       } else {
         throw new Error('일부 기준 저장 실패');
       }
     } catch (error) {
       console.error('❌ 기준 저장 실패:', error);
-      alert(`기준 저장 중 오류가 발생했습니다: ${error}`);
+      setErrorMessage(`기준 저장 중 오류가 발생했습니다. 다시 시도해주세요.`);
+      setTimeout(() => setErrorMessage(null), 5000);
     } finally {
       setIsSaving(false);
     }
