@@ -1,4 +1,4 @@
-name: Quick Deploy
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -17,97 +17,126 @@ permissions:
   id-token: write
 
 concurrency:
-  group: quick-deploy
-  cancel-in-progress: true
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  quick-deploy:
-    name: Quick Deploy to Pages
+  build:
+    name: Build Application
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages-quick
-      url: https://aebonlee.github.io/ahp_app/
     
     steps:
-    - name: Checkout repository
+    - name: 📥 Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        submodules: 'recursive'
       
-    - name: Setup Node.js
+    - name: 🔧 Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: ahp_app/package-lock.json
         
-    - name: Check React app directory
+    - name: 📁 Verify directory structure
       run: |
+        echo "📂 Repository structure:"
+        ls -la
         if [ -d "ahp_app" ]; then
-          echo "React app found in ahp_app directory"
+          echo "✅ React app found in ahp_app directory"
           echo "REACT_DIR=ahp_app" >> $GITHUB_ENV
-        elif [ -f "package.json" ]; then
-          echo "React app found in root directory"
-          echo "REACT_DIR=." >> $GITHUB_ENV
+          cd ahp_app
+          echo "📦 package.json content:"
+          cat package.json | jq '.scripts' || true
         else
-          echo "No React app found"
+          echo "❌ React app directory not found"
           exit 1
         fi
         
-    - name: Install dependencies
+    - name: 📦 Install dependencies
       run: |
         cd $REACT_DIR
-        echo "🔧 Installing dependencies..."
-        npm install
-      
-    - name: Quick test (optional)
+        echo "📥 Installing dependencies..."
+        npm ci || npm install
+        echo "✅ Dependencies installed"
+        
+    - name: 🔍 Lint check (non-blocking)
       if: ${{ !inputs.skip_tests }}
       run: |
         cd $REACT_DIR
-        echo "🧪 Running quick tests..."
-        npm test -- --coverage --watchAll=false --testTimeout=5000 --maxWorkers=2 --passWithNoTests
+        echo "🔍 Running ESLint..."
+        npm run lint || echo "⚠️ ESLint warnings found (non-blocking)"
       continue-on-error: true
-      env:
-        CI: true
         
-    - name: Build application
+    - name: 🏗️ Build for production
       run: |
         cd $REACT_DIR
-        echo "🏗️ Building application..."
+        echo "🏗️ Building production bundle..."
         npm run build
+        echo "✅ Build completed"
       env:
         CI: false
         PUBLIC_URL: /ahp_app
         GENERATE_SOURCEMAP: false
-        REACT_APP_OPENAI_API_KEY: API_KEY_NOT_SET
+        REACT_APP_API_URL: https://ahp-django-backend.onrender.com
+        NODE_OPTIONS: --max_old_space_size=4096
         
-    - name: Verify build
+    - name: ✅ Verify build output
       run: |
         cd $REACT_DIR
         if [ -d "build" ]; then 
-          echo "✅ Build completed successfully"
-          echo "📊 Build stats:"
-          du -sh build/
-          echo "📁 Main files:"
-          find build -name "*.js" -o -name "*.css" | head -5
+          echo "✅ Build directory verified"
+          echo "📊 Build statistics:"
+          echo "- Total size: $(du -sh build/ | cut -f1)"
+          echo "- HTML files: $(find build -name "*.html" | wc -l)"
+          echo "- JS files: $(find build -name "*.js" | wc -l)"
+          echo "- CSS files: $(find build -name "*.css" | wc -l)"
+          
+          # Create .nojekyll file to prevent Jekyll processing
+          touch build/.nojekyll
+          echo "✅ Added .nojekyll file"
         else 
-          echo "❌ Build failed"
+          echo "❌ Build directory not found!"
           exit 1
         fi
         
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
+    - name: 📤 Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: production-build
+        path: ${{ env.REACT_DIR }}/build
+        retention-days: 1
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - name: 📥 Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: production-build
+        path: ./build
         
-    - name: Upload to GitHub Pages
+    - name: 🔧 Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: 📤 Upload to GitHub Pages
       uses: actions/upload-pages-artifact@v4
       with:
-        path: ./${{ env.REACT_DIR }}/build
+        path: ./build
         
-    - name: Deploy to GitHub Pages
+    - name: 🚀 Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
-        
-    - name: Deploy success
+      
+    - name: ✨ Deployment Complete
       run: |
-        echo "🚀 Quick deployment completed!"
-        echo "🌐 Site: https://aebonlee.github.io/ahp_app/"
-        echo "⏱️ Deployed at: $(date -u)"
+        echo "✅ Deployment successful!"
+        echo "🌐 Site URL: https://aebonlee.github.io/ahp_app/"
+        echo "📅 Deployed at: $(date -u)"
+        echo "🔗 Deployment ID: ${{ steps.deployment.outputs.page_url }}"

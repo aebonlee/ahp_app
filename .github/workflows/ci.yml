@@ -1,4 +1,4 @@
-name: React Frontend CI
+name: CI Pipeline
 
 on:
   push:
@@ -7,53 +7,90 @@ on:
       - 'docs/**'
       - '*.md'
       - 'Dev_md/**'
+      - '.github/workflows/deploy.yml'
   pull_request:
     branches: [ main ]
 
 jobs:
-  frontend-test:
+  build-and-test:
+    name: Build and Test
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout
+    - name: 📥 Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Node.js
+    - name: 🔧 Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: ahp_app/package-lock.json
         
-    - name: Check React app directory
+    - name: 📁 Check React app directory
       run: |
         if [ -d "ahp_app" ]; then
-          echo "React app found in ahp_app directory"
+          echo "✅ React app found in ahp_app directory"
           echo "REACT_DIR=ahp_app" >> $GITHUB_ENV
-        elif [ -f "package.json" ]; then
-          echo "React app found in root directory"
-          echo "REACT_DIR=." >> $GITHUB_ENV
         else
-          echo "No React app found"
+          echo "❌ React app not found"
           exit 1
         fi
         
-    - name: Install dependencies
+    - name: 📦 Install dependencies
       run: |
         cd $REACT_DIR
-        npm install
+        echo "Installing dependencies..."
+        npm ci || npm install
         
-    - name: Run TypeScript check and build
+    - name: 🔍 Run ESLint check
       run: |
         cd $REACT_DIR
+        echo "Running ESLint..."
+        npm run lint || true
+      continue-on-error: true
+        
+    - name: 🏗️ Build application
+      run: |
+        cd $REACT_DIR
+        echo "Building application..."
         npm run build
       env:
         CI: false
-      
-    - name: Check if tests are available
+        PUBLIC_URL: /ahp_app
+        GENERATE_SOURCEMAP: false
+        
+    - name: ✅ Verify build
       run: |
         cd $REACT_DIR
-        if npm run test --help > /dev/null 2>&1; then
-          echo "Tests are available but skipped in CI for now"
-          echo "Run 'npm test' locally to run tests"
-        else
-          echo "No tests configured"
+        if [ -d "build" ]; then 
+          echo "✅ Build completed successfully"
+          echo "📊 Build size: $(du -sh build/ | cut -f1)"
+          ls -la build/
+        else 
+          echo "❌ Build directory not found"
+          exit 1
         fi
+        
+    - name: 🧪 Run tests
+      if: success()
+      run: |
+        cd $REACT_DIR
+        echo "Running tests..."
+        npm test -- --watchAll=false --passWithNoTests || true
+      continue-on-error: true
+      env:
+        CI: true
+        
+    - name: 📊 Upload build artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: ${{ env.REACT_DIR }}/build
+        retention-days: 1
+        
+    - name: ✨ CI Pipeline Complete
+      run: |
+        echo "✅ CI Pipeline completed successfully"
+        echo "📅 Completed at: $(date -u)"
