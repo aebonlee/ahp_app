@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import dataService from '../../services/dataService_clean';
 import { projectApi } from '../../services/api';
+import { generateUUID } from '../../utils/uuid';
 
 interface Criterion {
   id: string;
@@ -25,6 +26,7 @@ interface Evaluator {
   email: string;
   status: 'pending' | 'active' | 'completed';
   progress?: number;
+  access_key?: string;
 }
 
 interface ProjectCompletionProps {
@@ -46,7 +48,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
   alternativesCount = 0,
   evaluatorsCount = 0
 }) => {
-  const [selectedAction, setSelectedAction] = useState<'terminate' | 'complete' | 'lock' | 'export' | null>(null);
+  const [selectedAction, setSelectedAction] = useState<'test' | 'sendEmail' | 'terminate' | 'complete' | 'lock' | 'export' | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [exportFormat, setExportFormat] = useState<'excel' | 'pdf' | 'both'>('both');
   const [projectSummary, setProjectSummary] = useState<any>(null);
@@ -77,10 +79,34 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
         evaluators: evaluators.length
       });
 
-      // 상세 데이터 저장
-      setCriteriaData(criteria);
-      setAlternativesData(alternatives);
-      setEvaluatorsData(evaluators);
+      // 상세 데이터 저장 - CriteriaData를 Criterion으로 변환
+      const mappedCriteria: Criterion[] = criteria.map((c: any) => ({
+        id: c.id || generateUUID(), // id가 없으면 생성
+        name: c.name || '',
+        description: c.description,
+        level: c.level || 1,
+        parent_id: c.parent_id || c.parent,
+        children: c.children
+      }));
+
+      const mappedAlternatives: Alternative[] = alternatives.map((a: any) => ({
+        id: a.id || generateUUID(),
+        name: a.name || '',
+        description: a.description
+      }));
+
+      const mappedEvaluators: Evaluator[] = evaluators.map((e: any) => ({
+        id: e.id || generateUUID(),
+        name: e.name || '',
+        email: e.email || '',
+        status: e.status || 'pending',
+        progress: e.progress || 0,
+        access_key: e.access_key
+      }));
+
+      setCriteriaData(mappedCriteria);
+      setAlternativesData(mappedAlternatives);
+      setEvaluatorsData(mappedEvaluators);
 
       const completedEvaluators = evaluators.filter((e: any) => e.status === 'completed');
       const completionRate = evaluators.length > 0 
