@@ -102,6 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         { id: 'backup', label: '백업 및 복원' },
         { id: 'audit', label: '감사 로그' },
         { id: 'connection-test', label: '연결 테스트' },
+        { id: 'system-health', label: '🏥 시스템 상태 점검' },
         { id: 'django-admin', label: 'Django 관리 콘솔' },
         { id: 'system-reset', label: '시스템 초기화' }
       ]

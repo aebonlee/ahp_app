@@ -65,6 +65,7 @@ import AIQualityValidationPage from './components/ai-quality/AIQualityValidation
 import AIMaterialsGenerationPage from './components/ai-materials/AIMaterialsGenerationPage';
 import AIChatbotAssistantPage from './components/ai-chatbot/AIChatbotAssistantPage';
 import TestPage from './pages/TestPage';
+import SystemHealthPage from './pages/SystemHealthPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
@@ -1654,6 +1655,9 @@ function App() {
 
       case 'integration-test':
         return <TestPage />;
+
+      case 'system-health':
+        return <SystemHealthPage />;
 
       case 'ai-ahp-methodology':
         return <AHPMethodologyPage />;
