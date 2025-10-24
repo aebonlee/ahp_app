@@ -566,6 +566,32 @@ class CleanDataService {
     }
   }
 
+  async updateAlternative(alternativeId: string, data: Partial<AlternativeData>): Promise<boolean> {
+    try {
+      console.log('🔄 대안 수정 시작 (Criteria API):', alternativeId);
+      
+      // Criteria API를 사용하여 수정 (type='alternative' 유지)
+      const updateData = {
+        ...data,
+        type: 'alternative' as const,
+        position: data.position || 0
+      };
+      
+      const response = await criteriaApi.updateCriteria(alternativeId, updateData);
+      
+      if (response.success) {
+        console.log('✅ 대안 수정 성공:', alternativeId);
+        return true;
+      }
+      
+      console.error('❌ 대안 수정 실패:', response.error);
+      return false;
+    } catch (error) {
+      console.error('❌ 대안 수정 중 오류:', error);
+      return false;
+    }
+  }
+
   async deleteAlternative(alternativeId: string, projectId?: string): Promise<boolean> {
     try {
       console.log('🗑️ 대안 삭제 시작 (Criteria API):', alternativeId);

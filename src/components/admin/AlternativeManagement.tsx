@@ -20,6 +20,9 @@ interface AlternativeManagementProps {
 
 const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId, onComplete, onAlternativesChange }) => {
   const [alternatives, setAlternatives] = useState<Alternative[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // AlternativeData를 Alternative로 변환
   const convertToAlternative = (data: AlternativeData): Alternative => ({
@@ -44,6 +47,8 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
   useEffect(() => {
     // 프로젝트별 대안 데이터 로드 (PostgreSQL에서)
     const loadProjectAlternatives = async () => {
+      setIsLoading(true);
+      setErrors({});
       try {
         console.log(`🔍 프로젝트 ${projectId}의 대안 데이터 로드 중...`);
         const alternativesData = await dataService.getAlternatives(projectId);
@@ -58,9 +63,12 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
       } catch (error) {
         console.error('❌ 대안 데이터 로드 실패:', error);
         setAlternatives([]);
+        setErrors({ general: '대안 데이터를 불러오는데 실패했습니다.' });
         if (onAlternativesChange) {
           onAlternativesChange(0);
         }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -114,6 +122,8 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
     }
 
     const maxOrder = Math.max(...alternatives.map(alt => alt.order), 0);
+    setIsSaving(true);
+    setErrors({});
 
     try {
       const alternativeData = convertToAlternativeData({
@@ -144,9 +154,15 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
       if (onAlternativesChange) {
         onAlternativesChange(convertedUpdatedAlternatives.length);
       }
+      
+      // 성공 메시지 표시
+      setSuccessMessage('대안이 성공적으로 추가되었습니다.');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       console.error('❌ 대안 추가 실패:', error);
       setErrors({ name: '대안 추가 중 오류가 발생했습니다. 권한을 확인해주세요.' });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -163,16 +179,38 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
       return;
     }
 
+    setIsSaving(true);
     try {
-      // TODO: 대안 편집 기능은 추후 구현
-      console.log('🚧 대안 편집 기능은 추후 구현 예정');
+      const alternative = alternatives.find(alt => alt.id === editingId);
+      if (!alternative) return;
+
+      const updatedData = {
+        ...convertToAlternativeData(alternative),
+        name: editingAlternative.name,
+        description: editingAlternative.description
+      };
+
+      console.log('🔄 대안 수정 중...', updatedData);
+      const success = await dataService.updateAlternative(editingId, updatedData);
       
-      setEditingId(null);
-      setEditingAlternative({ name: '', description: '' });
-      setErrors({});
+      if (success) {
+        // 데이터 다시 로드
+        const updatedAlternativesData = await dataService.getAlternatives(projectId);
+        const convertedUpdatedAlternatives = (updatedAlternativesData || []).map(convertToAlternative);
+        setAlternatives(convertedUpdatedAlternatives);
+        
+        setEditingId(null);
+        setEditingAlternative({ name: '', description: '' });
+        setErrors({});
+        
+        setSuccessMessage('대안이 성공적으로 수정되었습니다.');
+        setTimeout(() => setSuccessMessage(null), 3000);
+      }
     } catch (error) {
       console.error('Failed to save alternative edit:', error);
       setErrors({ general: '대안 수정 중 오류가 발생했습니다.' });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -240,8 +278,30 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
 
   return (
     <div className="space-y-6">
+      {/* 성공 메시지 */}
+      {successMessage && (
+        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center">
+          <span className="text-green-600 mr-2">✅</span>
+          {successMessage}
+        </div>
+      )}
+      
+      {/* 에러 메시지 */}
+      {errors.general && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center">
+          <span className="text-red-600 mr-2">❌</span>
+          {errors.general}
+        </div>
+      )}
+      
       <Card title="대안 추가">
-        <div className="space-y-6">
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">대안 데이터 로드 중...</span>
+          </div>
+        ) : (
+          <div className="space-y-6">
           {/* 논문 작성 권장 구조 안내 */}
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 p-4 rounded-r-lg mb-4">
             <div className="flex items-start">
@@ -423,8 +483,12 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
             </div>
 
             <div className="flex justify-end">
-              <Button onClick={handleAddAlternative} variant="primary">
-                대안 추가
+              <Button 
+                onClick={handleAddAlternative} 
+                variant="primary"
+                disabled={isSaving}
+              >
+                {isSaving ? '추가 중...' : '대안 추가'}
               </Button>
             </div>
           </div>
@@ -483,6 +547,7 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
             </div>
           </div>
         </div>
+        )}
       </Card>
     </div>
   );

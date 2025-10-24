@@ -1,0 +1,523 @@
+
+> ahp-research-platform@1.0.0 lint
+> eslint src --ext .js,.jsx,.ts,.tsx --max-warnings 350
+
+
+D:\ahp\ahp_app\src\components\admin\AIManagementDashboard.tsx
+   8:8  warning  'Modal' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+  51:6  warning  React Hook useEffect has a missing dependency: 'fetchDashboardStats'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\admin\PersonalServiceDashboard.tsx
+  3439:9  warning  'renderProjectWizardFullPage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\admin\PersonalServiceDashboard_Enhanced.tsx
+  36:8   warning  'dataService' is defined but never used       @typescript-eslint/no-unused-vars
+  37:15  warning  'ProjectData' is defined but never used       @typescript-eslint/no-unused-vars
+  38:21  warning  'UserProject' is defined but never used       @typescript-eslint/no-unused-vars
+  95:16  warning  'setUser' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\admin\ProjectCompletion.tsx
+   5:10  warning  'projectApi' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+  34:6   warning  React Hook useEffect has a missing dependency: 'loadProjectSummary'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\admin\ProjectWorkflow.tsx
+  1:27  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\admin\RealUserManagement.tsx
+   6:15  warning  'UserRole' is defined but never used                                                                           @typescript-eslint/no-unused-vars
+  97:6   warning  React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\admin\SuperAdminDashboard.tsx
+   82:17  warning  'setStats' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  127:10  warning  'subscriptions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\admin\SystemManagement.tsx
+    2:52  warning  'CogIcon' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+    2:61  warning  'ClockIcon' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+   32:10  warning  'availableUpdates' is assigned a value but never used                                                              @typescript-eslint/no-unused-vars
+   32:28  warning  'setAvailableUpdates' is assigned a value but never used                                                           @typescript-eslint/no-unused-vars
+   36:10  warning  'runningTasks' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+   42:6   warning  React Hook useEffect has a missing dependency: 'loadSystemData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  321:27  warning  'progress' is assigned a value but never used                                                                      @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\admin\TrashBin.tsx
+  34:6  warning  React Hook useEffect has a missing dependency: 'loadTrashedProjects'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\admin\TrashBinTest.tsx
+  37:6  warning  React Hook useEffect has a missing dependency: 'loadTrashedProjects'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\admin\TreeModelConfiguration.tsx
+   4:8   warning  'Input' is defined but never used                            @typescript-eslint/no-unused-vars
+   6:10  warning  'ProjectStatus' is defined but never used                    @typescript-eslint/no-unused-vars
+  52:10  warning  'showNodeForm' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  53:10  warning  'showAlternativeForm' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  53:31  warning  'setShowAlternativeForm' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  54:10  warning  'editingNode' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  55:10  warning  'editingAlternative' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  55:30  warning  'setEditingAlternative' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  56:10  warning  'selectedParentId' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  58:10  warning  'nodeForm' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  64:10  warning  'alternativeForm' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  64:27  warning  'setAlternativeForm' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  69:10  warning  'errors' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  69:18  warning  'setErrors' is assigned a value but never used               @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\admin\ai-management\AIServicePlanManager.tsx
+  58:6  warning  React Hook useEffect has a missing dependency: 'fetchPlans'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\admin\ai-management\AISettingsManager.tsx
+  90:6  warning  React Hook useEffect has a missing dependency: 'fetchSettings'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\admin\ai-management\AIUsageAnalytics.tsx
+  45:6  warning  React Hook useEffect has a missing dependency: 'fetchAnalyticsData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\admin\ai-management\PromptTemplateManager.tsx
+  80:6  warning  React Hook useEffect has a missing dependency: 'fetchTemplates'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\admin\ai-management\UserAIAccessManager.tsx
+    8:8   warning  'Modal' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   81:10  warning  'users' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+   83:10  warning  'settings' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+   85:10  warning  'showCreateModal' is assigned a value but never used                                                          @typescript-eslint/no-unused-vars
+  109:6   warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  147:9   warning  'handleCreateAccess' is assigned a value but never used                                                       @typescript-eslint/no-unused-vars
+  167:9   warning  'handleUpdateAccess' is assigned a value but never used                                                       @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\ahp\AHPProjectManager.tsx
+  1:27  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\ai-interpretation\AIResultsInterpretationPage.tsx
+   75:10  warning  'interpretationSettings' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   75:34  warning  'setInterpretationSettings' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  125:38  warning  'evaluations' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  182:11  warning  'aiInterpretation' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  234:9   warning  'generateChartData' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\ai-paper\AIPaperGenerationPage.tsx
+  9:25  warning  'SecondaryButton' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\ai-quality\AIQualityValidationPage.tsx
+  6:27  warning  'Suspense' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\analysis\AdvancedSensitivityAnalysis.tsx
+    6:38  warning  'useCallback' is defined but never used                                                                                                                 @typescript-eslint/no-unused-vars
+   97:6   warning  React Hook useEffect has missing dependencies: 'drawSensitivityChart' and 'results.length'. Either include them or remove the dependency array          react-hooks/exhaustive-deps
+  103:6   warning  React Hook useEffect has missing dependencies: 'initializeCustomWeights' and 'initializeScenarios'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  284:15  warning  'newScore' is assigned a value but never used                                                                                                           @typescript-eslint/no-unused-vars
+  322:15  warning  'newScore' is assigned a value but never used                                                                                                           @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\analysis\BudgetOptimization.tsx
+  284:13  warning  'tempTotalBudget' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\analysis\BudgetingView.tsx
+   88:6   warning  React Hook useEffect has a missing dependency: 'initializeBudgetItems'. Either include it or remove the dependency array                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  176:6   warning  React Hook useCallback has missing dependencies: 'onOptimize', 'performScenarioAnalysis', 'solveBinaryKnapsack', 'solveContinuousAllocation', and 'solveFractionalKnapsack'. Either include them or remove the dependency array. If 'onOptimize' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+  325:13  warning  'originalConstraint' is assigned a value but never used                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  328:13  warning  'tempConstraint' is assigned a value but never used                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\analysis\ResultsAnalysis.tsx
+  40:10  warning  'loading' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  40:19  warning  'setLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\analysis\ResultsDataManager.tsx
+   4:8  warning  'dataService' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  35:6  warning  React Hook useEffect has a missing dependency: 'loadResults'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\analysis\SensitivityAnalysis.tsx
+  110:10  warning  'visualizationData' is assigned a value but never used                                                                                                                  @typescript-eslint/no-unused-vars
+  129:6   warning  React Hook useEffect has a missing dependency: 'performExtendedAnalysis'. Either include it or remove the dependency array                                              react-hooks/exhaustive-deps
+  156:6   warning  React Hook useEffect has a missing dependency: 'initializeCharts'. Either include it or remove the dependency array                                                     react-hooks/exhaustive-deps
+  166:6   warning  React Hook useCallback has missing dependencies: 'drawParetoChart', 'drawSensitivityChart', and 'drawTornadoChart'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  205:6   warning  React Hook useCallback has a missing dependency: 'performRealTimeAnalysis'. Either include it or remove the dependency array                                            react-hooks/exhaustive-deps
+  234:6   warning  React Hook useCallback has missing dependencies: 'generateVisualizationData' and 'recalculateScores'. Either include them or remove the dependency array                react-hooks/exhaustive-deps
+  328:6   warning  React Hook useCallback has missing dependencies: 'performExtendedSensitivityAnalysis' and 'performParetoAnalysis'. Either include them or remove the dependency array   react-hooks/exhaustive-deps
+  720:11  warning  'context' is assigned a value but never used                                                                                                                            @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\analysis\SensitivityView.tsx
+   55:29  warning  'setSelectedCriterion' is assigned a value but never used                                                                                                       @typescript-eslint/no-unused-vars
+   59:26  warning  'setStabilityIndex' is assigned a value but never used                                                                                                          @typescript-eslint/no-unused-vars
+   76:6   warning  React Hook useEffect has missing dependencies: 'calculateCriticalThresholds' and 'generateSensitivityData'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  109:6   warning  React Hook useCallback has missing dependencies: 'calculateAdjustedScores' and 'calculateStabilityIndex'. Either include them or remove the dependency array    react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\analysis\advanced\AdvancedAnalysisDashboard.tsx
+  33:10  warning  'analysisData' is assigned a value but never used                                                               @typescript-eslint/no-unused-vars
+  33:24  warning  'setAnalysisData' is assigned a value but never used                                                            @typescript-eslint/no-unused-vars
+  44:6   warning  React Hook useEffect has a missing dependency: 'loadProject'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\analysis\advanced\ComprehensiveReport.tsx
+  27:6  warning  React Hook useEffect has a missing dependency: 'generateReport'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\analysis\advanced\GroupConsensusPanel.tsx
+  3:31  warning  'BarChart' is defined but never used       @typescript-eslint/no-unused-vars
+  3:41  warning  'Bar' is defined but never used            @typescript-eslint/no-unused-vars
+  3:46  warning  'XAxis' is defined but never used          @typescript-eslint/no-unused-vars
+  3:53  warning  'YAxis' is defined but never used          @typescript-eslint/no-unused-vars
+  3:60  warning  'CartesianGrid' is defined but never used  @typescript-eslint/no-unused-vars
+  3:84  warning  'Legend' is defined but never used         @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\analysis\advanced\MonteCarloSimulation.tsx
+  3:10  warning  'LineChart' is defined but never used            @typescript-eslint/no-unused-vars
+  3:21  warning  'Line' is defined but never used                 @typescript-eslint/no-unused-vars
+  3:27  warning  'XAxis' is defined but never used                @typescript-eslint/no-unused-vars
+  3:34  warning  'YAxis' is defined but never used                @typescript-eslint/no-unused-vars
+  3:41  warning  'CartesianGrid' is defined but never used        @typescript-eslint/no-unused-vars
+  3:56  warning  'Tooltip' is defined but never used              @typescript-eslint/no-unused-vars
+  3:65  warning  'Legend' is defined but never used               @typescript-eslint/no-unused-vars
+  3:73  warning  'ResponsiveContainer' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\analysis\advanced\SensitivityAnalysisPanel.tsx
+   1:27  warning  'useEffect' is defined but never used                     @typescript-eslint/no-unused-vars
+   6:3   warning  'ArrowTrendingUpIcon' is defined but never used           @typescript-eslint/no-unused-vars
+   7:3   warning  'ArrowTrendingDownIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  10:3   warning  'LineChart' is defined but never used                     @typescript-eslint/no-unused-vars
+  35:28  warning  'setSelectedCriteria' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\auth\EnhancedAuthFlow.tsx
+  1:27  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\auth\TwoFactorAuth.test.tsx
+  2:26  warning  'fireEvent' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\auth\TwoFactorAuth.tsx
+    2:69  warning  'QrCodeIcon' is defined but never used                                                                                                            @typescript-eslint/no-unused-vars
+    3:10  warning  'PhoneIcon' is defined but never used                                                                                                             @typescript-eslint/no-unused-vars
+   43:10  warning  'isSetupComplete' is assigned a value but never used                                                                                              @typescript-eslint/no-unused-vars
+  185:6   warning  React Hook useEffect has missing dependencies: 'generateTwoFactorSetup' and 'twoFactorSetup'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\collaboration\RealTimeCollaboration.tsx
+   76:10  warning  'events' is assigned a value but never used                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+   82:20  warning  'setVersions' is assigned a value but never used                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   86:10  warning  'showPermissions' is assigned a value but never used                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   86:27  warning  'setShowPermissions' is assigned a value but never used                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   95:10  warning  'userActivities' is assigned a value but never used                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  105:9   warning  'mockServerRef' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  113:6   warning  React Hook useEffect has missing dependencies: 'cleanupRealTimeSync' and 'initializeRealTimeSync'. Either include them or remove the dependency array                                                                                                                                   react-hooks/exhaustive-deps
+  140:6   warning  React Hook useEffect has a missing dependency: 'sendCursorPosition'. Either include it or remove the dependency array                                                                                                                                                                   react-hooks/exhaustive-deps
+  164:6   warning  React Hook useEffect has a missing dependency: 'syncQueuedEvents'. Either include it or remove the dependency array                                                                                                                                                                     react-hooks/exhaustive-deps
+  207:6   warning  React Hook useCallback has missing dependencies: 'handleChatMessage', 'handleCursorMove', 'handleNodeUpdate', 'handleRealTimeEvent', 'handleUserJoin', 'handleUserLeave', 'initializeOfflineMode', and 'startConnectionMonitoring'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  420:6   warning  React Hook useCallback has a missing dependency: 'updateConnectionQuality'. Either include it or remove the dependency array                                                                                                                                                            react-hooks/exhaustive-deps
+  512:9   warning  'handleNodeCreate' is assigned a value but never used                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  524:9   warning  'handleNodeDelete' is assigned a value but never used                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  565:9   warning  'handleSelectionChange' is assigned a value but never used                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  689:40  warning  Function declared in a loop contains unsafe references to variable(s) 'match'                                                                                                                                                                                                           no-loop-func
+
+D:\ahp\ahp_app\src\components\common\FileUpload.tsx
+    4:3  warning  'DocumentIcon' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   73:6  warning  React Hook React.useEffect has a missing dependency: 'loadExistingFiles'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  224:6  warning  React Hook useCallback has a missing dependency: 'handleFileUpload'. Either include it or remove the dependency array       react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\common\RoleBasedDashboard.tsx
+  11:8  warning  'PersonalServiceDashboard' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\common\SessionBar.tsx
+  11:23  warning  'setSessionInfo' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\criteria\BulkCriteriaInput.tsx
+  150:9  warning  'convertParsedCriteria' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\criteria\HierarchyVisualEditor.tsx
+  4:8  warning  'Input' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\criteria\InteractiveCriteriaEditor.tsx
+  38:10  warning  'expandedNodes' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  38:25  warning  'setExpandedNodes' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\decision\DecisionSupportSystem.tsx
+  10:3  warning  'calculateAHPScores' is defined but never used  @typescript-eslint/no-unused-vars
+  11:3  warning  'calculateRanking' is defined but never used    @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\demo\ApiTestPage.tsx
+  6:27  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\demo\ComponentShowcase.tsx
+   14:24  warning  'buildComparisonMatrix' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+  120:6   warning  React Hook useEffect has a missing dependency: 'calculateConsistencyRatio'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluation\AnonymousEvaluator.tsx
+    6:3   warning  'ClockIcon' is defined but never used                                                                                                              @typescript-eslint/no-unused-vars
+   64:10  warning  'progress' is assigned a value but never used                                                                                                      @typescript-eslint/no-unused-vars
+   68:27  warning  'setAutoSaveEnabled' is assigned a value but never used                                                                                            @typescript-eslint/no-unused-vars
+   88:6   warning  React Hook useEffect has a missing dependency: 'initializeEvaluation'. Either include it or remove the dependency array                            react-hooks/exhaustive-deps
+  129:6   warning  React Hook useEffect has missing dependencies: 'comparisons.length' and 'generateComparisons'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluation\CRBadge.tsx
+  198:37  warning  Unexpected mix of '||' and '&&'. Use parentheses to clarify the intended order of operations  no-mixed-operators
+  198:71  warning  Unexpected mix of '||' and '&&'. Use parentheses to clarify the intended order of operations  no-mixed-operators
+
+D:\ahp\ahp_app\src\components\evaluation\ConsistencyHelper.tsx
+   4:3  warning  'buildComparisonMatrix' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+   5:8  warning  'ComparisonInput' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+  44:6  warning  React Hook useEffect has a missing dependency: 'generateSuggestions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluation\DemographicSurveyForm.tsx
+  1:27  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\evaluation\DirectInputEvaluation.tsx
+  36:9  warning  'API_BASE_URL' is assigned a value but never used                                                                              @typescript-eslint/no-unused-vars
+  56:6  warning  React Hook useEffect has a missing dependency: 'calculateNormalizedWeights'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluation\JudgmentHelperPanel.tsx
+  47:6  warning  React Hook useEffect has a missing dependency: 'generateSuggestions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluation\PairwiseGrid.tsx
+    8:24  warning  'buildComparisonMatrix' is defined but never used                                                                @typescript-eslint/no-unused-vars
+   61:10  warning  'matrix' is assigned a value but never used                                                                      @typescript-eslint/no-unused-vars
+   75:6   warning  React Hook useEffect has a missing dependency: 'updateMatrix'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  223:25  warning  'isActive' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\evaluation\assignment\EmailTemplateManager.tsx
+  2:40  warning  'TrashIcon' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\evaluation\assignment\EvaluatorAssignmentDashboard.tsx
+  45:6  warning  React Hook useEffect has a missing dependency: 'loadProject'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluation\assignment\InvitationHistory.tsx
+  36:6  warning  React Hook useEffect has a missing dependency: 'loadInvitations'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluation\assignment\ProgressTracker.tsx
+  44:6  warning  React Hook useEffect has a missing dependency: 'loadProgressData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluation\fuzzy\FuzzyMatrixGrid.tsx
+  31:9  warning  'n' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\evaluation\fuzzy\FuzzyScaleSelector.tsx
+  114:9  warning  'currentScale' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\evaluator\EnhancedEvaluatorManagement.tsx
+  73:6  warning  React Hook useEffect has missing dependencies: 'generateEvaluationLink', 'loadEvaluators', and 'loadProjectInfo'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluator\EvaluatorDataManager.tsx
+  39:6  warning  React Hook useEffect has a missing dependency: 'loadEvaluators'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\evaluator\EvaluatorWorkflow.tsx
+  46:6  warning  React Hook useEffect has a missing dependency: 'loadProjectData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\export\ExportManager.tsx
+  13:11  warning  'ProjectExportData' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\guide\UserGuideOverview.tsx
+   2:8   warning  'Card' is defined but never used                    @typescript-eslint/no-unused-vars
+   3:8   warning  'Tooltip' is defined but never used                 @typescript-eslint/no-unused-vars
+   4:8   warning  'LayerPopup' is defined but never used              @typescript-eslint/no-unused-vars
+   5:8   warning  'UnifiedButton' is defined but never used           @typescript-eslint/no-unused-vars
+   7:63  warning  'DEMO_PROJECTS' is defined but never used           @typescript-eslint/no-unused-vars
+  16:22  warning  'setLayoutMode' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\help\HelpSystem.tsx
+  224:23  warning  'setSearchQuery' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  233:9   warning  'handleSearch' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\home\HomePage.tsx
+   4:8   warning  'ParticleBackground' is defined but never used     @typescript-eslint/no-unused-vars
+  17:10  warning  'currentTheme' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\layout\EnhancedSidebar.tsx
+  151:11  warning  'isModeSwitch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\model\CanvasModelBuilder.tsx
+   6:3   warning  'DocumentDuplicateIcon' is defined but never used     @typescript-eslint/no-unused-vars
+   8:3   warning  'ListBulletIcon' is defined but never used            @typescript-eslint/no-unused-vars
+  11:3   warning  'XMarkIcon' is defined but never used                 @typescript-eslint/no-unused-vars
+  91:10  warning  'draggedNode' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  91:23  warning  'setDraggedNode' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  95:10  warning  'canvasOffset' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  95:24  warning  'setCanvasOffset' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\modeling\HierarchyTreeBuilder.tsx
+   1:27  warning  'useEffect' is defined but never used         @typescript-eslint/no-unused-vars
+   1:38  warning  'useCallback' is defined but never used       @typescript-eslint/no-unused-vars
+  77:9   warning  'addNode' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\modeling\HierarchyTreeEditor.tsx
+    6:59  warning  'ReactElement' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   94:10  warning  'connections' is assigned a value but never used                                                                         @typescript-eslint/no-unused-vars
+   94:23  warning  'setConnections' is assigned a value but never used                                                                      @typescript-eslint/no-unused-vars
+   98:10  warning  'panOffset' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+   98:21  warning  'setPanOffset' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  121:6   warning  React Hook useEffect has a missing dependency: 'validateHierarchy'. Either include it or remove the dependency array     react-hooks/exhaustive-deps
+  257:6   warning  React Hook useCallback has a missing dependency: 'getAllAlternatives'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\modeling\ModelBuilder.tsx
+  104:23  warning  'setCurrentView' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
+  122:6   warning  React Hook useEffect has a missing dependency: 'handleAutoSave'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\modeling\ModelVisualization.tsx
+    6:46  warning  'useCallback' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+  106:6   warning  React Hook useEffect has a missing dependency: 'initializeNodeStates'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  142:11  warning  'treeData' is assigned a value but never used                                                                            @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\monitoring\RealTimeParticipantMonitor.tsx
+   67:11  warning  't' is assigned a value but never used                                                                                                                                          @typescript-eslint/no-unused-vars
+   95:6   warning  React Hook useEffect has missing dependencies: 'checkForNotifications', 'fetchParticipantData', and 'fetchProjectProgress'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  191:6   warning  React Hook useCallback has an unnecessary dependency: 'projectId'. Either exclude it or remove the dependency array                                                             react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\notifications\EmailNotificationSystem.tsx
+  86:6  warning  React Hook useEffect has a missing dependency: 'loadNotificationHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\paper\PaperManagement.tsx
+    1:27  warning  'useEffect' is defined but never used                    @typescript-eslint/no-unused-vars
+   43:22  warning  'setAhpResults' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   44:10  warning  'surveyData' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   45:10  warning  'surveyAnalytics' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   45:27  warning  'setSurveyAnalytics' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  379:9   warning  'loadSurveyResults' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  391:9   warning  'exportSurveyData' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  395:9   warning  'generateReportPDF' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\project\DemographicSurveyConfig.tsx
+  1:27  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\project\EnhancedProjectCreationWizard.tsx
+  6:8  warning  'DemographicSurveyConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  7:8  warning  'DemographicSurvey' is defined but never used        @typescript-eslint/no-unused-vars
+  8:8  warning  'Card' is defined but never used                     @typescript-eslint/no-unused-vars
+  9:8  warning  'Button' is defined but never used                   @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\project\RealTimeMonitoringDashboard.tsx
+   9:84  warning  'Legend' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+  48:6   warning  React Hook useEffect has a missing dependency: 'fetchMonitoringData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\results\AHPResultsDashboard.tsx
+   4:3   warning  'TableCellsIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+   7:3   warning  'ArrowUpIcon' is defined but never used                     @typescript-eslint/no-unused-vars
+   8:3   warning  'ArrowDownIcon' is defined but never used                   @typescript-eslint/no-unused-vars
+  21:3   warning  'performSensitivityAnalysis' is defined but never used      @typescript-eslint/no-unused-vars
+  48:10  warning  'sensitivityResults' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  48:30  warning  'setSensitivityResults' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  59:13  warning  'baseResult' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  74:9   warning  'getRankingChanges' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\results\EnhancedResultsDashboard.tsx
+   66:11  warning  't' is assigned a value but never used                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   98:6   warning  React Hook useEffect has a missing dependency: 'initializeCharts'. Either include it or remove the dependency array                                                                                                                                                                                                           react-hooks/exhaustive-deps
+  112:6   warning  React Hook useCallback has missing dependencies: 'drawConsensusChart', 'drawCriteriaImportanceMatrix', 'drawHierarchyChart', 'drawParticipantAgreementChart', 'drawRankingChart', 'drawRankingStabilityChart', 'drawSensitivityChart', and 'drawWeightDistributionChart'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  536:11  warning  'options' is assigned a value but never used                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\settings\PersonalSettings.tsx
+  184:6  warning  React Hook useEffect has missing dependencies: 'onUserUpdate', 'saveSettingsToAPI', 'settings.display', 'settings.notifications', 'settings.privacy', 'settings.profile.department', 'settings.profile.email', 'settings.profile.firstName', 'settings.profile.lastName', 'settings.profile.organization', 'settings.profile.phone', 'settings.profile.profileImage', 'settings.security', 'settings.workflow', and 'user'. Either include them or remove the dependency array. If 'onUserUpdate' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+  379:9  warning  'getSaveStatusColor' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\superadmin\AllProjectsManagement.tsx
+  103:6  warning  React Hook useEffect has a missing dependency: 'fetchProjects'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\superadmin\SuperAdminDashboard.tsx
+    3:8   warning  'dataService' is defined but never used               @typescript-eslint/no-unused-vars
+   19:10  warning  'activities' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   19:22  warning  'setActivities' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  164:13  warning  'performanceData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\superadmin\SystemInfo.tsx
+  141:6  warning  React Hook useEffect has a missing dependency: 'fetchSystemInfo'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\superadmin\SystemSettings.tsx
+  4:8  warning  'Input' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\support\NewsPage.tsx
+  78:6  warning  React Hook useEffect has a missing dependency: 'fetchPosts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\support\SupportPage.tsx
+  165:6  warning  React Hook useEffect has a missing dependency: 'fetchPosts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\survey\SurveyManagementSystem.tsx
+   3:18  warning  'SurveyResponse' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+   3:34  warning  'SurveyAnalytics' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  20:10  warning  'isLoading' is assigned a value but never used                                                                   @typescript-eslint/no-unused-vars
+  21:10  warning  'projects' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+  21:20  warning  'setProjects' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  68:6   warning  React Hook useEffect has a missing dependency: 'fetchSurveys'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\user\PersonalUserDashboard.tsx
+  29:6  warning  React Hook useEffect has missing dependencies: 'loadRecentProjects' and 'loadUserStats'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\components\verification\CaptureVerificationDashboard.tsx
+   7:27  warning  'LabelCheckItem' is defined but never used           @typescript-eslint/no-unused-vars
+  28:10  warning  'workshopStates' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\workflow\AHPResearchWorkflow.tsx
+   5:3  warning  'PlayIcon' is defined but never used                @typescript-eslint/no-unused-vars
+  24:3  warning  'calculateIndividualAHP' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\workshop\ParticipantManager.tsx
+   77:10  warning  'selectedParticipants' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   77:32  warning  'setSelectedParticipants' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   78:10  warning  'bulkAction' is assigned a value but never used               @typescript-eslint/no-unused-vars
+   78:22  warning  'setBulkAction' is assigned a value but never used            @typescript-eslint/no-unused-vars
+   79:10  warning  'emailTemplate' is assigned a value but never used            @typescript-eslint/no-unused-vars
+   79:25  warning  'setEmailTemplate' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   80:10  warning  'isLoading' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  273:9   warning  'updateParticipantStatus' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  290:9   warning  'bulkInvite' is assigned a value but never used               @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\components\workshop\RealTimeMonitor.tsx
+  70:15  warning  The ref value 'wsRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'wsRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  76:6   warning  React Hook useEffect has a missing dependency: 'loadSampleSession'. Either include it or remove the dependency array                                                                                                                                       react-hooks/exhaustive-deps
+  95:6   warning  React Hook useEffect has a missing dependency: 'refreshSessionData'. Either include it or remove the dependency array                                                                                                                                      react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\data\testDemoData.ts
+  349:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+D:\ahp\ahp_app\src\pages\IntegratedEvaluationFlow.tsx
+   6:3   warning  'ChartBarIcon' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+  35:10  warning  'demographicData' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
+  40:6   warning  React Hook useEffect has a missing dependency: 'loadProjectInfo'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  97:9   warning  'handleAHPComplete' is assigned a value but never used                                                              @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\pages\TestPage.tsx
+  165:6  warning  React Hook useEffect has a missing dependency: 'testGetProjects'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ahp\ahp_app\src\services\ahpApiService.ts
+  246:1  warning  Assign instance to a variable before exporting as module default  import/no-anonymous-default-export
+
+D:\ahp\ahp_app\src\services\apiService.ts
+  6:24  warning  'API_ENDPOINTS' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\services\dataService.ts
+   8:7  warning  'STORAGE_KEYS' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  19:7  warning  'isOfflineMode' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  24:7  warning  'generateUUID' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\services\dataService_clean.ts
+  1:35  warning  'alternativeApi' is defined but never used  @typescript-eslint/no-unused-vars
+  1:51  warning  'evaluatorApi' is defined but never used    @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\setupTests.ts
+  70:3  warning  Useless constructor  @typescript-eslint/no-useless-constructor
+
+D:\ahp\ahp_app\src\tests\components\DecisionSupportSystem.test.tsx
+  2:26  warning  'fireEvent' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\tests\integration\realTimeCollaboration.integration.test.tsx
+   59:23  warning  'rerender1' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  105:13  warning  'container' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  234:13  warning  'container' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  392:13  warning  'container' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\utils\ahpCalculations.ts
+  611:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+D:\ahp\ahp_app\src\utils\connectionTest.ts
+  291:17  warning  Unexpected whitespace before property repeat  no-whitespace-before-property
+  308:17  warning  Unexpected whitespace before property repeat  no-whitespace-before-property
+
+D:\ahp\ahp_app\src\utils\exportGenerator.ts
+  180:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+D:\ahp\ahp_app\src\utils\fuzzyCalculations.ts
+    9:3  warning  'FuzzyWeight' is defined but never used       @typescript-eslint/no-unused-vars
+  334:9  warning  'weights' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ahp\ahp_app\src\utils\security.test.ts
+   41:26  warning  Script URL is a form of eval  no-script-url
+   42:26  warning  Script URL is a form of eval  no-script-url
+  169:25  warning  Script URL is a form of eval  no-script-url
+
+D:\ahp\ahp_app\src\utils\security.ts
+  43:9   warning  Unnecessary escape character: \-  no-useless-escape
+  43:11  warning  Unnecessary escape character: \-  no-useless-escape
+
+D:\ahp\ahp_app\src\utils\textParser.ts
+  110:16  warning  'indent' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 297 problems (0 errors, 297 warnings)
+  0 errors and 2 warnings potentially fixable with the `--fix` option.
+
