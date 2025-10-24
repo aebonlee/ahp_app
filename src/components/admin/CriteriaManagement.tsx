@@ -851,6 +851,20 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* 성공/에러 메시지 */}
+      {successMessage && (
+        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center">
+          <span className="text-green-600 mr-2">✅</span>
+          {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center">
+          <span className="text-red-600 mr-2">❌</span>
+          {errorMessage}
+        </div>
+      )}
+      
       <Card title="평가 기준 설정">
         <div className="space-y-6">
           {/* 상단 안내 메시지 */}
@@ -925,7 +939,13 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
 
           {/* 현재 계층구조 표시 또는 시각적 빌더 */}
           <div className="min-h-[300px]">
-            {activeInputMode === 'visual' ? (
+            {isLoading && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-3 text-gray-600">평가 기준 데이터 로드 중...</span>
+              </div>
+            )}
+            {!isLoading && activeInputMode === 'visual' ? (
               // 인라인 시각적 빌더
               <div className="border border-gray-200 rounded-lg p-4">
                 <VisualCriteriaBuilder
@@ -934,7 +954,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
                   onClose={() => setActiveInputMode(null)}
                 />
               </div>
-            ) : criteria.length > 0 ? (
+            ) : !isLoading && criteria.length > 0 ? (
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-medium text-gray-900">현재 계층구조</h4>
@@ -990,7 +1010,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
                   />
                 )}
               </div>
-            ) : (
+            ) : !isLoading ? (
               <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
                 <div className="text-gray-500">
                   <div className="text-4xl mb-3">🌳</div>
@@ -998,7 +1018,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
                   <p className="text-sm mt-2">위의 입력 방법 중 하나를 선택하여 기준을 추가하세요</p>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* 요약 정보 */}
