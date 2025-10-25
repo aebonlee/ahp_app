@@ -153,9 +153,9 @@ class ProjectCreationDebugger {
       title: projectData.title || 'Test Project',
       description: projectData.description || 'Test Description',
       objective: projectData.objective || 'Test Objective',
-      status: 'planning',
-      evaluation_mode: projectData.evaluation_mode || 'simple',
-      workflow_stage: 'planning'
+      status: 'draft', // Django 모델: draft, in_progress, completed, archived, deleted
+      evaluation_mode: projectData.evaluation_mode || 'practical',
+      workflow_stage: 'creating' // Django 모델: creating, waiting, evaluating, completed
     };
 
     this.log('CREATE_REQUEST', 'success', '요청 본문 준비됨', requestBody);

@@ -348,9 +348,9 @@ export const projectApi = {
       title: data.title,
       description: data.description,
       objective: data.objective || '',
-      status: 'planning', // 초기 상태는 항상 planning
+      status: 'draft', // Django 모델: draft, in_progress, completed, archived, deleted
       evaluation_mode: data.evaluation_mode || 'practical',
-      workflow_stage: 'planning', // 초기 단계는 항상 planning
+      workflow_stage: 'creating', // Django 모델: creating, waiting, evaluating, completed
     };
     
     console.log('📤 Django로 전송할 데이터:', djangoData);
