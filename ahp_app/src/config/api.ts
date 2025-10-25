@@ -29,13 +29,13 @@ export const API_ENDPOINTS = {
     PROFILE: '/api/service/auth/profile/',
     REFRESH: '/api/service/auth/token/refresh/'
   },
-  // Projects - Django 백엔드 실제 경로
+  // Projects - Django 백엔드 실제 경로 (URL 중복 제거)
   PROJECTS: {
-    LIST: '/api/service/projects/',
-    CREATE: '/api/service/projects/',
-    GET: (id: string) => `/api/service/projects/${id}/`,
-    UPDATE: (id: string) => `/api/service/projects/${id}/`,
-    DELETE: (id: string) => `/api/service/projects/${id}/`
+    LIST: '/api/service/projects/projects/',
+    CREATE: '/api/service/projects/projects/',
+    GET: (id: string) => `/api/service/projects/projects/${id}/`,
+    UPDATE: (id: string) => `/api/service/projects/projects/${id}/`,
+    DELETE: (id: string) => `/api/service/projects/projects/${id}/`
   },
   // Criteria - Django REST Framework 프로젝트 액션 경로
   CRITERIA: {
