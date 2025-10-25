@@ -29,7 +29,7 @@ export const API_ENDPOINTS = {
     PROFILE: '/api/service/auth/profile/',
     REFRESH: '/api/service/auth/token/refresh/'
   },
-  // Projects - 실제 Django REST Framework 라우터 경로 (수정됨)
+  // Projects - Django 백엔드 실제 경로
   PROJECTS: {
     LIST: '/api/service/projects/',
     CREATE: '/api/service/projects/',

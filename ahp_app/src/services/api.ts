@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
 
 // API 응답 타입 정의
 export interface ApiResponse<T = any> {
@@ -195,6 +195,20 @@ const makeRequest = async <T>(
     }
 
     if (!response.ok) {
+      // 405 Method Not Allowed 특별 처리
+      if (response.status === 405) {
+        console.error(`❌ 405 Method Not Allowed - ${endpoint}`);
+        console.error(`해당 엔드포인트가 ${options.method} 메서드를 지원하지 않습니다.`);
+        console.error('Django URL 패턴을 확인하세요.');
+        
+        // 405 에러인 경우 더 구체적인 메시지 반환
+        return {
+          success: false,
+          error: `${endpoint} 엔드포인트는 ${options.method} 메서드를 지원하지 않습니다. 백엔드 설정을 확인하세요.`,
+          message: 'Method Not Allowed'
+        };
+      }
+      
       // 상세 에러 로깅 추가
       console.error(`🚨 HTTP ${response.status} 에러 [${endpoint}]:`, {
         status: response.status,
@@ -205,11 +219,32 @@ const makeRequest = async <T>(
         responseData: data
       });
       
+      // 405 Method Not Allowed 특별 처리
+      if (response.status === 405) {
+        const allowedMethods = response.headers.get('allow') || 'Unknown';
+        console.error(`❌ 405 Method Not Allowed - 허용된 메서드: ${allowedMethods}`);
+        console.error(`현재 엔드포인트: ${endpoint}`);
+        console.error(`시도한 메서드: ${options.method || 'GET'}`);
+        
+        // GET 메서드가 허용되는 경우 목록 조회 엔드포인트일 가능성
+        if (allowedMethods.includes('GET') && options.method === 'POST') {
+          console.error('💡 힌트: 이 엔드포인트는 목록 조회용입니다. 생성 API는 다른 경로일 수 있습니다.');
+        }
+        
+        throw new Error(`405 Method Not Allowed: ${options.method} 메서드는 이 엔드포인트에서 허용되지 않습니다. 허용된 메서드: ${allowedMethods}`);
+      }
+      
       // 500 에러 특별 처리 - 백엔드 상세 에러 메시지 추출
       if (response.status === 500) {
         const errorDetail = data?.detail || data?.error || data?.message || '서버 내부 오류';
         console.error('🔥 서버 500 에러 상세:', errorDetail);
         throw new Error(`서버 오류: ${errorDetail}`);
+      }
+      
+      // 401 Unauthorized 처리
+      if (response.status === 401) {
+        console.error(`❌ 401 Unauthorized [${endpoint}]: 인증이 필요합니다.`);
+        throw new Error('인증이 필요합니다. 다시 로그인해 주세요.');
       }
       
       // 권한 오류 특별 처리
@@ -230,6 +265,15 @@ const makeRequest = async <T>(
           errorType: typeof data,
           errorKeys: data && typeof data === 'object' ? Object.keys(data) : 'N/A'
         });
+        const errorMessage = data.message || data.error || 
+                           (typeof data === 'object' ? JSON.stringify(data) : 'Bad Request');
+        throw new Error(`잘못된 요청: ${errorMessage}`);
+      }
+      
+      // 404 Not Found 처리
+      if (response.status === 404) {
+        console.error(`❌ 404 Not Found [${endpoint}]: 엔드포인트를 찾을 수 없습니다.`);
+        throw new Error(`엔드포인트를 찾을 수 없습니다: ${endpoint}`);
       }
       
       throw new Error(data.message || data.error || `HTTP ${response.status}: API 요청 실패`);
@@ -253,8 +297,21 @@ const makeRequest = async <T>(
 export const projectApi = {
   // 프로젝트 목록 조회 (정규화 적용)
   getProjects: async () => {
-    const response = await makeRequest<{count: number, results: DjangoProjectResponse[]}>('/api/service/projects/');
-    if (response.success && response.data) {
+    console.log('🔍 projectApi.getProjects 호출');
+    const response = await makeRequest<any>(API_ENDPOINTS.PROJECTS.LIST);
+    console.log('📡 프로젝트 목록 응답:', response);
+    
+    if (response.success) {
+      // response.data가 undefined인 경우 빈 배열 반환
+      if (!response.data) {
+        console.log('📦 프로젝트 목록이 비어있습니다');
+        return {
+          success: true,
+          data: [],
+          message: '프로젝트가 없습니다'
+        };
+      }
+      
       // Django 응답을 정규화하여 반환
       const normalizedProjects = normalizeProjectListResponse(response.data);
       return {
@@ -268,7 +325,7 @@ export const projectApi = {
 
   // 프로젝트 상세 조회 (정규화 적용)
   getProject: async (id: string) => {
-    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/${id}/`);
+    const response = await makeRequest<DjangoProjectResponse>(API_ENDPOINTS.PROJECTS.GET(id));
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProject = normalizeProjectData(response.data);
@@ -283,32 +340,27 @@ export const projectApi = {
 
   // 프로젝트 생성 (정규화 적용)
   createProject: async (data: Omit<ProjectData, 'id'>) => {
+    console.log('🔍 projectApi.createProject 호출:', data);
+    
     // 프론트엔드 데이터를 Django 형식으로 변환
+    // Django 백엔드의 실제 필수 필드만 포함
     const djangoData = {
       title: data.title,
       description: data.description,
-      objective: data.objective,
-      status: data.status,
-      evaluation_mode: data.evaluation_mode,
-      workflow_stage: data.workflow_stage,
-      deadline: data.dueDate, // dueDate → deadline 매핑
-      settings: {
-        // ahp_type을 settings에 포함
-        ahp_type: data.ahp_type || 'general',
-        // 인구통계 데이터도 포함 (있는 경우)
-        ...(data.demographic_data && { demographic_data: data.demographic_data }),
-        // 기타 설정 정보
-        ...(data.demographic_survey_config && { demographic_survey_config: data.demographic_survey_config }),
-      },
-      // 인구통계 관련 필드들 직접 매핑
-      require_demographics: data.require_demographics,
-      evaluation_flow_type: data.evaluation_flow_type,
+      objective: data.objective || '',
+      status: 'planning', // 초기 상태는 항상 planning
+      evaluation_mode: data.evaluation_mode || 'practical',
+      workflow_stage: 'planning', // 초기 단계는 항상 planning
     };
     
-    const response = await makeRequest<DjangoProjectResponse>('/api/service/projects/', {
+    console.log('📤 Django로 전송할 데이터:', djangoData);
+    
+    const response = await makeRequest<any>(API_ENDPOINTS.PROJECTS.CREATE, {
       method: 'POST',
       body: JSON.stringify(djangoData)
     });
+    
+    console.log('📡 프로젝트 생성 응답:', response);
     
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
@@ -382,7 +434,7 @@ export const projectApi = {
 
   // 프로젝트 삭제 (휴지통으로 이동)
   deleteProject: (id: string) =>
-    makeRequest<void>(`/api/service/projects/${id}/`, {
+    makeRequest<void>(API_ENDPOINTS.PROJECTS.DELETE(id), {
       method: 'DELETE'
     }),
 
@@ -827,9 +879,27 @@ export const normalizeProjectData = (djangoProject: DjangoProjectResponse): Proj
  * Django API 프로젝트 목록 응답을 정규화
  */
 export const normalizeProjectListResponse = (
-  response: { count: number; results: DjangoProjectResponse[] }
+  response: { count?: number; results?: DjangoProjectResponse[] } | DjangoProjectResponse[] | null | undefined
 ): ProjectData[] => {
-  return response.results.map(normalizeProjectData);
+  // null 또는 undefined인 경우
+  if (!response) {
+    console.log('📦 응답이 비어있습니다');
+    return [];
+  }
+  
+  // 응답이 배열인 경우 직접 처리
+  if (Array.isArray(response)) {
+    return response.map(normalizeProjectData);
+  }
+  
+  // 응답이 객체이고 results 필드가 있는 경우
+  if (typeof response === 'object' && response.results && Array.isArray(response.results)) {
+    return response.results.map(normalizeProjectData);
+  }
+  
+  // 빈 배열 반환 (오류 방지)
+  console.warn('⚠️ 예상치 못한 프로젝트 목록 응답 형식:', response);
+  return [];
 };
 
 // === 고급 분석 API (새로 추가) ===
