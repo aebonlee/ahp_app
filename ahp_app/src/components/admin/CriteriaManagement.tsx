@@ -87,22 +87,27 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       // parent_id, parent, level, order 필드 정규화
       const normalizedCriteria = (loadedCriteria || []).map((c, index) => {
         // 백엔드에서 parent 또는 parent_id 필드 모두 처리
+        // ID를 문자열로 통일하여 타입 불일치 방지
         const parentId = c.parent || c.parent_id || null;
         
         console.log(`🔍 백엔드 데이터 정규화: ${c.name}`, {
           originalId: c.id,
+          originalIdType: typeof c.id,
           originalParent: c.parent,
+          originalParentType: typeof c.parent,
           originalParentId: c.parent_id,
+          originalParentIdType: typeof c.parent_id,
           resolvedParentId: parentId,
+          resolvedParentIdType: typeof parentId,
           originalLevel: c.level,
           originalOrder: c.order
         });
         
         return {
-          id: c.id || generateUUID(),
+          id: String(c.id || generateUUID()), // ID를 문자열로 통일
           name: c.name,
           description: c.description,
-          parent_id: parentId,
+          parent_id: parentId ? String(parentId) : null, // parent_id도 문자열로 통일
           level: c.level || 1,
           order: c.order || c.position || index + 1,
           weight: c.weight || 1,
