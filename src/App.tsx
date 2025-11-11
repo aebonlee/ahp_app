@@ -47,6 +47,7 @@ import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
 import QRCodeEvaluatorAssignment from './components/evaluation/QRCodeEvaluatorAssignment';
 import AnonymousEvaluator from './components/evaluation/AnonymousEvaluator';
 import HierarchicalEvaluationOrchestrator from './components/evaluation/HierarchicalEvaluationOrchestrator';
+import EvaluatorInvitationHandler from './components/evaluation/EvaluatorInvitationHandler';
 import ConnectionTestPage from './components/demo/ConnectionTestPage';
 import RoleBasedDashboard from './components/common/RoleBasedDashboard';
 import DjangoAdminIntegration from './components/admin/DjangoAdminIntegration';
@@ -1656,6 +1657,16 @@ function App() {
             onComplete={(results) => {
               console.log('계층적 평가 완료:', results);
               setActiveTab('evaluation-results');
+            }}
+          />
+        );
+
+      case 'invitation-handler':
+        return (
+          <EvaluatorInvitationHandler
+            onEvaluationStart={(projectId, evaluatorId) => {
+              setSelectedProjectId(projectId);
+              setActiveTab('hierarchical-evaluation');
             }}
           />
         );

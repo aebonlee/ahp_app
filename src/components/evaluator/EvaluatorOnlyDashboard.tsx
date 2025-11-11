@@ -17,9 +17,14 @@ const EvaluatorOnlyDashboard: React.FC<EvaluatorOnlyDashboardProps> = ({ user, o
   const handleInvitationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (invitationCode.trim()) {
-      // TODO: 초대 코드로 평가 페이지로 이동
-      console.log('초대 코드 입력됨:', invitationCode);
-      onTabChange('pairwise-evaluation');
+      // 초대 코드를 URL 파라미터로 전달하여 평가 페이지로 이동
+      const cleanCode = invitationCode.trim().toUpperCase();
+      
+      // EvaluatorInvitationHandler로 이동
+      window.location.href = `/invitation/${cleanCode}`;
+      
+      // 또는 React Router 사용 시
+      // navigate(`/invitation/${cleanCode}`);
     }
   };
 
