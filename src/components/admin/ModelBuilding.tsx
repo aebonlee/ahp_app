@@ -14,6 +14,7 @@ interface ModelBuildingProps {
   onBack: () => void;
   maxEvaluators?: number;
   currentPlan?: string;
+  onNavigateToHierarchicalEvaluation?: () => void;
 }
 
 const ModelBuilding: React.FC<ModelBuildingProps> = ({ 
@@ -22,7 +23,8 @@ const ModelBuilding: React.FC<ModelBuildingProps> = ({
   onModelFinalized,
   onBack,
   maxEvaluators = 50,
-  currentPlan = 'Standard Plan'
+  currentPlan = 'Standard Plan',
+  onNavigateToHierarchicalEvaluation
 }) => {
   const [activeStep, setActiveStep] = useState<'criteria' | 'alternatives' | 'evaluators' | 'qrcode' | 'finalize'>('criteria');
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
@@ -149,6 +151,7 @@ const ModelBuilding: React.FC<ModelBuildingProps> = ({
             projectId={projectId}
             onFinalize={onModelFinalized}
             isReadyToFinalize={completedSteps.size >= 3}
+            onStartHierarchicalEvaluation={onNavigateToHierarchicalEvaluation}
           />
         );
       default:

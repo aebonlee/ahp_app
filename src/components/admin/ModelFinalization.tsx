@@ -9,13 +9,15 @@ interface ModelFinalizationProps {
   onFinalize: () => void;
   isReadyToFinalize: boolean;
   onNavigateToEvaluators?: () => void;
+  onStartHierarchicalEvaluation?: () => void;
 }
 
 const ModelFinalization: React.FC<ModelFinalizationProps> = ({ 
   projectId, 
   onFinalize, 
   isReadyToFinalize,
-  onNavigateToEvaluators
+  onNavigateToEvaluators,
+  onStartHierarchicalEvaluation
 }) => {
   const [workshopMode, setWorkshopMode] = useState<'individual' | 'workshop'>('individual');
   const [isConfirming, setIsConfirming] = useState(false);
@@ -332,6 +334,15 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
                   <Button variant="secondary">
                     임시 저장
                   </Button>
+                  {onStartHierarchicalEvaluation && (
+                    <Button
+                      variant="primary"
+                      onClick={onStartHierarchicalEvaluation}
+                      disabled={!isReadyToFinalize}
+                    >
+                      계층적 평가 시작
+                    </Button>
+                  )}
                   <Button
                     variant="primary"
                     onClick={handleFinalize}

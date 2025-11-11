@@ -46,6 +46,7 @@ import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import QRCodeEvaluatorAssignment from './components/evaluation/QRCodeEvaluatorAssignment';
 import AnonymousEvaluator from './components/evaluation/AnonymousEvaluator';
+import HierarchicalEvaluationOrchestrator from './components/evaluation/HierarchicalEvaluationOrchestrator';
 import ConnectionTestPage from './components/demo/ConnectionTestPage';
 import RoleBasedDashboard from './components/common/RoleBasedDashboard';
 import DjangoAdminIntegration from './components/admin/DjangoAdminIntegration';
@@ -1647,6 +1648,18 @@ function App() {
       case 'evaluation-test':
         return <EvaluationTest onBack={() => setActiveTab('personal-service')} />;
 
+      case 'hierarchical-evaluation':
+        return (
+          <HierarchicalEvaluationOrchestrator 
+            projectId={selectedProjectId || ''} 
+            evaluatorId={user?.id}
+            onComplete={(results) => {
+              console.log('계층적 평가 완료:', results);
+              setActiveTab('evaluation-results');
+            }}
+          />
+        );
+
       case 'connection-test':
         return <ConnectionTestPage />;
 
@@ -1839,6 +1852,9 @@ function App() {
             projectTitle={selectedProjectTitle}
             onModelFinalized={handleModelFinalized}
             onBack={() => setActiveTab('personal-projects')}
+            onNavigateToHierarchicalEvaluation={() => {
+              setActiveTab('hierarchical-evaluation');
+            }}
           />
         );
 
