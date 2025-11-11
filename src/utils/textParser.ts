@@ -83,9 +83,35 @@ export class TextParser {
 
   /**
    * 개별 라인을 파싱합니다.
+   * 우선순위: 1) 번호 형식, 2) 마크다운 형식, 3) 들여쓰기 형식
    */
   private static parseLine(line: string, lineNumber: number): ParsedCriterion | null {
-    // 마크다운 리스트 형식 (-, *, +로 시작하고 들여쓰기로 레벨 구분)
+    // 1. 번호 매기기 형식을 가장 먼저 체크 (1., 1.1., 1-1., 2., 2.1. etc.)
+    // 들여쓰기와 관계없이 번호 형식으로 레벨 결정
+    const numberedMatch = line.match(/^\s*(\d+(?:[.-]\d+)*)\.?\s+(.+)$/);
+    if (numberedMatch) {
+      const [, number, content] = numberedMatch;
+      
+      // 번호 형식으로 레벨 계산
+      // 1., 2., 3. = 레벨 1
+      // 1.1., 2.1. = 레벨 2
+      // 1.1.1., 2.1.1. = 레벨 3
+      let level = 1;
+      
+      // 점이나 대시로 구분된 경우
+      if (number.includes('.') || number.includes('-')) {
+        const parts = number.split(/[.-]/).filter(p => p.trim() !== '');
+        level = parts.length;
+      }
+      
+      // 디버그 로깅
+      console.log(`📊 번호 형식 파싱: "${number}" → 레벨 ${level}`);
+      
+      const [name, description] = this.extractNameAndDescription(content);
+      return { name: name.trim(), description, level };
+    }
+
+    // 2. 마크다운 리스트 형식 (-, *, +로 시작하고 들여쓰기로 레벨 구분)
     const markdownMatch = line.match(/^(\s*)([-*+])\s+(.+)$/);
     if (markdownMatch) {
       const [, indent, , content] = markdownMatch;
@@ -100,28 +126,6 @@ export class TextParser {
           level = Math.floor(spaces / 2) + 1;
         }
       }
-      const [name, description] = this.extractNameAndDescription(content);
-      return { name: name.trim(), description, level };
-    }
-
-    // 번호 매기기 형식 개선 (1., 1.1., 1-1., 2., 2.1. etc.)
-    // 더 정확한 패턴 매칭
-    const numberedMatch = line.match(/^(\s*)(\d+(?:[.-]\d+)*)\.?\s+(.+)$/);
-    if (numberedMatch) {
-      const [, indent, number, content] = numberedMatch;
-      
-      // 번호 형식으로 레벨 계산 개선
-      let level = 1;
-      
-      // 점이나 대시로 구분된 숫자 개수로 레벨 계산
-      if (number.includes('.') || number.includes('-')) {
-        const parts = number.split(/[.-]/);
-        level = parts.length;
-      }
-      
-      // 디버그 로깅
-      console.log(`📊 번호 형식 파싱: "${number}" → 레벨 ${level}`);
-      
       const [name, description] = this.extractNameAndDescription(content);
       return { name: name.trim(), description, level };
     }
@@ -226,17 +230,17 @@ export class TextParser {
   - 거버넌스 - 투명 경영과 소통`,
 
       numbered: `1. 재무 성과
-  1.1. 수익성 - 매출액과 순이익 증가율
-  1.2. 안정성 - 부채비율과 유동비율
-  1.3. 성장성 - 전년 대비 성장률
+    1.1. 수익성 - 매출액과 순이익 증가율
+    1.2. 안정성 - 부채비율과 유동비율
+    1.3. 성장성 - 전년 대비 성장률
 2. 운영 효율성
-  2.1. 생산성 - 인당 매출액과 설비 가동률
-  2.2. 품질 관리 - 불량률과 고객 만족도
-  2.3. 혁신 역량 - R&D 투자와 신제품 개발
+    2.1. 생산성 - 인당 매출액과 설비 가동률
+    2.2. 품질 관리 - 불량률과 고객 만족도
+    2.3. 혁신 역량 - R&D 투자와 신제품 개발
 3. 지속가능성
-  3.1. 환경 경영 - 친환경 정책과 탄소 배출
-  3.2. 사회적 책임 - 사회공헌과 윤리 경영
-  3.3. 거버넌스 - 투명 경영과 소통`,
+    3.1. 환경 경영 - 친환경 정책과 탄소 배출
+    3.2. 사회적 책임 - 사회공헌과 윤리 경영
+    3.3. 거버넌스 - 투명 경영과 소통`,
 
       indented: `재무 성과
     수익성 - 매출액과 순이익 증가율

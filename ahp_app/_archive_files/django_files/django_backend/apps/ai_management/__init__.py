@@ -1,1 +1,0 @@
-# AI Management App for AHP Platform
