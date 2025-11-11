@@ -403,7 +403,18 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         const result = await cleanDataService.createCriteria(criteriaData);
         if (!result) {
           success = false;
+          console.error(`❌ 기준 '${criterion.name}' 저장 실패`);
+          
+          // 중복된 이름으로 인한 실패 시 자동으로 번호가 추가됨을 알림
+          if (result === null) {
+            setErrorMessage(`기준 '${criterion.name}' 저장 실패. 이미 존재하는 이름입니다.`);
+          }
           break;
+        }
+        
+        // 이름이 변경되었다면 사용자에게 알림
+        if (result.name !== criterion.name) {
+          console.log(`ℹ️ 기준명 자동 변경: '${criterion.name}' → '${result.name}'`);
         }
         
         // 생성된 기준을 매핑에 저장 (자식 기준들이 참조할 수 있도록)

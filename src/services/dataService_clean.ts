@@ -391,6 +391,11 @@ class CleanDataService {
         responseMessage: response.message
       });
       
+      // 에러 메시지를 더 구체적으로 throw
+      if (errorMsg.includes('already exists') || errorMsg.includes('이미 존재')) {
+        throw new Error(`기준 '${data.name}'이(가) 이미 존재합니다. 다른 이름을 사용해주세요.`);
+      }
+      
       // 백엔드에서 already exists 에러가 발생한 경우 기존 데이터 찾기 시도
       if (errorMsg.includes('already exists') || errorMsg.includes('이미 존재')) {
         console.log('🔗 백엔드 중복 에러 - 기존 데이터 찾기 시도');

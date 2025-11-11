@@ -468,6 +468,11 @@ export const criteriaApi = {
       };
     }
     
+    // 중복된 이름 체크 및 자동 번호 추가
+    let criteriaName = data.name;
+    let attemptCount = 0;
+    const maxAttempts = 10;
+    
     // parent_id 처리 - 숫자 ID 및 UUID 모두 지원
     const parentId = data.parent || data.parent_id || null;
     
@@ -506,59 +511,77 @@ export const criteriaApi = {
       }
     }
     
-    // Django CriteriaViewSet API 사용
-    const requestData = {
-      project: projectId,  // Django ForeignKey expects project ID
-      name: data.name,
-      description: data.description || '',
-      type: data.type || 'criteria',
-      // 검증된 parent_id만 사용
-      parent: validParentId,
-      parent_id: validParentId,
-      order: data.order || 0,
-      position: data.position || data.order || 0,
-      level: data.level || 1,
-      weight: data.weight || 0.0,
-      is_active: true
-    };
+    // 중복 이름 처리를 위한 재시도 로직
+    while (attemptCount < maxAttempts) {
+      const requestData = {
+        project: projectId,  // Django ForeignKey expects project ID
+        name: criteriaName,
+        description: data.description || '',
+        type: data.type || 'criteria',
+        // 검증된 parent_id만 사용
+        parent: validParentId,
+        parent_id: validParentId,
+        order: data.order || 0,
+        position: data.position || data.order || 0,
+        level: data.level || 1,
+        weight: data.weight || 0.0,
+        is_active: true
+      };
     
-    console.log('📤 Django Criteria API 요청:', {
-      endpoint: '/api/service/projects/criteria/',
-      data: requestData,
-      projectId: projectId,
-      projectIdType: typeof projectId,
-      name: data.name,
-      level: data.level,
-      parent_id: data.parent_id,
-      resolvedParent: validParentId,
-      requestDataJSON: JSON.stringify(requestData, null, 2)
-    });
-    
-    // CriteriaViewSet의 create endpoint 사용
-    const response = await makeRequest<CriteriaData>('/api/service/projects/criteria/', {
-      method: 'POST',
-      body: JSON.stringify(requestData)
-    });
-    
-    console.log('📥 Django Criteria API 응답:', {
-      success: response.success,
-      error: response.error,
-      message: response.message,
-      hasData: !!response.data,
-      dataId: response.data?.id
-    });
-    
-    if (response.success) {
-      console.log('✅ PostgreSQL DB에 기준 저장 성공:', response.data);
+      console.log('📤 Django Criteria API 요청 (시도 ' + (attemptCount + 1) + '):', {
+        endpoint: '/api/service/projects/criteria/',
+        name: criteriaName,
+        originalName: data.name,
+        projectId: projectId
+      });
+      
+      // CriteriaViewSet의 create endpoint 사용
+      const response = await makeRequest<CriteriaData>('/api/service/projects/criteria/', {
+        method: 'POST',
+        body: JSON.stringify(requestData)
+      });
+      
+      console.log('📥 Django Criteria API 응답:', {
+        success: response.success,
+        error: response.error,
+        message: response.message
+      });
+      
+      if (response.success) {
+        console.log('✅ PostgreSQL DB에 기준 저장 성공:', response.data);
+        if (criteriaName !== data.name) {
+          console.log(`ℹ️ 기준명이 '${data.name}'에서 '${criteriaName}'으로 변경되어 저장되었습니다.`);
+        }
+        return response;
+      }
+      
+      // 중복 이름 에러 처리
+      if (response.error && 
+          (response.error.includes('already exists') || 
+           response.error.includes('중복') ||
+           response.error.includes('duplicate'))) {
+        attemptCount++;
+        if (attemptCount < maxAttempts) {
+          // 번호 추가하여 재시도
+          criteriaName = `${data.name}_${attemptCount + 1}`;
+          console.log(`⚠️ 중복된 기준명 감지. '${criteriaName}'으로 재시도합니다.`);
+          continue;
+        }
+      }
+      
+      console.error('❌ Criteria API 실패 상세:', {
+        error: response.error,
+        message: response.message,
+        requestData: requestData
+      });
       return response;
     }
     
-    console.error('❌ Criteria API 실패 상세:', {
-      error: response.error,
-      message: response.message,
-      requestData: requestData
-    });
-    return response;
+    // 최대 시도 횟수 초과
+    return {
+      success: false,
+      error: `기준 생성 실패: '${data.name}' 및 변형된 이름들이 모두 이미 존재합니다.`
+    };
   },
 
   // 기준 수정
