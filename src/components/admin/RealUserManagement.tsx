@@ -3,7 +3,6 @@ import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
 import Input from '../common/Input';
 import apiService from '../../services/apiService';
-import type { UserRole } from '../../types';
 
 interface DjangoUser {
   id: number;

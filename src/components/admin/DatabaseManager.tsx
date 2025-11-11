@@ -9,11 +9,6 @@ interface Project {
   criteria_count: number;
 }
 
-interface Criterion {
-  id: string;
-  name: string;
-  project_id: string;
-}
 
 const DatabaseManager: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
