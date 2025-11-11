@@ -113,11 +113,12 @@
         // 백엔드 URL 설정
         const API_URL = 'https://ahp-django-backend.onrender.com';
         const ENDPOINTS = {
-            status: '/api/service/status/',
-            projects: '/api/service/projects/projects/',
-            criteria: '/api/service/projects/criteria/',
-            auth: '/api/service/auth/login/',
-            data: '/api/service/data/'
+            status: '/api/',
+            projects: '/api/projects/',
+            auth: '/api/auth/token/',
+            evaluations: '/api/evaluations/',
+            health: '/health/',
+            db_status: '/db-status/'
         };
 
         // 로그 함수

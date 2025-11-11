@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백엔드 서비스 상태 모니터링</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        .service-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .service-info h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #333;
+            font-size: 16px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        .status-badge.online {
+            background: #10b981;
+            color: white;
+        }
+        .status-badge.offline {
+            background: #ef4444;
+            color: white;
+        }
+        .status-badge.checking {
+            background: #f59e0b;
+            color: white;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .test-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .test-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+        .test-card h4 {
+            margin-top: 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .test-result.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .test-result.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f3f4f6, #ffffff);
+            border-radius: 8px;
+        }
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .metric-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .log-viewer {
+            background: #1e293b;
+            color: #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 백엔드 서비스 상태 모니터링</h1>
+        
+        <div class="service-info">
+            <h3>Render.com 서비스 정보</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">서비스명</div>
+                    <div class="info-value">ahp-django-backend</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">플랜</div>
+                    <div class="info-value">Starter (유료)</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Service ID</div>
+                    <div class="info-value" style="font-size: 12px;">srv-d2vn7a2li9vc7386v8g0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">상태</div>
+                    <div class="info-value">
+                        <span id="serviceStatus" class="status-badge checking">확인 중</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">URL</div>
+                    <div class="info-value" style="font-size: 14px;">
+                        <a href="https://ahp-django-backend.onrender.com" target="_blank">
+                            ahp-django-backend.onrender.com
+                        </a>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">GitHub</div>
+                    <div class="info-value" style="font-size: 14px;">
+                        <a href="https://github.com/aebonlee/ahp-django-service" target="_blank">
+                            aebonlee/ahp-django-service
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="runAllTests()" id="testButton">
+                🔍 전체 상태 점검 실행
+            </button>
+        </div>
+
+        <div class="metrics" id="metrics">
+            <div class="metric-card">
+                <div class="metric-value" id="responseTime">-</div>
+                <div class="metric-label">응답 시간 (ms)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="uptime">-</div>
+                <div class="metric-label">가동률 (%)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="apiCount">-</div>
+                <div class="metric-label">활성 API</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="projectCount">-</div>
+                <div class="metric-label">프로젝트 수</div>
+            </div>
+        </div>
+
+        <div class="test-grid" id="testGrid">
+            <!-- 테스트 카드들이 동적으로 생성됩니다 -->
+        </div>
+
+        <div class="log-viewer" id="logViewer">
+            === 시스템 로그 ===
+            시작 시간: ${new Date().toLocaleString('ko-KR')}
+            =====================================
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://ahp-django-backend.onrender.com';
+        const tests = [
+            {
+                name: '서버 연결',
+                icon: '🌐',
+                endpoint: '/api/',
+                description: '기본 서버 연결 상태 확인'
+            },
+            {
+                name: '인증 시스템',
+                icon: '🔐',
+                endpoint: '/api/auth/token/',
+                description: 'JWT 인증 시스템 상태'
+            },
+            {
+                name: '프로젝트 API',
+                icon: '📁',
+                endpoint: '/api/projects/',
+                description: '프로젝트 관리 API'
+            },
+            {
+                name: '평가 API',
+                icon: '📊',
+                endpoint: '/api/evaluations/',
+                description: '평가 관리 API'
+            },
+            {
+                name: '데이터베이스',
+                icon: '💾',
+                endpoint: '/db-status/',
+                description: 'PostgreSQL 연결 상태'
+            },
+            {
+                name: '헬스 체크',
+                icon: '❤️',
+                endpoint: '/health/',
+                description: '서비스 헬스 체크'
+            },
+            {
+                name: '관리자 패널',
+                icon: '⚙️',
+                endpoint: '/admin/',
+                description: 'Django Admin 접근성'
+            }
+        ];
+
+        function log(message, level = 'info') {
+            const logViewer = document.getElementById('logViewer');
+            const timestamp = new Date().toLocaleTimeString('ko-KR');
+            const colors = {
+                info: '#10b981',
+                warn: '#f59e0b',
+                error: '#ef4444',
+                success: '#10b981'
+            };
+            logViewer.innerHTML += `\n<span style="color: ${colors[level]}">[${timestamp}] ${message}</span>`;
+            logViewer.scrollTop = logViewer.scrollHeight;
+        }
+
+        async function testEndpoint(test) {
+            const card = document.createElement('div');
+            card.className = 'test-card';
+            card.innerHTML = `
+                <h4>${test.icon} ${test.name} <div class="spinner"></div></h4>
+                <p style="color: #666; margin: 10px 0;">${test.description}</p>
+                <div class="test-result">테스트 중...</div>
+            `;
+            document.getElementById('testGrid').appendChild(card);
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_URL}${test.endpoint}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const responseTime = Date.now() - startTime;
+
+                const resultDiv = card.querySelector('.test-result');
+                const spinner = card.querySelector('.spinner');
+                spinner.style.display = 'none';
+
+                if (response.ok || response.status === 401 || response.status === 403) {
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+✅ 정상 작동
+상태 코드: ${response.status}
+응답 시간: ${responseTime}ms
+                    `;
+                    log(`✅ ${test.name}: ${response.status} (${responseTime}ms)`, 'success');
+                    return { success: true, responseTime };
+                } else {
+                    resultDiv.className = 'test-result error';
+                    resultDiv.innerHTML = `
+⚠️ 응답 오류
+상태 코드: ${response.status}
+응답 시간: ${responseTime}ms
+                    `;
+                    log(`⚠️ ${test.name}: ${response.status}`, 'warn');
+                    return { success: false, responseTime };
+                }
+            } catch (error) {
+                const resultDiv = card.querySelector('.test-result');
+                const spinner = card.querySelector('.spinner');
+                spinner.style.display = 'none';
+                
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+❌ 연결 실패
+오류: ${error.message}
+                `;
+                log(`❌ ${test.name}: ${error.message}`, 'error');
+                return { success: false, responseTime: 0 };
+            }
+        }
+
+        async function runAllTests() {
+            const button = document.getElementById('testButton');
+            button.disabled = true;
+            button.textContent = '테스트 진행 중...';
+            
+            document.getElementById('testGrid').innerHTML = '';
+            log('\n========== 새로운 테스트 시작 ==========', 'info');
+            
+            // 서비스 상태 업데이트
+            const statusBadge = document.getElementById('serviceStatus');
+            statusBadge.className = 'status-badge checking';
+            statusBadge.textContent = '확인 중';
+
+            const results = [];
+            let totalResponseTime = 0;
+            let successCount = 0;
+
+            // 순차적으로 테스트 실행
+            for (const test of tests) {
+                const result = await testEndpoint(test);
+                results.push(result);
+                if (result.success) {
+                    successCount++;
+                    totalResponseTime += result.responseTime;
+                }
+            }
+
+            // 메트릭 업데이트
+            const avgResponseTime = successCount > 0 ? Math.round(totalResponseTime / successCount) : 0;
+            document.getElementById('responseTime').textContent = avgResponseTime;
+            document.getElementById('uptime').textContent = Math.round((successCount / tests.length) * 100);
+            document.getElementById('apiCount').textContent = `${successCount}/${tests.length}`;
+
+            // 프로젝트 수 조회
+            try {
+                const response = await fetch(`${API_URL}/api/projects/`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.count || (data.results ? data.results.length : 0);
+                    document.getElementById('projectCount').textContent = count;
+                }
+            } catch (error) {
+                document.getElementById('projectCount').textContent = '-';
+            }
+
+            // 전체 상태 업데이트
+            if (successCount === tests.length) {
+                statusBadge.className = 'status-badge online';
+                statusBadge.textContent = '✅ 정상 작동';
+                log('\n✅ 모든 테스트 통과! 서비스 정상 작동 중', 'success');
+            } else if (successCount > 0) {
+                statusBadge.className = 'status-badge online';
+                statusBadge.textContent = '⚠️ 부분 작동';
+                log(`\n⚠️ ${successCount}/${tests.length} 테스트 통과`, 'warn');
+            } else {
+                statusBadge.className = 'status-badge offline';
+                statusBadge.textContent = '❌ 오프라인';
+                log('\n❌ 서비스 연결 실패', 'error');
+            }
+
+            button.disabled = false;
+            button.textContent = '🔍 전체 상태 점검 실행';
+            
+            log(`\n평균 응답 시간: ${avgResponseTime}ms`, 'info');
+            log(`Starter 플랜 - 콜드 스타트 없음, 24/7 가동`, 'info');
+            log('========== 테스트 완료 ==========\n', 'info');
+        }
+
+        // 페이지 로드 시 자동 실행
+        window.onload = function() {
+            log('백엔드 서비스 모니터링 시작', 'info');
+            log('Render.com Starter 플랜 (유료) 사용 중', 'info');
+            runAllTests();
+        };
+    </script>
+</body>
+</html>
