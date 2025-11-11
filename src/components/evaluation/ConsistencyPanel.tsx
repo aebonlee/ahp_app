@@ -26,7 +26,7 @@ const ConsistencyPanel: React.FC<ConsistencyPanelProps> = ({
       setLoading(true);
       // Simulate analysis delay for better UX
       const timer = setTimeout(() => {
-        const result = analyzeConsistency(matrix, elementNames);
+        const result = analyzeConsistency(matrix);
         setAnalysis(result);
         setLoading(false);
       }, 300);
@@ -34,7 +34,7 @@ const ConsistencyPanel: React.FC<ConsistencyPanelProps> = ({
     }
   }, [matrix, elementNames]);
 
-  const realtimeFeedback = getRealtimeConsistencyFeedback(matrix, elementNames, recentChange);
+  const realtimeFeedback = getRealtimeConsistencyFeedback(matrix);
   
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -139,16 +139,16 @@ const ConsistencyPanel: React.FC<ConsistencyPanelProps> = ({
           ) : analysis && (
             <>
               {/* Suggestions */}
-              {analysis.worstPairs.length > 0 && (
+              {(analysis.worstPairs?.length ?? 0) > 0 && (
                 <div className="p-4 bg-white border border-orange-200 rounded-lg">
                   <h4 className="font-medium text-orange-800 mb-3 flex items-center">
                     💡 개선 제안 
                     <span className="ml-2 text-sm text-orange-600">
-                      (예상 개선: {((analysis.currentCR - analysis.improvementPotential) * 100).toFixed(1)}%p)
+                      (예상 개선: {(((analysis.currentCR ?? 0) - (analysis.improvementPotential ?? 0)) * 100).toFixed(1)}%p)
                     </span>
                   </h4>
                   <div className="space-y-3">
-                    {analysis.worstPairs.slice(0, 3).map((pair, index) => (
+                    {analysis.worstPairs?.slice(0, 3).map((pair, index) => (
                       <div key={index} className="p-3 bg-orange-50 rounded border border-orange-100">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
@@ -182,9 +182,9 @@ const ConsistencyPanel: React.FC<ConsistencyPanelProps> = ({
                     ))}
                   </div>
                   
-                  {analysis.worstPairs.length > 3 && (
+                  {(analysis.worstPairs?.length || 0) > 3 && (
                     <div className="mt-3 text-sm text-gray-600">
-                      그 외 {analysis.worstPairs.length - 3}개의 추가 개선점이 있습니다.
+                      그 외 {(analysis.worstPairs?.length || 0) - 3}개의 추가 개선점이 있습니다.
                     </div>
                   )}
                 </div>
@@ -194,7 +194,7 @@ const ConsistencyPanel: React.FC<ConsistencyPanelProps> = ({
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 className="font-medium text-blue-800 mb-3">📋 상세 가이드</h4>
                 <div className="space-y-2 text-sm text-blue-700">
-                  {analysis.suggestions.map((suggestion, index) => (
+                  {(analysis.suggestions || []).map((suggestion, index) => (
                     <div key={index} className={suggestion.trim() === '' ? 'h-2' : ''}>
                       {suggestion}
                     </div>

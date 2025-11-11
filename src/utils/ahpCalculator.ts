@@ -407,3 +407,21 @@ export function calculateAHPEnhanced(matrix: number[][], method: 'geometric' | '
     eigenVector
   };
 }
+
+// Export as ahpCalculator object for backward compatibility
+export const ahpCalculator = {
+  buildComparisonMatrix,
+  calculateEigenVector,
+  calculateEigenVectorPowerMethod,
+  calculateLambdaMax,
+  calculateConsistencyRatio,
+  calculateAHP,
+  calculateHierarchicalAHP,
+  getConsistencyLevel,
+  getConsistencyColor,
+  aggregateMatricesGeometric,
+  aggregateMatricesWeighted,
+  calculateConsensusIndex,
+  calculateGroupAHP,
+  calculateAHPEnhanced
+};

@@ -316,6 +316,41 @@ export const alternativesAPI = {
   delete: (id: string) => apiClient.delete(`/api/service/projects/criteria/${id}/`),
 };
 
+// 인구통계 API
+export const demographicAPI = {
+  // 프로젝트별 인구통계 데이터 조회
+  fetchByProject: (projectId: string) => 
+    apiClient.get(`/api/projects/${projectId}/demographics/`),
+  
+  // 특정 평가자의 인구통계 데이터 조회
+  fetchByEvaluator: (projectId: string, evaluatorId: string) => 
+    apiClient.get(`/api/projects/${projectId}/demographics/${evaluatorId}/`),
+  
+  // 인구통계 데이터 저장
+  create: (data: any) => 
+    apiClient.post('/api/demographics/', data),
+  
+  // 프로젝트별 인구통계 데이터 저장
+  createForProject: (projectId: string, data: any) => 
+    apiClient.post(`/api/projects/${projectId}/demographics/`, data),
+  
+  // 인구통계 데이터 업데이트
+  update: (projectId: string, evaluatorId: string, data: any) => 
+    apiClient.put(`/api/projects/${projectId}/demographics/${evaluatorId}/`, data),
+  
+  // 인구통계 통계 조회
+  fetchStats: (projectId: string) => 
+    apiClient.get(`/api/projects/${projectId}/demographics/stats/`),
+  
+  // 모든 응답 데이터 조회
+  fetchAll: (projectId: string) => 
+    apiClient.get(`/api/projects/${projectId}/demographics/all/`),
+  
+  // 인구통계 데이터 삭제
+  delete: (projectId: string, evaluatorId: string) => 
+    apiClient.delete(`/api/projects/${projectId}/demographics/${evaluatorId}/`)
+};
+
 // 통합 헬퍼 함수들
 export const apiHelpers = {
   // 매트릭스 키 생성
@@ -372,7 +407,9 @@ const apiService = {
   projectAPI,
   criteriaAPI,
   alternativesAPI,
+  demographicAPI,
   apiHelpers,
 };
 
 export default apiService;
+export { apiService };

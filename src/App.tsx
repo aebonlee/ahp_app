@@ -41,6 +41,7 @@ import EvaluatorDashboard from './components/evaluator/EvaluatorDashboard';
 import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import DemographicSurvey from './components/survey/DemographicSurvey';
+import DemographicDashboard from './components/survey/DemographicDashboard';
 import EvaluationTest from './components/evaluation/EvaluationTest';
 import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1653,7 +1654,7 @@ function App() {
         return (
           <HierarchicalEvaluationOrchestrator 
             projectId={selectedProjectId || ''} 
-            evaluatorId={user?.id}
+            evaluatorId={user?.id ? String(user.id) : undefined}
             onComplete={(results) => {
               console.log('계층적 평가 완료:', results);
               setActiveTab('evaluation-results');
@@ -1759,6 +1760,30 @@ function App() {
             onPermanentDeleteProject={permanentDeleteProject}
             selectedProjectId={selectedProjectId}
             onSelectProject={setSelectedProjectId}
+          />
+        );
+        
+      case 'demographic-dashboard':
+        if (!selectedProjectId) {
+          return (
+            <Card title="인구통계 대시보드">
+              <div className="text-center py-8">
+                <p className="text-gray-500">프로젝트를 먼저 선택해주세요.</p>
+                <button
+                  onClick={() => setActiveTab('personal-projects')}
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  프로젝트 목록으로 이동
+                </button>
+              </div>
+            </Card>
+          );
+        }
+        return (
+          <DemographicDashboard
+            projectId={selectedProjectId}
+            showExport={true}
+            showDetails={true}
           />
         );
         

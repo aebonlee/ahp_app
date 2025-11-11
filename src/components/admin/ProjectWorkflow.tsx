@@ -103,7 +103,7 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
       setWorkflowState(prev => ({
         ...prev,
         currentStep: 2,
-        projectId: createdProject.id,
+        projectId: createdProject.id || null,
         projectData: createdProject
       }));
 

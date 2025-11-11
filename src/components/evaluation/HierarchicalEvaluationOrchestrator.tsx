@@ -55,24 +55,24 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
     
     try {
       // 프로젝트 정보 로드
-      const projectResponse = await apiService.get(`/api/projects/${projectId}/`);
-      setProjectName(projectResponse.data.name);
+      const projectResponse = await apiService.get<{ name: string }>(`/api/projects/${projectId}/`);
+      setProjectName(projectResponse.data?.name || 'Unknown Project');
 
       // 기준 로드
-      const criteriaResponse = await apiService.get(`/api/criteria/project/${projectId}/`);
+      const criteriaResponse = await apiService.get<any>(`/api/criteria/project/${projectId}/`);
       const criteriaData = Array.isArray(criteriaResponse.data) 
         ? criteriaResponse.data 
-        : criteriaResponse.data.results || [];
+        : criteriaResponse.data?.results || [];
       
       // 계층 구조로 정리
       const hierarchicalCriteria = buildHierarchy(criteriaData);
       setCriteria(hierarchicalCriteria);
 
       // 대안 로드
-      const alternativesResponse = await apiService.get(`/api/alternatives/project/${projectId}/`);
+      const alternativesResponse = await apiService.get<any>(`/api/alternatives/project/${projectId}/`);
       const alternativesData = Array.isArray(alternativesResponse.data)
         ? alternativesResponse.data
-        : alternativesResponse.data.results || [];
+        : alternativesResponse.data?.results || [];
       setAlternatives(alternativesData);
 
     } catch (err) {
@@ -179,8 +179,14 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
     setEvaluationSteps(steps);
   };
 
-  const handleComparisonComplete = async (matrix: ComparisonMatrix, consistencyRatio: number) => {
+  const handleComparisonComplete = async (matrix: ComparisonMatrix) => {
     const currentStep = evaluationSteps[currentStepIndex];
+    
+    // 일관성 비율 계산
+    const consistencyRatio = matrix.consistencyRatio || ahpCalculator.calculateConsistencyRatio(
+      matrix.lambdaMax || ahpCalculator.calculateLambdaMax(matrix.matrix, matrix.eigenVector || ahpCalculator.calculateEigenVector(matrix.matrix)),
+      matrix.size
+    );
     
     // 현재 단계 업데이트
     const updatedSteps = [...evaluationSteps];
@@ -188,7 +194,7 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
       ...currentStep,
       completed: true,
       matrix: matrix,
-      cr: consistencyRatio,
+      consistencyRatio: consistencyRatio,
       weights: calculateWeights(matrix, currentStep.items)
     };
     setEvaluationSteps(updatedSteps);
@@ -204,13 +210,22 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
 
   const calculateWeights = (matrix: ComparisonMatrix, items: (Criterion | Alternative)[]): { [key: string]: number } => {
     const weights: { [key: string]: number } = {};
-    const calculatedWeights = ahpCalculator.calculateWeights(matrix);
+    const calculatedWeights = ahpCalculator.calculateEigenVector(matrix.matrix);
     
     items.forEach((item, index) => {
       weights[item.id] = calculatedWeights[index] || 0;
     });
     
     return weights;
+  };
+
+  const getConsistencyStatus = (crValues: number[]): 'excellent' | 'good' | 'acceptable' | 'poor' => {
+    if (crValues.length === 0) return 'excellent';
+    const avgCR = crValues.reduce((a, b) => a + b, 0) / crValues.length;
+    if (avgCR <= 0.05) return 'excellent';
+    if (avgCR <= 0.08) return 'good';
+    if (avgCR <= 0.10) return 'acceptable';
+    return 'poor';
   };
 
   const calculateFinalResults = async (completedSteps: EvaluationStep[]) => {
@@ -223,22 +238,60 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
       // 대안별 최종 점수 계산
       const alternativeScores = calculateAlternativeScores(completedSteps, globalWeights);
       
-      // 결과 저장
-      const results = {
+      // 대안별 순위 계산
+      const rankings = Object.entries(alternativeScores)
+        .sort(([, a], [, b]) => b - a)
+        .map(([altId, score], index) => ({
+          alternativeId: altId,
+          alternativeName: alternatives.find(a => a.id === altId)?.name || 'Unknown',
+          score,
+          rank: index + 1
+        }));
+
+      // 일관성 메트릭 수집
+      const criteriaCR: Record<string, number> = {};
+      completedSteps.forEach(step => {
+        if (step.consistencyRatio !== undefined) {
+          criteriaCR[step.id] = step.consistencyRatio;
+        }
+      });
+
+      // AnalysisResult 생성
+      const analysisResult: AnalysisResult = {
+        id: `analysis-${Date.now()}`,
         projectId,
-        evaluatorId,
-        steps: completedSteps,
-        globalWeights,
-        alternativeScores,
-        timestamp: new Date().toISOString()
+        type: 'final',
+        timestamp: new Date().toISOString(),
+        data: {
+          rankings,
+          weights: {
+            criteriaWeights: globalWeights,
+            alternativeScores: alternativeScores
+          },
+          consistencyMetrics: {
+            overallCR: Math.max(...Object.values(criteriaCR)),
+            criteriaCR,
+            evaluatorCR: {},
+            isConsistent: Math.max(...Object.values(criteriaCR)) <= 0.1
+          }
+        },
+        summary: {
+          topAlternative: rankings[0]?.alternativeName || '',
+          topScore: rankings[0]?.score || 0,
+          consistencyStatus: getConsistencyStatus(Object.values(criteriaCR)),
+          participationRate: evaluatorId ? 100 : 0,
+          confidence: 'high'
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
       // API로 결과 전송
-      await apiService.post(`/api/evaluations/hierarchical/`, results);
+      await apiService.post(`/api/evaluations/hierarchical/`, analysisResult);
 
       // 완료 콜백
       if (onComplete) {
-        onComplete(results);
+        onComplete(analysisResult);
       } else {
         // 결과 페이지로 이동
         navigate(`/results/${projectId}`);
@@ -336,10 +389,10 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
         {/* 쌍대비교 컴포넌트 */}
         <PairwiseComparison
           items={currentStep.items}
-          type={currentStep.type}
+          title={currentStep.type === 'criteria' ? '기준 비교' : '대안 비교'}
+          description={currentStep.parentName ? `${currentStep.parentName} 기준에 대한 평가` : '기준 간 중요도 비교'}
           onComplete={handleComparisonComplete}
-          projectId={projectId}
-          parentCriterion={currentStep.parentId}
+          onBack={() => setCurrentStepIndex(Math.max(0, currentStepIndex - 1))}
         />
       </div>
     );
@@ -393,11 +446,11 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
                     : `${step.parentName} 대안`}
                 </span>
               </div>
-              {step.cr !== undefined && (
+              {step.consistencyRatio !== undefined && (
                 <span className={`text-xs ${
-                  step.cr <= 0.1 ? 'text-green-600' : 'text-yellow-600'
+                  step.consistencyRatio <= 0.1 ? 'text-green-600' : 'text-yellow-600'
                 }`}>
-                  CR: {step.cr.toFixed(3)}
+                  CR: {step.consistencyRatio.toFixed(3)}
                 </span>
               )}
             </div>
@@ -410,7 +463,7 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="large" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -433,7 +486,7 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
   if (isCalculating) {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen">
-        <LoadingSpinner size="large" />
+        <LoadingSpinner size="lg" />
         <p className="mt-4 text-gray-600 dark:text-gray-400">
           최종 결과를 계산하고 있습니다...
         </p>

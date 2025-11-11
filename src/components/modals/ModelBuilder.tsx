@@ -51,18 +51,20 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
   }, [project.id]);
 
   const loadProjectData = async () => {
+    if (!project.id) return;
+    
     setLoading(true);
     try {
       const [criteriaRes, alternativesRes, evaluatorsRes] = await Promise.all([
-        apiService.get(`/api/criteria/project/${project.id}/`),
-        apiService.get(`/api/alternatives/project/${project.id}/`),
-        apiService.get(`/api/evaluators/project/${project.id}/`)
+        apiService.get<any>(`/api/criteria/project/${project.id}/`),
+        apiService.get<any>(`/api/alternatives/project/${project.id}/`),
+        apiService.get<any>(`/api/evaluators/project/${project.id}/`)
       ]);
 
       setProjectData({
-        criteria: criteriaRes.data || [],
-        alternatives: alternativesRes.data || [],
-        evaluators: evaluatorsRes.data || []
+        criteria: Array.isArray(criteriaRes.data) ? criteriaRes.data : [],
+        alternatives: Array.isArray(alternativesRes.data) ? alternativesRes.data : [],
+        evaluators: Array.isArray(evaluatorsRes.data) ? evaluatorsRes.data : []
       });
 
       // 이미 데이터가 있는 단계는 완료로 표시
@@ -87,7 +89,11 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
   };
 
   const handleStepComplete = (step: ModelStep) => {
-    setCompletedSteps(prev => new Set([...prev, step]));
+    setCompletedSteps(prev => {
+      const newSet = new Set<ModelStep>(prev);
+      newSet.add(step);
+      return newSet;
+    });
     
     // 다음 단계로 자동 이동
     const stepIndex = steps.findIndex(s => s.key === step);
@@ -172,7 +178,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
           <div>
             <h3 className="text-xl font-semibold mb-4">평가 기준 설정</h3>
             <CriteriaManagement 
-              projectId={project.id}
+              projectId={project.id || ''}
+              onCriteriaChange={(count) => console.log('기준 개수:', count)}
               onComplete={() => handleStepComplete('criteria')}
             />
             <div className="flex justify-between mt-6">
@@ -197,7 +204,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
           <div>
             <h3 className="text-xl font-semibold mb-4">대안 설정</h3>
             <AlternativeManagement 
-              projectId={project.id}
+              projectId={project.id || ''}
               onComplete={() => handleStepComplete('alternatives')}
             />
             <div className="flex justify-between mt-6">
@@ -222,7 +229,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
           <div>
             <h3 className="text-xl font-semibold mb-4">평가자 배정</h3>
             <EvaluatorAssignment 
-              projectId={project.id}
+              projectId={project.id || ''}
               onComplete={() => handleStepComplete('evaluators')}
             />
             <div className="flex justify-between mt-6">

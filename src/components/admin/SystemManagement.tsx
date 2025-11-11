@@ -34,10 +34,7 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
   const [success, setSuccess] = useState<string>('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ action: () => Promise<void>; message: string } | null>(null);
-
-  useEffect(() => {
-    loadSystemData();
-  }, [loadSystemData]);
+  const [runningTasks, setRunningTasks] = useState<Set<string>>(new Set());
 
   const loadSystemData = useCallback(async () => {
     setLoading(true);
@@ -97,6 +94,10 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
       setLoading(false);
     }
   }, [onError]);
+
+  useEffect(() => {
+    loadSystemData();
+  }, [loadSystemData]);
 
   // Default configurations for fallback
   const getDefaultConfigurations = (): SystemConfiguration[] => [

@@ -6,6 +6,7 @@ import EvaluationModeSelector, {
   EvaluationMode,
 } from "../evaluation/EvaluationModeSelector";
 import PaperWorkflowGuide from "../guide/PaperWorkflowGuide";
+import DemographicSurvey from "../survey/DemographicSurvey";
 
 interface ProjectCreationProps {
   onProjectCreated: () => void;
@@ -60,6 +61,9 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
   };
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showWorkflowGuide, setShowWorkflowGuide] = useState(false);
+  const [includeDemographicSurvey, setIncludeDemographicSurvey] = useState(false);
+  const [showDemographicSurvey, setShowDemographicSurvey] = useState(false);
+  const [demographicData, setDemographicData] = useState<any>(null);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -89,10 +93,22 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
       return;
     }
 
+    // 인구통계 설문이 포함된 경우
+    if (includeDemographicSurvey && !demographicData) {
+      setShowDemographicSurvey(true);
+      return;
+    }
+
     try {
       if (createProject) {
-        // 실제 프로젝트 생성 함수 호출
-        await createProject(formData);
+        // 실제 프로젝트 생성 함수 호출 (인구통계 데이터 포함)
+        const projectDataWithDemographics = {
+          ...formData,
+          demographicSurveyEnabled: includeDemographicSurvey,
+          demographicData: demographicData
+        };
+        
+        await createProject(projectDataWithDemographics);
 
         // 성공 시 폼 초기화
         setFormData({
@@ -102,11 +118,13 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
           evaluationMode: "practical",
           ahpType: "general",
         });
+        setIncludeDemographicSurvey(false);
+        setDemographicData(null);
 
         onProjectCreated();
       } else {
         // Fallback: 시뮬레이션
-        console.log("Creating project with data:", formData);
+        console.log("Creating project with data:", formData, demographicData);
         await new Promise((resolve) => setTimeout(resolve, 1000));
         onProjectCreated();
       }
@@ -120,6 +138,13 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
             : "프로젝트 생성에 실패했습니다.",
       });
     }
+  };
+
+  const handleDemographicSave = (data: any) => {
+    setDemographicData(data);
+    setShowDemographicSurvey(false);
+    // 인구통계 데이터 저장 후 프로젝트 생성 진행
+    handleSubmit(new Event('submit') as any);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -147,6 +172,29 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
           onClose={() => setShowWorkflowGuide(false)}
         />
       )}
+      
+      {/* 인구통계 설문 모달 */}
+      {showDemographicSurvey && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+              <DemographicSurvey
+                projectId={formData.title ? `temp-${Date.now()}` : undefined}
+                onSave={handleDemographicSave}
+                onCancel={() => setShowDemographicSurvey(false)}
+                required={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-6xl mx-auto px-4">
         {/* 상단 헤더 섹션 */}
         <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -701,27 +749,85 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
                 />
               </div>
 
+              {/* 인구통계 설문 포함 옵션 */}
+              <div className="mt-8">
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+                  <div className="flex items-start space-x-4">
+                    <input
+                      type="checkbox"
+                      id="includeDemographic"
+                      checked={includeDemographicSurvey}
+                      onChange={(e) => setIncludeDemographicSurvey(e.target.checked)}
+                      className="mt-1.5 w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                    />
+                    <div className="flex-1">
+                      <label htmlFor="includeDemographic" className="cursor-pointer">
+                        <h4 className="font-semibold text-gray-900 mb-2">
+                          📊 인구통계학적 설문 포함
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-3">
+                          평가자의 인구통계학적 정보를 수집하여 분석의 깊이를 더합니다.
+                        </p>
+                      </label>
+                      {includeDemographicSurvey && (
+                        <div className="bg-white/80 rounded-lg p-4 mt-3 border border-purple-100">
+                          <h5 className="text-sm font-medium text-purple-800 mb-2">수집 정보:</h5>
+                          <ul className="text-sm text-gray-600 space-y-1">
+                            <li className="flex items-center">
+                              <svg className="w-4 h-4 mr-2 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              기본 정보 (연령대, 성별, 학력)
+                            </li>
+                            <li className="flex items-center">
+                              <svg className="w-4 h-4 mr-2 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              전문 정보 (경력, 부서, 직급)
+                            </li>
+                            <li className="flex items-center">
+                              <svg className="w-4 h-4 mr-2 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              의사결정 역할 및 프로젝트 경험
+                            </li>
+                          </ul>
+                          <div className="mt-3 p-3 bg-purple-50 rounded text-xs text-purple-700">
+                            💡 수집된 데이터는 평가자별 분석 및 그룹 특성 분석에 활용됩니다.
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 shadow-sm">
                 <h4 className="font-medium text-blue-900 mb-4">
                   📋 프로젝트 생성 후 진행 단계
                 </h4>
                 <ol className="text-sm text-blue-700 space-y-2">
+                  {includeDemographicSurvey && (
+                    <li>
+                      1️⃣ <strong>인구통계 설문</strong> (평가자 정보 수집)
+                    </li>
+                  )}
                   <li>
-                    1️⃣ <strong>평가 기준 설정</strong> (기본 3개, 필요시 추가
+                    {includeDemographicSurvey ? "2️⃣" : "1️⃣"} <strong>평가 기준 설정</strong> (기본 3개, 필요시 추가
                     가능)
                   </li>
                   <li>
-                    2️⃣ <strong>대안 설정</strong> (기본 3개, 필요시 추가 가능)
+                    {includeDemographicSurvey ? "3️⃣" : "2️⃣"} <strong>대안 설정</strong> (기본 3개, 필요시 추가 가능)
                   </li>
                   <li>
-                    3️⃣ <strong>평가자 배정</strong> (선택사항, 다중 평가자 지원)
+                    {includeDemographicSurvey ? "4️⃣" : "3️⃣"} <strong>평가자 배정</strong> (선택사항, 다중 평가자 지원)
                   </li>
                   <li>
-                    4️⃣ <strong>쌍대비교 평가</strong> (
+                    {includeDemographicSurvey ? "5️⃣" : "4️⃣"} <strong>쌍대비교 평가</strong> (
                     {formData.ahpType === "general" ? "일반" : "퍼지"} AHP)
                   </li>
                   <li>
-                    5️⃣ <strong>결과 분석 및 검증</strong> (CR, 가중치,{" "}
+                    {includeDemographicSurvey ? "6️⃣" : "5️⃣"} <strong>결과 분석 및 검증</strong> (CR, 가중치,{" "}
                     {formData.ahpType === "fuzzy" ? "불확실성 범위" : "민감도"}{" "}
                     확인)
                   </li>

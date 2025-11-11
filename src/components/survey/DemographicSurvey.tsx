@@ -1,12 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import apiService from '../../services/apiService';
 
-interface DemographicSurveyProps {
-  onSave?: (data: any) => void;
-  onCancel?: () => void;
+interface DemographicData {
+  age: string;
+  gender: string;
+  education: string;
+  occupation: string;
+  experience: string;
+  department: string;
+  position: string;
+  projectExperience: string;
+  decisionRole: string;
+  additionalInfo: string;
 }
 
-const DemographicSurvey: React.FC<DemographicSurveyProps> = ({ onSave, onCancel }) => {
-  const [formData, setFormData] = useState({
+interface DemographicSurveyProps {
+  projectId?: string;
+  evaluatorId?: string;
+  onSave?: (data: DemographicData) => void;
+  onCancel?: () => void;
+  initialData?: Partial<DemographicData>;
+  required?: boolean;
+}
+
+const DemographicSurvey: React.FC<DemographicSurveyProps> = ({ 
+  projectId,
+  evaluatorId,
+  onSave, 
+  onCancel,
+  initialData,
+  required = false
+}) => {
+  const [formData, setFormData] = useState<DemographicData>({
     age: '',
     gender: '',
     education: '',
@@ -16,8 +41,13 @@ const DemographicSurvey: React.FC<DemographicSurveyProps> = ({ onSave, onCancel 
     position: '',
     projectExperience: '',
     decisionRole: '',
-    additionalInfo: ''
+    additionalInfo: '',
+    ...initialData
   });
+
+  const [errors, setErrors] = useState<Partial<DemographicData>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -27,12 +57,104 @@ const DemographicSurvey: React.FC<DemographicSurveyProps> = ({ onSave, onCancel 
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (onSave) {
-      onSave(formData);
+  // 데이터 유효성 검증
+  const validateForm = (): boolean => {
+    const newErrors: Partial<DemographicData> = {};
+    
+    if (required) {
+      if (!formData.age) newErrors.age = '연령대를 선택해주세요';
+      if (!formData.gender) newErrors.gender = '성별을 선택해주세요';
+      if (!formData.education) newErrors.education = '학력을 선택해주세요';
+      if (!formData.occupation) newErrors.occupation = '직업을 입력해주세요';
+      if (!formData.experience) newErrors.experience = '경력을 선택해주세요';
+      if (!formData.decisionRole) newErrors.decisionRole = '역할을 선택해주세요';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // API를 통한 데이터 저장
+  const saveToDatabase = async (data: DemographicData) => {
+    try {
+      const payload = {
+        ...data,
+        project_id: projectId,
+        evaluator_id: evaluatorId,
+        submitted_at: new Date().toISOString()
+      };
+      
+      const response = projectId
+        ? await apiService.demographicAPI.createForProject(projectId, payload)
+        : await apiService.demographicAPI.create(payload);
+      
+      return response.data;
+    } catch (error) {
+      console.error('인구통계 데이터 저장 실패:', error);
+      throw error;
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // 데이터베이스에 저장
+      if (projectId || evaluatorId) {
+        await saveToDatabase(formData);
+      }
+      
+      // 로컬 스토리지에도 저장 (백업용)
+      localStorage.setItem('demographic_survey_data', JSON.stringify(formData));
+      
+      setSaveSuccess(true);
+      
+      // 성공 메시지 표시
+      setTimeout(() => {
+        setSaveSuccess(false);
+        if (onSave) {
+          onSave(formData);
+        }
+      }, 1500);
+      
+    } catch (error) {
+      alert('데이터 저장 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 저장된 데이터 불러오기
+  useEffect(() => {
+    const loadSavedData = async () => {
+      if (projectId && evaluatorId) {
+        try {
+          const response = await apiService.demographicAPI.fetchByEvaluator(projectId, evaluatorId);
+          if (response.data && typeof response.data === 'object') {
+            const demographicData = response.data as Partial<DemographicData>;
+            setFormData(prev => ({
+              ...prev,
+              ...demographicData
+            }));
+          }
+        } catch (error) {
+          // 저장된 데이터가 없는 경우 로컬 스토리지 확인
+          const localData = localStorage.getItem('demographic_survey_data');
+          if (localData && !initialData) {
+            setFormData(JSON.parse(localData));
+          }
+        }
+      }
+    };
+    
+    loadSavedData();
+  }, [projectId, evaluatorId]);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -42,16 +164,23 @@ const DemographicSurvey: React.FC<DemographicSurveyProps> = ({ onSave, onCancel 
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* 진행 상태 표시 */}
+          {saveSuccess && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
+              ✅ 설문이 성공적으로 저장되었습니다.
+            </div>
+          )}
+
           {/* 기본 정보 섹션 */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-              기본 정보
+              기본 정보 {required && <span className="text-red-500">*</span>}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
-                  연령대
+                  연령대 {required && <span className="text-red-500">*</span>}
                 </label>
                 <select 
                   name="age"
@@ -67,17 +196,20 @@ const DemographicSurvey: React.FC<DemographicSurveyProps> = ({ onSave, onCancel 
                   <option value="50s">50대</option>
                   <option value="60s">60대 이상</option>
                 </select>
+                {errors.age && (
+                  <p className="text-red-500 text-xs mt-1">{errors.age}</p>
+                )}
               </div>
               
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
-                  성별
+                  성별 {required && <span className="text-red-500">*</span>}
                 </label>
                 <select 
                   name="gender"
                   value={formData.gender}
                   onChange={handleInputChange}
-                  className="w-full p-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  className={`w-full p-3 rounded-lg border ${errors.gender ? 'border-red-500' : 'border-gray-200'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
                   style={{ backgroundColor: 'var(--bg-surface)' }}
                 >
                   <option value="">선택하세요</option>
@@ -86,6 +218,9 @@ const DemographicSurvey: React.FC<DemographicSurveyProps> = ({ onSave, onCancel 
                   <option value="other">기타</option>
                   <option value="prefer-not">응답하지 않음</option>
                 </select>
+                {errors.gender && (
+                  <p className="text-red-500 text-xs mt-1">{errors.gender}</p>
+                )}
               </div>
             </div>
             
@@ -263,8 +398,9 @@ const DemographicSurvey: React.FC<DemographicSurveyProps> = ({ onSave, onCancel 
             )}
             <button
               type="submit"
-              className="px-6 py-3 rounded-lg text-white transition-all duration-300"
-              style={{ backgroundColor: 'var(--accent-primary)' }}
+              disabled={isSubmitting}
+              className="px-6 py-3 rounded-lg text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: isSubmitting ? '#9CA3AF' : 'var(--accent-primary)' }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--accent-secondary)';
                 e.currentTarget.style.transform = 'translateY(-2px)';
@@ -276,7 +412,7 @@ const DemographicSurvey: React.FC<DemographicSurveyProps> = ({ onSave, onCancel 
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              저장하기
+              {isSubmitting ? '저장 중...' : '저장하기'}
             </button>
           </div>
         </form>

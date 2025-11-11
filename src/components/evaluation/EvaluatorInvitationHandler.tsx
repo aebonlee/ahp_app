@@ -56,11 +56,15 @@ const EvaluatorInvitationHandler: React.FC<EvaluatorInvitationHandlerProps> = ({
 
     try {
       // 초대 코드 검증 API 호출
-      const response = await apiService.post('/api/evaluators/validate-invitation/', {
+      const response = await apiService.post<{
+        valid: boolean;
+        message?: string;
+        invitation?: InvitationData;
+      }>('/api/evaluators/validate-invitation/', {
         code: code
       });
 
-      if (response.data.valid) {
+      if (response.data?.valid && response.data?.invitation) {
         setInvitationData(response.data.invitation);
         
         // 세션 스토리지에 평가자 정보 저장
@@ -73,10 +77,12 @@ const EvaluatorInvitationHandler: React.FC<EvaluatorInvitationHandlerProps> = ({
 
         // 자동으로 평가 페이지로 이동 (3초 후)
         setTimeout(() => {
-          startEvaluation(response.data.invitation);
+          if (response.data?.invitation) {
+            startEvaluation(response.data.invitation);
+          }
         }, 3000);
       } else {
-        setError(response.data.message || '유효하지 않은 초대 코드입니다.');
+        setError(response.data?.message || '유효하지 않은 초대 코드입니다.');
       }
     } catch (err) {
       console.error('초대 코드 검증 실패:', err);
@@ -146,7 +152,7 @@ const EvaluatorInvitationHandler: React.FC<EvaluatorInvitationHandlerProps> = ({
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <LoadingSpinner size="large" />
+          <LoadingSpinner size="lg" />
           <p className="mt-4 text-gray-600">초대 코드 확인 중...</p>
         </div>
       </div>
@@ -251,10 +257,9 @@ const EvaluatorInvitationHandler: React.FC<EvaluatorInvitationHandlerProps> = ({
                   id="invitation-code"
                   type="text"
                   value={manualCode}
-                  onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+                  onChange={(value) => setManualCode(value.toUpperCase())}
                   placeholder="예: PRJ-2025-ABC123"
                   className="w-full"
-                  autoComplete="off"
                 />
                 <p className="mt-2 text-sm text-gray-500">
                   프로젝트 관리자로부터 받은 초대 코드를 입력하세요.
