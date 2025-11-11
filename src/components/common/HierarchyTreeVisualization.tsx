@@ -33,28 +33,40 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
   onLayoutChange,
   allowDelete = false
 }) => {
-  // 노드를 계층구조로 변환
+  // 노드를 계층구조로 변환 (개선된 버전)
   const buildHierarchy = (flatNodes: TreeNode[]): TreeNode[] => {
+    // 이미 계층구조가 있는 경우 그대로 사용
+    if (flatNodes.some(node => node.children && node.children.length > 0)) {
+      console.log('🌳 이미 계층구조가 있는 데이터 사용');
+      return flatNodes;
+    }
+
     const nodeMap = new Map<string, TreeNode>();
     const rootNodes: TreeNode[] = [];
 
     // 먼저 모든 노드를 맵에 저장
     flatNodes.forEach(node => {
-      nodeMap.set(node.id, { ...node, children: [] });
+      const nodeId = String(node.id);
+      nodeMap.set(nodeId, { ...node, children: [] });
     });
 
     // 부모-자식 관계 설정
     flatNodes.forEach(node => {
-      const nodeWithChildren = nodeMap.get(node.id)!;
-      if (node.parent_id && nodeMap.has(node.parent_id)) {
-        const parent = nodeMap.get(node.parent_id)!;
+      const nodeId = String(node.id);
+      const nodeWithChildren = nodeMap.get(nodeId)!;
+      const parentId = node.parent_id ? String(node.parent_id) : null;
+      
+      if (parentId && nodeMap.has(parentId)) {
+        const parent = nodeMap.get(parentId)!;
         if (!parent.children) parent.children = [];
         parent.children.push(nodeWithChildren);
       } else {
+        // parent_id가 없거나 부모를 찾을 수 없는 경우 루트로 처리
         rootNodes.push(nodeWithChildren);
       }
     });
 
+    console.log(`📊 계층구조 변환 완료: 루트 노드 ${rootNodes.length}개`);
     return rootNodes;
   };
 

@@ -104,18 +104,23 @@ export class TextParser {
       return { name: name.trim(), description, level };
     }
 
-    // 번호 매기기 형식 (1., 1.1., 1-1., etc.)
-    const numberedMatch = line.match(/^(\s*)(\d+(?:[.-]\d+)*\.?)\s+(.+)$/);
+    // 번호 매기기 형식 개선 (1., 1.1., 1-1., 2., 2.1. etc.)
+    // 더 정확한 패턴 매칭
+    const numberedMatch = line.match(/^(\s*)(\d+(?:[.-]\d+)*)\.?\s+(.+)$/);
     if (numberedMatch) {
       const [, indent, number, content] = numberedMatch;
       
-      // 번호 형식으로 레벨 계산
-      // "1." = 레벨 1, "1.1." 또는 "1-1." = 레벨 2, etc.
-      const numberLevel = (number.match(/[.-]/g) || []).length + 1;
+      // 번호 형식으로 레벨 계산 개선
+      let level = 1;
       
-      // 번호 형식을 기준으로 레벨 결정
-      // 들여쓰기는 무시하고 번호 형식만으로 레벨 결정
-      const level = numberLevel;
+      // 점이나 대시로 구분된 숫자 개수로 레벨 계산
+      if (number.includes('.') || number.includes('-')) {
+        const parts = number.split(/[.-]/);
+        level = parts.length;
+      }
+      
+      // 디버그 로깅
+      console.log(`📊 번호 형식 파싱: "${number}" → 레벨 ${level}`);
       
       const [name, description] = this.extractNameAndDescription(content);
       return { name: name.trim(), description, level };

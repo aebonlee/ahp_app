@@ -155,14 +155,14 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     }
   }, [projectId]);
 
-  // 계층 구조 구성
+  // 계층 구조 구성 (개선된 버전)
   const buildHierarchy = (flatCriteria: Criterion[]): Criterion[] => {
     console.log('🔨 계층구조 구성 시작:', flatCriteria);
     
     const criteriaMap = new Map<string, Criterion>();
     const rootCriteria: Criterion[] = [];
 
-    // 모든 기준을 맵에 저장 - ID를 문자열로 정규화
+    // 1단계: 모든 기준을 맵에 저장 - ID를 문자열로 정규화
     flatCriteria.forEach(criterion => {
       const idString = String(criterion.id);
       criteriaMap.set(idString, { ...criterion, id: idString, children: [] });
@@ -170,7 +170,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
 
     console.log('📋 기준 맵 생성 완료:', Array.from(criteriaMap.keys()));
 
-    // 계층 구조 구성
+    // 2단계: 계층 구조 구성
     flatCriteria.forEach(criterion => {
       const idString = String(criterion.id);
       const criterionObj = criteriaMap.get(idString)!;
@@ -178,9 +178,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       // parent_id 문자열 정규화
       const parentIdString = criterion.parent_id ? String(criterion.parent_id) : null;
       
-      console.log(`🔍 부모-자식 관계 확인: ${criterionObj.name} (ID: ${idString}) → 부모 ID: ${parentIdString} (타입: ${typeof criterion.parent_id})`);
-      console.log(`   맵에 부모 존재 여부: ${parentIdString ? criteriaMap.has(parentIdString) : 'parent_id 없음'}`);
-      console.log(`   맵 키 목록: [${Array.from(criteriaMap.keys()).join(', ')}]`);
+      console.log(`🔍 부모-자식 관계 확인: ${criterionObj.name} (ID: ${idString}, Level: ${criterion.level}) → 부모 ID: ${parentIdString}`);
       
       // parent_id가 있고 해당 부모가 맵에 존재하는 경우
       if (parentIdString && criteriaMap.has(parentIdString)) {
@@ -189,23 +187,21 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           parent.children = parent.children || [];
           parent.children.push(criterionObj);
           
-          // 자식의 level을 부모 level + 1로 올바르게 설정
-          const parentLevel = parent.level || 1;
-          criterionObj.level = parentLevel + 1;
-          
-          console.log(`🔗 자식 연결 성공: ${criterionObj.name} (level ${criterionObj.level}) → ${parent.name} (level ${parentLevel})`);
+          // 자식의 level 유지 (이미 정확한 level이 설정되어 있음)
+          console.log(`✅ 자식 연결 성공: ${criterionObj.name} (level ${criterionObj.level}) → ${parent.name} (level ${parent.level})`);
         }
-      } else if (parentIdString) {
-        console.warn(`⚠️ 부모를 찾을 수 없음: ${criterionObj.name}의 parent_id=${parentIdString}`, {
-          parentIdString,
-          parentIdType: typeof parentIdString,
-          mapKeys: Array.from(criteriaMap.keys()),
-          mapKeysTypes: Array.from(criteriaMap.keys()).map(k => typeof k)
-        });
-        // 부모가 없는 경우 루트로 처리하고 level 1 보장
-        criterionObj.level = 1;
+      } else {
+        // parent_id가 없거나 부모를 찾을 수 없는 경우 루트로 처리
+        // 단, level이 1이 아닌 경우 경고
+        if (criterionObj.level !== 1 && parentIdString) {
+          console.warn(`⚠️ 부모를 찾을 수 없음: ${criterionObj.name}의 parent_id=${parentIdString}`, {
+            criterionLevel: criterionObj.level,
+            expectedParent: parentIdString,
+            availableIds: Array.from(criteriaMap.keys())
+          });
+        }
         rootCriteria.push(criterionObj);
-        console.log(`🌳 루트 기준으로 처리: ${criterionObj.name} (level: ${criterionObj.level}) - 이유: ${parentIdString ? '부모를 맵에서 찾을 수 없음' : 'parent_id 없음'}`);
+        console.log(`🌳 루트 기준으로 처리: ${criterionObj.name} (level: ${criterionObj.level})`);
       }
     });
 
