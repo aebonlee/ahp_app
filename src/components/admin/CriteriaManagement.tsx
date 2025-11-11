@@ -272,17 +272,59 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           }
         }
         
+        // 로컬 스토리지 완전 삭제
+        try {
+          // 프로젝트 관련 로컬 스토리지 키 삭제
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (
+              key.includes(projectId) || 
+              key.includes('criteria') || 
+              key.includes('temp') ||
+              key.includes('hierarchy')
+            )) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(key => localStorage.removeItem(key));
+          
+          // 세션 스토리지도 정리
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key && (
+              key.includes(projectId) || 
+              key.includes('criteria') ||
+              key.includes('temp')
+            )) {
+              sessionStorage.removeItem(key);
+            }
+          }
+        } catch (storageError) {
+          console.error('로컬 스토리지 정리 실패:', storageError);
+        }
+        
         // 로컬 상태 초기화
         setCriteria([]);
         setSavedCriteria([]);
         setTempCriteria([]);
         setHasTempChanges(false);
         setEditingIds(new Set());
+        setEditingCriteria({});
+        setInputMethod('templates');
+        setSelectedTab('input');
+        setSuccessMessage(null);
+        setErrorMessage(null);
         
-        alert('모든 기준이 초기화되었습니다.');
+        // 카운트 콜백 호출
+        onCriteriaChange(0);
+        
+        setSuccessMessage('모든 기준이 초기화되었습니다. 새로운 기준을 입력할 수 있습니다.');
+        setTimeout(() => setSuccessMessage(null), 3000);
       } catch (error) {
         console.error('기준 초기화 실패:', error);
-        alert('기준 초기화 중 오류가 발생했습니다.');
+        setErrorMessage('기준 초기화 중 오류가 발생했습니다.');
+        setTimeout(() => setErrorMessage(null), 5000);
       } finally {
         setIsLoading(false);
       }
