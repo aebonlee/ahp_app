@@ -426,7 +426,7 @@ const PairwiseComparisonMatrix: React.FC<PairwiseComparisonMatrixProps> = ({
           <Button
             variant="primary"
             onClick={handleStepComplete}
-            disabled={!consistency?.isConsistent && consistency?.consistencyRatio > 0.2}
+            disabled={!consistency?.isConsistent && (consistency?.consistencyRatio || 0) > 0.2}
           >
             다음 단계
           </Button>

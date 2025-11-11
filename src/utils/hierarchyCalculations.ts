@@ -10,7 +10,7 @@ import type {
 } from '../types/hierarchy';
 
 // Saaty의 일관성 지수
-export const RANDOM_INDEX = {
+export const RANDOM_INDEX: Record<number, number> = {
   1: 0,
   2: 0,
   3: 0.58,
@@ -265,7 +265,7 @@ function getHierarchyPath(
   
   while (currentNode) {
     path.unshift(currentNode.id);
-    currentNode = currentNode.parentId ? nodeMap.get(currentNode.parentId) : null;
+    currentNode = currentNode.parentId ? nodeMap.get(currentNode.parentId) : undefined;
   }
   
   return path;

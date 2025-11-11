@@ -114,6 +114,7 @@ export interface EvaluationProgress {
   completedNodes: number;
   totalComparisons: number;
   completedComparisons: number;
+  progressPercentage: number;
   averageConsistency: number;
   timeElapsed: number;
   estimatedTimeRemaining: number;
