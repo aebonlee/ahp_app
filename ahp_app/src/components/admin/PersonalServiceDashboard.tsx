@@ -275,7 +275,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     }
   }, [onCreateProject]);
   
-  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'projects' | 'creation' | 'project-wizard' | 'demographic-setup' | 'evaluator-invitation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash'>(() => {
+  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'projects' | 'creation' | 'project-wizard' | 'demographic-setup' | 'evaluator-invitation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash' | 'dev-tools'>(() => {
     // externalActiveTab이 있으면 그것을 우선 사용
     if (externalActiveTab && ['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(externalActiveTab)) {
       return externalActiveTab as any;
