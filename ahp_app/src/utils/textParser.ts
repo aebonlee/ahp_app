@@ -83,9 +83,35 @@ export class TextParser {
 
   /**
    * 개별 라인을 파싱합니다.
+   * 우선순위: 1) 번호 형식, 2) 마크다운 형식, 3) 들여쓰기 형식
    */
   private static parseLine(line: string, lineNumber: number): ParsedCriterion | null {
-    // 마크다운 리스트 형식 (-, *, +로 시작하고 들여쓰기로 레벨 구분)
+    // 1. 번호 매기기 형식을 가장 먼저 체크 (1., 1.1., 1-1., 2., 2.1. etc.)
+    // 들여쓰기와 관계없이 번호 형식으로 레벨 결정
+    const numberedMatch = line.match(/^\s*(\d+(?:[.-]\d+)*)\.?\s+(.+)$/);
+    if (numberedMatch) {
+      const [, number, content] = numberedMatch;
+      
+      // 번호 형식으로 레벨 계산
+      // "1", "2", "3" = 레벨 1
+      // "1.1", "2.1" = 레벨 2
+      // "1.1.1", "2.1.1" = 레벨 3
+      let level = 1;
+      
+      // 점이나 대시로 구분된 경우 레벨 계산
+      if (number.includes('.') || number.includes('-')) {
+        const parts = number.split(/[.-]/).filter(p => p.trim() !== '');
+        level = parts.length;
+      }
+      
+      // 디버그 로깅
+      console.log(`📊 번호 형식 파싱: "${number}" → 레벨 ${level}`);
+      
+      const [name, description] = this.extractNameAndDescription(content);
+      return { name: name.trim(), description, level };
+    }
+
+    // 2. 마크다운 리스트 형식 (-, *, +로 시작하고 들여쓰기로 레벨 구분)
     const markdownMatch = line.match(/^(\s*)([-*+])\s+(.+)$/);
     if (markdownMatch) {
       const [, indent, , content] = markdownMatch;
@@ -95,28 +121,10 @@ export class TextParser {
         // 탭은 4칸으로 계산
         const spaces = indent.replace(/\t/g, '    ').length;
         // 2칸 또는 4칸당 1레벨 증가
-        // 2칸 = 레벨 2, 4칸 = 레벨 2 or 3, 6칸 = 레벨 3, 8칸 = 레벨 4
         if (spaces >= 2) {
           level = Math.floor(spaces / 2) + 1;
         }
       }
-      const [name, description] = this.extractNameAndDescription(content);
-      return { name: name.trim(), description, level };
-    }
-
-    // 번호 매기기 형식 (1., 1.1., 1-1., etc.)
-    const numberedMatch = line.match(/^(\s*)(\d+(?:[.-]\d+)*\.?)\s+(.+)$/);
-    if (numberedMatch) {
-      const [, indent, number, content] = numberedMatch;
-      
-      // 번호 형식으로 레벨 계산
-      // "1." = 레벨 1, "1.1." 또는 "1-1." = 레벨 2, etc.
-      const numberLevel = (number.match(/[.-]/g) || []).length + 1;
-      
-      // 번호 형식을 기준으로 레벨 결정
-      // 들여쓰기는 무시하고 번호 형식만으로 레벨 결정
-      const level = numberLevel;
-      
       const [name, description] = this.extractNameAndDescription(content);
       return { name: name.trim(), description, level };
     }
