@@ -114,6 +114,10 @@ const DatabaseManager: React.FC = () => {
       // 각 기준 삭제
       for (const criterion of criteria) {
         try {
+          if (!criterion.id) {
+            console.warn(`기준 ID가 없음: ${criterion.name}`);
+            continue;
+          }
           const deleteResponse = await criteriaApi.deleteCriteria(criterion.id, projectId);
           if (deleteResponse.success) {
             projectDeletedCount++;
@@ -280,7 +284,7 @@ const DatabaseManager: React.FC = () => {
             🧹 선택한 프로젝트만 초기화
           </Button>
           <Button 
-            variant="danger" 
+            variant="error" 
             onClick={clearAllCriteria}
             disabled={isLoading || projects.length === 0}
             className="bg-red-600 hover:bg-red-700 text-white"

@@ -354,8 +354,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         setHasTempChanges(false);
         setEditingIds(new Set());
         setEditingCriteria({});
-        setInputMethod('templates');
-        setSelectedTab('input');
         setSuccessMessage(null);
         setErrorMessage(null);
         
