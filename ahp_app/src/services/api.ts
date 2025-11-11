@@ -408,8 +408,8 @@ export const projectApi = {
     console.log('  - objective:', typeof djangoData.objective, djangoData.objective);
     console.log('  - settings:', typeof djangoData.settings, djangoData.settings ? 'exists' : 'null');
     
-    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/${id}/`, {
-      method: 'PUT',
+    const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`, {
+      method: 'PATCH',
       body: JSON.stringify(djangoData)
     });
     

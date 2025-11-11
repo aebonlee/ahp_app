@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>API Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>AHP Platform API Connection Test</h1>
+    
+    <div class="test-section">
+        <h2>Backend Connection Test</h2>
+        <button onclick="testBackend()">Test Backend Status</button>
+        <div id="backend-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Project API Test</h2>
+        <button onclick="testProjects()">Get Projects</button>
+        <button onclick="createTestProject()">Create Test Project</button>
+        <div id="project-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Evaluator Test</h2>
+        <input type="text" id="project-id" placeholder="Project ID" style="padding: 8px; width: 300px;">
+        <br><br>
+        <button onclick="addEvaluator()">Add Test Evaluator</button>
+        <div id="evaluator-result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
+        
+        async function testBackend() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = '<p class="info">Testing backend connection...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/service/status/`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Backend is ${response.ok ? 'online' : 'responding'}</p>
+                    <p>Status: ${response.status}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Backend connection failed</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        async function testProjects() {
+            const resultDiv = document.getElementById('project-result');
+            resultDiv.innerHTML = '<p class="info">Fetching projects...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/service/projects/projects/`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Projects fetched successfully</p>
+                    <p>Count: ${data.length || 0}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                // 첫 번째 프로젝트 ID를 입력 필드에 설정
+                if (data && data.length > 0) {
+                    document.getElementById('project-id').value = data[0].id;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Failed to fetch projects</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        async function createTestProject() {
+            const resultDiv = document.getElementById('project-result');
+            resultDiv.innerHTML = '<p class="info">Creating test project...</p>';
+            
+            const testProject = {
+                title: `Test Project ${Date.now()}`,
+                description: 'API test project',
+                objective: 'Testing API connection',
+                evaluation_mode: 'practical',
+                workflow_stage: 'creating'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/service/projects/projects/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(testProject)
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${JSON.stringify(data)}`);
+                }
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Project created successfully</p>
+                    <p>ID: ${data.id}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                // 생성된 프로젝트 ID를 입력 필드에 설정
+                if (data.id) {
+                    document.getElementById('project-id').value = data.id;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Failed to create project</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        async function addEvaluator() {
+            const projectId = document.getElementById('project-id').value;
+            if (!projectId) {
+                alert('Please enter a project ID');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('evaluator-result');
+            resultDiv.innerHTML = '<p class="info">Adding evaluator...</p>';
+            
+            try {
+                // 먼저 프로젝트 정보를 가져옴
+                const getResponse = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/`, {
+                    credentials: 'include'
+                });
+                
+                if (!getResponse.ok) {
+                    throw new Error(`Failed to get project: HTTP ${getResponse.status}`);
+                }
+                
+                const project = await getResponse.json();
+                
+                // 평가자 추가
+                const currentSettings = project.settings || {};
+                const currentEvaluators = currentSettings.evaluators || [];
+                
+                const newEvaluator = {
+                    id: `eval_${Date.now()}`,
+                    name: `Test User ${Date.now()}`,
+                    email: `test${Date.now()}@example.com`,
+                    project_id: projectId,
+                    status: 'pending',
+                    access_key: `KEY_${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+                };
+                
+                const updatedSettings = {
+                    ...currentSettings,
+                    evaluators: [...currentEvaluators, newEvaluator],
+                    evaluators_count: currentEvaluators.length + 1
+                };
+                
+                // 프로젝트 업데이트
+                const updateData = {
+                    title: project.title,
+                    description: project.description,
+                    objective: project.objective || 'Test project',
+                    settings: updatedSettings
+                };
+                
+                const updateResponse = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(updateData)
+                });
+                
+                const updateResult = await updateResponse.json();
+                
+                if (!updateResponse.ok) {
+                    throw new Error(`Failed to update project: HTTP ${updateResponse.status} - ${JSON.stringify(updateResult)}`);
+                }
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Evaluator added successfully</p>
+                    <p>Name: ${newEvaluator.name}</p>
+                    <p>Email: ${newEvaluator.email}</p>
+                    <p>Access Key: ${newEvaluator.access_key}</p>
+                    <p>Total Evaluators: ${updatedSettings.evaluators.length}</p>
+                    <pre>${JSON.stringify(updateResult.settings, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Failed to add evaluator</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        // 페이지 로드 시 자동 테스트
+        window.onload = function() {
+            testBackend();
+        }
+    </script>
+</body>
+</html>

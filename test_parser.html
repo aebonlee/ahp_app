@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Text Parser Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        textarea { width: 100%; height: 300px; font-family: monospace; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 20px; background: #f8f9fa; border: 1px solid #dee2e6; }
+        .error { color: red; }
+        .success { color: green; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AHP Text Parser Test</h1>
+        
+        <h2>입력 텍스트</h2>
+        <textarea id="input" placeholder="계층구조 텍스트를 입력하세요...">1. 재무 성과
+  1.1. 수익성 - 매출액과 순이익 증가율
+  1.2. 안정성 - 부채비율과 유동비율
+  1.3. 성장성 - 전년 대비 성장률
+2. 운영 효율성
+  2.1. 생산성 - 인당 매출액과 설비 가동률
+  2.2. 품질 관리 - 불량률과 고객 만족도
+  2.3. 혁신 역량 - R&D 투자와 신제품 개발
+3. 지속가능성
+  3.1. 환경 경영 - 친환경 정책과 탄소 배출
+  3.2. 사회적 책임 - 사회공헌과 윤리 경영
+  3.3. 거버넌스 - 투명 경영과 소통</textarea>
+        
+        <br><br>
+        <button onclick="testParser()">파싱 테스트</button>
+        
+        <div id="result" class="result" style="display:none;">
+            <h2>파싱 결과</h2>
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script>
+        class TextParser {
+            static parseText(text) {
+                const lines = text.split('\n').filter(line => line.trim().length > 0);
+                const criteria = [];
+                const errors = [];
+
+                for (let i = 0; i < lines.length; i++) {
+                    const parsed = this.parseLine(lines[i], i + 1);
+                    if (parsed) {
+                        criteria.push(parsed);
+                    } else {
+                        errors.push(`라인 ${i + 1}: 파싱할 수 없는 형식`);
+                    }
+                }
+
+                // 계층구조 유효성 검사
+                const level1Count = criteria.filter(c => c.level === 1).length;
+                if (level1Count === 0) {
+                    errors.push('최상위 레벨(레벨 1) 기준이 최소 1개 필요합니다.');
+                }
+
+                return {
+                    success: errors.length === 0,
+                    criteria,
+                    errors
+                };
+            }
+
+            static parseLine(line, lineNumber) {
+                // 1. 번호 매기기 형식 체크 (최우선)
+                const numberedMatch = line.match(/^\s*(\d+(?:[.-]\d+)*)\.?\s+(.+)$/);
+                if (numberedMatch) {
+                    const [, number, content] = numberedMatch;
+                    
+                    let level = 1;
+                    if (number.includes('.') || number.includes('-')) {
+                        const parts = number.split(/[.-]/).filter(p => p.trim() !== '');
+                        level = parts.length;
+                    }
+                    
+                    console.log(`번호 형식 파싱: "${number}" → 레벨 ${level}`);
+                    
+                    const [name, description] = this.extractNameAndDescription(content);
+                    return { name: name.trim(), description, level, number };
+                }
+
+                // 2. 마크다운 형식
+                const markdownMatch = line.match(/^(\s*)([-*+])\s+(.+)$/);
+                if (markdownMatch) {
+                    const [, indent, , content] = markdownMatch;
+                    let level = 1;
+                    if (indent.length >= 2) {
+                        level = Math.floor(indent.length / 2) + 1;
+                    }
+                    const [name, description] = this.extractNameAndDescription(content);
+                    return { name: name.trim(), description, level };
+                }
+
+                // 3. 들여쓰기 형식
+                const indentMatch = line.match(/^(\s+)(.+)$/);
+                if (indentMatch) {
+                    const [, indent, content] = indentMatch;
+                    const level = Math.floor(indent.length / 4) + 1;
+                    const [name, description] = this.extractNameAndDescription(content);
+                    return { name: name.trim(), description, level };
+                }
+
+                // 4. 일반 텍스트
+                const [name, description] = this.extractNameAndDescription(line.trim());
+                return { name: name.trim(), description, level: 1 };
+            }
+
+            static extractNameAndDescription(text) {
+                // "이름 - 설명" 형식
+                const dashMatch = text.match(/^([^-]+?)\s*-\s*(.+)$/);
+                if (dashMatch) {
+                    return [dashMatch[1].trim(), dashMatch[2].trim()];
+                }
+                return [text.trim(), undefined];
+            }
+        }
+
+        function testParser() {
+            const input = document.getElementById('input').value;
+            const result = TextParser.parseText(input);
+            const outputDiv = document.getElementById('output');
+            
+            let html = '';
+            
+            if (result.success) {
+                html += '<p class="success">✅ 파싱 성공!</p>';
+            } else {
+                html += '<p class="error">❌ 파싱 오류:</p>';
+                html += '<ul>';
+                result.errors.forEach(error => {
+                    html += `<li class="error">${error}</li>`;
+                });
+                html += '</ul>';
+            }
+            
+            html += '<h3>파싱된 기준 목록:</h3>';
+            html += '<table border="1" cellpadding="5" style="width:100%; border-collapse: collapse;">';
+            html += '<tr><th>번호</th><th>이름</th><th>설명</th><th>레벨</th></tr>';
+            
+            result.criteria.forEach((criterion, index) => {
+                const indent = '&nbsp;&nbsp;'.repeat((criterion.level - 1) * 2);
+                html += `<tr>`;
+                html += `<td>${index + 1}</td>`;
+                html += `<td>${indent}${criterion.name}</td>`;
+                html += `<td>${criterion.description || '-'}</td>`;
+                html += `<td style="text-align:center; font-weight:bold; color: ${
+                    criterion.level === 1 ? 'blue' : 
+                    criterion.level === 2 ? 'green' : 
+                    'orange'
+                }">레벨 ${criterion.level}</td>`;
+                html += `</tr>`;
+            });
+            
+            html += '</table>';
+            
+            html += '<h3>계층구조 요약:</h3>';
+            const levelCounts = {};
+            result.criteria.forEach(c => {
+                levelCounts[c.level] = (levelCounts[c.level] || 0) + 1;
+            });
+            
+            html += '<ul>';
+            Object.entries(levelCounts).forEach(([level, count]) => {
+                html += `<li>레벨 ${level}: ${count}개</li>`;
+            });
+            html += '</ul>';
+            
+            html += '<h3>원본 JSON:</h3>';
+            html += '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            
+            outputDiv.innerHTML = html;
+            document.getElementById('result').style.display = 'block';
+        }
+        
+        // 페이지 로드 시 자동 테스트
+        window.onload = function() {
+            testParser();
+        }
+    </script>
+</body>
+</html>
