@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백엔드 연결 테스트</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .success { background: #4CAF50; color: white; }
+        .error { background: #f44336; color: white; }
+        .pending { background: #FF9800; color: white; }
+        .result {
+            margin: 10px 0;
+            padding: 15px;
+            background: #fff;
+            border-left: 4px solid #ddd;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .result.success { border-color: #4CAF50; }
+        .result.error { border-color: #f44336; }
+        button {
+            padding: 10px 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1976D2; }
+        .log {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .endpoint-test {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 백엔드 연결 테스트</h1>
+        
+        <div class="test-section">
+            <h2>1. 서버 상태 확인</h2>
+            <button onclick="testServerStatus()">서버 상태 테스트</button>
+            <div id="serverStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. API 엔드포인트 테스트</h2>
+            <button onclick="testAllEndpoints()">모든 엔드포인트 테스트</button>
+            <div id="endpointResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. 프로젝트 CRUD 테스트</h2>
+            <button onclick="testProjectCRUD()">프로젝트 CRUD 테스트</button>
+            <div id="crudResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. 응답 시간 측정</h2>
+            <button onclick="measureResponseTime()">응답 시간 측정</button>
+            <div id="responseTime"></div>
+        </div>
+
+        <div class="log" id="log">
+            === 테스트 로그 ===
+        </div>
+    </div>
+
+    <script>
+        // 백엔드 URL 설정
+        const API_URL = 'https://ahp-django-backend.onrender.com';
+        const ENDPOINTS = {
+            status: '/api/service/status/',
+            projects: '/api/service/projects/projects/',
+            criteria: '/api/service/projects/criteria/',
+            auth: '/api/service/auth/login/',
+            data: '/api/service/data/'
+        };
+
+        // 로그 함수
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff5252' : type === 'success' ? '#69f0ae' : '#aed581';
+            logDiv.innerHTML += `\n<span style="color: ${color}">[${timestamp}] ${message}</span>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // 서버 상태 확인
+        async function testServerStatus() {
+            const statusDiv = document.getElementById('serverStatus');
+            statusDiv.innerHTML = '<div class="status pending">테스트 중...</div>';
+            
+            try {
+                log(`서버 상태 확인 중: ${API_URL}`);
+                const startTime = Date.now();
+                
+                // 1. 기본 연결 테스트
+                const response = await fetch(`${API_URL}${ENDPOINTS.status}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+                
+                const responseTime = Date.now() - startTime;
+                log(`응답 시간: ${responseTime}ms`, 'success');
+                
+                let data;
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    data = await response.text();
+                }
+                
+                statusDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        ${response.ok ? '✅ 연결 성공' : '❌ 연결 실패'}
+                    </div>
+                    <div class="result ${response.ok ? 'success' : 'error'}">
+상태 코드: ${response.status} ${response.statusText}
+응답 시간: ${responseTime}ms
+백엔드 URL: ${API_URL}
+응답 데이터: ${typeof data === 'object' ? JSON.stringify(data, null, 2) : data}
+                    </div>
+                `;
+                
+                log(`서버 상태: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="status error">❌ 연결 실패</div>
+                    <div class="result error">
+에러: ${error.message}
+백엔드 URL: ${API_URL}
+
+가능한 원인:
+1. 서버가 꺼져있음 (Render.com 콜드 스타트)
+2. CORS 설정 문제
+3. 네트워크 연결 문제
+                    </div>
+                `;
+                log(`서버 연결 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 모든 엔드포인트 테스트
+        async function testAllEndpoints() {
+            const resultsDiv = document.getElementById('endpointResults');
+            resultsDiv.innerHTML = '<div class="status pending">테스트 중...</div>';
+            
+            const results = [];
+            
+            for (const [name, path] of Object.entries(ENDPOINTS)) {
+                log(`엔드포인트 테스트: ${name} - ${path}`);
+                
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(`${API_URL}${path}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include'
+                    });
+                    
+                    const responseTime = Date.now() - startTime;
+                    
+                    results.push({
+                        name,
+                        path,
+                        status: response.status,
+                        statusText: response.statusText,
+                        responseTime,
+                        success: response.ok || response.status === 401 // 401은 인증 필요로 정상
+                    });
+                    
+                    log(`${name}: ${response.status} (${responseTime}ms)`, 
+                        response.ok ? 'success' : 'info');
+                    
+                } catch (error) {
+                    results.push({
+                        name,
+                        path,
+                        status: 0,
+                        statusText: error.message,
+                        responseTime: 0,
+                        success: false
+                    });
+                    log(`${name}: 실패 - ${error.message}`, 'error');
+                }
+            }
+            
+            const successCount = results.filter(r => r.success).length;
+            const totalCount = results.length;
+            
+            resultsDiv.innerHTML = `
+                <div class="status ${successCount === totalCount ? 'success' : successCount > 0 ? 'pending' : 'error'}">
+                    테스트 결과: ${successCount}/${totalCount} 성공
+                </div>
+                ${results.map(r => `
+                    <div class="endpoint-test">
+                        <strong>${r.name}</strong> (${r.path})
+                        <span class="status ${r.success ? 'success' : 'error'}">
+                            ${r.status} ${r.statusText}
+                        </span>
+                        <span style="float: right;">${r.responseTime}ms</span>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // 프로젝트 CRUD 테스트
+        async function testProjectCRUD() {
+            const resultsDiv = document.getElementById('crudResults');
+            resultsDiv.innerHTML = '<div class="status pending">테스트 중...</div>';
+            
+            try {
+                // 1. 프로젝트 목록 조회
+                log('프로젝트 목록 조회 중...');
+                const listResponse = await fetch(`${API_URL}${ENDPOINTS.projects}`, {
+                    credentials: 'include'
+                });
+                
+                let projectCount = 0;
+                if (listResponse.ok) {
+                    const data = await listResponse.json();
+                    projectCount = data.count || (data.results ? data.results.length : 0);
+                    log(`프로젝트 ${projectCount}개 발견`, 'success');
+                }
+                
+                resultsDiv.innerHTML = `
+                    <div class="status ${listResponse.ok ? 'success' : 'error'}">
+                        ${listResponse.ok ? '✅ CRUD 테스트 성공' : '❌ CRUD 테스트 실패'}
+                    </div>
+                    <div class="result ${listResponse.ok ? 'success' : 'error'}">
+프로젝트 목록 조회: ${listResponse.status} ${listResponse.statusText}
+프로젝트 개수: ${projectCount}개
+백엔드 URL: ${API_URL}${ENDPOINTS.projects}
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">❌ CRUD 테스트 실패</div>
+                    <div class="result error">에러: ${error.message}</div>
+                `;
+                log(`CRUD 테스트 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 응답 시간 측정
+        async function measureResponseTime() {
+            const timeDiv = document.getElementById('responseTime');
+            timeDiv.innerHTML = '<div class="status pending">측정 중...</div>';
+            
+            const measurements = [];
+            const testCount = 5;
+            
+            log(`${testCount}회 응답 시간 측정 시작`);
+            
+            for (let i = 0; i < testCount; i++) {
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(`${API_URL}${ENDPOINTS.status}`, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    const responseTime = Date.now() - startTime;
+                    measurements.push(responseTime);
+                    log(`테스트 ${i + 1}: ${responseTime}ms`);
+                } catch (error) {
+                    log(`테스트 ${i + 1} 실패: ${error.message}`, 'error');
+                }
+            }
+            
+            if (measurements.length > 0) {
+                const avg = Math.round(measurements.reduce((a, b) => a + b, 0) / measurements.length);
+                const min = Math.min(...measurements);
+                const max = Math.max(...measurements);
+                
+                timeDiv.innerHTML = `
+                    <div class="status success">✅ 측정 완료</div>
+                    <div class="result success">
+테스트 횟수: ${measurements.length}/${testCount}
+평균 응답 시간: ${avg}ms
+최소 응답 시간: ${min}ms
+최대 응답 시간: ${max}ms
+측정값: ${measurements.join(', ')}ms
+
+${avg > 1000 ? '⚠️ 응답 시간이 느립니다. 콜드 스타트일 수 있습니다.' : '✅ 응답 시간이 정상입니다.'}
+                    </div>
+                `;
+                
+                log(`평균 응답 시간: ${avg}ms`, avg < 1000 ? 'success' : 'info');
+            } else {
+                timeDiv.innerHTML = `
+                    <div class="status error">❌ 측정 실패</div>
+                    <div class="result error">모든 테스트가 실패했습니다.</div>
+                `;
+            }
+        }
+
+        // 페이지 로드 시 자동 테스트
+        window.onload = function() {
+            log('=== 백엔드 연결 테스트 시작 ===', 'success');
+            log(`백엔드 URL: ${API_URL}`);
+            testServerStatus();
+        };
+    </script>
+</body>
+</html>
