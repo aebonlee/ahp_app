@@ -6,6 +6,7 @@ import InteractiveTreeModel from '../visualization/InteractiveTreeModel';
 import ExportManager from '../export/ExportManager';
 import HelpSystem from '../help/HelpSystem';
 import AIManagementDashboard from './AIManagementDashboard';
+import DatabaseManager from './DatabaseManager';
 import type { UserRole } from '../../types';
 
 // 구독 서비스 관련 인터페이스
@@ -67,7 +68,7 @@ interface OperationalStats {
   dailyActiveUsers: number;
 }
 
-type TabType = 'dashboard' | 'subscriptions' | 'users' | 'projects' | 'revenue' | 'analytics' | 'system' | 'settings' | 'ai-management';
+type TabType = 'dashboard' | 'subscriptions' | 'users' | 'projects' | 'revenue' | 'analytics' | 'system' | 'settings' | 'ai-management' | 'database';
 
 interface SuperAdminDashboardProps {
   activeTab?: TabType;
@@ -931,12 +932,13 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
           </div>
 
           {/* Second Row - Advanced Functions */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
               { id: 'revenue', label: '수익 분석', icon: '💰', desc: '매출 및 재무 현황' },
               { id: 'analytics', label: '분석 도구', icon: '🔬', desc: '고급 AHP 분석' },
               { id: 'system', label: '시스템 관리', icon: '⚡', desc: '서버 및 성능 모니터링' },
-              { id: 'ai-management', label: 'AI 관리', icon: '🤖', desc: 'AI 서비스 통합 관리' }
+              { id: 'ai-management', label: 'AI 관리', icon: '🤖', desc: 'AI 서비스 통합 관리' },
+              { id: 'database', label: 'DB 관리', icon: '🗑️', desc: '데이터베이스 초기화' }
             ].map((item) => (
               <button
                 key={item.id}
@@ -1000,6 +1002,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 return renderSettings();
               case 'ai-management':
                 return <AIManagementDashboard userRole="superadmin" />;
+              case 'database':
+                return <DatabaseManager />;
               default:
                 return renderDashboard();
             }

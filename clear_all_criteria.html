@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB 초기화 - 모든 기준 삭제</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button { 
+            padding: 12px 24px; 
+            margin: 10px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .button:hover { background: #45a049; }
+        .danger-btn {
+            background: #f44336;
+        }
+        .danger-btn:hover { background: #da190b; }
+        .warning-btn {
+            background: #ff9800;
+        }
+        .warning-btn:hover { background: #e68900; }
+        .result { 
+            margin: 20px 0; 
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error { 
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+        .success { 
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4CAF50;
+        }
+        .warning {
+            background: #fff3e0;
+            color: #e65100;
+            border-left: 4px solid #ff9800;
+        }
+        .info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196F3;
+        }
+        h1 { color: #333; }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            flex: 1;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .progress {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ 데이터베이스 초기화 도구</h1>
+        <p>모든 프로젝트의 기준(Criteria)을 삭제합니다. 이 작업은 되돌릴 수 없습니다!</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalProjects">0</div>
+                <div class="stat-label">전체 프로젝트</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCriteria">0</div>
+                <div class="stat-label">전체 기준</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="deletedCriteria">0</div>
+                <div class="stat-label">삭제된 기준</div>
+            </div>
+        </div>
+
+        <div class="progress" style="display:none;" id="progressContainer">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+
+        <div>
+            <button class="button" onclick="loadStatus()">📊 현재 상태 조회</button>
+            <button class="button warning-btn" onclick="clearSelectedProject()">🧹 선택한 프로젝트만 초기화</button>
+            <button class="button danger-btn" onclick="clearAllCriteria()">⚠️ 모든 프로젝트 초기화</button>
+        </div>
+
+        <div>
+            <label for="projectSelect">프로젝트 선택:</label>
+            <select id="projectSelect" style="padding: 8px; margin: 10px;">
+                <option value="">로딩 중...</option>
+            </select>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://ahp-django-backend-new.onrender.com';
+        let allProjects = [];
+        let totalCriteriaCount = 0;
+        let deletedCount = 0;
+
+        // 결과 표시
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result ' + type;
+            const timestamp = new Date().toLocaleTimeString();
+            resultDiv.textContent = `[${timestamp}] ${message}`;
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            document.getElementById('totalProjects').textContent = allProjects.length;
+            document.getElementById('totalCriteria').textContent = totalCriteriaCount;
+            document.getElementById('deletedCriteria').textContent = deletedCount;
+        }
+
+        // 진행률 표시
+        function updateProgress(current, total) {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            
+            if (total > 0) {
+                progressContainer.style.display = 'block';
+                const percent = Math.round((current / total) * 100);
+                progressBar.style.width = percent + '%';
+                progressBar.textContent = `${percent}% (${current}/${total})`;
+            } else {
+                progressContainer.style.display = 'none';
+            }
+        }
+
+        // 현재 상태 조회
+        async function loadStatus() {
+            try {
+                showResult('프로젝트 및 기준 정보를 조회하는 중...', 'info');
+                
+                // 프로젝트 목록 조회
+                const response = await fetch(`${API_URL}/api/service/projects/projects/`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.results) {
+                    allProjects = data.results;
+                    
+                    // 프로젝트 선택 드롭다운 업데이트
+                    const select = document.getElementById('projectSelect');
+                    select.innerHTML = '<option value="">프로젝트 선택...</option>';
+                    
+                    let statusReport = '📊 현재 데이터베이스 상태:\n\n';
+                    totalCriteriaCount = 0;
+                    
+                    for (const project of allProjects) {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = `${project.title} (기준: ${project.criteria_count || 0}개)`;
+                        select.appendChild(option);
+                        
+                        // 각 프로젝트의 기준 조회
+                        try {
+                            const criteriaResponse = await fetch(
+                                `${API_URL}/api/service/projects/criteria/?project_id=${project.id}`,
+                                { credentials: 'include' }
+                            );
+                            const criteria = await criteriaResponse.json();
+                            const criteriaCount = Array.isArray(criteria) ? criteria.length : 0;
+                            totalCriteriaCount += criteriaCount;
+                            
+                            statusReport += `📁 ${project.title}\n`;
+                            statusReport += `   ID: ${project.id}\n`;
+                            statusReport += `   기준: ${criteriaCount}개\n`;
+                            if (criteriaCount > 0 && Array.isArray(criteria)) {
+                                statusReport += `   기준 목록: ${criteria.slice(0, 5).map(c => c.name).join(', ')}`;
+                                if (criteriaCount > 5) statusReport += ` 외 ${criteriaCount - 5}개`;
+                                statusReport += '\n';
+                            }
+                            statusReport += '\n';
+                        } catch (error) {
+                            console.error(`프로젝트 ${project.id} 기준 조회 실패:`, error);
+                        }
+                    }
+                    
+                    statusReport += `\n총 ${allProjects.length}개 프로젝트, ${totalCriteriaCount}개 기준`;
+                    
+                    showResult(statusReport, 'info');
+                    updateStats();
+                } else {
+                    showResult('프로젝트가 없습니다.', 'warning');
+                }
+            } catch (error) {
+                showResult(`조회 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 선택한 프로젝트만 초기화
+        async function clearSelectedProject() {
+            const projectId = document.getElementById('projectSelect').value;
+            if (!projectId) {
+                showResult('프로젝트를 선택해주세요.', 'warning');
+                return;
+            }
+
+            const project = allProjects.find(p => p.id === projectId);
+            if (!confirm(`정말 "${project.title}" 프로젝트의 모든 기준을 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            await clearProjectCriteria(projectId, project.title);
+        }
+
+        // 모든 프로젝트 초기화
+        async function clearAllCriteria() {
+            if (!confirm('⚠️ 정말 모든 프로젝트의 기준을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다!')) {
+                return;
+            }
+
+            if (!confirm('⚠️⚠️ 마지막 확인: 정말로 모든 데이터를 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                showResult('모든 프로젝트 초기화를 시작합니다...', 'warning');
+                deletedCount = 0;
+                
+                for (let i = 0; i < allProjects.length; i++) {
+                    const project = allProjects[i];
+                    updateProgress(i, allProjects.length);
+                    await clearProjectCriteria(project.id, project.title);
+                }
+                
+                updateProgress(allProjects.length, allProjects.length);
+                showResult(`✅ 초기화 완료! 총 ${deletedCount}개의 기준이 삭제되었습니다.`, 'success');
+                
+                // 상태 다시 로드
+                setTimeout(loadStatus, 1000);
+            } catch (error) {
+                showResult(`초기화 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 특정 프로젝트의 모든 기준 삭제
+        async function clearProjectCriteria(projectId, projectTitle) {
+            try {
+                showResult(`🔄 "${projectTitle}" 프로젝트 처리 중...`, 'info');
+                
+                // 기준 목록 조회
+                const response = await fetch(
+                    `${API_URL}/api/service/projects/criteria/?project_id=${projectId}`,
+                    { credentials: 'include' }
+                );
+                const criteria = await response.json();
+                
+                if (!Array.isArray(criteria) || criteria.length === 0) {
+                    showResult(`"${projectTitle}": 삭제할 기준이 없습니다.`, 'info');
+                    return;
+                }
+
+                let projectDeletedCount = 0;
+                const deleteErrors = [];
+                
+                // 각 기준 삭제
+                for (const criterion of criteria) {
+                    try {
+                        const deleteResponse = await fetch(
+                            `${API_URL}/api/service/projects/criteria/${criterion.id}/`,
+                            {
+                                method: 'DELETE',
+                                credentials: 'include'
+                            }
+                        );
+                        
+                        if (deleteResponse.ok || deleteResponse.status === 204) {
+                            projectDeletedCount++;
+                            deletedCount++;
+                            console.log(`✅ 삭제됨: ${criterion.name} (ID: ${criterion.id})`);
+                        } else {
+                            const errorText = await deleteResponse.text();
+                            deleteErrors.push(`${criterion.name}: ${errorText}`);
+                            console.error(`❌ 삭제 실패: ${criterion.name}`, errorText);
+                        }
+                    } catch (error) {
+                        deleteErrors.push(`${criterion.name}: ${error.message}`);
+                        console.error(`❌ 삭제 오류: ${criterion.name}`, error);
+                    }
+                }
+                
+                // 삭제 확인
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const checkResponse = await fetch(
+                    `${API_URL}/api/service/projects/criteria/?project_id=${projectId}`,
+                    { credentials: 'include' }
+                );
+                const remainingCriteria = await checkResponse.json();
+                const remainingCount = Array.isArray(remainingCriteria) ? remainingCriteria.length : 0;
+                
+                let resultMessage = `"${projectTitle}": ${projectDeletedCount}/${criteria.length}개 삭제 완료`;
+                if (remainingCount > 0) {
+                    resultMessage += ` (⚠️ ${remainingCount}개 남음)`;
+                }
+                if (deleteErrors.length > 0) {
+                    resultMessage += `\n삭제 실패: ${deleteErrors.join(', ')}`;
+                }
+                
+                showResult(resultMessage, remainingCount === 0 ? 'success' : 'warning');
+                updateStats();
+                
+            } catch (error) {
+                showResult(`"${projectTitle}" 처리 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 페이지 로드 시 상태 조회
+        window.onload = loadStatus;
+    </script>
+</body>
+</html>

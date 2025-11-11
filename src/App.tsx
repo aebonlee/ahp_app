@@ -60,6 +60,7 @@ import SystemInfo from './components/superadmin/SystemInfo';
 import SystemMonitoring from './components/superadmin/SystemMonitoring';
 import SystemSettings from './components/superadmin/SystemSettings';
 import PaymentOptionsPage from './components/superadmin/PaymentOptionsPage';
+import DatabaseManager from './components/admin/DatabaseManager';
 import AHPMethodologyPage from './components/methodology/AHPMethodologyPage';
 import FuzzyAHPMethodologyPage from './components/methodology/FuzzyAHPMethodologyPage';
 import AIPaperGenerationPage from './components/ai-paper/AIPaperGenerationPage';
@@ -1568,9 +1569,11 @@ function App() {
         // 결제 옵션 관리
         return <PaymentOptionsPage user={user} onTabChange={setActiveTab} />;
 
+      case 'database':
+        return <DatabaseManager />;
+        
       case 'projects':
       case 'monitoring':
-      case 'database':
       case 'audit':
       case 'settings':
       case 'backup':
