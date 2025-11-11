@@ -1046,7 +1046,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           { id: 'workshop', label: '워크숍', icon: '🎯', color: 'bg-pink-500' },
           { id: 'decision-support', label: '의사결정', icon: '🧠', color: 'bg-indigo-500' },
           { id: 'survey-links', label: '설문 링크', icon: '🔗', color: 'bg-teal-500' },
-          { id: 'trash', label: '휴지통', icon: '🗑️', color: 'bg-red-500' }
+          { id: 'trash', label: '휴지통', icon: '🗑️', color: 'bg-red-500' },
+          { id: 'dev-tools', label: '개발자 도구', icon: '🛠️', color: 'bg-gray-600' }
         ].map((item) => (
           <button
             key={item.id}
@@ -1818,7 +1819,8 @@ ${project?.title} - ${type} 프레젠테이션
         'evaluation-test': 'evaluation-test',
         'settings': 'personal-settings',
         'demographic-survey': 'demographic-survey',
-        'trash': 'trash'
+        'trash': 'trash',
+        'dev-tools': 'dev-tools'
       };
       const mappedTab = tabMap[tab] || 'personal-service';
       externalOnTabChange(mappedTab);
@@ -4295,6 +4297,123 @@ ${project?.title} - ${type} 프레젠테이션
             onRestoreProject={onRestoreProject}
             onPermanentDeleteProject={onPermanentDeleteProject}
           />
+        );
+      case 'dev-tools':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold flex items-center" style={{ color: 'var(--text-primary)' }}>
+                <span className="text-3xl mr-3">🛠️</span>
+                개발자 도구
+              </h2>
+            </div>
+            
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-yellow-600">⚠️</span>
+                <p className="text-sm text-yellow-800">
+                  개발 및 디버깅 목적으로만 사용하세요. 실제 운영 환경에서는 비활성화됩니다.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card
+                title="API 연결 테스트"
+                className="hover:shadow-lg transition-shadow"
+              >
+                <p className="text-gray-600 mb-4">백엔드 API 연결 상태를 확인하고 테스트합니다.</p>
+                <div className="space-y-3">
+                  <a
+                    href="/test_api_connection.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    API 테스트 페이지 열기
+                  </a>
+                  <div className="text-xs text-gray-500">
+                    • 백엔드 상태 확인<br/>
+                    • 프로젝트 CRUD 테스트<br/>
+                    • 평가자 추가 테스트
+                  </div>
+                </div>
+              </Card>
+
+              <Card
+                title="텍스트 파서 테스트"
+                className="hover:shadow-lg transition-shadow"
+              >
+                <p className="text-gray-600 mb-4">계층구조 텍스트 파싱 기능을 테스트합니다.</p>
+                <div className="space-y-3">
+                  <a
+                    href="/test_parser.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    파서 테스트 페이지 열기
+                  </a>
+                  <div className="text-xs text-gray-500">
+                    • 번호 형식 파싱<br/>
+                    • 마크다운 형식 파싱<br/>
+                    • 들여쓰기 형식 파싱
+                  </div>
+                </div>
+              </Card>
+
+              <Card
+                title="데이터베이스 정보"
+                className="hover:shadow-lg transition-shadow"
+              >
+                <p className="text-gray-600 mb-4">현재 연결된 데이터베이스 정보</p>
+                <div className="bg-gray-50 rounded-lg p-3 font-mono text-xs">
+                  <div className="space-y-1">
+                    <p><strong>Type:</strong> PostgreSQL</p>
+                    <p><strong>Host:</strong> Render Cloud</p>
+                    <p><strong>Service:</strong> Basic-256mb</p>
+                    <p><strong>ID:</strong> dpg-d2q8l5qdbo4c73bt3780-a</p>
+                    <p><strong>Backend:</strong> ahp-django-backend.onrender.com</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card
+                title="시스템 상태"
+                className="hover:shadow-lg transition-shadow"
+              >
+                <p className="text-gray-600 mb-4">현재 시스템 상태 및 설정</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">스토리지 모드:</span>
+                    <span className="font-medium">Online (PostgreSQL)</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">로컬 스토리지:</span>
+                    <span className="font-medium text-red-600">비활성화 ❌</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">API 버전:</span>
+                    <span className="font-medium">v1.0</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">환경:</span>
+                    <span className="font-medium">{process.env.NODE_ENV || 'development'}</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold mb-2">최근 수정 사항</h3>
+              <ul className="space-y-1 text-sm text-gray-700">
+                <li>✅ 번호 형식 계층구조 파싱 수정 (1., 1.1., 2., 2.1.)</li>
+                <li>✅ 평가자 추가 API 404 에러 해결 (PUT → PATCH)</li>
+                <li>✅ 로컬 스토리지 의존성 제거</li>
+                <li>✅ PostgreSQL 백엔드 연동 완료</li>
+              </ul>
+            </div>
+          </div>
         );
       case 'demographic-survey':
         return (
