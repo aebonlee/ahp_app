@@ -29,7 +29,7 @@
 
 ### 온라인 접속
 - **프론트엔드**: https://aebonlee.github.io/ahp_app
-- **백엔드 API**: https://ahp-django-backend-new.onrender.com
+- **백엔드 API**: https://ahp-django-backend.onrender.com
 
 ### 로컬 개발 환경
 
