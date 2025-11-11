@@ -266,10 +266,53 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         
         // Django 백엔드에서 모든 기준 삭제
         const existingCriteria = await cleanDataService.getCriteria(projectId);
+        console.log(`🗑️ 삭제할 기준 개수: ${existingCriteria.length}`);
+        
+        let deleteCount = 0;
+        let deleteErrors = [];
+        
         for (const criterion of existingCriteria) {
           if (criterion.id) {
-            await cleanDataService.deleteCriteria(projectId, criterion.id);
+            try {
+              // deleteCriteria의 파라미터 순서가 (criteriaId, projectId)
+              const result = await cleanDataService.deleteCriteria(criterion.id, projectId);
+              if (result) {
+                deleteCount++;
+                console.log(`✅ 기준 '${criterion.name}' (ID: ${criterion.id}) 삭제 성공`);
+              } else {
+                deleteErrors.push(`${criterion.name} (ID: ${criterion.id})`);
+                console.error(`❌ 기준 '${criterion.name}' 삭제 실패`);
+              }
+            } catch (error) {
+              deleteErrors.push(`${criterion.name} (ID: ${criterion.id})`);
+              console.error(`❌ 기준 '${criterion.name}' 삭제 중 오류:`, error);
+            }
           }
+        }
+        
+        console.log(`📦 삭제 결과: ${deleteCount}/${existingCriteria.length} 성공`);
+        if (deleteErrors.length > 0) {
+          console.warn(`⚠️ 삭제 실패 기준:`, deleteErrors);
+        }
+        
+        // 백엔드 동기화를 위한 짧은 대기
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // 삭제 확인 - 실제로 삭제되었는지 다시 확인
+        try {
+          const remainingCriteria = await cleanDataService.getCriteria(projectId);
+          if (remainingCriteria.length > 0) {
+            console.warn(`⚠️ ${remainingCriteria.length}개의 기준이 여전히 남아있습니다:`, 
+              remainingCriteria.map(c => c.name));
+            // 남은 기준 강제 삭제 시도
+            for (const criterion of remainingCriteria) {
+              if (criterion.id) {
+                await cleanDataService.deleteCriteria(criterion.id, projectId);
+              }
+            }
+          }
+        } catch (checkError) {
+          console.error('삭제 확인 중 오류:', checkError);
         }
         
         // 로컬 스토리지 완전 삭제
@@ -442,21 +485,33 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         
         console.log('🚀 백엔드로 전송할 완전한 데이터:', JSON.stringify(criteriaData, null, 2));
         
-        const result = await cleanDataService.createCriteria(criteriaData);
-        if (!result) {
-          success = false;
-          console.error(`❌ 기준 '${criterion.name}' 저장 실패`);
+        let result = null;
+        try {
+          result = await cleanDataService.createCriteria(criteriaData);
           
-          // 중복된 이름으로 인한 실패 시 자동으로 번호가 추가됨을 알림
-          if (result === null) {
-            setErrorMessage(`기준 '${criterion.name}' 저장 실패. 이미 존재하는 이름입니다.`);
+          if (result) {
+            // 이름이 변경되었거나 기존 데이터를 반환받았다면 사용자에게 알림
+            if (result.name !== criterion.name) {
+              console.log(`ℹ️ 기준명 처리: '${criterion.name}' → '${result.name}'`);
+            }
+            console.log(`✅ 기준 '${result.name}' 저장/연결 성공 (ID: ${result.id})`);
+          } else {
+            throw new Error('결과가 null입니다');
           }
+        } catch (saveError: any) {
+          console.error(`❌ 기준 '${criterion.name}' 저장 실패:`, saveError);
+          
+          // 중복 오류인 경우 특별 처리
+          if (saveError.message && saveError.message.includes('이미 존재')) {
+            console.log(`⚠️ 중복 기준 '${criterion.name}' - 건너뛰고 계속 진행`);
+            // 중복은 에러가 아니라 경고로 처리하고 계속 진행
+            continue;
+          }
+          
+          // 다른 오류는 중단
+          success = false;
+          setErrorMessage(`기준 '${criterion.name}' 저장 실패: ${saveError.message || '알 수 없는 오류'}`);
           break;
-        }
-        
-        // 이름이 변경되었다면 사용자에게 알림
-        if (result.name !== criterion.name) {
-          console.log(`ℹ️ 기준명 자동 변경: '${criterion.name}' → '${result.name}'`);
         }
         
         // 생성된 기준을 매핑에 저장 (자식 기준들이 참조할 수 있도록)
