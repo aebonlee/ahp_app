@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import PairwiseComparison from '../comparison/PairwiseComparison';
+import DemographicSurvey from '../survey/DemographicSurvey';
 import apiService from '../../services/apiService';
 
 interface Project {
@@ -36,10 +37,27 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
   evaluatorToken 
 }) => {
   const [project, setProject] = useState<Project | null>(null);
-  const [currentStep, setCurrentStep] = useState<'intro' | 'criteria' | 'alternatives' | 'complete'>('intro');
+  const [currentStep, setCurrentStep] = useState<'intro' | 'demographic' | 'criteria' | 'alternatives' | 'complete'>('intro');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+
+  // URL에서 step 파라미터 확인하여 초기 단계 설정
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stepParam = urlParams.get('step');
+    
+    console.log('🎯 평가자 워크플로우 URL 파라미터:', { 
+      projectId, 
+      evaluatorToken, 
+      step: stepParam 
+    });
+    
+    if (stepParam && ['intro', 'demographic', 'criteria', 'alternatives', 'complete'].includes(stepParam)) {
+      setCurrentStep(stepParam as any);
+      console.log('📍 URL에서 단계 설정:', stepParam);
+    }
+  }, []);
 
   useEffect(() => {
     loadProjectData();
@@ -85,18 +103,24 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
   };
 
   const calculateProgress = () => {
-    // 간단한 진행률 계산 (추후 실제 평가 데이터 기반으로 개선)
+    // 진행률 계산 (intro -> demographic -> criteria -> alternatives -> complete)
     let completedSteps = 0;
-    const totalSteps = 3; // intro, criteria, alternatives
+    const totalSteps = 4; // demographic, criteria, alternatives, complete
 
-    if (currentStep === 'criteria') completedSteps = 1;
-    else if (currentStep === 'alternatives') completedSteps = 2;
-    else if (currentStep === 'complete') completedSteps = 3;
+    if (currentStep === 'demographic') completedSteps = 1;
+    else if (currentStep === 'criteria') completedSteps = 2;
+    else if (currentStep === 'alternatives') completedSteps = 3;
+    else if (currentStep === 'complete') completedSteps = 4;
 
     setProgress((completedSteps / totalSteps) * 100);
   };
 
   const handleStartEvaluation = () => {
+    setCurrentStep('demographic');
+    calculateProgress();
+  };
+
+  const handleDemographicComplete = () => {
     setCurrentStep('criteria');
     calculateProgress();
   };
@@ -163,6 +187,7 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
           </div>
           <div className="flex justify-between text-xs text-gray-500">
             <span className={currentStep === 'intro' ? 'font-bold text-blue-600' : ''}>시작</span>
+            <span className={currentStep === 'demographic' ? 'font-bold text-blue-600' : ''}>인구통계</span>
             <span className={currentStep === 'criteria' ? 'font-bold text-blue-600' : ''}>기준 평가</span>
             <span className={currentStep === 'alternatives' ? 'font-bold text-blue-600' : ''}>대안 평가</span>
             <span className={currentStep === 'complete' ? 'font-bold text-blue-600' : ''}>완료</span>
@@ -219,6 +244,28 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
                 평가 시작하기 🚀
               </Button>
             </div>
+          </div>
+        </Card>
+      )}
+
+      {currentStep === 'demographic' && (
+        <Card title="📋 인구통계학적 정보">
+          <div className="space-y-4">
+            <p className="text-gray-600 mb-4">
+              평가를 시작하기 전에 몇 가지 기본적인 정보를 입력해주세요.
+              이 정보는 연구 목적으로만 사용되며 개인정보는 보호됩니다.
+            </p>
+            
+            <DemographicSurvey
+              projectId={projectId}
+              evaluatorId={evaluatorToken || `evaluator_${Date.now()}`}
+              onSave={(data) => {
+                console.log('📋 인구통계 데이터 저장됨:', data);
+                handleDemographicComplete();
+              }}
+              initialData={{}}
+              required={true}
+            />
           </div>
         </Card>
       )}

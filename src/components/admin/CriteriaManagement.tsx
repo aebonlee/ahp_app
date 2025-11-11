@@ -379,7 +379,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     const flatCriteria = flattenCriteria(criteriaToSave);
     
     if (flatCriteria.length === 0) {
-      alert('저장할 기준이 없습니다.');
+      setErrorMessage('저장할 기준이 없습니다.');
+      setTimeout(() => setErrorMessage(null), 3000);
       return;
     }
 
@@ -485,22 +486,34 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         
         let result = null;
         try {
+          // API 서비스가 존재하는지 확인
+          if (!cleanDataService || !cleanDataService.createCriteria) {
+            throw new Error('데이터 서비스가 초기화되지 않았습니다');
+          }
+
           result = await cleanDataService.createCriteria(criteriaData);
           
-          if (result) {
+          if (result && result.id) {
             // 이름이 변경되었거나 기존 데이터를 반환받았다면 사용자에게 알림
             if (result.name !== criterion.name) {
               console.log(`ℹ️ 기준명 처리: '${criterion.name}' → '${result.name}'`);
             }
             console.log(`✅ 기준 '${result.name}' 저장/연결 성공 (ID: ${result.id})`);
           } else {
-            throw new Error('결과가 null입니다');
+            throw new Error('서버에서 유효하지 않은 응답을 받았습니다');
           }
         } catch (saveError: any) {
           console.error(`❌ 기준 '${criterion.name}' 저장 실패:`, saveError);
           
+          // 네트워크 오류 처리
+          if (saveError.name === 'NetworkError' || saveError.message?.includes('fetch')) {
+            setErrorMessage('네트워크 연결을 확인해주세요. 인터넷 연결이 필요합니다.');
+            success = false;
+            break;
+          }
+          
           // 중복 오류인 경우 특별 처리
-          if (saveError.message && saveError.message.includes('이미 존재')) {
+          if (saveError.message && (saveError.message.includes('이미 존재') || saveError.message.includes('UNIQUE constraint'))) {
             console.log(`⚠️ 중복 기준 '${criterion.name}' - 건너뛰고 계속 진행`);
             // 중복은 에러가 아니라 경고로 처리하고 계속 진행
             continue;
@@ -508,7 +521,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           
           // 다른 오류는 중단
           success = false;
-          setErrorMessage(`기준 '${criterion.name}' 저장 실패: ${saveError.message || '알 수 없는 오류'}`);
+          const errorMsg = saveError.message || saveError.toString() || '알 수 없는 오류';
+          setErrorMessage(`기준 '${criterion.name}' 저장 실패: ${errorMsg}`);
           break;
         }
         
@@ -863,7 +877,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     setShowTemplates(false);
     setActiveInputMode(null);
     
-    alert(`'${template.name}' 템플릿이 적용되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+    setSuccessMessage(`'${template.name}' 템플릿이 적용되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+    setTimeout(() => setSuccessMessage(null), 5000);
   };
 
   // 일괄 입력 처리
@@ -887,7 +902,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     setShowBulkInput(false);
     setActiveInputMode(null);
     
-    alert(`${normalizedCriteria.length}개의 기준이 추가되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+    setSuccessMessage(`${normalizedCriteria.length}개의 기준이 추가되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+    setTimeout(() => setSuccessMessage(null), 5000);
   };
 
   // 시각적 빌더 데이터 변환
@@ -943,7 +959,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     setCriteria(convertedCriteria);
     setHasTempChanges(true);
     
-    alert(`${convertedCriteria.length}개의 기준이 시각적 빌더에서 추가되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+    setSuccessMessage(`${convertedCriteria.length}개의 기준이 시각적 빌더에서 추가되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+    setTimeout(() => setSuccessMessage(null), 5000);
   };
 
   // 모든 기준 가져오기 (평면 구조)

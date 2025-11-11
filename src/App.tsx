@@ -69,6 +69,7 @@ import AIQualityValidationPage from './components/ai-quality/AIQualityValidation
 import AIMaterialsGenerationPage from './components/ai-materials/AIMaterialsGenerationPage';
 import AIChatbotAssistantPage from './components/ai-chatbot/AIChatbotAssistantPage';
 import TestPage from './pages/TestPage';
+import SubscriptionPage from './pages/SubscriptionPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
@@ -1568,6 +1569,10 @@ function App() {
       case 'payment-options':
         // 결제 옵션 관리
         return <PaymentOptionsPage user={user} onTabChange={setActiveTab} />;
+
+      case 'subscription':
+        // 구독 관리
+        return <SubscriptionPage />;
 
       case 'database':
         return <DatabaseManager />;
