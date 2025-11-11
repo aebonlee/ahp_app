@@ -1,0 +1,33 @@
+{
+  "short_name": "AHP for Paper",
+  "name": "AHP for Paper - 연구 논문을 위한 AHP 의사결정 분석",
+  "description": "전문적인 AHP(Analytic Hierarchy Process) 의사결정 분석 도구",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#3B82F6",
+  "background_color": "#ffffff",
+  "categories": ["productivity", "education", "business"],
+  "lang": "ko"
+}

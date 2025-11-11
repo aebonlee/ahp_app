@@ -50,8 +50,14 @@ ahp_build/
 backupdata/
 
 # Organized folders with embedded git repositories
-_organized/repositories/ahp_app_251014/
-ahp_app/.git/
+_organized/
+ahp_app/_archive_files/
+ahp_app/_organized/
+**/backup/
+**/archive/
+**/*.tar.gz
+**/*.zip
+**/*.rar
 
 # Testing
 coverage/

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP 일괄입력 테스트</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .test-section { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .example-text { background: white; padding: 15px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
+        button { padding: 10px 20px; margin: 10px 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #3B82F6; color: white; }
+        .btn-secondary { background: #6B7280; color: white; }
+        .result { background: #10B981; color: white; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .error { background: #EF4444; color: white; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .hierarchy { margin-left: 20px; }
+        .level-1 { font-weight: bold; color: #1F2937; }
+        .level-2 { margin-left: 20px; color: #4B5563; }
+        .level-3 { margin-left: 40px; color: #6B7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 AHP 일괄입력 테스트</h1>
+        
+        <div class="test-section">
+            <h2>예제 3: 들여쓰기 형식 (13개 항목)</h2>
+            <div class="example-text" id="example3">기업 평가 기준
+    재무 성과
+        수익성 - 매출액과 순이익 증가율
+        안정성 - 부채비율과 유동비율
+        성장성 - 전년 대비 성장률과 시장 점유율
+    운영 효율성
+        생산성 - 인당 매출액과 설비 가동률
+        품질 관리 - 불량률과 고객 만족도
+        혁신 역량 - R&D 투자와 신제품 개발력
+    지속가능성
+        환경 경영 - 친환경 정책과 탄소 배출 감소
+        사회적 책임 - 사회공헌 활동과 윤리 경영
+        거버넌스 - 투명한 경영과 이해관계자 소통</div>
+            <button class="btn-primary" onclick="parseExample3()">파싱 테스트</button>
+            <div id="result3"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>백엔드 저장 테스트</h2>
+            <p>프로젝트 ID: <input type="text" id="projectId" value="test_project_001" style="padding: 5px;"></p>
+            <button class="btn-primary" onclick="testSaveToBackend()">백엔드에 저장</button>
+            <div id="saveResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>저장된 데이터 확인</h2>
+            <button class="btn-secondary" onclick="loadFromBackend()">데이터 로드</button>
+            <div id="loadResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://ahp-django-backend.onrender.com';
+
+        function parseExample3() {
+            const text = document.getElementById('example3').innerText;
+            const lines = text.split('\n');
+            const criteria = [];
+            const levelStack = {};
+
+            lines.forEach((line, index) => {
+                if (!line.trim()) return;
+                
+                // 공백 수 계산
+                const spaces = line.match(/^(\s*)/)[1].length;
+                const level = spaces === 0 ? 1 : Math.floor(spaces / 4) + 1;
+                const content = line.trim();
+                
+                // 이름과 설명 분리
+                let name, description = '';
+                if (content.includes(' - ')) {
+                    [name, description] = content.split(' - ');
+                } else {
+                    name = content;
+                }
+                
+                // 부모 찾기
+                let parent_id = null;
+                if (level > 1) {
+                    const parentLevel = level - 1;
+                    if (levelStack[parentLevel]) {
+                        parent_id = levelStack[parentLevel].id;
+                    }
+                }
+                
+                const criterion = {
+                    id: `criterion_${index}`,
+                    name: name.trim(),
+                    description: description.trim(),
+                    level: level,
+                    parent_id: parent_id,
+                    order: index + 1
+                };
+                
+                criteria.push(criterion);
+                levelStack[level] = criterion;
+                
+                // 현재 레벨보다 높은 레벨 제거
+                Object.keys(levelStack).forEach(lvl => {
+                    if (parseInt(lvl) > level) {
+                        delete levelStack[lvl];
+                    }
+                });
+            });
+
+            // 결과 표시
+            let html = `<div class="result">✅ ${criteria.length}개 항목 파싱 완료</div>`;
+            html += '<div class="hierarchy">';
+            criteria.forEach(c => {
+                const className = `level-${c.level}`;
+                html += `<div class="${className}">`;
+                html += `L${c.level} - ${c.name}`;
+                if (c.description) html += ` (${c.description})`;
+                if (c.parent_id) html += ` [부모: ${c.parent_id}]`;
+                html += '</div>';
+            });
+            html += '</div>';
+            
+            document.getElementById('result3').innerHTML = html;
+            
+            // 전역 변수에 저장
+            window.parsedCriteria = criteria;
+        }
+
+        async function testSaveToBackend() {
+            if (!window.parsedCriteria) {
+                alert('먼저 파싱 테스트를 실행하세요');
+                return;
+            }
+            
+            const projectId = document.getElementById('projectId').value;
+            const resultDiv = document.getElementById('saveResult');
+            
+            resultDiv.innerHTML = '<div class="result">저장 중...</div>';
+            
+            try {
+                const savedIds = {};
+                let successCount = 0;
+                
+                // 레벨 순서대로 저장
+                const sortedCriteria = [...window.parsedCriteria].sort((a, b) => a.level - b.level);
+                
+                for (const criterion of sortedCriteria) {
+                    // 부모 ID 매핑
+                    let parent_id = null;
+                    if (criterion.parent_id && savedIds[criterion.parent_id]) {
+                        parent_id = savedIds[criterion.parent_id];
+                    }
+                    
+                    const data = {
+                        project: projectId,
+                        name: criterion.name,
+                        description: criterion.description,
+                        parent_id: parent_id,
+                        level: criterion.level,
+                        position: criterion.order,
+                        order: criterion.order
+                    };
+                    
+                    console.log('Saving:', data);
+                    
+                    // API 호출
+                    const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        savedIds[criterion.id] = result.id;
+                        successCount++;
+                    } else {
+                        console.error('Save failed:', await response.text());
+                    }
+                }
+                
+                resultDiv.innerHTML = `<div class="result">✅ ${successCount}/${sortedCriteria.length}개 항목 저장 완료</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 저장 실패: ${error.message}</div>`;
+            }
+        }
+
+        async function loadFromBackend() {
+            const projectId = document.getElementById('projectId').value;
+            const resultDiv = document.getElementById('loadResult');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}`);
+                const data = await response.json();
+                
+                let html = `<div class="result">✅ ${data.length}개 항목 로드 완료</div>`;
+                html += '<div class="hierarchy">';
+                data.forEach(c => {
+                    const className = `level-${c.level || 1}`;
+                    html += `<div class="${className}">`;
+                    html += `${c.name}`;
+                    if (c.description) html += ` - ${c.description}`;
+                    html += '</div>';
+                });
+                html += '</div>';
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 로드 실패: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
