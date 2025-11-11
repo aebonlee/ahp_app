@@ -5,6 +5,7 @@ import AlternativeManagement from '../admin/AlternativeManagement';
 import EvaluatorAssignment from '../admin/EvaluatorAssignment';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/apiService';
+import { Criterion, Alternative, Evaluator } from '../../types/ahp';
 
 type ModelStep = 'overview' | 'criteria' | 'alternatives' | 'evaluators' | 'review' | 'complete';
 
@@ -25,7 +26,11 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
 }) => {
   const [currentStep, setCurrentStep] = useState<ModelStep>(initialStep);
   const [completedSteps, setCompletedSteps] = useState<Set<ModelStep>>(new Set());
-  const [projectData, setProjectData] = useState<any>({
+  const [projectData, setProjectData] = useState<{
+    criteria: Criterion[];
+    alternatives: Alternative[];
+    evaluators: Evaluator[];
+  }>({
     criteria: [],
     alternatives: [],
     evaluators: []
@@ -245,7 +250,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-3">평가 기준 ({projectData.criteria.length}개)</h4>
                 <div className="space-y-1">
-                  {projectData.criteria.map((criterion: any) => (
+                  {projectData.criteria.map((criterion) => (
                     <div key={criterion.id} className="text-sm text-gray-600">
                       • {criterion.name}
                     </div>
@@ -256,7 +261,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-3">대안 ({projectData.alternatives.length}개)</h4>
                 <div className="space-y-1">
-                  {projectData.alternatives.map((alt: any) => (
+                  {projectData.alternatives.map((alt) => (
                     <div key={alt.id} className="text-sm text-gray-600">
                       • {alt.name}
                     </div>
@@ -267,7 +272,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-3">평가자 ({projectData.evaluators.length}명)</h4>
                 <div className="space-y-1">
-                  {projectData.evaluators.map((evaluator: any) => (
+                  {projectData.evaluators.map((evaluator) => (
                     <div key={evaluator.id} className="text-sm text-gray-600">
                       • {evaluator.name || evaluator.email}
                     </div>

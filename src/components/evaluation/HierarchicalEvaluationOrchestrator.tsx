@@ -8,47 +8,18 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import { apiService } from '../../services/apiService';
 import { ahpCalculator } from '../../utils/ahpCalculator';
 import { consistencyHelper } from '../../utils/consistencyHelper';
-
-interface Criterion {
-  id: string;
-  name: string;
-  description?: string;
-  parentId?: string | null;
-  level: number;
-  order?: number;
-  children?: Criterion[];
-  weight?: number;
-}
-
-interface Alternative {
-  id: string;
-  name: string;
-  description?: string;
-}
-
-interface ComparisonMatrix {
-  [key: string]: {
-    [key: string]: number;
-  };
-}
-
-interface EvaluationStep {
-  id: string;
-  type: 'criteria' | 'alternatives';
-  level: number;
-  parentId?: string;
-  parentName?: string;
-  items: (Criterion | Alternative)[];
-  completed: boolean;
-  matrix?: ComparisonMatrix;
-  weights?: { [key: string]: number };
-  cr?: number;
-}
+import { 
+  Criterion, 
+  Alternative, 
+  ComparisonMatrix, 
+  EvaluationStep,
+  AnalysisResult 
+} from '../../types/ahp';
 
 interface HierarchicalEvaluationOrchestratorProps {
   projectId: string;
   evaluatorId?: string;
-  onComplete?: (results: any) => void;
+  onComplete?: (results: AnalysisResult) => void;
 }
 
 const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchestratorProps> = ({
@@ -104,7 +75,7 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
         : alternativesResponse.data.results || [];
       setAlternatives(alternativesData);
 
-    } catch (err: any) {
+    } catch (err) {
       console.error('프로젝트 데이터 로드 실패:', err);
       setError('프로젝트 데이터를 불러올 수 없습니다.');
     } finally {
@@ -112,7 +83,7 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
     }
   };
 
-  const buildHierarchy = (flatCriteria: any[]): Criterion[] => {
+  const buildHierarchy = (flatCriteria: Criterion[]): Criterion[] => {
     const criteriaMap = new Map<string, Criterion>();
     const rootCriteria: Criterion[] = [];
 
@@ -120,7 +91,7 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
     flatCriteria.forEach(criterion => {
       criteriaMap.set(criterion.id, {
         ...criterion,
-        parentId: criterion.parent_id || criterion.parentId,
+        parentId: criterion.parentId,  // 표준화된 parentId 사용
         children: []
       });
     });
@@ -231,7 +202,7 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
     }
   };
 
-  const calculateWeights = (matrix: ComparisonMatrix, items: any[]): { [key: string]: number } => {
+  const calculateWeights = (matrix: ComparisonMatrix, items: (Criterion | Alternative)[]): { [key: string]: number } => {
     const weights: { [key: string]: number } = {};
     const calculatedWeights = ahpCalculator.calculateWeights(matrix);
     

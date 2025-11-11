@@ -78,14 +78,15 @@ const EvaluatorInvitationHandler: React.FC<EvaluatorInvitationHandlerProps> = ({
       } else {
         setError(response.data.message || '유효하지 않은 초대 코드입니다.');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('초대 코드 검증 실패:', err);
+      const error = err as any;
       
-      if (err.response?.status === 404) {
+      if (error.response?.status === 404) {
         setError('초대 코드를 찾을 수 없습니다.');
-      } else if (err.response?.status === 410) {
+      } else if (error.response?.status === 410) {
         setError('만료된 초대 코드입니다.');
-      } else if (err.response?.status === 409) {
+      } else if (error.response?.status === 409) {
         setError('이미 사용된 초대 코드입니다.');
       } else {
         setError('초대 코드 검증 중 오류가 발생했습니다.');
