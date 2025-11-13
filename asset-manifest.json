@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "https://aebonlee.github.io/ahp_app/static/css/main.7b75a644.css",
+    "main.js": "https://aebonlee.github.io/ahp_app/static/js/main.916576db.js",
+    "static/js/453.8ffde8ac.chunk.js": "https://aebonlee.github.io/ahp_app/static/js/453.8ffde8ac.chunk.js",
+    "index.html": "https://aebonlee.github.io/ahp_app/index.html",
+    "main.7b75a644.css.map": "https://aebonlee.github.io/ahp_app/static/css/main.7b75a644.css.map",
+    "main.916576db.js.map": "https://aebonlee.github.io/ahp_app/static/js/main.916576db.js.map",
+    "453.8ffde8ac.chunk.js.map": "https://aebonlee.github.io/ahp_app/static/js/453.8ffde8ac.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.7b75a644.css",
+    "static/js/main.916576db.js"
+  ]
+}
