@@ -9,15 +9,15 @@ export interface HierarchyNode {
   level: number;
   name: string;
   description?: string;
-  code?: string; // 예: C1, C1.1, C1.1.1
+  code: string; // 예: "C1", "C1.1"
   position: number;
   isActive: boolean;
   localWeight?: number;
   globalWeight?: number;
-  metadata: Record<string, any>;
   children?: HierarchyNode[];
-  createdAt: string;
-  updatedAt: string;
+  metadata?: Record<string, any>;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface HierarchicalComparison {
@@ -69,18 +69,14 @@ export interface EvaluationStep {
 }
 
 export interface ConsistencyResult {
-  consistencyRatio: number;
-  consistencyIndex: number;
-  randomIndex: number;
   isConsistent: boolean;
-  maxEigenvalue: number;
-  inconsistentPairs: Array<{
-    elementA: string;
-    elementB: string;
-    currentValue: number;
-    suggestedValue: number;
-    impact: number;
-  }>;
+  ratio: number;
+  index: number;
+  eigenValue: number;
+  eigenVector?: number[];
+  message: string;
+  inconsistentPairs?: InconsistentPair[];
+  suggestedAdjustments?: SuggestedAdjustment[];
 }
 
 // Power Method 계산용 인터페이스
@@ -185,4 +181,175 @@ export interface SubmitComparisonRequest {
     elementBId: string;
     value: number;
   }>;
+}
+
+// Opus 설계 추가 타입들
+
+export interface EvaluationMatrix {
+  id: string;
+  projectId: string;
+  evaluatorId?: string;
+  parentNodeId: string;
+  matrixType: 'pairwise' | 'direct' | 'rating';
+  matrixData: number[][];
+  consistencyRatio?: number;
+  isConsistent?: boolean;
+  eigenValue?: number;
+  eigenVector?: number[];
+  iterationCount?: number;
+  calculationMethod: 'power_method' | 'eigenvalue_method';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface HierarchicalStructure {
+  projectId: string;
+  goal: HierarchyNode;
+  criteria: HierarchyNode[];
+  subcriteria?: HierarchyNode[][];
+  alternatives: HierarchyNode[];
+  totalLevels: number;
+  nodeCount: number;
+  isComplete: boolean;
+}
+
+export interface PairwiseComparison {
+  i: number;
+  j: number;
+  value: number;
+  elementA: string;
+  elementB: string;
+}
+
+export interface InconsistentPair {
+  i: number;
+  j: number;
+  actualValue: number;
+  expectedValue: number;
+  deviation: number;
+}
+
+export interface SuggestedAdjustment {
+  position: [number, number];
+  currentValue: number;
+  suggestedValue: number;
+  impact: number;
+}
+
+export interface EvaluationResult {
+  success: boolean;
+  consistency: ConsistencyResult;
+  weights: number[];
+  nextNode: HierarchyNode | null;
+  progress?: number;
+  timeSpent?: number;
+}
+
+export interface NodeProgress {
+  nodeId: string;
+  nodeName: string;
+  level: number;
+  totalComparisons: number;
+  completedComparisons: number;
+  isCompleted: boolean;
+  isConsistent: boolean;
+  consistencyRatio: number;
+  startedAt: Date | null;
+  completedAt: Date | null;
+  timeSpent: number;
+}
+
+export interface OverallProgress {
+  totalNodes: number;
+  completedNodes: number;
+  percentage: number;
+  levelProgress: LevelProgress[];
+  estimatedTimeRemaining: number;
+  currentNode: NodeInfo | null;
+  nextNode: NodeInfo | null;
+}
+
+export interface LevelProgress {
+  level: number;
+  totalNodes: number;
+  completedNodes: number;
+  percentage: number;
+}
+
+export interface NodeInfo {
+  id: string;
+  name: string;
+  level: number;
+  progress: number;
+}
+
+export interface GlobalWeightResult {
+  criteria: Record<string, CriterionWeight>;
+  subcriteria: Record<string, SubcriterionWeight>;
+  alternatives: Record<string, AlternativeScore>;
+  rankings: RankingResult[];
+}
+
+export interface CriterionWeight {
+  name: string;
+  localWeight: number;
+  globalWeight: number;
+}
+
+export interface SubcriterionWeight {
+  name: string;
+  parentId: string;
+  localWeight: number;
+  globalWeight: number;
+}
+
+export interface AlternativeScore {
+  name: string;
+  totalScore: number;
+  scoreBreakdown: ScoreComponent[];
+  rank: number;
+}
+
+export interface ScoreComponent {
+  criterionId: string;
+  criterionName: string;
+  criterionWeight: number;
+  alternativeWeight: number;
+  contribution: number;
+}
+
+export interface RankingResult {
+  rank: number;
+  alternativeId: string;
+  name: string;
+  score: number;
+  percentage: string;
+}
+
+export interface ProgressMessage {
+  type: 'PROGRESS_UPDATE' | 'NODE_COMPLETED' | 'EVALUATION_COMPLETED';
+  projectId: string;
+  evaluatorId: string;
+  timestamp: string;
+  data: any;
+}
+
+// 에러 타입
+export enum HierarchicalEvaluationError {
+  INVALID_HIERARCHY = 'INVALID_HIERARCHY',
+  INCOMPLETE_EVALUATION = 'INCOMPLETE_EVALUATION', 
+  INCONSISTENT_MATRIX = 'INCONSISTENT_MATRIX',
+  CALCULATION_ERROR = 'CALCULATION_ERROR',
+  TIMEOUT_ERROR = 'TIMEOUT_ERROR'
+}
+
+export class HierarchyError extends Error {
+  constructor(
+    public code: HierarchicalEvaluationError,
+    message: string,
+    public details?: any
+  ) {
+    super(message);
+    this.name = 'HierarchyError';
+  }
 }
