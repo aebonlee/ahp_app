@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { analyzeConsistency, getRealtimeConsistencyFeedback, ConsistencyAnalysis } from '../../utils/consistencyHelper';
-import { getConsistencyLevel } from '../../utils/ahpCalculator';
+import { getConsistencyLevel, calculateAHPEnhanced } from '../../utils/ahpCalculator';
 
 interface ConsistencyPanelProps {
   matrix: number[][];
@@ -24,10 +24,18 @@ const ConsistencyPanel: React.FC<ConsistencyPanelProps> = ({
   useEffect(() => {
     if (matrix.length >= 3) {
       setLoading(true);
-      // Simulate analysis delay for better UX
+      // Power Method를 사용한 고급 분석
       const timer = setTimeout(() => {
-        const result = analyzeConsistency(matrix);
-        setAnalysis(result);
+        try {
+          const ahpResult = calculateAHPEnhanced(matrix, 'power');
+          const result = analyzeConsistency(matrix);
+          setAnalysis(result);
+        } catch (error) {
+          console.error('일관성 분석 오류:', error);
+          // Fallback to basic analysis
+          const result = analyzeConsistency(matrix);
+          setAnalysis(result);
+        }
         setLoading(false);
       }, 300);
       return () => clearTimeout(timer);

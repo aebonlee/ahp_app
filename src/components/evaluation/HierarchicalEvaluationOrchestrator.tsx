@@ -6,7 +6,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { apiService } from '../../services/apiService';
-import { ahpCalculator } from '../../utils/ahpCalculator';
+import { ahpCalculator, calculateAHPEnhanced } from '../../utils/ahpCalculator';
 import { consistencyHelper } from '../../utils/consistencyHelper';
 import { 
   Criterion, 
@@ -182,35 +182,52 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
   const handleComparisonComplete = async (matrix: ComparisonMatrix) => {
     const currentStep = evaluationSteps[currentStepIndex];
     
-    // 일관성 비율 계산
-    const consistencyRatio = matrix.consistencyRatio || ahpCalculator.calculateConsistencyRatio(
-      matrix.lambdaMax || ahpCalculator.calculateLambdaMax(matrix.matrix, matrix.eigenVector || ahpCalculator.calculateEigenVector(matrix.matrix)),
-      matrix.size
-    );
-    
-    // 현재 단계 업데이트
-    const updatedSteps = [...evaluationSteps];
-    updatedSteps[currentStepIndex] = {
-      ...currentStep,
-      completed: true,
-      matrix: matrix,
-      consistencyRatio: consistencyRatio,
-      weights: calculateWeights(matrix, currentStep.items)
-    };
-    setEvaluationSteps(updatedSteps);
+    try {
+      // Power Method를 사용한 고급 AHP 계산
+      const ahpResult = calculateAHPEnhanced(matrix.matrix, 'power');
+      
+      // 일관성 검증
+      const consistencyRatio = ahpResult.consistencyRatio;
+      const isConsistent = ahpResult.isConsistent;
+      
+      // 현재 단계 업데이트
+      const updatedSteps = [...evaluationSteps];
+      updatedSteps[currentStepIndex] = {
+        ...currentStep,
+        completed: true,
+        matrix: {
+          ...matrix,
+          eigenVector: ahpResult.eigenVector,
+          lambdaMax: ahpResult.lambdaMax,
+          consistencyRatio: consistencyRatio,
+          isConsistent: isConsistent
+        },
+        consistencyRatio: consistencyRatio,
+        weights: calculateWeights({ ...matrix, eigenVector: ahpResult.eigenVector }, currentStep.items)
+      };
+      setEvaluationSteps(updatedSteps);
 
-    // 다음 단계로 이동 또는 완료
-    if (currentStepIndex < evaluationSteps.length - 1) {
-      setCurrentStepIndex(currentStepIndex + 1);
-    } else {
-      // 모든 평가 완료 - 최종 결과 계산
-      await calculateFinalResults(updatedSteps);
+      // 일관성이 불만족할 경우 경고 표시
+      if (!isConsistent) {
+        console.warn(`일관성 부족: CR = ${consistencyRatio.toFixed(3)} > 0.1`);
+      }
+
+      // 다음 단계로 이동 또는 완료
+      if (currentStepIndex < evaluationSteps.length - 1) {
+        setCurrentStepIndex(currentStepIndex + 1);
+      } else {
+        // 모든 평가 완료 - 최종 결과 계산
+        await calculateFinalResults(updatedSteps);
+      }
+    } catch (error) {
+      console.error('AHP 계산 오류:', error);
+      setError('평가 계산 중 오류가 발생했습니다.');
     }
   };
 
   const calculateWeights = (matrix: ComparisonMatrix, items: (Criterion | Alternative)[]): { [key: string]: number } => {
     const weights: { [key: string]: number } = {};
-    const calculatedWeights = ahpCalculator.calculateEigenVector(matrix.matrix);
+    const calculatedWeights = matrix.eigenVector || ahpCalculator.calculateEigenVectorPowerMethod(matrix.matrix);
     
     items.forEach((item, index) => {
       weights[item.id] = calculatedWeights[index] || 0;

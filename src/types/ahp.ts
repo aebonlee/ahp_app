@@ -130,6 +130,7 @@ export interface ComparisonMatrix {
   consistencyRatio?: number;
   eigenVector?: number[];
   lambdaMax?: number;
+  isConsistent?: boolean;
 }
 
 export interface WeightMatrix {
