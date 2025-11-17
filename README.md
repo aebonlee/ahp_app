@@ -1,5 +1,8 @@
 # 🎯 AHP Decision Support Platform
 
+
+연구자를 위한 합리적 의사결정 플랫폼
+
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-18.2.0-61dafb.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9.5-3178c6.svg)](https://www.typescriptlang.org/)
