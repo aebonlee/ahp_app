@@ -6,10 +6,10 @@ import type {
   LevelProgress,
   NodeInfo,
   ProgressMessage,
-  ConsistencyResult,
-  HierarchicalEvaluationError,
-  HierarchyError
+  ConsistencyResult
 } from '../types/hierarchy';
+
+import { HierarchyError, HierarchicalEvaluationError } from '../types/hierarchy';
 
 // Opus 4.1 설계 문서 기반 진행률 추적기
 
@@ -156,7 +156,7 @@ export class ProgressTracker {
     // 레벨별 진행률
     const levelProgress: Map<number, LevelProgress> = new Map();
     
-    for (const [, progress] of this.nodeProgress) {
+    this.nodeProgress.forEach((progress) => {
       if (!levelProgress.has(progress.level)) {
         levelProgress.set(progress.level, {
           level: progress.level,
@@ -172,14 +172,14 @@ export class ProgressTracker {
       if (progress.isCompleted && progress.isConsistent) {
         level.completedNodes++;
       }
-    }
+    });
     
     // 레벨별 퍼센트 계산
-    for (const [, level] of levelProgress) {
+    levelProgress.forEach((level) => {
       level.percentage = level.totalNodes > 0
         ? (level.completedNodes / level.totalNodes) * 100
         : 0;
-    }
+    });
     
     // 예상 남은 시간 계산
     const estimatedTimeRemaining = this.estimateTimeRemaining();
@@ -248,7 +248,7 @@ export class ProgressTracker {
    * 현재 진행 중인 노드
    */
   private getCurrentNode(): NodeInfo | null {
-    for (const [id, progress] of this.nodeProgress) {
+    for (const [id, progress] of Array.from(this.nodeProgress.entries())) {
       if (progress.startedAt && !progress.isCompleted) {
         const nodeProgress = progress.totalComparisons > 0 
           ? (progress.completedComparisons / progress.totalComparisons) * 100
@@ -351,8 +351,8 @@ export class ProgressTracker {
         evaluatorId: this.evaluatorId,
         progress: this.getOverallProgress(),
         nodeProgress: Array.from(this.nodeProgress.entries()).map(([nodeId, progress]) => ({
-          nodeId,
           ...progress,
+          nodeId: nodeId, // Override the existing nodeId with the key
           startedAt: progress.startedAt?.toISOString(),
           completedAt: progress.completedAt?.toISOString()
         })),
@@ -426,7 +426,7 @@ export class ProgressTracker {
    */
   resetProgress(): void {
     this.completedNodes.clear();
-    for (const [, progress] of this.nodeProgress) {
+    this.nodeProgress.forEach((progress) => {
       progress.completedComparisons = 0;
       progress.isCompleted = false;
       progress.isConsistent = false;
@@ -434,7 +434,7 @@ export class ProgressTracker {
       progress.startedAt = null;
       progress.completedAt = null;
       progress.timeSpent = 0;
-    }
+    });
   }
   
   /**
@@ -454,7 +454,7 @@ export class ProgressTracker {
     let totalCR = 0;
     let nodeCount = 0;
     
-    for (const [, progress] of this.nodeProgress) {
+    this.nodeProgress.forEach((progress) => {
       totalComparisons += progress.totalComparisons;
       completedComparisons += progress.completedComparisons;
       
@@ -467,7 +467,7 @@ export class ProgressTracker {
         totalCR += progress.consistencyRatio;
         nodeCount++;
       }
-    }
+    });
     
     return {
       totalComparisons,

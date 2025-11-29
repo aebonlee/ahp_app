@@ -309,67 +309,6 @@ const HierarchicalEvaluationDashboard: React.FC<HierarchicalEvaluationDashboardP
     }
   };
 
-  // 계층 노드 렌더링
-  const renderHierarchyNode = (node: HierarchyNode, depth: number = 0): React.ReactNode => {
-    const hasChildren = node.children && node.children.length > 0;
-    const isCompleted = evaluationProgress?.completedNodes || 0;
-    const nodeCompleted = false; // TODO: 실제 완료 상태 확인
-
-    return (
-      <div key={node.id} className="mb-2">
-        <div 
-          className={`
-            flex items-center p-3 rounded-lg border-2 transition-all
-            ${nodeCompleted ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-white'}
-            ${depth > 0 ? 'ml-6' : ''}
-          `}
-        >
-          <div className="flex items-center flex-1">
-            {hasChildren && (
-              <ChevronRightIcon className="w-4 h-4 mr-2 text-gray-400" />
-            )}
-            
-            <div className="flex items-center space-x-3">
-              {nodeCompleted ? (
-                <CheckCircleIcon className="w-5 h-5 text-green-500" />
-              ) : (
-                <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
-              )}
-              
-              <div>
-                <div className="font-medium text-gray-900">
-                  {node.name}
-                </div>
-                {node.description && (
-                  <div className="text-sm text-gray-500">
-                    {node.description}
-                  </div>
-                )}
-                <div className="text-xs text-gray-400">
-                  레벨 {node.level} • {node.nodeType}
-                  {node.code && ` • ${node.code}`}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {node.globalWeight && (
-            <div className="text-sm text-gray-600 mr-2">
-              가중치: {(node.globalWeight * 100).toFixed(2)}%
-            </div>
-          )}
-        </div>
-
-        {hasChildren && (
-          <div className="mt-2">
-            {node.children?.map(child => 
-              renderHierarchyNode(child, depth + 1)
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -639,13 +578,30 @@ const HierarchicalEvaluationDashboard: React.FC<HierarchicalEvaluationDashboardP
                 계층 구조
               </h2>
               <p className="text-sm text-gray-600">
-                총 {hierarchyNodes.length}개 노드
+                총 {structure?.nodeCount || 0}개 노드
               </p>
             </div>
             
             <div className="p-4 max-h-96 overflow-y-auto">
-              {hierarchyTree.length > 0 ? (
-                hierarchyTree.map(node => renderHierarchyNode(node))
+              {structure ? (
+                <div className="space-y-2">
+                  <div className="p-3 bg-purple-50 rounded border">
+                    <div className="font-medium">{structure.goal.name}</div>
+                    <div className="text-sm text-gray-600">{structure.goal.description}</div>
+                  </div>
+                  {structure.criteria.map(criterion => (
+                    <div key={criterion.id} className="p-3 bg-blue-50 rounded border ml-4">
+                      <div className="font-medium">{criterion.name}</div>
+                      <div className="text-sm text-gray-600">{criterion.description}</div>
+                    </div>
+                  ))}
+                  {structure.alternatives.map(alternative => (
+                    <div key={alternative.id} className="p-3 bg-green-50 rounded border ml-8">
+                      <div className="font-medium">{alternative.name}</div>
+                      <div className="text-sm text-gray-600">{alternative.description}</div>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <div className="text-center text-gray-500 py-8">
                   계층 구조가 정의되지 않았습니다.

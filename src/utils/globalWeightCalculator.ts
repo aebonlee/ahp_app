@@ -6,10 +6,10 @@ import type {
   SubcriterionWeight,
   AlternativeScore,
   ScoreComponent,
-  RankingResult,
-  HierarchicalEvaluationError,
-  HierarchyError
+  RankingResult
 } from '../types/hierarchy';
+
+import { HierarchyError, HierarchicalEvaluationError } from '../types/hierarchy';
 
 // Opus 4.1 설계 문서 기반 글로벌 가중치 계산기
 
@@ -360,9 +360,9 @@ export class GlobalWeightCalculator {
   } {
     const allWeights: number[] = [];
     
-    for (const weights of this.localWeights.values()) {
+    this.localWeights.forEach((weights) => {
       allWeights.push(...weights);
-    }
+    });
     
     if (allWeights.length === 0) {
       return { mean: 0, std: 0, min: 0, max: 0, entropy: 0 };

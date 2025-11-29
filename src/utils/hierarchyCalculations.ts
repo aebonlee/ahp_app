@@ -143,12 +143,12 @@ export function calculateConsistencyRatio(matrix: number[][]): ConsistencyResult
   
   if (n <= 2) {
     return {
-      consistencyRatio: 0,
-      consistencyIndex: 0,
-      randomIndex: 0,
       isConsistent: true,
-      maxEigenvalue: n,
-      inconsistentPairs: []
+      ratio: 0,
+      index: 0,
+      eigenValue: n,
+      eigenVector: Array(n).fill(1/n),
+      message: 'Matrix size ≤ 2, always consistent'
     };
   }
   
@@ -163,12 +163,12 @@ export function calculateConsistencyRatio(matrix: number[][]): ConsistencyResult
   const inconsistentPairs = findInconsistentPairs(matrix, result.weights);
   
   return {
-    consistencyRatio,
-    consistencyIndex,
-    randomIndex,
     isConsistent: consistencyRatio <= 0.1,
-    maxEigenvalue,
-    inconsistentPairs
+    ratio: consistencyRatio,
+    index: consistencyIndex,
+    eigenValue: maxEigenvalue,
+    eigenVector: result.weights,
+    message: consistencyRatio <= 0.1 ? 'Matrix is consistent' : `Inconsistent: CR = ${consistencyRatio.toFixed(4)} > 0.10`
   };
 }
 

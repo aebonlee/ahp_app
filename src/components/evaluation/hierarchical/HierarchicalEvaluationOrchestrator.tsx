@@ -213,11 +213,11 @@ const HierarchicalEvaluationOrchestrator: React.FC<HierarchicalEvaluationOrchest
       const matrices = evaluationEngine.getAllMatrices();
       
       // 매트릭스 데이터를 가중치 계산기에 설정
-      for (const [nodeKey, matrix] of matrices) {
+      matrices.forEach((matrix, nodeKey) => {
         if (matrix.eigenVector) {
           weightCalculator.setLocalWeights(nodeKey, matrix.eigenVector);
         }
-      }
+      });
       
       const finalResults = await weightCalculator.calculateGlobalWeights();
       setGlobalWeights(finalResults);

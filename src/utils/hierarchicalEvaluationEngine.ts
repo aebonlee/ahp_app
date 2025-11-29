@@ -8,10 +8,10 @@ import type {
   ConsistencyResult,
   EvaluationSession,
   InconsistentPair,
-  SuggestedAdjustment,
-  HierarchicalEvaluationError,
-  HierarchyError
+  SuggestedAdjustment
 } from '../types/hierarchy';
+
+import { HierarchyError, HierarchicalEvaluationError } from '../types/hierarchy';
 
 // Opus 4.1 설계 문서 기반 계층적 평가 엔진
 

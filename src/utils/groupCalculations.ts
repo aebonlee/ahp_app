@@ -69,7 +69,7 @@ export function calculateAIJ(
     aggregatedMatrix,
     geometricMeans,
     normalizedWeights,
-    consistencyRatio: consistency.consistencyRatio
+    consistencyRatio: consistency.ratio
   };
 }
 
@@ -94,7 +94,7 @@ export function calculateAIP(
     return {
       evaluatorId: evaluatorIds[index],
       priorities: powerResult.weights,
-      localCR: consistency.consistencyRatio
+      localCR: consistency.ratio
     };
   });
   
@@ -318,7 +318,7 @@ export function calculateGroupResult(
   const participantContributions = evaluatorIds.map((id, index) => ({
     evaluatorId: id,
     weight: config.weights?.[id] || (1 / evaluatorIds.length),
-    consistency: calculateConsistencyRatio(individualMatrices[index]).consistencyRatio,
+    consistency: calculateConsistencyRatio(individualMatrices[index]).ratio,
     expertise: 1 // 실제 구현 시 외부에서 제공
   }));
   

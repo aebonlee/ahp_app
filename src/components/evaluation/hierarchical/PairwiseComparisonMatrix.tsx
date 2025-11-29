@@ -378,13 +378,13 @@ const PairwiseComparisonMatrix: React.FC<PairwiseComparisonMatrixProps> = ({
                         text-sm
                         ${consistency.isConsistent ? 'text-green-700' : 'text-red-700'}
                       `}>
-                        일관성 비율: {(consistency.consistencyRatio * 100).toFixed(2)}%
+                        일관성 비율: {(consistency.ratio * 100).toFixed(2)}%
                         {!consistency.isConsistent && ' (10% 이하 권장)'}
                       </div>
                     </div>
                   </div>
                   
-                  {!consistency.isConsistent && consistency.inconsistentPairs.length > 0 && (
+                  {!consistency.isConsistent && consistency.inconsistentPairs && consistency.inconsistentPairs.length > 0 && (
                     <div className="p-3 bg-yellow-50 rounded-lg">
                       <div className="font-medium text-yellow-900 mb-2">
                         개선 제안
@@ -392,9 +392,9 @@ const PairwiseComparisonMatrix: React.FC<PairwiseComparisonMatrixProps> = ({
                       <div className="space-y-2">
                         {consistency.inconsistentPairs.slice(0, 3).map((pair, index) => (
                           <div key={index} className="text-sm text-yellow-800">
-                            • {pair.elementA} vs {pair.elementB}: 
-                            현재 {pair.currentValue.toFixed(2)} → 
-                            제안 {pair.suggestedValue.toFixed(2)}
+                            • 위치 ({pair.i}, {pair.j}): 
+                            현재 {pair.actualValue.toFixed(2)} → 
+                            권장 {pair.expectedValue.toFixed(2)}
                           </div>
                         ))}
                       </div>
@@ -426,7 +426,7 @@ const PairwiseComparisonMatrix: React.FC<PairwiseComparisonMatrixProps> = ({
           <Button
             variant="primary"
             onClick={handleStepComplete}
-            disabled={!consistency?.isConsistent && (consistency?.consistencyRatio || 0) > 0.2}
+            disabled={!consistency?.isConsistent && (consistency?.ratio || 0) > 0.2}
           >
             다음 단계
           </Button>
