@@ -125,6 +125,18 @@ export const API_ENDPOINTS = {
     INVOICES: '/api/service/payments/invoices/',
     WEBHOOK: '/api/service/payments/webhook/',
   },
+  // Workshops (Phase 3)
+  WORKSHOPS: {
+    LIST: '/api/service/workshops/',
+    CREATE: '/api/service/workshops/',
+    GET: (id: string) => `/api/service/workshops/${id}/`,
+    UPDATE: (id: string) => `/api/service/workshops/${id}/`,
+    DELETE: (id: string) => `/api/service/workshops/${id}/`,
+    PARTICIPANTS: (id: string) => `/api/service/workshops/${id}/participants/`,
+    START: (id: string) => `/api/service/workshops/${id}/start/`,
+    COMPLETE: (id: string) => `/api/service/workshops/${id}/complete/`,
+    CANCEL: (id: string) => `/api/service/workshops/${id}/cancel/`,
+  },
   // Service Status
   STATUS: '/api/service/status/',
   DATA: '/api/service/data/'
