@@ -192,9 +192,8 @@ ${link.projectName} 프로젝트의 AHP 평가에 참여해 주시기 바랍니�
   // SMS로 보내기 (실제로는 SMS API 사용)
   const handleSendSMS = (link: SurveyLink) => {
     const message = `[AHP평가] ${link.projectName}\n평가링크: ${link.shortLink}`;
-    // 실제로는 SMS API 호출
-    console.log('SMS 발송:', message);
-    alert(`SMS 발송 시뮬레이션:\n${message}`);
+    // SMS URI 스킴으로 기기 SMS 앱 실행 (모바일에서 동작)
+    window.location.href = `sms:?body=${encodeURIComponent(message)}`;
     
     setSurveyLinks(prev => prev.map(l => 
       l.id === link.id 

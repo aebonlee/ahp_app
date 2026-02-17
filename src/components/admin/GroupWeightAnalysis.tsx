@@ -68,8 +68,32 @@ const GroupWeightAnalysis: React.FC<GroupWeightAnalysisProps> = ({ projectId }) 
   };
 
   const exportToExcel = () => {
-    // Simulate Excel export
-    alert('Excel 파일로 내보내기 기능 (구현 예정)');
+    const rows: string[] = ['\uFEFF프로젝트 그룹 가중치 분석 결과'];
+    rows.push(`프로젝트 ID,${projectId}`);
+    rows.push(`생성일시,${new Date().toLocaleString('ko-KR')}`);
+    rows.push('');
+
+    rows.push('=== 기준 가중치 ===');
+    rows.push('순위,기준명,가중치');
+    results.criteria.forEach(c => rows.push(`${c.rank},"${c.name}",${c.weight.toFixed(5)}`));
+    rows.push('');
+
+    rows.push('=== 대안 최종 순위 ===');
+    rows.push('순위,대안명,종합점수');
+    results.alternatives.forEach(a => rows.push(`${a.rank},"${a.name}",${a.score.toFixed(5)}`));
+    rows.push('');
+
+    rows.push('=== 평가자 정보 ===');
+    rows.push('평가자,진행률,가중치,포함여부');
+    evaluators.forEach(e => rows.push(`"${e.name}",${e.progress}%,${e.weight},${e.included ? '포함' : '제외'}`));
+
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `group_weight_analysis_${projectId}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const completedEvaluators = evaluators.filter(e => e.status === 'completed');

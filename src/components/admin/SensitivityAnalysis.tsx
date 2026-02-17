@@ -92,7 +92,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, on
   };
 
   const captureResults = () => {
-    alert('화면 캡처 기능 (구현 예정) - 서버에 저장되지 않으니 캡처하여 보관하세요.');
+    window.print();
   };
 
   return (

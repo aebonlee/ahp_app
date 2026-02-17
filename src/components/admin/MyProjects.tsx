@@ -232,8 +232,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     if (onEditProject) {
       onEditProject(project);
     } else {
-      console.log('⚠️ 편집 핸들러가 연결되지 않음');
-      alert('편집 기능을 준비 중입니다.');
+      console.warn('⚠️ 편집 핸들러가 연결되지 않음');
     }
   };
 
@@ -243,8 +242,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     if (onModelBuilder) {
       onModelBuilder(project);
     } else {
-      console.log('⚠️ 모델 구축 핸들러가 연결되지 않음');
-      alert('모델 구축 기능을 준비 중입니다.');
+      console.warn('⚠️ 모델 구축 핸들러가 연결되지 않음');
     }
   };
 
@@ -254,8 +252,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     if (onAnalysis) {
       onAnalysis(project);
     } else {
-      console.log('⚠️ 결과 분석 핸들러가 연결되지 않음');
-      alert('결과 분석 기능을 준비 중입니다.');
+      console.warn('⚠️ 결과 분석 핸들러가 연결되지 않음');
     }
   };
 
