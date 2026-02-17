@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { PlusIcon, TrashIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
-import api from '../../../services/api';
+import { useEvaluatorInvite } from '../../../hooks/useEvaluatorInvite';
 
 interface InviteEvaluatorsProps {
-  projectId: number;
+  projectId: number | string;
   onSuccess: () => void;
 }
 
 const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSuccess }) => {
+  const { createBulkInvitations, loading } = useEvaluatorInvite();
   const [emails, setEmails] = useState<string[]>(['']);
   const [message, setMessage] = useState('');
   const [expiryDays, setExpiryDays] = useState(30);
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [bulkEmail, setBulkEmail] = useState('');
   const [inputMode, setInputMode] = useState<'individual' | 'bulk'>('individual');
@@ -55,7 +55,7 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateEmails()) {
       return;
     }
@@ -64,28 +64,22 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
       ? bulkEmail.split(/[\n,;]+/).map(e => e.trim()).filter(e => e)
       : emails.filter(e => e);
 
-    try {
-      setLoading(true);
-      const response = await api.post('/evaluations/bulk-invitations/send_bulk_invitations/', {
-        project_id: projectId,
-        evaluator_emails: emailList,
-        custom_message: message,
-        expiry_days: expiryDays
-      });
+    const result = await createBulkInvitations({
+      project_id: String(projectId),
+      evaluator_emails: emailList,
+      custom_message: message || undefined,
+      expiry_days: expiryDays,
+    });
 
-      if (response.data) {
-        alert(`${response.data.invitations_created}명의 평가자에게 초대를 발송했습니다.`);
-        // Reset form
-        setEmails(['']);
-        setBulkEmail('');
-        setMessage('');
-        onSuccess();
-      }
-    } catch (error: any) {
-      console.error('초대 발송 실패:', error);
-      setErrors([error.response?.data?.error || '초대 발송에 실패했습니다.']);
-    } finally {
-      setLoading(false);
+    if (result) {
+      const skipped = result.duplicates_skipped > 0 ? ` (중복 ${result.duplicates_skipped}명 제외)` : '';
+      alert(`${result.invitations_created}명의 평가자에게 초대를 발송했습니다.${skipped}`);
+      setEmails(['']);
+      setBulkEmail('');
+      setMessage('');
+      onSuccess();
+    } else {
+      setErrors(['초대 발송에 실패했습니다. 잠시 후 다시 시도해주세요.']);
     }
   };
 

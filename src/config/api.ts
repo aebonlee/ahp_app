@@ -100,6 +100,19 @@ export const API_ENDPOINTS = {
     PDF: (projectId: string) => `/api/service/export/pdf/?project=${projectId}`,
     REPORT: (projectId: string) => `/api/service/export/report/?project=${projectId}`
   },
+  // Invitations (Phase 2a)
+  INVITATIONS: {
+    LIST: '/api/service/invitations/',
+    CREATE: '/api/service/invitations/',
+    BULK: '/api/service/invitations/bulk/',
+    VERIFY_TOKEN: '/api/service/invitations/verify_token/',
+    GET: (id: string) => `/api/service/invitations/${id}/`,
+    ACCEPT: (id: string) => `/api/service/invitations/${id}/accept/`,
+    DECLINE: (id: string) => `/api/service/invitations/${id}/decline/`,
+    RESEND: (id: string) => `/api/service/invitations/${id}/resend/`,
+    REVOKE: (id: string) => `/api/service/invitations/${id}/revoke/`,
+    REGENERATE: (id: string) => `/api/service/invitations/${id}/regenerate_token/`
+  },
   // Service Status
   STATUS: '/api/service/status/',
   DATA: '/api/service/data/'
