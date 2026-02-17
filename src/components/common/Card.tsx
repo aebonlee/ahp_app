@@ -31,6 +31,8 @@ const Card: React.FC<CardProps> = ({
   const getVariantStyle = (variant: string) => {
     const baseStyle = {
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      position: 'relative' as const,
+      overflow: 'hidden',
     };
 
     switch (variant) {

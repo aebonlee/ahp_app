@@ -1,5 +1,6 @@
 /* Import global theme and color system */
 @import './styles/global.css';
+@import './styles/modern-enhancements.css';
 
 @tailwind base;
 @tailwind components;

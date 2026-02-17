@@ -111,10 +111,11 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
       color: 'var(--text-primary, #1f2937)'
     }}>
       {/* 헤더 - 잔디 스타일 */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrollY > 10 ? 'backdrop-blur-md shadow-sm' : 'bg-transparent'
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrollY > 10 ? 'backdrop-blur-md shadow-lg' : 'bg-transparent'
       }`} style={{
-        backgroundColor: scrollY > 10 ? 'var(--bg-primary)95' : 'transparent'
+        backgroundColor: scrollY > 10 ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
+        borderBottom: scrollY > 10 ? '1px solid var(--border-light)' : 'none'
       }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">

@@ -42,6 +42,9 @@ const Button: React.FC<ButtonProps> = ({
       cursor: disabled || loading ? 'not-allowed' : 'pointer',
       opacity: disabled || loading ? 0.6 : 1,
       outline: 'none',
+      position: 'relative' as const,
+      overflow: 'hidden',
+      letterSpacing: '0.025em',
     };
 
     switch (variant) {
