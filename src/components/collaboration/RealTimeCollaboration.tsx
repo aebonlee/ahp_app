@@ -1,6 +1,7 @@
 /**
- * 실시간 협업 시스템
- * Server-Sent Events + REST API 기반 실시간 모델 편집 및 협업 기능
+ * 실시간 협업 시스템 (Phase 2b 업데이트)
+ * WebSocket (Django Channels) 기반 실시간 협업
+ * 폴백: MockCollaborationServer (개발/오프라인)
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -18,6 +19,8 @@ import {
   checkUserPermission,
   MockCollaborationServer
 } from '../../utils/realTimeSync';
+import useCollaboration from '../../hooks/useCollaboration';
+import type { ServerMessage } from '../../types/collaboration';
 
 // 오프라인 상태 인터페이스
 interface OfflineState {
@@ -103,6 +106,59 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
   const lastMousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const mockServerRef = useRef<MockCollaborationServer>(MockCollaborationServer.getInstance());
+
+  // ── Phase 2b: WebSocket 협업 훅 ────────────────────────────────────────────
+  const {
+    status: wsStatus,
+    onlineUsers: wsOnlineUsers,
+    sendEvent: wsSendEvent,
+  } = useCollaboration({
+    projectId: modelId,
+    autoConnect: true,
+    onEvent: (event: ServerMessage) => {
+      // WebSocket 이벤트 → 기존 이벤트 히스토리에 추가
+      const colEvent: CollaborationEvent = {
+        id: `ws-${Date.now()}`,
+        type: event.type as CollaborationEvent['type'],
+        userId: event.user_id || 'remote',
+        timestamp: event.timestamp,
+        data: event.data as any,
+      };
+      setEvents(prev => [colEvent, ...prev].slice(0, 200));
+    },
+    onStatusChange: (s) => {
+      setIsConnected(s === 'connected');
+      setConnectionQuality(
+        s === 'connected' ? 'excellent' :
+        s === 'reconnecting' ? 'poor' : 'disconnected'
+      );
+    },
+    onError: (err) => {
+      showNotification('error', 'WebSocket 오류', err.message);
+    },
+  });
+
+  // WebSocket 온라인 사용자 → 기존 users 상태 동기화
+  useEffect(() => {
+    if (wsStatus === 'connected' && wsOnlineUsers.length > 0) {
+      const mappedUsers: CollaborationUser[] = wsOnlineUsers.map(u => ({
+        id: u.user_id,
+        name: u.user_name,
+        email: u.user_email,
+        color: generateUserColor(u.user_id),
+        isOnline: true,
+        lastActivity: u.connected_at,
+        role: (u.role === 'owner' ? 'owner' : u.role === 'admin' ? 'editor' : 'viewer') as CollaborationUser['role'],
+        permissions: {
+          canEdit: u.role !== 'viewer',
+          canDelete: u.role === 'owner',
+          canInvite: u.role !== 'viewer',
+          canManage: u.role === 'owner',
+        },
+      }));
+      setUsers(mappedUsers);
+    }
+  }, [wsOnlineUsers, wsStatus]);
 
   // 실시간 동기화 초기화
   useEffect(() => {
@@ -360,8 +416,13 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
     setUserActivities(activities);
   };
 
-  // 이벤트 전송 (개선된 버전)
+  // 이벤트 전송 (Phase 2b: WebSocket 우선, MockServer 폴백)
   const sendEvent = async (event: Omit<CollaborationEvent, 'id' | 'userId' | 'timestamp'>) => {
+    // WebSocket 연결 시 실제 전송
+    if (wsStatus === 'connected') {
+      wsSendEvent(event.type as any, event.data as Record<string, unknown>);
+    }
+
     if (!syncManager) {
       console.warn('동기화 관리자가 초기화되지 않음');
       return;
