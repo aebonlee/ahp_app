@@ -36,7 +36,7 @@ import TrashBin from './TrashBin';
 import PersonalUserDashboard from '../user/PersonalUserDashboard';
 import dataService from '../../services/dataService_clean';
 import type { ProjectData } from '../../services/api';
-import type { User, UserProject } from '../../types';
+import type { User, UserProject, Criteria, Alternative } from '../../types';
 // DEMO 데이터 제거 - 실제 DB만 사용
 
 interface PersonalServiceProps {
@@ -44,17 +44,17 @@ interface PersonalServiceProps {
   activeTab?: string;
   onTabChange?: (tab: string) => void;
   onUserUpdate?: (updatedUser: User) => void;
-  projects?: any[];
-  onCreateProject?: (projectData: any) => Promise<any>;
-  onDeleteProject?: (projectId: string) => Promise<any>;
-  onFetchCriteria?: (projectId: string) => Promise<any[]>;
-  onCreateCriteria?: (projectId: string, criteriaData: any) => Promise<any>;
-  onFetchAlternatives?: (projectId: string) => Promise<any[]>;
-  onCreateAlternative?: (projectId: string, alternativeData: any) => Promise<any>;
-  onSaveEvaluation?: (projectId: string, evaluationData: any) => Promise<any>;
-  onFetchTrashedProjects?: () => Promise<any[]>;
-  onRestoreProject?: (projectId: string) => Promise<any>;
-  onPermanentDeleteProject?: (projectId: string) => Promise<any>;
+  projects?: ProjectData[];
+  onCreateProject?: (projectData: Partial<ProjectData>) => Promise<ProjectData>;
+  onDeleteProject?: (projectId: string) => Promise<void>;
+  onFetchCriteria?: (projectId: string) => Promise<Criteria[]>;
+  onCreateCriteria?: (projectId: string, criteriaData: Partial<Criteria>) => Promise<Criteria>;
+  onFetchAlternatives?: (projectId: string) => Promise<Alternative[]>;
+  onCreateAlternative?: (projectId: string, alternativeData: Partial<Alternative>) => Promise<Alternative>;
+  onSaveEvaluation?: (projectId: string, evaluationData: Record<string, unknown>) => Promise<void>;
+  onFetchTrashedProjects?: () => Promise<ProjectData[]>;
+  onRestoreProject?: (projectId: string) => Promise<void>;
+  onPermanentDeleteProject?: (projectId: string) => Promise<void>;
   selectedProjectId?: string | null;
   onSelectProject?: (projectId: string | null) => void;
 }
