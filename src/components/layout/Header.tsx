@@ -4,6 +4,8 @@ import LayerPopup from '../common/LayerPopup';
 import ColorThemeSelector from '../common/ColorThemeSelector';
 import sessionService from '../../services/sessionService';
 import { useTheme } from '../../hooks/useTheme';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 import type { User } from '../../types';
 
@@ -59,25 +61,44 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
   }, [user]);
 
   useEffect(() => {
-    if (user) {
-      // localStorage 제거됨 - 사용자 선호 API에서 즐겨찾기 데이터 로드
-      // TODO: API에서 사용자별 즐겨찾기 데이터 조회
-      // loadUserFavoritesFromAPI(user.id);
-      console.log('사용자 즐겨찾기 API 로드 예정:', user.first_name, user.last_name);
-    }
+    if (!user) return;
+    const loadFavorites = async () => {
+      try {
+        const token = authService.getAccessToken();
+        const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.PROFILE}`, {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const profile = await res.json();
+          const savedFavorites = profile.favorites ?? profile.menu_favorites ?? [];
+          if (Array.isArray(savedFavorites) && savedFavorites.length > 0) {
+            setFavorites(savedFavorites);
+          }
+        }
+      } catch {
+        // 즐겨찾기 로드 실패 시 무시
+      }
+    };
+    loadFavorites();
   }, [user]);
 
   const saveFavorites = async (newFavorites: FavoriteMenuItem[]) => {
     if (user) {
-      // localStorage 제거됨 - API로 사용자 즐겨찾기 저장
       try {
-        // TODO: API로 사용자 즐겨찾기 저장
-        // await saveUserFavoritesToAPI(user.id, newFavorites);
+        const token = authService.getAccessToken();
+        await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.PROFILE}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          credentials: 'include',
+          body: JSON.stringify({ favorites: newFavorites }),
+        });
         setFavorites(newFavorites);
-        console.log('사용자 즐겨찾기 API 저장 예정:', newFavorites.length, '개');
       } catch (error) {
         console.error('즐겨찾기 저장 실패:', error);
-        // 에러 시에도 UI 업데이트
         setFavorites(newFavorites);
       }
     }

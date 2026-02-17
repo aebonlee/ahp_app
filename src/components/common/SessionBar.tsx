@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import UnifiedButton from './UnifiedButton';
 import LayerPopup from './LayerPopup';
 import sessionService from '../../services/sessionService';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 // localStorage 제거됨 - 서버 기반 세션 정보로 대체
 
@@ -23,11 +25,23 @@ const SessionBar: React.FC = () => {
         const remaining = await sessionService.getRemainingTime();
         setRemainingTime(remaining);
         
-        // TODO: 서버 API에서 세션 정보 조회
-        // setSessionInfo({
-        //   loginTime: serverSessionInfo.loginTime,
-        //   lastActivity: serverSessionInfo.lastActivity
-        // });
+        // 서버 API에서 세션/프로필 정보 조회
+        try {
+          const token = authService.getAccessToken();
+          const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.ME}`, {
+            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            credentials: 'include',
+          });
+          if (res.ok) {
+            const profile = await res.json();
+            setSessionInfo({
+              loginTime: profile.last_login ?? profile.loginTime ?? null,
+              lastActivity: profile.last_activity ?? profile.lastActivity ?? null,
+            });
+          }
+        } catch {
+          // 세션 정보 조회 실패 시 무시
+        }
       }
     };
 
