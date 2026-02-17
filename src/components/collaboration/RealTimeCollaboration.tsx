@@ -843,11 +843,10 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
         throw new Error('초대 실패');
       }
     } catch (error) {
-      // 데모용 성공 처리
-      addSystemMessage(`${inviteEmail}에게 초대장을 보냈습니다.`);
-      showNotification('success', '초대 완료', `${inviteEmail}에게 초대장을 보냈습니다.`);
+      console.error('초대 실패:', error);
+      showNotification('error', '초대 실패', '초대장 발송 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
-    
+
     setInviteEmail('');
     setShowInviteDialog(false);
   };
@@ -896,7 +895,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
         body: JSON.stringify({ role: newRole })
       });
       
-      if (response.ok || true) { // 데모용 항상 성공
+      if (response.ok) {
         setUsers(prev => prev.map(user => {
           if (user.id === userId) {
             const permissions = {
@@ -905,21 +904,20 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
               canInvite: newRole !== 'viewer',
               canManage: newRole === 'owner'
             };
-            
             const updatedUser = { ...user, role: newRole, permissions };
-            
-            // 권한 변경 알림
             addSystemMessage(`${user.name}님의 권한이 ${newRole}로 변경되었습니다.`);
             showNotification('success', '권한 변경', `${user.name}님의 권한을 변경했습니다.`);
-            
             return updatedUser;
           }
           return user;
         }));
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.error || `HTTP ${response.status}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('권한 변경 실패:', error);
-      showNotification('error', '권한 변경 실패', '권한 변경 중 오류가 발생했습니다.');
+      showNotification('error', '권한 변경 실패', error.message || '권한 변경 중 오류가 발생했습니다.');
     }
   };
 
@@ -960,10 +958,51 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <Button variant="secondary" className="text-xs">
+                    <Button
+                      variant="secondary"
+                      className="text-xs"
+                      onClick={() => {
+                        const win = window.open('', '_blank');
+                        if (win) {
+                          win.document.write(
+                            `<html><head><title>버전 ${version.version} 미리보기</title></head>` +
+                            `<body style="font-family:sans-serif;padding:24px">` +
+                            `<h2>버전 ${version.version}</h2>` +
+                            `<p><b>설명:</b> ${version.description}</p>` +
+                            `<p><b>작성자:</b> ${version.author}</p>` +
+                            `<p><b>시간:</b> ${new Date(version.timestamp).toLocaleString('ko-KR')}</p>` +
+                            `<h3>변경사항 (${version.changes.length}개)</h3>` +
+                            `<ul>${version.changes.map((c: any) => `<li>${JSON.stringify(c)}</li>`).join('')}</ul>` +
+                            `</body></html>`
+                          );
+                          win.document.close();
+                        }
+                      }}
+                    >
                       미리보기
                     </Button>
-                    <Button variant="primary" className="text-xs">
+                    <Button
+                      variant="primary"
+                      className="text-xs"
+                      onClick={async () => {
+                        if (!window.confirm(`버전 ${version.version}으로 복원하시겠습니까?`)) return;
+                        try {
+                          const res = await fetch(`/api/collaboration/${modelId}/versions/${version.id}/restore`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                          });
+                          if (res.ok) {
+                            addSystemMessage(`버전 ${version.version}으로 복원되었습니다.`);
+                            showNotification('success', '복원 완료', `버전 ${version.version}으로 복원했습니다.`);
+                            setShowVersionHistory(false);
+                          } else {
+                            throw new Error(`HTTP ${res.status}`);
+                          }
+                        } catch (err: any) {
+                          showNotification('error', '복원 실패', err.message || '버전 복원 중 오류가 발생했습니다.');
+                        }
+                      }}
+                    >
                       복원
                     </Button>
                   </div>
