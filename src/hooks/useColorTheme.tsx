@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export type ColorTheme = 'gold' | 'blue' | 'green' | 'purple' | 'rose' | 'orange' | 'teal' | 'indigo' | 'red';
+export type ColorTheme = 'gold' | 'blue' | 'green' | 'purple' | 'rose' | 'orange' | 'teal' | 'indigo' | 'monochrome';
 
 interface ColorPalette {
   primary: string;
@@ -77,13 +77,13 @@ const colorPalettes: Record<ColorTheme, ColorPalette> = {
     focus: 'rgba(99, 102, 241, 0.35)',
     rgb: '99, 102, 241'
   },
-  red: {
-    primary: '#EF4444',
-    secondary: '#DC2626',
-    light: '#FCA5A5',
-    hover: '#B91C1C',
-    focus: 'rgba(239, 68, 68, 0.35)',
-    rgb: '239, 68, 68'
+  monochrome: {
+    primary: '#1F2937',
+    secondary: '#111827',
+    light: '#D1D5DB',
+    hover: '#374151',
+    focus: 'rgba(31, 41, 55, 0.35)',
+    rgb: '31, 41, 55'
   }
 };
 
