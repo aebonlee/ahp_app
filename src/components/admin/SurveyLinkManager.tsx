@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface SurveyLink {
   id: string;
@@ -98,26 +100,54 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
     setLoading(false);
   };
 
+  const getAuthHeaders = (): Record<string, string> => {
+    const token = authService.getAccessToken();
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  };
+
   const loadExistingLinks = async () => {
-    // localStorage 제거됨 - API에서 링크 데이터 조회
     try {
-      // TODO: 서버 API에서 설문 링크 목록 조회
-      // const response = await fetch('/api/survey-links');
-      // const links = await response.json();
-      // setSurveyLinks(links);
-      console.log('API에서 설문 링크 데이터 로드 예정');
+      const endpoint = projectId
+        ? `${API_BASE_URL}${API_ENDPOINTS.INVITATIONS.LIST}?project=${projectId}`
+        : `${API_BASE_URL}${API_ENDPOINTS.INVITATIONS.LIST}`;
+      const res = await fetch(endpoint, {
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const items: any[] = Array.isArray(data) ? data : (data.results ?? []);
+        setSurveyLinks(items.map((inv: any) => ({
+          id: inv.id ?? inv.token,
+          evaluatorId: inv.evaluator ?? inv.evaluator_id ?? inv.id,
+          evaluatorName: inv.evaluator_name ?? inv.name ?? '',
+          evaluatorEmail: inv.email ?? inv.evaluator_email ?? '',
+          projectId: inv.project ?? inv.project_id ?? projectId ?? '',
+          projectName: inv.project_name ?? projectName ?? '',
+          originalLink: inv.original_link ?? inv.survey_url ?? '',
+          shortLink: inv.short_link ?? inv.short_url ?? inv.survey_url ?? '',
+          qrCode: inv.qr_code ?? (inv.short_link ? generateQRCode(inv.short_link) : undefined),
+          createdAt: inv.created_at ?? new Date().toISOString(),
+          expiresAt: inv.expires_at ?? inv.expiry_date,
+          clickCount: inv.click_count ?? inv.access_count ?? 0,
+          lastAccessed: inv.last_accessed,
+          status: inv.status === 'pending' ? 'active' : (inv.status ?? 'active'),
+          shareMethod: inv.share_method,
+        })));
+      }
     } catch (error) {
       console.error('API에서 링크 데이터 로드 실패:', error);
     }
   };
 
-  // 링크 저장 (localStorage 제거)
+  // 링크 저장 (API 동기화)
   useEffect(() => {
-    if (surveyLinks.length > 0) {
-      // TODO: API로 서버에 링크 데이터 저장
-      // saveSurveyLinksToAPI(surveyLinks);
-      console.log('서버 API로 링크 데이터 저장 예정:', surveyLinks.length, '개');
-    }
+    // 서버에서 로드한 데이터는 이미 영속화되어 있으므로
+    // generateLinksForEvaluators에서 생성한 신규 링크만 서버에 저장
+    // (bulk invitation API 연동은 WorkshopManagement / InvitationManager에서 처리)
   }, [surveyLinks]);
 
   // 링크 복사
@@ -131,7 +161,7 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
         : l
     ));
     
-    alert('링크가 클립보드에 복사되었습니다.');
+    // 클립보드 복사 완료 (alert 제거 - UX 개선)
   };
 
   // 이메일로 보내기

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import dataService from '../../services/dataService';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface AHPResults {
   criteriaWeights: Record<string, number>;
@@ -38,62 +40,44 @@ const ResultsDataManager: React.FC<ResultsDataManagerProps> = ({
     try {
       setLoading(true);
       setError(null);
-      console.log(`📊 프로젝트 ${projectId}의 결과 로드`);
 
-      // TODO: 실제 백엔드에서 결과 조회
-      // const resultsData = await dataService.getResults(projectId);
-      
-      // 샘플 결과 데이터 생성
-      const sampleResults: AHPResults = {
-        criteriaWeights: criteria.reduce((acc, criterion, index) => {
-          // 샘플 가중치 생성
-          const weights = [0.4, 0.3, 0.2, 0.1];
-          acc[criterion.id] = weights[index % weights.length] || 0.1;
-          return acc;
-        }, {} as Record<string, number>),
-        
-        alternativeScores: alternatives.reduce((acc, alternative) => {
-          acc[alternative.id] = criteria.reduce((cAcc, criterion, index) => {
-            // 샘플 점수 생성
-            const scores = [0.6, 0.8, 0.4, 0.7];
-            cAcc[criterion.id] = scores[index % scores.length] || Math.random();
-            return cAcc;
-          }, {} as Record<string, number>);
-          return acc;
-        }, {} as Record<string, Record<string, number>>),
-        
-        finalRanking: alternatives.map((alt, index) => ({
-          id: alt.id,
-          name: alt.name,
-          score: Math.random() * 0.5 + 0.3, // 0.3 ~ 0.8 범위
-          rank: index + 1
-        })).sort((a, b) => b.score - a.score).map((alt, index) => ({
-          ...alt,
-          rank: index + 1
-        })),
-        
-        consistencyRatio: 0.08, // 일관성 비율
-        groupConsistency: 0.12,
-        
-        individualResults: evaluators.reduce((acc, evaluator) => {
-          acc[evaluator.id] = {
-            name: evaluator.name,
-            consistencyRatio: Math.random() * 0.15,
-            completionDate: new Date().toISOString(),
-            criteriaWeights: criteria.reduce((cAcc, criterion) => {
-              cAcc[criterion.id] = Math.random();
-              return cAcc;
-            }, {} as Record<string, number>)
-          };
-          return acc;
-        }, {} as Record<string, any>)
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      setResults(sampleResults);
-      console.log('✅ 결과 로드 완료');
-    } catch (error) {
-      console.error('Failed to load results:', error);
-      setError('결과를 불러오는데 실패했습니다.');
+      const res = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.RESULTS.GET(projectId)}`,
+        { headers, credentials: 'include' }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        // 백엔드 응답을 AHPResults 형식으로 매핑
+        const mapped: AHPResults = {
+          criteriaWeights: data.criteria_weights ?? data.criteriaWeights ?? {},
+          alternativeScores: data.alternative_scores ?? data.alternativeScores ?? {},
+          finalRanking: (data.final_ranking ?? data.finalRanking ?? []).map((item: any, idx: number) => ({
+            id: item.id ?? String(idx),
+            name: item.name ?? item.alternative_name ?? '',
+            score: item.score ?? item.final_score ?? 0,
+            rank: item.rank ?? idx + 1,
+          })),
+          consistencyRatio: data.consistency_ratio ?? data.consistencyRatio ?? 0,
+          groupConsistency: data.group_consistency ?? data.groupConsistency,
+          individualResults: data.individual_results ?? data.individualResults,
+        };
+        setResults(mapped);
+      } else if (res.status === 404) {
+        // 아직 계산된 결과 없음 — 빈 상태 유지
+        setResults(null);
+      } else {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (err) {
+      console.error('Failed to load results:', err);
+      setError('결과를 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요.');
     } finally {
       setLoading(false);
     }
@@ -103,20 +87,33 @@ const ResultsDataManager: React.FC<ResultsDataManagerProps> = ({
     try {
       setLoading(true);
       setError(null);
-      console.log('🔄 AHP 결과 계산 중...');
 
-      // TODO: 실제 AHP 계산 로직
-      // const calculatedResults = await dataService.calculateGroupResults(projectId);
-      
-      // 시뮬레이션: 약간의 지연 후 결과 업데이트
-      setTimeout(() => {
-        loadResults();
-      }, 2000);
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
 
-      console.log('✅ 결과 계산 완료');
-    } catch (error) {
-      console.error('Failed to calculate results:', error);
-      setError('결과 계산 중 오류가 발생했습니다.');
+      const res = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.RESULTS.CALCULATE_GROUP(projectId)}`,
+        {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ project_id: projectId }),
+        }
+      );
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.error || `HTTP ${res.status}`);
+      }
+
+      // 계산 완료 후 최신 결과 재로드
+      await loadResults();
+    } catch (err: any) {
+      console.error('Failed to calculate results:', err);
+      setError(err.message || '결과 계산 중 오류가 발생했습니다.');
       setLoading(false);
     }
   };

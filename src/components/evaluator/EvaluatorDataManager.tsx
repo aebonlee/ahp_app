@@ -4,6 +4,8 @@ import Button from '../common/Button';
 import Input from '../common/Input';
 import dataService from '../../services/dataService';
 import type { EvaluatorData } from '../../services/dataService';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface Evaluator {
   id: string;
@@ -52,15 +54,15 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
       const evaluatorsData = await dataService.getEvaluators(projectId);
       
       // EvaluatorData를 Evaluator로 변환
-      const convertedEvaluators: Evaluator[] = evaluatorsData.map(data => ({
+      const convertedEvaluators: Evaluator[] = evaluatorsData.map((data: any) => ({
         id: data.id!,
         name: data.name,
         email: data.email,
         access_key: data.access_key,
         status: data.status,
-        progress: 0, // TODO: 실제 진행률 계산
-        invited_at: undefined, // TODO: 초대 날짜
-        completed_at: undefined // TODO: 완료 날짜
+        progress: data.progress ?? data.completion_rate ?? 0,
+        invited_at: data.invited_at ?? data.created_at,
+        completed_at: data.completed_at ?? data.completion_date,
       }));
       
       setEvaluators(convertedEvaluators);
@@ -179,16 +181,28 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
         return;
       }
       
-      // TODO: 실제 이메일 발송 기능 구현
-      console.log('📧 평가 초대 이메일 발송:', pendingEvaluators.map(e => e.email));
-      
-      // 상태를 active로 변경 (시뮬레이션)
-      const updatedEvaluators = evaluators.map(e => 
-        e.status === 'pending' ? { ...e, status: 'active' as const, invited_at: new Date().toISOString() } : e
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+      await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.EVALUATORS.SEND_INVITATIONS(projectId)}`,
+        {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ evaluator_ids: pendingEvaluators.map(e => e.id) }),
+        }
       );
-      
-      setEvaluators(updatedEvaluators);
-      console.log('✅ 초대 이메일 발송 완료');
+
+      // 로컬 상태 업데이트 (초대 날짜 반영)
+      const invitedAt = new Date().toISOString();
+      setEvaluators(prev =>
+        prev.map(e =>
+          e.status === 'pending' ? { ...e, status: 'active' as const, invited_at: invitedAt } : e
+        )
+      );
     } catch (error) {
       console.error('Failed to send invitations:', error);
       setError('초대 이메일 발송 중 오류가 발생했습니다.');

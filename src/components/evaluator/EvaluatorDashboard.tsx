@@ -3,6 +3,8 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import PairwiseEvaluation from './PairwiseEvaluation';
 import DirectInputEvaluation from './DirectInputEvaluation';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface EvaluatorUser {
   id: string;
@@ -49,55 +51,37 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({
     const fetchInvitations = async () => {
       setIsLoading(true);
       try {
-        // TODO: 실제 API 호출로 교체
-        const mockInvitations: ProjectInvitation[] = [
-          {
-            id: 'project-001',
-            title: 'AI 개발 활용 방안 선정 연구',
-            description: '기업의 AI 도입 및 활용 전략을 평가하기 위한 AHP 분석',
-            invitedBy: 'Dr. 김연구 교수',
-            invitedAt: new Date('2025-08-25'),
-            dueDate: new Date('2025-09-15'),
-            status: 'pending',
-            evaluationMethod: 'pairwise',
-            progress: 0,
-            totalComparisons: 15,
-            completedComparisons: 0,
-            surveyRequired: true,
-            surveyCompleted: false
-          },
-          {
-            id: 'project-002',
-            title: '지속가능한 에너지 정책 우선순위',
-            description: '국가 에너지 정책의 우선순위 결정을 위한 전문가 평가',
-            invitedBy: '정책연구원',
-            invitedAt: new Date('2025-08-20'),
-            dueDate: new Date('2025-09-10'),
-            status: 'in_progress',
-            evaluationMethod: 'mixed',
-            progress: 60,
-            totalComparisons: 21,
-            completedComparisons: 13,
-            surveyRequired: true,
-            surveyCompleted: true
-          },
-          {
-            id: 'project-003',
-            title: '의료진 업무 우선순위 분석',
-            description: '병원 의료진의 업무 효율성 개선을 위한 우선순위 도출',
-            invitedBy: '병원관리연구소',
-            invitedAt: new Date('2025-08-15'),
-            status: 'completed',
-            evaluationMethod: 'pairwise',
-            progress: 100,
-            totalComparisons: 10,
-            completedComparisons: 10,
-            surveyRequired: false,
-            surveyCompleted: false
-          }
-        ];
-        
-        setInvitations(mockInvitations);
+        const token = authService.getAccessToken();
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+
+        const res = await fetch(
+          `${API_BASE_URL}${API_ENDPOINTS.INVITATIONS.LIST}?role=evaluator`,
+          { headers, credentials: 'include' }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          const items: any[] = Array.isArray(data) ? data : (data.results ?? []);
+          const mapped: ProjectInvitation[] = items.map((inv: any) => ({
+            id: inv.project ?? inv.project_id ?? inv.id,
+            title: inv.project_title ?? inv.title ?? '제목 없음',
+            description: inv.project_description ?? inv.description ?? '',
+            invitedBy: inv.invited_by_name ?? inv.invited_by ?? '',
+            invitedAt: new Date(inv.invited_at ?? inv.created_at ?? Date.now()),
+            dueDate: inv.due_date ? new Date(inv.due_date) : undefined,
+            status: inv.status === 'accepted' ? 'pending' : (inv.status ?? 'pending'),
+            evaluationMethod: inv.evaluation_method ?? 'pairwise',
+            progress: inv.progress ?? 0,
+            totalComparisons: inv.total_comparisons ?? 0,
+            completedComparisons: inv.completed_comparisons ?? 0,
+            surveyRequired: inv.survey_required ?? false,
+            surveyCompleted: inv.survey_completed ?? false,
+          }));
+          setInvitations(mapped);
+        }
       } catch (error) {
         console.error('초대 목록 조회 실패:', error);
       } finally {

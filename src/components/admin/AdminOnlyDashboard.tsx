@@ -5,7 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { User } from '../../types';
-import { API_BASE_URL } from '../../config/api';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface AdminOnlyDashboardProps {
   user: User;
@@ -31,17 +32,31 @@ const AdminOnlyDashboard: React.FC<AdminOnlyDashboardProps> = ({ user, onTabChan
     loadSystemActivity();
   }, []);
 
+  const getAuthHeaders = (): Record<string, string> => {
+    const token = authService.getAccessToken();
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  };
+
   const loadSystemStats = async () => {
     try {
-      // TODO: 시스템 통계 API 연동
-      setSystemStats({
-        totalUsers: 145,
-        totalProjects: 67,
-        activeEvaluations: 23,
-        systemHealth: 'healthy',
-        databaseSize: '1.2 GB',
-        serverUptime: '15 days'
+      const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.STATUS}`, {
+        headers: getAuthHeaders(),
+        credentials: 'include',
       });
+      if (res.ok) {
+        const data = await res.json();
+        setSystemStats({
+          totalUsers: data.total_users ?? data.totalUsers ?? 0,
+          totalProjects: data.total_projects ?? data.totalProjects ?? 0,
+          activeEvaluations: data.active_evaluations ?? data.activeEvaluations ?? 0,
+          systemHealth: data.system_health ?? data.systemHealth ?? 'healthy',
+          databaseSize: data.database_size ?? data.databaseSize ?? '—',
+          serverUptime: data.server_uptime ?? data.serverUptime ?? '—',
+        });
+      }
     } catch (error) {
       console.error('시스템 통계 로딩 실패:', error);
     }
@@ -49,26 +64,22 @@ const AdminOnlyDashboard: React.FC<AdminOnlyDashboardProps> = ({ user, onTabChan
 
   const loadRecentUsers = async () => {
     try {
-      // TODO: 최근 사용자 API 연동
-      const mockUsers = [
-        {
-          id: '1',
-          username: 'john_doe',
-          email: 'john@company.com',
-          role: 'service_user',
-          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          status: 'active'
-        },
-        {
-          id: '2',
-          username: 'jane_smith',
-          email: 'jane@university.edu',
-          role: 'evaluator', 
-          created_at: new Date(Date.now() - 24 * 60 * 60 * 1000),
-          status: 'pending'
-        }
-      ];
-      setRecentUsers(mockUsers);
+      const res = await fetch(
+        `${API_BASE_URL}/api/service/admin/users/?ordering=-created_at&limit=10`,
+        { headers: getAuthHeaders(), credentials: 'include' }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const users = Array.isArray(data) ? data : (data.results ?? []);
+        setRecentUsers(users.map((u: any) => ({
+          id: u.id,
+          username: u.username,
+          email: u.email,
+          role: u.role ?? u.user_role ?? 'service_user',
+          created_at: new Date(u.created_at ?? u.date_joined ?? Date.now()),
+          status: u.status ?? (u.is_active ? 'active' : 'inactive'),
+        })));
+      }
     } catch (error) {
       console.error('최근 사용자 로딩 실패:', error);
     } finally {
@@ -78,26 +89,22 @@ const AdminOnlyDashboard: React.FC<AdminOnlyDashboardProps> = ({ user, onTabChan
 
   const loadSystemActivity = async () => {
     try {
-      // TODO: 시스템 활동 API 연동
-      const mockActivity = [
-        {
-          id: '1',
-          action: '새 프로젝트 생성',
-          user: 'admin@company.com',
-          timestamp: new Date(Date.now() - 30 * 60 * 1000),
-          type: 'project',
-          details: '마케팅 전략 평가 프로젝트'
-        },
-        {
-          id: '2',
-          action: '사용자 등록',
-          user: 'system',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          type: 'user',
-          details: 'john@company.com'
-        }
-      ];
-      setSystemActivity(mockActivity);
+      const res = await fetch(
+        `${API_BASE_URL}/api/service/admin/activity/?limit=20`,
+        { headers: getAuthHeaders(), credentials: 'include' }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const items = Array.isArray(data) ? data : (data.results ?? []);
+        setSystemActivity(items.map((item: any) => ({
+          id: item.id ?? String(Math.random()),
+          action: item.action ?? item.event_type ?? '알 수 없는 이벤트',
+          user: item.user ?? item.user_email ?? 'system',
+          timestamp: new Date(item.timestamp ?? item.created_at ?? Date.now()),
+          type: item.type ?? item.category ?? 'system',
+          details: item.details ?? item.description ?? '',
+        })));
+      }
     } catch (error) {
       console.error('시스템 활동 로딩 실패:', error);
     }

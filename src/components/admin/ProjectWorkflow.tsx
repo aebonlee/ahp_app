@@ -8,6 +8,8 @@ import EvaluatorAssignment from './EvaluatorAssignment';
 import ProjectCompletion from './ProjectCompletion';
 import dataService from '../../services/dataService_clean';
 import { ProjectData } from '../../services/api';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface ProjectWorkflowProps {
   onComplete?: () => void;
@@ -155,9 +157,21 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
   const handleProjectStatusChange = async (status: 'terminated' | 'completed') => {
     try {
       if (workflowState.projectId) {
-        // TODO: API를 통한 프로젝트 상태 업데이트
-        console.log(`프로젝트 ${workflowState.projectId} 상태 변경: ${status}`);
-        
+        const token = authService.getAccessToken();
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+        await fetch(
+          `${API_BASE_URL}${API_ENDPOINTS.PROJECTS.UPDATE(workflowState.projectId)}`,
+          {
+            method: 'PATCH',
+            headers,
+            credentials: 'include',
+            body: JSON.stringify({ status }),
+          }
+        );
+
         if (status === 'completed' && onComplete) {
           onComplete();
         } else if (status === 'terminated' && onCancel) {

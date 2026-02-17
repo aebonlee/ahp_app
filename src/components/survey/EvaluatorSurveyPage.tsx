@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
 
 interface EvaluatorSurveyPageProps {
   surveyId: string;
@@ -42,59 +43,37 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
   }, [surveyId, token]);
 
   const loadSurveyData = async () => {
-    // TODO: 실제 API 호출로 교체
-    const mockData: SurveyData = {
-      projectTitle: "AI 도입 효과성 평가 연구",
-      researcherName: "김연구 교수",
-      description: "본 설문조사는 AI 도입의 효과성을 평가하기 위한 전문가 의견 수집을 목적으로 합니다. 약 10-15분 정도 소요됩니다.",
-      deadline: new Date('2025-09-30'),
-      questions: [
-        {
-          id: 'q1',
-          type: 'text',
-          question: '귀하의 소속 기관을 입력해주세요.',
-          required: true
-        },
-        {
-          id: 'q2',
-          type: 'radio',
-          question: '귀하의 전문 분야는 무엇입니까?',
-          required: true,
-          options: ['AI/머신러닝', '데이터 사이언스', '소프트웨어 엔지니어링', '비즈니스 전략', '기타']
-        },
-        {
-          id: 'q3',
-          type: 'scale',
-          question: 'AI 기술에 대한 귀하의 전문성 수준을 평가해주세요.',
-          required: true,
-          scaleMin: 1,
-          scaleMax: 10,
-          scaleLabels: { min: '초급', max: '전문가' }
-        },
-        {
-          id: 'q4',
-          type: 'checkbox',
-          question: '귀하가 경험한 AI 활용 분야를 모두 선택해주세요.',
-          required: false,
-          options: ['자연어처리', '컴퓨터 비전', '추천시스템', '예측분석', '자동화', '의사결정지원']
-        },
-        {
-          id: 'q5',
-          type: 'matrix',
-          question: '다음 AI 도입 요소들의 중요도를 평가해주세요.',
-          required: true,
-          matrixRows: ['기술적 성숙도', '비용 효율성', '구현 용이성', '확장 가능성'],
-          matrixColumns: ['매우 낮음', '낮음', '보통', '높음', '매우 높음']
-        },
-        {
-          id: 'q6',
-          type: 'text',
-          question: 'AI 도입 시 가장 중요하게 고려해야 할 사항은 무엇이라고 생각하십니까?',
-          required: false
-        }
-      ]
-    };
-    setSurveyData(mockData);
+    try {
+      // token은 URL 쿼리 파라미터로 전달 (비인증 평가자 접근 지원)
+      const url = token
+        ? `${API_BASE_URL}${API_ENDPOINTS.SURVEYS.GET(surveyId)}?token=${encodeURIComponent(token)}`
+        : `${API_BASE_URL}${API_ENDPOINTS.SURVEYS.GET(surveyId)}`;
+
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      setSurveyData({
+        projectTitle: data.project_title ?? data.projectTitle ?? '',
+        researcherName: data.researcher_name ?? data.researcherName ?? '',
+        description: data.description ?? '',
+        deadline: data.deadline ? new Date(data.deadline) : undefined,
+        questions: (data.questions ?? []).map((q: any) => ({
+          id: String(q.id),
+          type: q.type ?? 'text',
+          question: q.question ?? q.text ?? '',
+          required: q.required ?? false,
+          options: q.options,
+          scaleMin: q.scale_min ?? q.scaleMin,
+          scaleMax: q.scale_max ?? q.scaleMax,
+          scaleLabels: q.scale_labels ?? q.scaleLabels,
+          matrixRows: q.matrix_rows ?? q.matrixRows,
+          matrixColumns: q.matrix_columns ?? q.matrixColumns,
+        })),
+      });
+    } catch (error) {
+      console.error('설문 데이터 로드 실패:', error);
+    }
   };
 
   const validateCurrentPage = () => {
@@ -127,15 +106,29 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
 
   const handleSubmit = async () => {
     if (!validateCurrentPage()) return;
-    
+
     setIsSubmitting(true);
     try {
-      // TODO: 실제 API 호출
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const url = token
+        ? `${API_BASE_URL}${API_ENDPOINTS.SURVEYS.SUBMIT_RESPONSE(surveyId)}?token=${encodeURIComponent(token)}`
+        : `${API_BASE_URL}${API_ENDPOINTS.SURVEYS.SUBMIT_RESPONSE(surveyId)}`;
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ survey_id: surveyId, responses }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || err.error || `HTTP ${res.status}`);
+      }
+
       setIsCompleted(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('설문 제출 실패:', error);
-      alert('설문 제출에 실패했습니다. 다시 시도해주세요.');
+      alert(error.message || '설문 제출에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }

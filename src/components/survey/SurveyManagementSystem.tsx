@@ -127,15 +127,21 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
   // 평가자 링크 복사
   const copyEvaluatorLink = (link: string) => {
     navigator.clipboard.writeText(link);
-    alert('평가자 링크가 클립보드에 복사되었습니다!');
   };
 
-  // QR 코드 생성
+  // QR 코드 생성 - Google Charts QR API 사용
   const generateQRCode = (surveyId: string) => {
     const survey = surveys.find(s => s.id === surveyId);
-    if (survey) {
-      // TODO: QR 코드 생성 라이브러리 사용
-      alert(`QR 코드 생성 기능은 준비 중입니다.\n링크: ${survey.evaluatorLink}`);
+    if (!survey) return;
+    const link = (survey as any).evaluatorLink ?? (survey as any).evaluator_link ?? '';
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(link)}`;
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(
+        `<!DOCTYPE html><html><head><title>QR 코드</title></head><body style="text-align:center;font-family:sans-serif;padding:40px">` +
+        `<h2>설문 QR 코드</h2><p>${link}</p><img src="${qrUrl}" alt="QR Code" style="margin-top:16px"/></body></html>`
+      );
+      win.document.close();
     }
   };
 
@@ -299,8 +305,20 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
                 variant="outline" 
                 size="sm"
                 onClick={() => {
-                  // TODO: 가이드 PDF 다운로드
-                  alert('설문조사 가이드 PDF 다운로드 기능은 준비 중입니다.');
+                  const guide = [
+                    '=== AHP 설문조사 가이드 ===\n',
+                    '1. 설문조사 생성: 상단 버튼을 클릭해 새 설문을 만드세요.',
+                    '2. 질문 추가: 텍스트, 단일선택, 다중선택, 척도 등 다양한 질문 유형을 지원합니다.',
+                    '3. 평가자 링크: 생성된 설문 링크를 평가자에게 공유하세요.',
+                    '4. 응답 수집: 대시보드에서 실시간 응답 현황을 모니터링하세요.',
+                    '5. 결과 분석: 수집된 응답은 AHP 분석에 자동 반영됩니다.',
+                    '\n문의: support@ahp-platform.com',
+                  ].join('\n');
+                  const blob = new Blob(['\uFEFF' + guide], { type: 'text/plain;charset=utf-8;' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url; a.download = 'AHP_설문조사_가이드.txt';
+                  a.click(); URL.revokeObjectURL(url);
                 }}
               >
                 📄 가이드 다운로드
@@ -584,8 +602,20 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
               응답 데이터 상세 분석 기능은 준비 중입니다.
             </p>
             <Button variant="primary" className="mt-4" onClick={() => {
-              // TODO: CSV 내보내기 기능
-              alert('CSV 내보내기 기능은 준비 중입니다.');
+              if (!selectedSurvey) return;
+              const rows = ['설문ID,제목,전체응답,완료응답,평균소요시간'];
+              rows.push([
+                selectedSurvey.id,
+                `"${selectedSurvey.title}"`,
+                String(selectedSurvey.totalResponses ?? 0),
+                String(selectedSurvey.completedResponses ?? 0),
+                `${selectedSurvey.averageCompletionTime ?? 0}분`,
+              ].join(','));
+              const blob = new Blob(['\uFEFF' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url; a.download = `survey_${selectedSurvey.id}_responses.csv`;
+              a.click(); URL.revokeObjectURL(url);
             }}>
               📊 CSV 내보내기
             </Button>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import dataService from '../../services/dataService_clean';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface ProjectCompletionProps {
   projectId: string;
@@ -32,15 +33,27 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
     loadProjectSummary();
   }, [projectId]);
 
+  const apiFetch = async (url: string) => {
+    const token = authService.getAccessToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    const res = await fetch(url, { headers, credentials: 'include' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.results ?? []);
+  };
+
   const loadProjectSummary = async () => {
     try {
       setLoading(true);
-      
+
       // 프로젝트 데이터 로드
       const [criteria, alternatives, evaluators] = await Promise.all([
-        dataService.getCriteria(projectId),
-        dataService.getAlternatives(projectId),
-        dataService.getEvaluators(projectId)
+        apiFetch(`${API_BASE_URL}${API_ENDPOINTS.CRITERIA.LIST(projectId)}`),
+        apiFetch(`${API_BASE_URL}${API_ENDPOINTS.ALTERNATIVES.LIST(projectId)}`),
+        apiFetch(`${API_BASE_URL}${API_ENDPOINTS.EVALUATORS.LIST(projectId)}`),
       ]);
 
       const completedEvaluators = evaluators.filter((e: any) => e.status === 'completed');
@@ -154,9 +167,25 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
 
   const updateProjectStatus = async (status: string) => {
     try {
-      // TODO: 프로젝트 상태 업데이트 API 호출
-      console.log(`프로젝트 ${projectId} 상태를 ${status}로 변경`);
-      // await projectApi.updateProject(projectId, { status });
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+      const res = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.PROJECTS.UPDATE(projectId)}`,
+        {
+          method: 'PATCH',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({ status }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || err.error || `HTTP ${res.status}`);
+      }
+      onProjectStatusChange(status as 'terminated' | 'completed');
     } catch (error) {
       console.error('프로젝트 상태 업데이트 실패:', error);
     }
