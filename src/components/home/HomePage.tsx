@@ -677,11 +677,11 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-3" style={{ color: '#222' }}>초보자 가이드</h3>
-                <p className="text-sm mb-4 leading-relaxed" style={{ color: '#666' }}>
+                <h3 className="text-xl font-bold mb-4" style={{ color: '#222' }}>초보자 가이드</h3>
+                <p className="text-lg mb-5 leading-relaxed" style={{ color: '#666', fontWeight: '500' }}>
                   AHP 기초부터 첫 프로젝트 완성까지
                 </p>
-                <div className="text-xs space-y-1" style={{ color: '#888' }}>
+                <div className="text-base space-y-2" style={{ color: '#555', lineHeight: '1.8' }}>
                   <div>→ AHP 방법론 이해</div>
                   <div>→ 프로젝트 생성</div>
                   <div>→ 기준과 대안 설정</div>
@@ -699,11 +699,11 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-3" style={{ color: '#222' }}>실무 활용 가이드</h3>
-                <p className="text-sm mb-4 leading-relaxed" style={{ color: '#666' }}>
+                <h3 className="text-xl font-bold mb-4" style={{ color: '#222' }}>실무 활용 가이드</h3>
+                <p className="text-lg mb-5 leading-relaxed" style={{ color: '#666', fontWeight: '500' }}>
                   연구 프로젝트 고급 기능 활용법
                 </p>
-                <div className="text-xs space-y-1" style={{ color: '#888' }}>
+                <div className="text-base space-y-2" style={{ color: '#555', lineHeight: '1.8' }}>
                   <div>→ 다중 평가자 관리</div>
                   <div>→ 복잡한 계층구조</div>
                   <div>→ 일관성 향상 기법</div>
@@ -721,11 +721,11 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-3" style={{ color: '#222' }}>논문 작성 가이드</h3>
-                <p className="text-sm mb-4 leading-relaxed" style={{ color: '#666' }}>
+                <h3 className="text-xl font-bold mb-4" style={{ color: '#222' }}>논문 작성 가이드</h3>
+                <p className="text-lg mb-5 leading-relaxed" style={{ color: '#666', fontWeight: '500' }}>
                   학술 논문에서의 AHP 활용법
                 </p>
-                <div className="text-xs space-y-1" style={{ color: '#888' }}>
+                <div className="text-base space-y-2" style={{ color: '#555', lineHeight: '1.8' }}>
                   <div>→ 연구방법론 서술</div>
                   <div>→ 일관성 비율 보고</div>
                   <div>→ 표와 그래프 작성</div>
