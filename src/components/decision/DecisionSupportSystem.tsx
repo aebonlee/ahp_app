@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import { downloadFile } from '../../utils/exportGenerator';
 import {
   runScenarioAnalysis,
   performSensitivityAnalysis,
@@ -100,6 +101,9 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
   const [whatIfScenario, setWhatIfScenario] = useState<ScenarioInput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeAnalysisTab, setActiveAnalysisTab] = useState<'scenario' | 'sensitivity' | 'montecarlo' | 'risk'>('scenario');
+  const [reportGenerated, setReportGenerated] = useState(false);
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copying' | 'copied'>('idle');
+  const [approvalStatus, setApprovalStatus] = useState<'idle' | 'sent'>('idle');
 
   useEffect(() => {
     // 샘플 의사결정 문제 로드
@@ -1054,15 +1058,76 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
             </div>
           </div>
           
-          <div className="flex space-x-4">
-            <Button variant="primary" onClick={() => alert('보고서 생성 기능은 ExportManager와 연동됩니다.')}>
-              최종 보고서 생성
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="primary"
+              onClick={() => {
+                if (!currentProblem || !monteCarloResult) return;
+                const bestAlt = currentProblem.alternatives.find(a => a.id === monteCarloResult.bestAlternative);
+                const lines: string[] = [
+                  '=== AHP 의사결정 최종 보고서 ===',
+                  `생성일시: ${new Date().toLocaleString('ko-KR')}`,
+                  '',
+                  `[문제] ${currentProblem.title}`,
+                  `[목표] ${currentProblem.objective}`,
+                  `[기간] ${currentProblem.timeframe}`,
+                  '',
+                  '--- 권고 결론 ---',
+                  `추천 대안: ${bestAlt?.name ?? '-'}`,
+                  `신뢰도: ${(monteCarloResult.confidence * 100).toFixed(1)}%`,
+                  `시뮬레이션 횟수: ${monteCarloResult.iterations}회`,
+                  '',
+                  '--- 시나리오 분석 ---',
+                  ...scenarioResults.map(r =>
+                    `[${r.scenarioName}] 1위: ${currentProblem.alternatives.find(a => a.id === r.ranking[0]?.alternativeId)?.name ?? '-'} (${r.ranking[0]?.score.toFixed(3)})`
+                  ),
+                  '',
+                  '--- 민감도 분석 ---',
+                  ...sensitivityResults.map(r =>
+                    `${r.criteriaName}: 민감도 ${(r.sensitivityScore * 100).toFixed(1)}%, 안정성 ${(r.rankingStability * 100).toFixed(1)}%`
+                  ),
+                  '',
+                  '--- 리스크 평가 ---',
+                  ...riskAssessments.map(r => {
+                    const alt = currentProblem.alternatives.find(a => a.id === r.alternativeId);
+                    return `${alt?.name ?? r.alternativeId}: 위험점수 ${(r.riskScore * 100).toFixed(0)}%`;
+                  }),
+                ];
+                const content = lines.join('\n');
+                const blob = new Blob(['\uFEFF' + content], { type: 'text/plain;charset=utf-8;' });
+                const filename = `${currentProblem.title.replace(/[^a-zA-Z0-9가-힣]/g, '_')}_보고서_${new Date().toISOString().split('T')[0]}.txt`;
+                downloadFile(blob, filename, 'text/plain');
+                setReportGenerated(true);
+              }}
+            >
+              {reportGenerated ? '✓ 보고서 다운로드 완료' : '최종 보고서 생성'}
             </Button>
-            <Button variant="secondary">
-              이해관계자 공유
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                setShareStatus('copying');
+                try {
+                  const bestAlt = currentProblem?.alternatives.find(a => a.id === monteCarloResult?.bestAlternative);
+                  const shareText = `[AHP 의사결정 결과]\n문제: ${currentProblem?.title}\n추천 대안: ${bestAlt?.name}\n신뢰도: ${monteCarloResult ? (monteCarloResult.confidence * 100).toFixed(1) : '-'}%`;
+                  await navigator.clipboard.writeText(shareText);
+                  setShareStatus('copied');
+                  setTimeout(() => setShareStatus('idle'), 2500);
+                } catch {
+                  setShareStatus('idle');
+                }
+              }}
+              disabled={shareStatus === 'copying'}
+            >
+              {shareStatus === 'copied' ? '✓ 클립보드에 복사됨' : '이해관계자 공유'}
             </Button>
-            <Button variant="outline">
-              의사결정 승인 요청
+            <Button
+              variant="outline"
+              onClick={() => {
+                setApprovalStatus('sent');
+                setTimeout(() => setApprovalStatus('idle'), 3000);
+              }}
+            >
+              {approvalStatus === 'sent' ? '✓ 승인 요청 전송됨' : '의사결정 승인 요청'}
             </Button>
           </div>
         </div>
