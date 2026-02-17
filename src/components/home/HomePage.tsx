@@ -345,85 +345,114 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
               AHP 전문 연구 분석 플랫폼
             </div>
 
-            {/* 메인 타이틀 - 적당한 크기와 세련된 타이포그래피 */}
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight" style={{ 
+            {/* 메인 타이틀 - 현대적이고 가독성 높은 타이포그래피 */}
+            <h1 className="text-5xl md:text-7xl font-extrabold leading-tight" style={{ 
               color: 'var(--text-primary)',
-              fontWeight: '700',
-              letterSpacing: '-0.02em'
+              fontWeight: '800',
+              letterSpacing: '-0.03em',
+              textShadow: '0 2px 10px rgba(0,0,0,0.05)'
             }}>
               논문 연구를 위한
               <br />
-              <span style={{ color: 'var(--accent-primary)' }}>
+              <span style={{ 
+                color: 'var(--accent-primary)',
+                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
                 AHP 분석 도구
               </span>
             </h1>
 
-            {/* 세련된 서브 타이틀 */}
-            <p className="text-xl md:text-2xl font-light max-w-4xl mx-auto" style={{ 
+            {/* 세련된 서브 타이틀 - 더 큰 폰트와 명확한 대비 */}
+            <p className="text-2xl md:text-3xl font-normal max-w-4xl mx-auto" style={{ 
               color: 'var(--text-secondary)',
-              lineHeight: '1.6',
-              marginBottom: '3rem'
+              lineHeight: '1.7',
+              marginBottom: '3rem',
+              fontWeight: '400'
             }}>
               체계적인 의사결정 분석으로 연구의 신뢰성을 높이고
               <br className="hidden md:block" />
-              논문에 바로 활용할 수 있는 결과를 얻으세요
+              <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                논문에 바로 활용할 수 있는 결과를 얻으세요
+              </span>
             </p>
 
-            {/* 세련된 CTA 버튼들 */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+            {/* 현대적 CTA 버튼들 - 더 크고 눈에 띄게 */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               <button
                 onClick={onLoginClick}
-                className="group px-12 py-4 text-white rounded-xl font-semibold text-lg transition-all transform hover:scale-105 hover:shadow-2xl"
+                className="group px-14 py-5 text-white rounded-2xl font-bold text-xl transition-all transform hover:scale-105 hover:shadow-2xl"
                 style={{ 
                   backgroundColor: 'var(--accent-primary)',
-                  boxShadow: '0 10px 25px rgba(var(--accent-primary-rgb), 0.3)'
+                  boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
+                  letterSpacing: '-0.01em'
                 }}
-                onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-hover)'}
-                onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-primary)'}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-hover)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 16px 40px rgba(0, 0, 0, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-primary)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
+                }}
               >
                 <span className="flex items-center justify-center">
                   연구 시작하기
-                  <svg className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <svg className="w-6 h-6 ml-2 transition-transform group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </span>
               </button>
               <button
-                className="px-12 py-4 rounded-xl font-semibold text-lg border-2 transition-all transform hover:scale-105 backdrop-blur-sm"
+                className="px-14 py-5 rounded-2xl font-bold text-xl border-3 transition-all transform hover:scale-105 backdrop-blur-md"
                 style={{ 
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-secondary)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  color: 'var(--text-primary)',
                   borderColor: 'var(--border-medium)',
-                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
+                  borderWidth: '2px',
+                  boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
+                  letterSpacing: '-0.01em'
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-secondary)';
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-light)';
                   (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent-primary)';
                   (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.12)';
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-primary)';
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
                   (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-medium)';
-                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)';
+                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.08)';
                 }}
               >
                 사용 가이드
               </button>
             </div>
 
-            {/* 신뢰도 지표 - 2개만 */}
-            <div className="grid grid-cols-2 gap-16 max-w-md mx-auto">
-              <div className="text-center">
-                <div className="text-4xl font-black mb-2" style={{ 
-                  color: 'var(--accent-primary)'
+            {/* 신뢰도 지표 - 더 크고 명확하게 */}
+            <div className="grid grid-cols-2 gap-20 max-w-2xl mx-auto">
+              <div className="text-center backdrop-blur-sm rounded-2xl p-6" style={{
+                background: 'rgba(255, 255, 255, 0.5)',
+                border: '1px solid var(--border-light)'
+              }}>
+                <div className="text-6xl font-black mb-3" style={{ 
+                  color: 'var(--accent-primary)',
+                  textShadow: '0 2px 10px rgba(0,0,0,0.1)'
                 }}>1,000+</div>
-                <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>논문 활용</div>
+                <div className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>논문 활용</div>
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-black mb-2" style={{ 
-                  color: 'var(--accent-primary)'
+              <div className="text-center backdrop-blur-sm rounded-2xl p-6" style={{
+                background: 'rgba(255, 255, 255, 0.5)',
+                border: '1px solid var(--border-light)'
+              }}>
+                <div className="text-6xl font-black mb-3" style={{ 
+                  color: 'var(--accent-primary)',
+                  textShadow: '0 2px 10px rgba(0,0,0,0.1)'
                 }}>98%</div>
-                <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>연구자 만족도</div>
+                <div className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>연구자 만족도</div>
               </div>
             </div>
           </div>
@@ -445,14 +474,19 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
       {/* 주요 기능 섹션 - AURI 스타일 그리드 */}
       <section id="features" className="py-20" style={{ backgroundColor: 'var(--bg-subtle)' }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ 
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-6" style={{ 
               color: 'var(--text-primary)',
-              fontWeight: '700'
+              fontWeight: '800',
+              letterSpacing: '-0.02em'
             }}>
               주요 기능
             </h2>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-xl md:text-2xl max-w-3xl mx-auto" style={{ 
+              color: 'var(--text-secondary)',
+              lineHeight: '1.7',
+              fontWeight: '400'
+            }}>
               연구에 필요한 모든 도구를 하나의 플랫폼에서 제공합니다
             </p>
           </div>
@@ -461,73 +495,81 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               
               {/* 기능 아이템 1 - AURI 스타일 */}
-              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ 
+              <div className="bg-white rounded-2xl p-8 border-2 hover:shadow-2xl transition-all transform hover:-translate-y-2 hover:border-accent-primary" style={{ 
                 backgroundColor: 'var(--bg-secondary)', 
-                borderColor: 'var(--border-light)' 
+                borderColor: 'var(--border-light)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
               }}>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{
-                  backgroundColor: 'var(--accent-light)'
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{
+                  backgroundColor: 'var(--accent-light)',
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)'
                 }}>
-                  <svg className="w-6 h-6" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg className="w-8 h-8" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>계층 구조 설계</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>계층 구조 설계</h3>
+                <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)', lineHeight: '1.7' }}>
                   목표-기준-대안의 체계적 구조화
                 </p>
               </div>
 
               {/* 기능 아이템 2 */}
-              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ 
+              <div className="bg-white rounded-2xl p-8 border-2 hover:shadow-2xl transition-all transform hover:-translate-y-2 hover:border-accent-primary" style={{ 
                 backgroundColor: 'var(--bg-secondary)', 
-                borderColor: 'var(--border-light)' 
+                borderColor: 'var(--border-light)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
               }}>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{
-                  backgroundColor: 'var(--accent-light)'
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{
+                  backgroundColor: 'var(--accent-light)',
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)'
                 }}>
-                  <svg className="w-6 h-6" fill="none" stroke="var(--accent-secondary)" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg className="w-8 h-8" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>쌍대 비교 분석</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>쌍대 비교 분석</h3>
+                <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)', lineHeight: '1.7' }}>
                   1:1 비교를 통한 정량적 평가
                 </p>
               </div>
 
               {/* 기능 아이템 3 */}
-              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ 
+              <div className="bg-white rounded-2xl p-8 border-2 hover:shadow-2xl transition-all transform hover:-translate-y-2 hover:border-accent-primary" style={{ 
                 backgroundColor: 'var(--bg-secondary)', 
-                borderColor: 'var(--border-light)' 
+                borderColor: 'var(--border-light)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
               }}>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{
-                  backgroundColor: 'var(--accent-light)'
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{
+                  backgroundColor: 'var(--accent-light)',
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)'
                 }}>
-                  <svg className="w-6 h-6" fill="none" stroke="var(--accent-tertiary)" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg className="w-8 h-8" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>결과 시각화</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>결과 시각화</h3>
+                <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)', lineHeight: '1.7' }}>
                   차트와 표로 명확한 결과 제시
                 </p>
               </div>
 
               {/* 기능 아이템 4 */}
-              <div className="bg-white rounded-lg p-6 border hover:shadow-md transition-shadow" style={{ 
+              <div className="bg-white rounded-2xl p-8 border-2 hover:shadow-2xl transition-all transform hover:-translate-y-2 hover:border-accent-primary" style={{ 
                 backgroundColor: 'var(--bg-secondary)', 
-                borderColor: 'var(--border-light)' 
+                borderColor: 'var(--border-light)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
               }}>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{
-                  backgroundColor: 'var(--accent-light)'
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{
+                  backgroundColor: 'var(--accent-light)',
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)'
                 }}>
-                  <svg className="w-6 h-6" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg className="w-8 h-8" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 </div>
-                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>협업 연구</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>협업 연구</h3>
+                <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)', lineHeight: '1.7' }}>
                   다중 평가자 의견 수집 및 통합
                 </p>
               </div>
