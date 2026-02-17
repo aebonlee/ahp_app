@@ -445,7 +445,8 @@ const AppRouter: React.FC<AppRouterProps> = ({
     case 'payment-options':
       return (
         <PaymentOptionsPage
-          onBack={() => setActiveTab('super-admin-dashboard')}
+          user={user!}
+          onTabChange={setActiveTab}
         />
       );
 
@@ -463,8 +464,8 @@ const AppRouter: React.FC<AppRouterProps> = ({
     case 'system':
       return (
         <EnhancedSuperAdminDashboard
-          user={user}
-          activeSection={activeTab}
+          user={user as any}
+          activeTab={activeTab}
           onTabChange={setActiveTab}
         />
       );
@@ -535,22 +536,17 @@ const AppRouter: React.FC<AppRouterProps> = ({
       return (
         <HierarchicalEvaluationOrchestrator
           projectId={selectedProjectId}
+          evaluatorId={String(user?.id || '')}
           onComplete={() => changeTab('results-analysis')}
-          onBack={() => changeTab('project-workflow')}
         />
       );
 
-    case 'invitation-handler': {
-      const urlParams = new URLSearchParams(window.location.search);
-      const invToken = urlParams.get('token');
+    case 'invitation-handler':
       return (
         <EvaluatorInvitationHandler
-          token={invToken || ''}
-          onAccept={() => changeTab('evaluator-workflow')}
-          onDecline={() => changeTab('home')}
+          onEvaluationStart={(_projectId, _evaluatorId) => changeTab('evaluator-workflow')}
         />
       );
-    }
 
     case 'connection-test':
       return <ConnectionTestPage />;
@@ -576,8 +572,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
       }
       return (
         <AIPaperGenerationPage
-          projectId={selectedProjectId}
-          projectTitle={selectedProjectTitle}
+          user={user ?? undefined}
         />
       );
 
@@ -592,10 +587,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
         );
       }
       return (
-        <AIResultsInterpretationPage
-          projectId={selectedProjectId}
-          projectTitle={selectedProjectTitle}
-        />
+        <AIResultsInterpretationPage user={user ?? undefined} />
       );
 
     case 'ai-quality-validation':
@@ -609,10 +601,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
         );
       }
       return (
-        <AIQualityValidationPage
-          projectId={selectedProjectId}
-          projectTitle={selectedProjectTitle}
-        />
+        <AIQualityValidationPage user={user ?? undefined} />
       );
 
     case 'ai-materials-generation':
@@ -626,22 +615,16 @@ const AppRouter: React.FC<AppRouterProps> = ({
         );
       }
       return (
-        <AIMaterialsGenerationPage
-          projectId={selectedProjectId}
-          projectTitle={selectedProjectTitle}
-        />
+        <AIMaterialsGenerationPage user={user ?? undefined} />
       );
 
     case 'ai-chatbot-assistant':
       return (
-        <AIChatbotAssistantPage
-          projectId={selectedProjectId || undefined}
-          projectTitle={selectedProjectTitle || undefined}
-        />
+        <AIChatbotAssistantPage user={user ?? undefined} />
       );
 
     case 'django-admin-integration':
-      return <DjangoAdminIntegration />;
+      return <DjangoAdminIntegration user={user as any} />;
 
     case 'evaluator-mode':
       return (
@@ -676,7 +659,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
       );
 
     case 'demographic-dashboard':
-      return <DemographicDashboard />;
+      return <DemographicDashboard projectId={selectedProjectId || ''} />;
 
     case 'my-projects':
     case 'project-creation':
@@ -723,10 +706,8 @@ const AppRouter: React.FC<AppRouterProps> = ({
       }
       return (
         <ProjectWorkflow
-          projectId={selectedProjectId}
-          onTabChange={changeTab}
-          onModelFinalized={handleModelFinalized}
-          onEvaluationComplete={handleAdminEvaluationComplete}
+          onComplete={handleModelFinalized}
+          onCancel={() => changeTab('personal-projects')}
         />
       );
 
@@ -777,8 +758,8 @@ const AppRouter: React.FC<AppRouterProps> = ({
     case 'landing':
       return (
         <LandingPage
+          user={user as any}
           onGetStarted={handleGetStarted}
-          onLogin={handleLoginClick}
         />
       );
 
@@ -802,7 +783,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
         <ModelBuilding
           projectId={selectedProjectId}
           projectTitle={selectedProjectTitle}
-          onComplete={handleModelFinalized}
+          onModelFinalized={handleModelFinalized}
           onBack={() => setActiveTab('personal-projects')}
         />
       );
@@ -846,7 +827,7 @@ const AppRouter: React.FC<AppRouterProps> = ({
         <ProjectCompletion
           projectId={selectedProjectId}
           projectTitle={selectedProjectTitle}
-          onStatusChange={handleProjectStatusChange}
+          onProjectStatusChange={handleProjectStatusChange}
           onBack={() => setActiveTab('evaluation-results')}
         />
       );

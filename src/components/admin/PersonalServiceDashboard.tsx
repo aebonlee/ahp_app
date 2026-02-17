@@ -969,7 +969,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                 key={project.id}
                 className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all cursor-pointer border border-gray-200"
                 onClick={() => {
-                  setSelectedProjectId(project.id);
+                  setSelectedProjectId(project.id || '');
                   handleTabChange('model-builder');
                 }}
               >
@@ -992,7 +992,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                   {project.description || '설명 없음'}
                 </p>
                 <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>평가자: {project.evaluators_count || 0}명</span>
+                  <span>평가자: {project.evaluator_count || 0}명</span>
                   <span>진행률: {project.completion_rate || 0}%</span>
                 </div>
               </div>
@@ -1962,7 +1962,7 @@ ${project?.title} - ${type} 프레젠테이션
         case 'name':
           return a.title.localeCompare(b.title);
         case 'date':
-          return new Date(b.last_modified).getTime() - new Date(a.last_modified).getTime();
+          return new Date(b.last_modified || 0).getTime() - new Date(a.last_modified || 0).getTime();
         case 'progress':
           return (b.completion_rate || 0) - (a.completion_rate || 0);
         case 'status':
@@ -2327,8 +2327,8 @@ ${project?.title} - ${type} 프레젠테이션
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">평가방식</span>
                         <span className="font-medium text-gray-700 text-xs">
-                          {project.evaluation_method === 'pairwise' ? '쌍대비교' : 
-                           project.evaluation_method === 'direct' ? '직접입력' : '혼합'}
+                          {(project.evaluation_mode as string) === 'pairwise' ? '쌍대비교' :
+                           (project.evaluation_mode as string) === 'direct' ? '직접입력' : '혼합'}
                         </span>
                       </div>
                     </div>

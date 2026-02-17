@@ -60,12 +60,16 @@ export interface ProjectData {
   deleted_at?: string;
   criteria_count?: number;
   alternatives_count?: number;
+  evaluator_count?: number;
+  completion_rate?: number;
+  evaluation_method?: 'pairwise' | 'direct' | 'mixed';
   owner?: string;
   ownerEmail?: string;
   evaluatorCount?: number;
   completionRate?: number;
   dueDate?: string;
   settings?: any; // 메타데이터 저장용 필드
+  last_modified?: string;
 }
 
 // 기준 관련 타입

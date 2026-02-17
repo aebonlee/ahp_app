@@ -47,10 +47,10 @@ const ColorThemeSelector: React.FC = () => {
       emoji: '🌌', 
       description: '깊이 있는 인디고 테마' 
     },
-    red: { 
-      name: 'Vibrant Red', 
-      emoji: '🔴', 
-      description: '강렬한 레드 테마' 
+    monochrome: {
+      name: 'Monochrome',
+      emoji: '⚫',
+      description: '모노크롬 테마'
     }
   };
 
