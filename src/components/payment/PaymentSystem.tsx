@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface PaymentPlan {
   id: string;
@@ -18,6 +20,8 @@ interface PaymentPlan {
   };
   popular?: boolean;
 }
+
+type CheckoutStatus = 'idle' | 'loading' | 'success' | 'error';
 
 const paymentPlans: PaymentPlan[] = [
   {
@@ -84,19 +88,123 @@ const PaymentSystem: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<string>('professional');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [paymentMethod, setPaymentMethod] = useState<string>('card');
-
-  const handlePayment = (planId: string) => {
-    // 결제 프로세스 시작
-    console.log('결제 시작:', planId);
-    // TODO: PG사 연동
-  };
+  const [checkoutStatus, setCheckoutStatus] = useState<CheckoutStatus>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [successPlan, setSuccessPlan] = useState<string>('');
 
   const getDiscountedPrice = (price: number): number => {
     if (billingCycle === 'yearly') {
-      return Math.floor(price * 10); // 2개월 할인
+      return Math.floor(price * 10); // 2개월 무료
     }
     return price;
   };
+
+  const handlePayment = async () => {
+    const plan = paymentPlans.find(p => p.id === selectedPlan);
+    if (!plan) return;
+
+    setCheckoutStatus('loading');
+    setErrorMessage('');
+
+    // 무료 체험 플랜은 별도 처리
+    if (plan.id === 'free') {
+      try {
+        const token = authService.getAccessToken();
+        const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.PAYMENT.SUBSCRIPTION}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          credentials: 'include',
+          body: JSON.stringify({ plan_id: 'free', billing_cycle: 'monthly' }),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.detail || errData.error || `HTTP ${response.status}`);
+        }
+
+        setSuccessPlan(plan.name);
+        setCheckoutStatus('success');
+      } catch (err: any) {
+        setErrorMessage(err.message || '무료 체험 시작에 실패했습니다.');
+        setCheckoutStatus('error');
+      }
+      return;
+    }
+
+    // 유료 플랜 결제
+    try {
+      const token = authService.getAccessToken();
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.PAYMENT.CHECKOUT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          plan_id: plan.id,
+          billing_cycle: billingCycle,
+          payment_method: paymentMethod,
+          amount: getDiscountedPrice(plan.price),
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.error || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json().catch(() => ({}));
+
+      // PG사 결제 URL 리다이렉트 (백엔드가 redirect_url 제공 시)
+      if (data.redirect_url) {
+        window.location.href = data.redirect_url;
+        return;
+      }
+
+      // 직접 결제 완료 응답
+      setSuccessPlan(plan.name);
+      setCheckoutStatus('success');
+    } catch (err: any) {
+      setErrorMessage(err.message || '결제 처리 중 오류가 발생했습니다.');
+      setCheckoutStatus('error');
+    }
+  };
+
+  const handleSelectAndPay = (planId: string) => {
+    setSelectedPlan(planId);
+    setCheckoutStatus('idle');
+    setErrorMessage('');
+  };
+
+  const handleReset = () => {
+    setCheckoutStatus('idle');
+    setErrorMessage('');
+    setSuccessPlan('');
+  };
+
+  // ── 결제 성공 화면 ─────────────────────────────────────────────────────────
+
+  if (checkoutStatus === 'success') {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <div className="text-6xl mb-6">✅</div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">결제가 완료되었습니다!</h2>
+        <p className="text-gray-600 mb-2">
+          <strong>{successPlan}</strong> 플랜이 활성화되었습니다.
+        </p>
+        <p className="text-sm text-gray-500 mb-8">
+          구독 내역은 이메일로 발송됩니다.
+        </p>
+        <Button variant="primary" onClick={handleReset}>
+          요금제 페이지로 돌아가기
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -108,7 +216,7 @@ const PaymentSystem: React.FC = () => {
         <p className="text-lg text-gray-600 mb-6">
           프로젝트 규모에 맞는 최적의 요금제를 선택하세요
         </p>
-        
+
         {/* 결제 주기 선택 */}
         <div className="inline-flex items-center bg-gray-100 rounded-lg p-1">
           <button
@@ -144,21 +252,21 @@ const PaymentSystem: React.FC = () => {
             key={plan.id}
             className={`relative bg-white rounded-lg shadow-lg overflow-hidden ${
               plan.popular ? 'ring-2 ring-blue-600' : ''
-            } ${selectedPlan === plan.id ? 'transform scale-105' : ''} 
+            } ${selectedPlan === plan.id ? 'transform scale-105' : ''}
             transition-transform cursor-pointer hover:shadow-xl`}
-            onClick={() => setSelectedPlan(plan.id)}
+            onClick={() => handleSelectAndPay(plan.id)}
           >
             {plan.popular && (
               <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 text-xs font-semibold">
                 인기
               </div>
             )}
-            
+
             <div className="p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {plan.name}
               </h3>
-              
+
               <div className="mb-4">
                 {plan.originalPrice && billingCycle === 'monthly' && (
                   <span className="text-gray-400 line-through text-sm">
@@ -218,13 +326,13 @@ const PaymentSystem: React.FC = () => {
 
               <button
                 className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
-                  selectedPlan === plan.id 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  selectedPlan === plan.id
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handlePayment(plan.id);
+                  handleSelectAndPay(plan.id);
                 }}
               >
                 {plan.id === 'free' ? '무료 시작' : '선택하기'}
@@ -316,9 +424,29 @@ const PaymentSystem: React.FC = () => {
                   </div>
                 </div>
 
+                {/* 오류 메시지 */}
+                {checkoutStatus === 'error' && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    {errorMessage}
+                  </div>
+                )}
+
                 <div className="mt-6">
-                  <Button variant="primary" size="lg" className="w-full">
-                    결제하기
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                    onClick={handlePayment}
+                    disabled={checkoutStatus === 'loading'}
+                  >
+                    {checkoutStatus === 'loading' ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                        결제 처리 중...
+                      </span>
+                    ) : (
+                      '결제하기'
+                    )}
                   </Button>
                   <p className="text-xs text-gray-500 text-center mt-3">
                     결제 시 이용약관 및 개인정보처리방침에 동의하는 것으로 간주됩니다
@@ -343,6 +471,32 @@ const PaymentSystem: React.FC = () => {
         </Card>
       )}
 
+      {/* 무료 플랜 결제 버튼 */}
+      {selectedPlan === 'free' && (
+        <div className="text-center py-6">
+          {checkoutStatus === 'error' && (
+            <div className="mb-4 inline-block px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              {errorMessage}
+            </div>
+          )}
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handlePayment}
+            disabled={checkoutStatus === 'loading'}
+          >
+            {checkoutStatus === 'loading' ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                처리 중...
+              </span>
+            ) : (
+              '무료 체험 시작하기'
+            )}
+          </Button>
+        </div>
+      )}
+
       {/* FAQ 섹션 */}
       <div className="mt-12">
         <h3 className="text-xl font-semibold mb-6">자주 묻는 질문</h3>
@@ -350,28 +504,28 @@ const PaymentSystem: React.FC = () => {
           <div className="bg-gray-50 rounded-lg p-6">
             <h4 className="font-medium mb-2">언제든지 요금제를 변경할 수 있나요?</h4>
             <p className="text-sm text-gray-600">
-              네, 언제든지 상위 또는 하위 요금제로 변경 가능합니다. 
+              네, 언제든지 상위 또는 하위 요금제로 변경 가능합니다.
               변경 시 일할 계산되어 적용됩니다.
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-6">
             <h4 className="font-medium mb-2">환불 정책은 어떻게 되나요?</h4>
             <p className="text-sm text-gray-600">
-              첫 구매 후 7일 이내 전액 환불이 가능하며, 
+              첫 구매 후 7일 이내 전액 환불이 가능하며,
               이후에는 사용하지 않은 기간에 대해 일할 계산하여 환불됩니다.
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-6">
             <h4 className="font-medium mb-2">기업용 맞춤 요금제가 있나요?</h4>
             <p className="text-sm text-gray-600">
-              Enterprise 요금제 외에도 대규모 조직을 위한 맞춤 요금제를 
+              Enterprise 요금제 외에도 대규모 조직을 위한 맞춤 요금제를
               제공합니다. 별도 문의 바랍니다.
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-6">
             <h4 className="font-medium mb-2">해외 결제도 가능한가요?</h4>
             <p className="text-sm text-gray-600">
-              현재는 국내 결제만 지원하며, 해외 결제는 
+              현재는 국내 결제만 지원하며, 해외 결제는
               2025년 상반기 중 지원 예정입니다.
             </p>
           </div>

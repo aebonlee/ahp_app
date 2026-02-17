@@ -113,6 +113,18 @@ export const API_ENDPOINTS = {
     REVOKE: (id: string) => `/api/service/invitations/${id}/revoke/`,
     REGENERATE: (id: string) => `/api/service/invitations/${id}/regenerate_token/`
   },
+  // Payment / Subscription (Phase 2c)
+  PAYMENT: {
+    PLANS: '/api/service/payments/plans/',
+    CHECKOUT: '/api/service/payments/checkout/',
+    SUBSCRIPTION: '/api/service/payments/subscription/',
+    CANCEL: '/api/service/payments/subscription/cancel/',
+    UPGRADE: '/api/service/payments/subscription/upgrade/',
+    DOWNGRADE: '/api/service/payments/subscription/downgrade/',
+    PAYMENT_METHODS: '/api/service/payments/methods/',
+    INVOICES: '/api/service/payments/invoices/',
+    WEBHOOK: '/api/service/payments/webhook/',
+  },
   // Service Status
   STATUS: '/api/service/status/',
   DATA: '/api/service/data/'
