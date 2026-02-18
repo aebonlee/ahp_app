@@ -62,7 +62,7 @@ const RealtimeMonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
   const connectWebSocket = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-    const wsBase = API_BASE_URL.replace(/^https?:///, 'wss://').replace(/^http:///, 'ws://');
+    const wsBase = API_BASE_URL.replace(/^https?:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
     const wsUrl = projectId 
       ? `${wsBase}/ws/monitoring/${projectId}/`
       : `${wsBase}/ws/monitoring/global/`;

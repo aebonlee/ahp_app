@@ -18,18 +18,22 @@ export const RETRY_config = {
   backoffMultiplier: 2
 };
 
-// API 엔드포인트 - 실제 Django 백엔드 구조에 맞춰 수정
+// API 엔드포인트 - 백엔드 실제 라우팅 기반 (검증 완료: 2026-02-18)
+// 백엔드 등록 앱: accounts, projects, evaluations, analysis, subscriptions
+// 미구현 앱 (TODO): exports, workshops, payments
 export const API_ENDPOINTS = {
-  // Auth - JWT 토큰 기반 인증
+  // Auth - JWT + dj_rest_auth
   AUTH: {
     LOGIN: '/api/service/auth/login/',
-    REGISTER: '/api/service/auth/register/',
-    LOGOUT: '/api/service/auth/logout/',
-    ME: '/api/service/auth/profile/',
-    PROFILE: '/api/service/auth/profile/',
-    REFRESH: '/api/service/auth/token/refresh/'
+    REGISTER: '/api/service/accounts/register/',
+    LOGOUT: '/api/service/accounts/logout/',
+    ME: '/api/service/accounts/dashboard/',
+    PROFILE: '/api/service/accounts/dashboard/',
+    REFRESH: '/api/service/auth/token/refresh/',
+    TOKEN: '/api/service/auth/token/',
+    VERIFY: '/api/service/auth/token/verify/',
   },
-  // Projects - 실제 Django REST Framework 라우터 경로 (확인됨)
+  // Projects - 확인된 경로: /api/service/projects/projects/
   PROJECTS: {
     LIST: '/api/service/projects/projects/',
     CREATE: '/api/service/projects/projects/',
@@ -37,55 +41,55 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/service/projects/projects/${id}/`,
     DELETE: (id: string) => `/api/service/projects/projects/${id}/`
   },
-  // Criteria - Django REST Framework 프로젝트 액션 경로
+  // Criteria - /api/service/projects/ 아래
   CRITERIA: {
     LIST: (projectId: string) => `/api/service/projects/projects/${projectId}/criteria/`,
     CREATE: (projectId: string) => `/api/service/projects/projects/${projectId}/add_criteria/`,
     UPDATE: (id: string) => `/api/service/projects/criteria/${id}/`,
     DELETE: (id: string) => `/api/service/projects/criteria/${id}/`
   },
-  // Alternatives
+  // Alternatives - TODO: 백엔드 미구현, projects 앱에 추가 필요
   ALTERNATIVES: {
-    LIST: (projectId: string) => `/api/v1/alternatives/?project=${projectId}`,
-    CREATE: '/api/v1/alternatives/',
-    UPDATE: (id: string) => `/api/v1/alternatives/${id}/`,
-    DELETE: (id: string) => `/api/v1/alternatives/${id}/`
+    LIST: (projectId: string) => `/api/service/projects/projects/${projectId}/alternatives/`,
+    CREATE: (projectId: string) => `/api/service/projects/projects/${projectId}/alternatives/`,
+    UPDATE: (projectId: string, id: string) => `/api/service/projects/projects/${projectId}/alternatives/${id}/`,
+    DELETE: (projectId: string, id: string) => `/api/service/projects/projects/${projectId}/alternatives/${id}/`
   },
-  // Evaluations
+  // Evaluations (쌍대비교 세션)
   EVALUATIONS: {
-    SUBMIT: '/api/v1/comparisons/',
-    GET_MATRIX: (projectId: string) => `/api/v1/comparisons/?project=${projectId}`,
-    COMPUTE: '/api/v1/results/',
-    RESULTS: (projectId: string) => `/api/v1/results/?project=${projectId}`
+    SUBMIT: '/api/service/evaluations/comparisons/',
+    GET_MATRIX: (projectId: string) => `/api/service/evaluations/comparisons/?project=${projectId}`,
+    COMPUTE: '/api/service/analysis/calculate/individual/',
+    RESULTS: (projectId: string) => `/api/service/analysis/analysis/?project=${projectId}`
   },
-  // Evaluators
+  // Evaluators - 초대장(invitations)을 통해 평가자 관리
   EVALUATORS: {
-    LIST: (projectId: string) => `/api/service/evaluators/?project=${projectId}`,
-    ADD: '/api/service/evaluators/',
-    UPDATE: (id: string) => `/api/service/evaluators/${id}/`,
-    REMOVE: (id: string) => `/api/service/evaluators/${id}/`,
-    SEND_INVITATIONS: (projectId: string) => `/api/service/evaluators/invite/`
+    LIST: (projectId: string) => `/api/service/evaluations/invitations/?project=${projectId}`,
+    ADD: '/api/service/evaluations/invitations/',
+    UPDATE: (id: string) => `/api/service/evaluations/invitations/${id}/`,
+    REMOVE: (id: string) => `/api/service/evaluations/invitations/${id}/`,
+    SEND_INVITATIONS: (_projectId: string) => `/api/service/evaluations/invitations/`
   },
-  // Comparisons
+  // Comparisons - 쌍대비교 데이터
   COMPARISONS: {
-    SAVE: '/api/v1/comparisons/',
-    GET: (projectId: string, evaluatorId?: string) => 
-      `/api/v1/comparisons/?project=${projectId}${evaluatorId ? `&evaluator=${evaluatorId}` : ''}`,
-    UPDATE_SESSION: (projectId: string, evaluatorId: string) =>
-      `/api/v1/comparisons/${evaluatorId}/progress/`
+    SAVE: '/api/service/evaluations/comparisons/',
+    GET: (projectId: string, evaluatorId?: string) =>
+      `/api/service/evaluations/comparisons/?project=${projectId}${evaluatorId ? `&evaluator=${evaluatorId}` : ''}`,
+    UPDATE_SESSION: (_projectId: string, evaluatorId: string) =>
+      `/api/service/evaluations/progress/?evaluator=${evaluatorId}`
   },
-  // Results
+  // Results - analysis 앱
   RESULTS: {
-    GET: (projectId: string) => `/api/v1/results/${projectId}/`,
+    GET: (projectId: string) => `/api/service/analysis/analysis/?project=${projectId}`,
     INDIVIDUAL: (projectId: string, evaluatorId: string) =>
-      `/api/v1/results/individual/?project=${projectId}&evaluator=${evaluatorId}`,
-    CALCULATE_GROUP: (projectId: string) => `/api/v1/results/group/`,
-    SENSITIVITY: (projectId: string) => `/api/v1/results/sensitivity/?project=${projectId}`
+      `/api/service/analysis/calculate/individual/`,
+    CALCULATE_GROUP: (_projectId: string) => `/api/service/analysis/calculate/group/`,
+    SENSITIVITY: (_projectId: string) => `/api/service/analysis/sensitivity/`
   },
-  // Surveys - 설문조사 관련 API
+  // Surveys - demographic-surveys (evaluations 앱)
   SURVEYS: {
-    LIST: (projectId: string) => `/api/service/projects/${projectId}/surveys/`,
-    CREATE: (projectId: string) => `/api/service/projects/${projectId}/surveys/`,
+    LIST: (projectId: string) => `/api/service/evaluations/demographic-surveys/?project=${projectId}`,
+    CREATE: '/api/service/evaluations/demographic-surveys/',
     GET: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/`,
     UPDATE: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/`,
     DELETE: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/`,
@@ -94,38 +98,38 @@ export const API_ENDPOINTS = {
     ANALYTICS: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/analytics/`,
     SUBMIT_RESPONSE: (surveyId: string) => `/api/service/evaluations/demographic-surveys/${surveyId}/submit/`
   },
-  // Export
+  // Export - TODO: 백엔드 exports 앱 미등록 (simple_urls.py에 추가 필요)
   EXPORT: {
-    EXCEL: (projectId: string) => `/api/service/export/excel/?project=${projectId}`,
-    PDF: (projectId: string) => `/api/service/export/pdf/?project=${projectId}`,
-    REPORT: (projectId: string) => `/api/service/export/report/?project=${projectId}`
+    EXCEL: (projectId: string) => `/api/service/exports/excel/?project=${projectId}`,
+    PDF: (projectId: string) => `/api/service/exports/pdf/?project=${projectId}`,
+    REPORT: (projectId: string) => `/api/service/exports/report/?project=${projectId}`
   },
-  // Invitations (Phase 2a)
+  // Invitations - evaluations 앱 내 invitations ViewSet
   INVITATIONS: {
-    LIST: '/api/service/invitations/',
-    CREATE: '/api/service/invitations/',
-    BULK: '/api/service/invitations/bulk/',
-    VERIFY_TOKEN: '/api/service/invitations/verify_token/',
-    GET: (id: string) => `/api/service/invitations/${id}/`,
-    ACCEPT: (id: string) => `/api/service/invitations/${id}/accept/`,
-    DECLINE: (id: string) => `/api/service/invitations/${id}/decline/`,
-    RESEND: (id: string) => `/api/service/invitations/${id}/resend/`,
-    REVOKE: (id: string) => `/api/service/invitations/${id}/revoke/`,
-    REGENERATE: (id: string) => `/api/service/invitations/${id}/regenerate_token/`
+    LIST: '/api/service/evaluations/invitations/',
+    CREATE: '/api/service/evaluations/invitations/',
+    BULK: '/api/service/evaluations/bulk-invitations/',
+    VERIFY_TOKEN: '/api/service/evaluations/invitations/verify_token/',
+    GET: (id: string) => `/api/service/evaluations/invitations/${id}/`,
+    ACCEPT: (id: string) => `/api/service/evaluations/invitations/${id}/accept/`,
+    DECLINE: (id: string) => `/api/service/evaluations/invitations/${id}/decline/`,
+    RESEND: (id: string) => `/api/service/evaluations/invitations/${id}/resend/`,
+    REVOKE: (id: string) => `/api/service/evaluations/invitations/${id}/revoke/`,
+    REGENERATE: (id: string) => `/api/service/evaluations/invitations/${id}/regenerate_token/`
   },
-  // Payment / Subscription (Phase 2c)
+  // Payment / Subscription - subscriptions 앱 (payments는 미구현)
   PAYMENT: {
-    PLANS: '/api/service/payments/plans/',
-    CHECKOUT: '/api/service/payments/checkout/',
-    SUBSCRIPTION: '/api/service/payments/subscription/',
-    CANCEL: '/api/service/payments/subscription/cancel/',
-    UPGRADE: '/api/service/payments/subscription/upgrade/',
-    DOWNGRADE: '/api/service/payments/subscription/downgrade/',
-    PAYMENT_METHODS: '/api/service/payments/methods/',
-    INVOICES: '/api/service/payments/invoices/',
-    WEBHOOK: '/api/service/payments/webhook/',
+    PLANS: '/api/service/subscriptions/plans/',
+    CHECKOUT: '/api/service/subscriptions/checkout/',
+    SUBSCRIPTION: '/api/service/subscriptions/subscription/',
+    CANCEL: '/api/service/subscriptions/subscription/cancel/',
+    UPGRADE: '/api/service/subscriptions/subscription/upgrade/',
+    DOWNGRADE: '/api/service/subscriptions/subscription/downgrade/',
+    PAYMENT_METHODS: '/api/service/subscriptions/methods/',
+    INVOICES: '/api/service/subscriptions/invoices/',
+    WEBHOOK: '/api/service/subscriptions/webhook/',
   },
-  // Workshops (Phase 3)
+  // Workshops - TODO: 백엔드 workshops 앱 미등록 (simple_urls.py에 추가 필요)
   WORKSHOPS: {
     LIST: '/api/service/workshops/',
     CREATE: '/api/service/workshops/',
@@ -138,8 +142,8 @@ export const API_ENDPOINTS = {
     CANCEL: (id: string) => `/api/service/workshops/${id}/cancel/`,
   },
   // Service Status
-  STATUS: '/api/service/status/',
-  DATA: '/api/service/data/',
+  STATUS: '/health/',
+  DATA: '/db-status/',
   // System Reset (super admin only)
   SYSTEM: {
     RESET: '/api/service/admin/system/reset/'

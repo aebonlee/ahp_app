@@ -559,7 +559,7 @@ export function connectToMonitoringWebSocket(
   onMessage?: (data: any) => void,
   onError?: (error: Event) => void
 ): WebSocket {
-  const wsBase = API_BASE_URL.replace(/^https?:///, 'wss://').replace(/^http:///, 'ws://');
+  const wsBase = API_BASE_URL.replace(/^https?:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
   const wsUrl = projectId 
     ? `${wsBase}/ws/monitoring/${projectId}/`
     : `${wsBase}/ws/monitoring/global/`;
