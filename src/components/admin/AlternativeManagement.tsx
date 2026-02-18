@@ -533,7 +533,6 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
                 variant="secondary"
                 onClick={async () => {
                   console.log('✅ 대안 데이터가 PostgreSQL에 자동 저장되었습니다.');
-                  alert('대안 목록이 저장되었습니다.');
                 }}
               >
                 저장

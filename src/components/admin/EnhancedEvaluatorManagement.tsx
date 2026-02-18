@@ -56,6 +56,12 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
   });
   const [errors, setErrors] = useState<any>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+
+  const showNotification = (type: 'success' | 'error' | 'info', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   // 실제 평가자 데이터 로드
   useEffect(() => {
@@ -160,7 +166,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
       setErrors({});
     } catch (error) {
       console.error('Failed to add evaluator:', error);
-      alert('평가자 추가 중 오류가 발생했습니다.');
+      showNotification('error', '평가자 추가 중 오류가 발생했습니다.');
     }
   };
 
@@ -175,7 +181,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
     const selectedEvaluators = evaluators.filter(e => e.isSelected);
     
     if (selectedEvaluators.length === 0) {
-      alert('초대할 평가자를 선택해주세요.');
+      showNotification('info', '초대할 평가자를 선택해주세요.');
       return;
     }
 
@@ -240,13 +246,13 @@ ${inviteData.message}
         ));
       }
 
-      alert(`${selectedEvaluators.length}명의 평가자에게 초대를 발송했습니다.`);
+      showNotification('success', `${selectedEvaluators.length}명의 평가자에게 초대를 발송했습니다.`);
       setShowInviteForm(false);
       setSelectAll(false);
       setEvaluators(evaluators.map(e => ({ ...e, isSelected: false })));
     } catch (error) {
       console.error('Failed to send invitations:', error);
-      alert('초대 발송 중 오류가 발생했습니다.');
+      showNotification('error', '초대 발송 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -266,14 +272,17 @@ ${inviteData.message}
         setEvaluators(evaluators.filter(e => e.id !== evaluatorId));
       } catch (error) {
         console.error('Failed to delete evaluator:', error);
-        alert('평가자 삭제 중 오류가 발생했습니다.');
+        showNotification('error', '평가자 삭제 중 오류가 발생했습니다.');
       }
     }
   };
 
   const handleCopyLink = (link: string) => {
-    navigator.clipboard.writeText(link);
-    alert('링크가 클립보드에 복사되었습니다.');
+    navigator.clipboard.writeText(link).then(() => {
+      showNotification('success', '링크가 클립보드에 복사되었습니다.');
+    }).catch(() => {
+      showNotification('error', '클립보드 복사에 실패했습니다.');
+    });
   };
 
   const filteredEvaluators = evaluators.filter(e => 
@@ -285,6 +294,15 @@ ${inviteData.message}
 
   return (
     <div className="space-y-6">
+      {notification && (
+        <div className={`px-4 py-3 rounded-lg text-sm font-medium ${
+          notification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+          notification.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+          'bg-blue-100 text-blue-800 border border-blue-200'
+        }`}>
+          {notification.message}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">

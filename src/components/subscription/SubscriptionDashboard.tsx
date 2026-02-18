@@ -140,12 +140,12 @@ const SubscriptionDashboard: React.FC<SubscriptionDashboardProps> = ({
       
       if (result.success) {
         await loadSubscriptionData();
-        alert('구독이 성공적으로 완료되었습니다!');
+        setError(null);
       } else {
-        alert(result.error || '구독 처리 중 오류가 발생했습니다.');
+        setError(result.error || '구독 처리 중 오류가 발생했습니다.');
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : '구독 처리 실패');
+      setError(err instanceof Error ? err.message : '구독 처리 실패');
     } finally {
       setLoading(false);
     }

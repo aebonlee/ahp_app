@@ -256,8 +256,7 @@ ${link.projectName} 프로젝트의 AHP 평가에 참여해 주시기 바랍니�
       .map(l => `${l.evaluatorName}: ${l.shortLink}`)
       .join('\n');
     
-    navigator.clipboard.writeText(selectedLinkTexts);
-    alert(`${selectedLinks.length}개의 링크가 복사되었습니다.`);
+    navigator.clipboard.writeText(selectedLinkTexts).catch(() => {});
     setSelectedLinks([]);
   };
 

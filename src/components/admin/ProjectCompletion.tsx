@@ -152,12 +152,10 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
         onProjectStatusChange('completed');
         break;
       case 'lock':
-        // Handle result locking
-        alert('결과가 잠금 처리되었습니다.');
+        await handleLockResults();
         break;
       case 'export':
-        // Handle export
-        handleExport();
+        await handleExport();
         break;
     }
 
@@ -191,9 +189,56 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
     }
   };
 
-  const handleExport = () => {
-    const formats = exportFormat === 'both' ? ['Excel', 'PDF'] : [exportFormat.toUpperCase()];
-    alert(`${formats.join(', ')} 형식으로 내보내기를 시작합니다.`);
+  const handleLockResults = async () => {
+    try {
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+      await fetch(`${API_BASE_URL}${API_ENDPOINTS.PROJECTS.UPDATE(projectId)}`, {
+        method: 'PATCH',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({ is_locked: true }),
+      });
+      console.log('결과가 잠금 처리되었습니다.');
+    } catch (error) {
+      console.error('결과 잠금 처리 실패:', error);
+    }
+  };
+
+  const handleExport = async () => {
+    const token = authService.getAccessToken();
+    const headers: Record<string, string> = {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    const downloads: Array<{ url: string; filename: string }> = [];
+
+    if (exportFormat === 'excel' || exportFormat === 'both') {
+      downloads.push({ url: `${API_BASE_URL}${API_ENDPOINTS.EXPORT.EXCEL(projectId)}`, filename: `${projectTitle}_결과.xlsx` });
+    }
+    if (exportFormat === 'pdf' || exportFormat === 'both') {
+      downloads.push({ url: `${API_BASE_URL}${API_ENDPOINTS.EXPORT.PDF(projectId)}`, filename: `${projectTitle}_결과.pdf` });
+    }
+
+    for (const { url, filename } of downloads) {
+      try {
+        const res = await fetch(url, { headers, credentials: 'include' });
+        if (res.ok) {
+          const blob = await res.blob();
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        } else {
+          console.error(`내보내기 실패: ${filename} (HTTP ${res.status})`);
+        }
+      } catch (error) {
+        console.error(`내보내기 오류: ${filename}`, error);
+      }
+    }
   };
 
   if (loading) {

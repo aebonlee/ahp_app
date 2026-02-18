@@ -926,8 +926,7 @@ const CompletionStep: React.FC<{
   onNavigate?: (path: string) => void;
 }> = ({ projectId, qrCodeUrl, shortLink, projectTitle, onNavigate }) => {
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('클립보드에 복사되었습니다!');
+    navigator.clipboard.writeText(text).catch(() => {});
   };
 
   return (

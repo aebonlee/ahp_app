@@ -84,14 +84,12 @@ const TrashBin: React.FC<TrashBinProps> = ({
     try {
       setActionLoading(projectId);
       await onRestoreProject(projectId);
-      
+
       // 목록에서 제거
       setTrashedProjects(prev => prev.filter(p => p.id !== projectId));
-      
-      alert('프로젝트가 성공적으로 복원되었습니다.');
+      console.log('프로젝트가 성공적으로 복원되었습니다.');
     } catch (error) {
       console.error('Failed to restore project:', error);
-      alert('프로젝트 복원에 실패했습니다.');
     } finally {
       setActionLoading(null);
     }
@@ -112,14 +110,12 @@ const TrashBin: React.FC<TrashBinProps> = ({
     try {
       setActionLoading(projectId);
       await onPermanentDeleteProject(projectId);
-      
+
       // 목록에서 제거
       setTrashedProjects(prev => prev.filter(p => p.id !== projectId));
-      
-      alert('프로젝트가 영구 삭제되었습니다.');
+      console.log('프로젝트가 영구 삭제되었습니다.');
     } catch (error) {
       console.error('Failed to permanently delete project:', error);
-      alert('영구 삭제에 실패했습니다.');
     } finally {
       setActionLoading(null);
     }

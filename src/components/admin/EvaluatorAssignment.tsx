@@ -88,6 +88,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
 
   const [newEvaluator, setNewEvaluator] = useState({ name: '', email: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [limitMessage, setLimitMessage] = useState('');
 
   // 프로젝트별 평가자 데이터 저장 (현재 미사용 - 향후 PostgreSQL 연동 시 활용)
   // const saveProjectEvaluators = async (evaluatorsData: Evaluator[]) => {
@@ -145,9 +146,10 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
   const handleAddEvaluator = async () => {
     // 평가자 수 제한 체크
     if (evaluators.length >= maxEvaluators) {
-      alert(`평가자 배정 한도(${maxEvaluators}명)에 도달했습니다.\n${currentPlan}에서는 프로젝트당 최대 ${maxEvaluators}명까지 배정할 수 있습니다.`);
+      setLimitMessage(`평가자 배정 한도(${maxEvaluators}명)에 도달했습니다. ${currentPlan}에서는 프로젝트당 최대 ${maxEvaluators}명까지 배정할 수 있습니다.`);
       return;
     }
+    setLimitMessage('');
 
     if (!validateEvaluator(newEvaluator)) {
       return;
@@ -224,7 +226,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
       console.log('✅ 평가자가 삭제되었습니다.');
     } catch (error) {
       console.error('❌ 평가자 삭제 실패:', error);
-      alert('평가자 삭제 중 오류가 발생했습니다.');
+      setErrors({ general: '평가자 삭제 중 오류가 발생했습니다.' });
     }
   };
 
@@ -263,6 +265,16 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
 
   return (
     <div className="space-y-6">
+      {limitMessage && (
+        <div className="px-4 py-3 rounded-lg text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+          {limitMessage}
+        </div>
+      )}
+      {errors.general && (
+        <div className="px-4 py-3 rounded-lg text-sm font-medium bg-red-100 text-red-800 border border-red-200">
+          {errors.general}
+        </div>
+      )}
       <Card title="평가자 배정">
         <div className="space-y-6">
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
@@ -491,7 +503,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
                 variant="secondary"
                 onClick={async () => {
                   console.log('✅ 평가자 데이터가 PostgreSQL에 자동 저장되었습니다.');
-                  alert('평가자 목록이 저장되었습니다.');
                 }}
               >
                 저장

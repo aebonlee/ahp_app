@@ -357,7 +357,7 @@ const SurveyFormBuilder: React.FC<SurveyFormBuilderProps> = ({ onSave, onCancel,
     if (onSave) {
       onSave(questions, { title: surveyTitle, description: surveyDescription });
     }
-    alert('설문이 저장되었습니다!');
+    console.log('설문이 저장되었습니다!');
   };
 
   const renderPreview = () => {

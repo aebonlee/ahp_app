@@ -120,6 +120,12 @@ const SystemSettings: React.FC = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
+  const [settingsMessage, setSettingsMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showSettingsMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setSettingsMessage({ type, text });
+    setTimeout(() => setSettingsMessage(null), 3000);
+  };
 
   // 설정 불러오기
   useEffect(() => {
@@ -152,10 +158,10 @@ const SystemSettings: React.FC = () => {
       localStorage.setItem('ahp_system_settings', JSON.stringify(settings));
       
       setHasChanges(false);
-      alert('설정이 저장되었습니다.');
+      showSettingsMessage('success', '설정이 저장되었습니다.');
     } catch (error) {
       console.error('설정 저장 실패:', error);
-      alert('설정 저장에 실패했습니다.');
+      showSettingsMessage('error', '설정 저장에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -177,9 +183,9 @@ const SystemSettings: React.FC = () => {
     try {
       // 이메일 테스트 API 호출
       // await apiService.post('/api/settings/test-email/', settings.email);
-      alert('테스트 이메일이 전송되었습니다.');
+      showSettingsMessage('success', '테스트 이메일이 전송되었습니다.');
     } catch (error) {
-      alert('이메일 전송 실패. SMTP 설정을 확인하세요.');
+      showSettingsMessage('error', '이메일 전송 실패. SMTP 설정을 확인하세요.');
     } finally {
       setTestingEmail(false);
     }
@@ -206,9 +212,9 @@ const SystemSettings: React.FC = () => {
         const imported = JSON.parse(e.target?.result as string);
         setSettings(imported);
         setHasChanges(true);
-        alert('설정을 가져왔습니다. 저장 버튼을 클릭하여 적용하세요.');
+        showSettingsMessage('info', '설정을 가져왔습니다. 저장 버튼을 클릭하여 적용하세요.');
       } catch (error) {
-        alert('잘못된 설정 파일입니다.');
+        showSettingsMessage('error', '잘못된 설정 파일입니다.');
       }
     };
     reader.readAsText(file);
@@ -216,6 +222,15 @@ const SystemSettings: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      {settingsMessage && (
+        <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+          settingsMessage.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+          settingsMessage.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+          'bg-blue-100 text-blue-800 border border-blue-200'
+        }`}>
+          {settingsMessage.text}
+        </div>
+      )}
       <div className="mb-6">
         <div className="flex justify-between items-center">
           <div>

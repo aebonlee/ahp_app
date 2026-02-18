@@ -19,6 +19,12 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [projects, setProjects] = useState<any[]>([]); // 프로젝트 개수 추적용
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+
+  const showNotification = (type: 'success' | 'error' | 'info', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3500);
+  };
 
   // 설문 개수 제한 (프로젝트 개수와 동일)
   const MAX_SURVEYS_PER_PROJECT = 3; // 프로젝트당 최대 3개 설문
@@ -90,11 +96,10 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
       await fetchSurveys(); // 목록 새로고침
       setCurrentView('list');
       
-      // 성공 알림
-      alert(`설문조사가 생성되었습니다!\n평가자 링크: ${newSurvey.evaluator_link}`);
+      showNotification('success', `설문조사가 생성되었습니다! 평가자 링크: ${newSurvey.evaluator_link}`);
     } catch (error: any) {
       console.error('설문조사 생성 실패:', error);
-      alert(error.message || '설문조사 생성에 실패했습니다.');
+      showNotification('error', error.message || '설문조사 생성에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -120,7 +125,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
       await fetchSurveys(); // 목록 새로고침
     } catch (error) {
       console.error('설문조사 상태 변경 실패:', error);
-      alert('설문조사 상태 변경에 실패했습니다.');
+      showNotification('error', '설문조사 상태 변경에 실패했습니다.');
     }
   };
 
@@ -172,10 +177,10 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
       }
       
       await fetchSurveys(); // 목록 새로고침
-      alert('설문조사가 삭제되었습니다.');
+      showNotification('success', '설문조사가 삭제되었습니다.');
     } catch (error) {
       console.error('설문조사 삭제 실패:', error);
-      alert('설문조사 삭제에 실패했습니다.');
+      showNotification('error', '설문조사 삭제에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -678,15 +683,25 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
   );
 
   // 메인 렌더링
+  const NotificationBanner = notification ? (
+    <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+      notification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+      notification.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+      'bg-blue-100 text-blue-800 border border-blue-200'
+    }`}>
+      {notification.message}
+    </div>
+  ) : null;
+
   switch (currentView) {
     case 'create':
-      return renderCreateSurvey();
+      return <>{NotificationBanner}{renderCreateSurvey()}</>;
     case 'edit':
-      return renderEditSurvey();
+      return <>{NotificationBanner}{renderEditSurvey()}</>;
     case 'responses':
-      return renderResponses();
+      return <>{NotificationBanner}{renderResponses()}</>;
     default:
-      return renderSurveyList();
+      return <>{NotificationBanner}{renderSurveyList()}</>;
   }
 };
 

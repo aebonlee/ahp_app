@@ -124,7 +124,7 @@ const DemographicSurvey: React.FC<DemographicSurveyProps> = ({
       }, 1500);
       
     } catch (error) {
-      alert('데이터 저장 중 오류가 발생했습니다.');
+      console.error('데이터 저장 중 오류가 발생했습니다:', error);
     } finally {
       setIsSubmitting(false);
     }

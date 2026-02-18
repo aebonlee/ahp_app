@@ -31,6 +31,12 @@ const AIConfiguration: React.FC<AIConfigurationProps> = ({ onClose }) => {
   });
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showUsageInfo, setShowUsageInfo] = useState(false);
+  const [configMessage, setConfigMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showConfigMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setConfigMessage({ type, text });
+    setTimeout(() => setConfigMessage(null), 3000);
+  };
 
   // 컴포넌트 마운트 시 현재 설정 로드
   useEffect(() => {
@@ -82,24 +88,24 @@ const AIConfiguration: React.FC<AIConfigurationProps> = ({ onClose }) => {
   const handleSave = async () => {
     const currentKey = apiKeys[selectedProvider];
     if (!currentKey.trim()) {
-      alert('API 키를 입력해주세요.');
+      showConfigMessage('info', 'API 키를 입력해주세요.');
       return;
     }
 
     try {
       const aiService = saveAndInitializeAI(currentKey, selectedProvider);
       const isValid = await aiService.validateAPIKey();
-      
+
       if (isValid) {
-        alert('AI 설정이 저장되었습니다.');
+        showConfigMessage('success', 'AI 설정이 저장되었습니다.');
         setValidationStatus(prev => ({ ...prev, [selectedProvider]: 'valid' }));
         if (onClose) onClose();
       } else {
-        alert('API 키가 유효하지 않습니다. 다시 확인해주세요.');
+        showConfigMessage('error', 'API 키가 유효하지 않습니다. 다시 확인해주세요.');
         setValidationStatus(prev => ({ ...prev, [selectedProvider]: 'invalid' }));
       }
     } catch (error) {
-      alert('설정 저장 중 오류가 발생했습니다.');
+      showConfigMessage('error', '설정 저장 중 오류가 발생했습니다.');
       console.error('AI 설정 저장 실패:', error);
     }
   };
@@ -110,7 +116,7 @@ const AIConfiguration: React.FC<AIConfigurationProps> = ({ onClose }) => {
       clearAISettings();
       setApiKeys({ openai: '', claude: '' });
       setValidationStatus({ openai: 'none', claude: 'none' });
-      alert('AI 설정이 초기화되었습니다.');
+      showConfigMessage('success', 'AI 설정이 초기화되었습니다.');
     }
   };
 
@@ -144,6 +150,15 @@ const AIConfiguration: React.FC<AIConfigurationProps> = ({ onClose }) => {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
+      {configMessage && (
+        <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+          configMessage.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+          configMessage.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+          'bg-blue-100 text-blue-800 border border-blue-200'
+        }`}>
+          {configMessage.text}
+        </div>
+      )}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>

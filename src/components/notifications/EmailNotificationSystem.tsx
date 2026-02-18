@@ -78,6 +78,12 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
   const [isConfigured, setIsConfigured] = useState(false);
   const [testEmail, setTestEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [emailMessage, setEmailMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showEmailMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setEmailMessage({ type, text });
+    setTimeout(() => setEmailMessage(null), 3500);
+  };
 
   useEffect(() => {
     loadEmailTemplates();
@@ -267,7 +273,7 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
 
   const sendNotification = async (templateId: string, recipientIds: string[], customData: any = {}) => {
     if (!isConfigured) {
-      alert('이메일 설정을 먼저 구성해주세요.');
+      showEmailMessage('info', '이메일 설정을 먼저 구성해주세요.');
       return;
     }
 
@@ -305,11 +311,11 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
         }
       }
 
-      alert(`${recipients.length}명에게 이메일을 성공적으로 전송했습니다.`);
-      
+      showEmailMessage('success', `${recipients.length}명에게 이메일을 성공적으로 전송했습니다.`);
+
     } catch (error) {
       console.error('이메일 전송 실패:', error);
-      alert('이메일 전송에 실패했습니다.');
+      showEmailMessage('error', '이메일 전송에 실패했습니다.');
     } finally {
       setIsSending(false);
     }
@@ -346,7 +352,7 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
 
   const sendTestEmail = async () => {
     if (!testEmail || !selectedTemplate) {
-      alert('테스트 이메일 주소와 템플릿을 선택해주세요.');
+      showEmailMessage('info', '테스트 이메일 주소와 템플릿을 선택해주세요.');
       return;
     }
 
@@ -371,11 +377,11 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
         content: personalizedContent
       });
 
-      alert('테스트 이메일을 전송했습니다. (실제로는 SMTP 서버를 통해 전송됩니다)');
-      
+      showEmailMessage('success', '테스트 이메일을 전송했습니다. (실제로는 SMTP 서버를 통해 전송됩니다)');
+
     } catch (error) {
       console.error('테스트 이메일 전송 실패:', error);
-      alert('테스트 이메일 전송에 실패했습니다.');
+      showEmailMessage('error', '테스트 이메일 전송에 실패했습니다.');
     } finally {
       setIsSending(false);
     }
@@ -650,9 +656,9 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
               onClick={() => {
                 if (settings?.smtpConfig.username && settings?.smtpConfig.password) {
                   setIsConfigured(true);
-                  alert('SMTP 설정이 저장되었습니다.');
+                  showEmailMessage('success', 'SMTP 설정이 저장되었습니다.');
                 } else {
-                  alert('사용자명과 비밀번호를 입력해주세요.');
+                  showEmailMessage('info', '사용자명과 비밀번호를 입력해주세요.');
                 }
               }}
             >
@@ -794,6 +800,16 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
           참가자 {participants.length}명 | 전송 기록 {notifications.length}건
         </div>
       </div>
+
+      {emailMessage && (
+        <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+          emailMessage.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+          emailMessage.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+          'bg-blue-100 text-blue-800 border border-blue-200'
+        }`}>
+          {emailMessage.text}
+        </div>
+      )}
 
       {/* 탭 네비게이션 */}
       <div className="border-b border-gray-200">

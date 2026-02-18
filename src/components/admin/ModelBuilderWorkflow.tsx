@@ -127,13 +127,12 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
         currentStep: 'evaluation'
       }));
       
-      alert('모델 구축이 완료되었습니다. 이제 평가를 시작할 수 있습니다.');
-      
+      console.log('모델 구축이 완료되었습니다. 이제 평가를 시작할 수 있습니다.');
+
       // 완료 콜백 호출 - 평가자 관리 페이지로 이동
       onComplete();
     } catch (error) {
       console.error('모델 완료 처리 실패:', error);
-      alert('모델 완료 처리 중 오류가 발생했습니다.');
     }
   };
 

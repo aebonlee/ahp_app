@@ -66,6 +66,7 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
   className = ''
 }) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [formError, setFormError] = useState('');
   const [newParticipant, setNewParticipant] = useState({
     name: '',
     email: '',
@@ -225,9 +226,10 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
 
   const addParticipant = async () => {
     if (!newParticipant.name || !newParticipant.email) {
-      alert('이름과 이메일은 필수 입력 항목입니다.');
+      setFormError('이름과 이메일은 필수 입력 항목입니다.');
       return;
     }
+    setFormError('');
 
     const participant: Participant = {
       id: `p${Date.now()}`,
@@ -282,7 +284,7 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
     setIsLoading(true);
     // 실제로는 API 호출
     setTimeout(() => {
-      alert(`${participantIds.length}명에게 알림 이메일을 전송했습니다.`);
+      console.log(`${participantIds.length}명에게 알림 이메일을 전송했습니다.`);
       setIsLoading(false);
     }, 1000);
   };
@@ -458,11 +460,14 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
                 className="px-3 py-2 border rounded"
               />
             </div>
+            {formError && (
+              <p className="mt-2 text-sm text-red-600 font-medium">{formError}</p>
+            )}
             <div className="flex space-x-2 mt-3">
               <Button variant="primary" onClick={addParticipant}>
                 추가
               </Button>
-              <Button variant="secondary" onClick={() => setShowAddForm(false)}>
+              <Button variant="secondary" onClick={() => { setShowAddForm(false); setFormError(''); }}>
                 취소
               </Button>
             </div>

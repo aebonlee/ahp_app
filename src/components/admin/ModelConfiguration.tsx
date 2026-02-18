@@ -191,15 +191,14 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
 
   const handleSaveModel = () => {
     if (criteria.length < 2) {
-      alert('최소 2개 이상의 기준을 추가해주세요.');
+      setErrors((prev: any) => ({ ...prev, save: '최소 2개 이상의 기준을 추가해주세요.' }));
       return;
     }
-    
     if (alternatives.length < 2) {
-      alert('최소 2개 이상의 대안을 추가해주세요.');
+      setErrors((prev: any) => ({ ...prev, save: '최소 2개 이상의 대안을 추가해주세요.' }));
       return;
     }
-
+    setErrors((prev: any) => ({ ...prev, save: '' }));
     onSave(criteria, alternatives);
   };
 
@@ -335,6 +334,9 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
           >
             모델 저장
           </Button>
+          {errors.save && (
+            <p className="mt-2 text-sm text-red-600 font-medium">{errors.save}</p>
+          )}
         </div>
       </div>
 

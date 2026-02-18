@@ -210,13 +210,12 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
         } else {
           loadAllEvaluators();
         }
-        alert(fromProject ? '평가자가 프로젝트에서 제거되었습니다.' : '평가자가 완전히 삭제되었습니다.');
+        console.log(fromProject ? '평가자가 프로젝트에서 제거되었습니다.' : '평가자가 완전히 삭제되었습니다.');
       } else {
-        alert('삭제에 실패했습니다.');
+        console.error('평가자 삭제 실패:', response.status);
       }
     } catch (error) {
       console.error('평가자 삭제 오류:', error);
-      alert('삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -239,20 +238,20 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
         setFormData({ email: '', name: '', phone: '' });
         setShowAddForm(false);
         setErrors({});
-        
+
         // 목록 다시 로드
         if (projectId) {
           loadProjectEvaluators();
         } else {
           loadAllEvaluators();
         }
-        alert('평가자가 성공적으로 추가되었습니다.');
+        console.log('평가자가 성공적으로 추가되었습니다.');
       } else {
-        alert('평가자 추가에 실패했습니다.');
+        setErrors({ general: '평가자 추가에 실패했습니다.' });
       }
     } catch (error) {
       console.error('평가자 추가 오류:', error);
-      alert('추가 중 오류가 발생했습니다.');
+      setErrors({ general: '추가 중 오류가 발생했습니다.' });
     }
   };
 
@@ -297,7 +296,6 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
       .map(e => e.id);
     
     if (selectedEvaluatorIds.length === 0) {
-      alert('평가자를 선택해주세요.');
       return;
     }
     

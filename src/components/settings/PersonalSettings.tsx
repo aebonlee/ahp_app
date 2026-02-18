@@ -120,6 +120,13 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
   });
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [passwordError, setPasswordError] = useState('');
+
+  const showStatus = (type: 'success' | 'error' | 'info', text: string) => {
+    setStatusMessage({ type, text });
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
 
   // 서버에서 사용자 설정 로드 (localStorage 제거됨)
   useEffect(() => {
@@ -264,10 +271,10 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       if (window.confirm('가져온 데이터로 현재 설정을 덮어쓰시겠습니까?')) {
         setSettings(importData.settings || importData);
         await saveSettingsToAPI();
-        alert('설정을 성공적으로 가져왔습니다.');
+        showStatus('success', '설정을 성공적으로 가져왔습니다.');
       }
     } catch (error) {
-      alert('파일을 읽는 중 오류가 발생했습니다.');
+      showStatus('error', '파일을 읽는 중 오류가 발생했습니다.');
     }
   };
 
@@ -296,9 +303,10 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
   // 비밀번호 변경 함수
   const handlePasswordChange = async () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert('새 비밀번호가 일치하지 않습니다.');
+      setPasswordError('새 비밀번호가 일치하지 않습니다.');
       return;
     }
+    setPasswordError('');
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/service/auth/change-password/`, {
@@ -314,14 +322,14 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       });
 
       if (response.ok) {
-        alert('비밀번호가 성공적으로 변경되었습니다.');
+        showStatus('success', '비밀번호가 성공적으로 변경되었습니다.');
         setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       } else {
         const error = await response.json();
-        alert(error.message || '비밀번호 변경에 실패했습니다.');
+        setPasswordError(error.message || '비밀번호 변경에 실패했습니다.');
       }
     } catch (error) {
-      alert('비밀번호 변경 중 오류가 발생했습니다.');
+      setPasswordError('비밀번호 변경 중 오류가 발생했습니다.');
     }
   };
 
@@ -345,15 +353,14 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       });
 
       if (response.ok) {
-        alert('계정이 삭제되었습니다.');
-        // 로그아웃 처리
+        // 계정 삭제 후 로그아웃 처리
         window.location.href = '/';
       } else {
         const error = await response.json();
-        alert(error.message || '계정 삭제에 실패했습니다.');
+        showStatus('error', error.message || '계정 삭제에 실패했습니다.');
       }
     } catch (error) {
-      alert('계정 삭제 중 오류가 발생했습니다.');
+      showStatus('error', '계정 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -441,6 +448,15 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
 
           {/* 메인 콘텐츠 */}
           <div className="lg:col-span-3">
+            {statusMessage && (
+              <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+                statusMessage.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+                statusMessage.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+                'bg-blue-100 text-blue-800 border border-blue-200'
+              }`}>
+                {statusMessage.text}
+              </div>
+            )}
             {activeTab === 'profile' && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center space-x-3 mb-6">
@@ -599,6 +615,9 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                         <UIIcon emoji="🔄" size="lg" color="white" />
                         <span>비밀번호 변경</span>
                       </PrimaryButton>
+                      {passwordError && (
+                        <p className="mt-2 text-sm text-red-600 font-medium">{passwordError}</p>
+                      )}
                     </div>
                 </div>
 

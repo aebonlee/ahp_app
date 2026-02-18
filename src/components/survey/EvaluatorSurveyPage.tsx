@@ -128,7 +128,7 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
       setIsCompleted(true);
     } catch (error: any) {
       console.error('설문 제출 실패:', error);
-      alert(error.message || '설문 제출에 실패했습니다. 다시 시도해주세요.');
+      setErrors({ submit: error.message || '설문 제출에 실패했습니다. 다시 시도해주세요.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -436,6 +436,11 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
             </Button>
           )}
         </div>
+        {errors.submit && (
+          <div className="mt-3 px-4 py-3 rounded-lg text-sm font-medium bg-red-100 text-red-800 border border-red-200">
+            {errors.submit}
+          </div>
+        )}
       </div>
     </div>
   );

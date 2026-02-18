@@ -292,7 +292,7 @@ const PaperManagement: React.FC = () => {
             <div className="text-4xl mb-4">📊</div>
             <h4 className="text-lg font-medium text-gray-900 mb-2">분석 결과가 없습니다</h4>
             <p className="text-gray-500 mb-6">완료된 AHP 프로젝트의 분석 결과를 논문에 활용할 수 있습니다</p>
-            <Button variant="outline" onClick={() => alert('AHP 프로젝트를 먼저 완료해주세요')}>
+            <Button variant="outline" disabled>
               프로젝트 관리로 이동
             </Button>
           </div>
@@ -365,7 +365,7 @@ const PaperManagement: React.FC = () => {
           <div className="text-4xl mb-4">📋</div>
           <h4 className="text-lg font-medium text-gray-900 mb-2">설문조사 결과가 없습니다</h4>
           <p className="text-gray-500 mb-6">인구통계학적 설문조사를 먼저 실시하고 응답을 수집해주세요</p>
-          <Button variant="outline" onClick={() => alert('인구통계 설문조사 기능을 먼저 이용해주세요')}>
+          <Button variant="outline" disabled>
             설문조사 관리로 이동
           </Button>
         </div>

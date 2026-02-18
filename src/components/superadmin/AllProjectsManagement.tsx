@@ -111,7 +111,7 @@ const AllProjectsManagement: React.FC = () => {
       fetchProjects();
     } catch (error) {
       console.error('프로젝트 삭제 실패:', error);
-      alert('프로젝트 삭제에 실패했습니다.');
+      console.error('프로젝트 삭제에 실패했습니다.');
     }
   };
 
