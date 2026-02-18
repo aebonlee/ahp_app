@@ -288,7 +288,7 @@ class ConnectionTester {
     summary: string;
   }> {
     console.log('🚀 Frontend ↔ Backend 종합 연동 테스트 시작...');
-    console.log('=' .repeat(50));
+    console.log('='.repeat(50));
 
     const results = [
       await this.testBasicConnection(),
@@ -305,7 +305,7 @@ class ConnectionTester {
       ? `✅ 모든 테스트 통과 (${successCount}/${results.length})`
       : `⚠️ 일부 테스트 실패 (${successCount}/${results.length})`;
 
-    console.log('=' .repeat(50));
+    console.log('='.repeat(50));
     console.log('📊 연동 테스트 결과:', summary);
 
     results.forEach((result, index) => {
