@@ -4,6 +4,7 @@ import TwoFactorAuth from './TwoFactorAuth';
 import AdminSelectPage from './AdminSelectPage';
 import { twoFactorService, twoFactorSecurity } from '../../services/twoFactorService';
 import { authApi } from '../../services/api';
+import authService from '../../services/authService';
 
 interface EnhancedAuthFlowProps {
   onAuthSuccess: (user: any, tokens: any) => void;
@@ -110,16 +111,21 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
 
     try {
       console.log('📝 회원가입 시도:', { email, role });
-      
-      // 실제 회원가입 API 호출 (현재는 로그인으로 대체)
-      // TODO: 백엔드에 register API 구현 후 수정 필요
-      const registerResponse = await authApi.login(email, password);
-      
-      if (!registerResponse.success) {
-        throw new Error(registerResponse.error || '회원가입에 실패했습니다.');
-      }
 
-      console.log('✅ 회원가입 성공:', registerResponse.data || {});
+      // 실제 회원가입 API 호출 (authService.register는 실패 시 throw)
+      const emailParts = email.split('@');
+      const username = emailParts[0] || email;
+      const registerResponse = await authService.register({
+        username,
+        email,
+        password,
+        password2: password,
+        first_name: username,
+        last_name: '',
+        role: role || 'service_user',
+      });
+
+      console.log('✅ 회원가입 성공:', registerResponse.user?.email || '');
       
       // 회원가입 성공 후 자동 로그인 시도
       try {

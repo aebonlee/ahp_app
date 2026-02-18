@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../../types';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface RoleSwitcherProps {
   currentUser: User;
@@ -73,15 +75,32 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
 
   const info = roleInfo[targetRole];
 
-  const handleConfirmSwitch = () => {
-    if (password === 'admin123') { // TODO: 실제 비밀번호 확인
-      onRoleSwitch(targetRole);
-      alert(`${info.title} 모드로 전환되었습니다.`);
-    } else {
-      alert('비밀번호가 틀렸습니다.');
+  const [switchError, setSwitchError] = useState('');
+
+  const handleConfirmSwitch = async () => {
+    if (!password) {
+      setSwitchError('비밀번호를 입력해주세요.');
+      return;
     }
-    setPassword('');
-    setIsConfirming(false);
+    try {
+      const token = authService.getAccessToken();
+      const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGIN}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: currentUser.email, password }),
+      });
+      if (res.ok) {
+        onRoleSwitch(targetRole);
+        setIsConfirming(false);
+      } else {
+        setSwitchError('비밀번호가 틀렸습니다.');
+      }
+    } catch {
+      setSwitchError('비밀번호 확인 중 오류가 발생했습니다.');
+    } finally {
+      setPassword('');
+    }
   };
 
   return (
