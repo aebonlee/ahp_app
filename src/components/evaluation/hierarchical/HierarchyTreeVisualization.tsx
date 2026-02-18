@@ -224,18 +224,21 @@ const TreeNodeContainer: React.FC<{
     });
   }, []);
 
+  // 로컬 가중치 존재 여부로 완료 상태 판단
+  const isCompleted = typeof node.localWeight === 'number' && node.localWeight > 0;
+
   return (
     <TreeNode
       node={node}
       level={level}
       isExpanded={expandedNodes.has(node.id)}
       isSelected={selectedNodeId === node.id}
-      isCompleted={isNodeCompleted(node.id)}
-      hasIssues={hasNodeIssues(node.id)}
+      isCompleted={isCompleted}
+      hasIssues={false}
       onToggleExpand={handleToggleExpand}
       onNodeSelect={onNodeSelect}
-      showWeights={localShowWeights}
-      showProgress={localShowProgress}
+      showWeights={showWeights}
+      showProgress={showProgress}
     />
   );
 };
