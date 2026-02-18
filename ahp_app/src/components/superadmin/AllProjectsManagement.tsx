@@ -28,6 +28,12 @@ const AllProjectsManagement: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const pageSize = 10;
 
@@ -111,7 +117,7 @@ const AllProjectsManagement: React.FC = () => {
       fetchProjects();
     } catch (error) {
       console.error('프로젝트 삭제 실패:', error);
-      alert('프로젝트 삭제에 실패했습니다.');
+      showActionMessage('error', '프로젝트 삭제에 실패했습니다.');
     }
   };
 
@@ -160,6 +166,11 @@ const AllProjectsManagement: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           전체 프로젝트 관리

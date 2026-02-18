@@ -51,6 +51,12 @@ interface AIMaterialsGenerationPageProps {
 const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<string>('selection');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<MaterialTemplate | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -147,7 +153,7 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
   // AI 자료 생성 시작
   const startGeneration = async () => {
     if (!selectedProject || !selectedTemplate) {
-      alert('프로젝트와 자료 유형을 선택해주세요.');
+      showActionMessage('error', '프로젝트와 자료 유형을 선택해주세요.');
       return;
     }
 
@@ -180,7 +186,7 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
       setActiveTab('result');
     } catch (error) {
       console.error('자료 생성 실패:', error);
-      alert('자료 생성 중 오류가 발생했습니다.');
+      showActionMessage('error', '자료 생성 중 오류가 발생했습니다.');
     } finally {
       setGenerating(false);
     }
@@ -755,7 +761,7 @@ ${selectedProject?.title} AHP 분석 연구
           <button
             onClick={() => {
               console.log('Word 다운로드');
-              alert('Word 파일이 다운로드됩니다. (구현 예정)');
+              showActionMessage('info', 'Word 파일이 다운로드됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
             style={{ backgroundColor: 'var(--accent-primary)' }}
@@ -766,7 +772,7 @@ ${selectedProject?.title} AHP 분석 연구
           <button
             onClick={() => {
               console.log('PDF 다운로드');
-              alert('PDF 파일이 다운로드됩니다. (구현 예정)');
+              showActionMessage('info', 'PDF 파일이 다운로드됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold transition-colors"
             style={{ backgroundColor: 'var(--success-primary)', color: 'var(--text-primary)' }}
@@ -777,7 +783,7 @@ ${selectedProject?.title} AHP 분석 연구
           <button
             onClick={() => {
               console.log('이메일 전송');
-              alert('이메일로 전송됩니다. (구현 예정)');
+              showActionMessage('info', '이메일로 전송됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
             style={{ backgroundColor: 'var(--warning-primary)' }}
@@ -825,6 +831,11 @@ ${selectedProject?.title} AHP 분석 연구
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <PageHeader
         title="AI 학술 자료 생성"
         description="AHP 프로젝트 결과를 기반으로 다양한 학술 자료를 AI가 자동 생성합니다"

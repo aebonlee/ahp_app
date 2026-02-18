@@ -44,11 +44,11 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
         console.log('✅ 테스트 삭제 완료:', projectId);
         await loadTrashedProjects(); // 휴지통 새로고침
       } else {
-        alert('삭제 함수가 전달되지 않았습니다.');
+        console.warn('삭제 함수가 전달되지 않았습니다.');
       }
     } catch (error) {
       console.error('❌ 삭제 실패:', error);
-      alert('삭제 실패: ' + (error as Error).message);
+      console.error('삭제 실패: ' + (error as Error).message);
     }
   };
 
@@ -57,12 +57,12 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
       try {
         if (onRestoreProject) {
           await onRestoreProject(projectId);
-          alert('복원 완료!');
+          console.warn('복원 완료!');
           await loadTrashedProjects();
         }
       } catch (error) {
         console.error('복원 실패:', error);
-        alert('복원 실패: ' + (error as Error).message);
+        console.error('복원 실패: ' + (error as Error).message);
       }
     }
   };
@@ -73,12 +73,12 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
         try {
           if (onPermanentDeleteProject) {
             await onPermanentDeleteProject(projectId);
-            alert('영구 삭제 완료!');
+            console.warn('영구 삭제 완료!');
             await loadTrashedProjects();
           }
         } catch (error) {
           console.error('영구 삭제 실패:', error);
-          alert('영구 삭제 실패: ' + (error as Error).message);
+          console.error('영구 삭제 실패: ' + (error as Error).message);
         }
       }
     }

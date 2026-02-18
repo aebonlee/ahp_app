@@ -56,6 +56,12 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
   const [criteriaData, setCriteriaData] = useState<Criterion[]>([]);
   const [alternativesData, setAlternativesData] = useState<Alternative[]>([]);
   const [evaluatorsData, setEvaluatorsData] = useState<Evaluator[]>([]);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     loadProjectSummary();
@@ -213,12 +219,12 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
       const testEvaluator = evaluatorsData[0];
       const testLink = `${window.location.origin}/evaluator?project=${projectId}&key=${testEvaluator.access_key || 'TEST_KEY'}&test=true`;
       window.open(testLink, '_blank');
-      alert('테스트 모드로 평가 화면을 열었습니다.\n테스트 데이터는 저장되지 않습니다.');
+      showActionMessage('info', '테스트 모드로 평가 화면을 열었습니다. 테스트 데이터는 저장되지 않습니다.');
     } else {
       // 평가자가 없을 때 테스트 모드
       const testLink = `${window.location.origin}/evaluator?project=${projectId}&test=true`;
       window.open(testLink, '_blank');
-      alert('테스트 모드로 평가 화면을 열었습니다.');
+      showActionMessage('info', '테스트 모드로 평가 화면을 열었습니다.');
     }
   };
 
@@ -227,7 +233,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
     const pendingEvaluators = evaluatorsData.filter(e => e.status === 'pending');
     
     if (pendingEvaluators.length === 0) {
-      alert('이메일을 발송할 평가자가 없습니다.\n모든 평가자가 이미 초대되었거나 평가를 진행 중입니다.');
+      showActionMessage('info', '이메일을 발송할 평가자가 없습니다. 모든 평가자가 이미 초대되었거나 평가를 진행 중입니다.');
       return;
     }
 
@@ -262,7 +268,7 @@ ${evaluationLink}
       
       console.log(emailContent);
       
-      alert(`${pendingEvaluators.length}명의 평가자에게 이메일을 발송했습니다.\n\n⚠️ 현재는 데모 모드입니다. 실제 이메일은 발송되지 않았습니다.\n콘솔에서 이메일 내용을 확인하세요.`);
+      showActionMessage('success', `${pendingEvaluators.length}명의 평가자에게 이메일을 발송했습니다. (데모 모드: 실제 이메일 미발송, 콘솔 확인)`);
       
       // 상태 업데이트 (데모)
       const updatedEvaluators = evaluatorsData.map(e => {
@@ -275,7 +281,7 @@ ${evaluationLink}
       
     } catch (error) {
       console.error('이메일 발송 실패:', error);
-      alert('이메일 발송 중 오류가 발생했습니다.');
+      showActionMessage('error', '이메일 발송 중 오류가 발생했습니다.');
     }
   };
 
@@ -299,7 +305,7 @@ ${evaluationLink}
         break;
       case 'lock':
         // Handle result locking
-        alert('결과가 잠금 처리되었습니다.');
+        showActionMessage('success', '결과가 잠금 처리되었습니다.');
         break;
       case 'export':
         // Handle export
@@ -323,7 +329,7 @@ ${evaluationLink}
 
   const handleExport = () => {
     const formats = exportFormat === 'both' ? ['Excel', 'PDF'] : [exportFormat.toUpperCase()];
-    alert(`${formats.join(', ')} 형식으로 내보내기를 시작합니다.`);
+    showActionMessage('info', `${formats.join(', ')} 형식으로 내보내기를 시작합니다.`);
   };
 
   if (loading) {
@@ -344,6 +350,11 @@ ${evaluationLink}
 
   return (
     <div className="max-w-4xl mx-auto">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>

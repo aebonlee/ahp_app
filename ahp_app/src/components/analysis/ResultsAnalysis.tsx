@@ -33,6 +33,12 @@ interface ResultsAnalysisProps {
 const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluationMode }) => {
   const [activeView, setActiveView] = useState<'progress' | 'ranking' | 'consistency' | 'detailed'>('progress');
   const [viewMode, setViewMode] = useState<'distributive' | 'ideal'>('distributive');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [evaluationProgress, setEvaluationProgress] = useState<EvaluationProgress[]>([]);
   const [criteriaRanking, setCriteriaRanking] = useState<ResultRanking[]>([]);
   const [alternativeRanking, setAlternativeRanking] = useState<ResultRanking[]>([]);
@@ -115,11 +121,16 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
     };
     
     console.log('Exporting to Excel:', data);
-    alert('Excel 파일로 내보내기 기능이 실행됩니다.');
+    showActionMessage('success', 'Excel 파일로 내보내기 기능이 실행됩니다.');
   };
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 제어 패널 */}
       <Card title="결과 분석">
         <div className="flex flex-wrap gap-4 mb-4">
@@ -310,18 +321,18 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
         <Card title="세부 분석 내용">
           <div className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <Button variant="secondary" onClick={() => alert('기준별 세부 분석')}>
+              <Button variant="secondary" onClick={() => showActionMessage('info', '기준별 세부 분석')}>
                 기준별 평가값 및 중요도
               </Button>
-              <Button variant="secondary" onClick={() => alert('대안별 세부 분석')}>
+              <Button variant="secondary" onClick={() => showActionMessage('info', '대안별 세부 분석')}>
                 대안별 평가값 및 중요도
               </Button>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
-              <Button variant="secondary" onClick={() => alert('민감도 분석')}>
+              <Button variant="secondary" onClick={() => showActionMessage('info', '민감도 분석')}>
                 민감도 분석
               </Button>
-              <Button variant="secondary" onClick={() => alert('파레토 최적화')}>
+              <Button variant="secondary" onClick={() => showActionMessage('info', '파레토 최적화')}>
                 파레토 최적화 결과
               </Button>
             </div>

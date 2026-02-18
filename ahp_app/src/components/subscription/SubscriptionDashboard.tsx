@@ -19,6 +19,12 @@ const SubscriptionDashboard: React.FC<SubscriptionDashboardProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'plans' | 'admins' | 'billing'>('overview');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const loadSubscriptionData = useCallback(async () => {
     try {
@@ -140,12 +146,12 @@ const SubscriptionDashboard: React.FC<SubscriptionDashboardProps> = ({
       
       if (result.success) {
         await loadSubscriptionData();
-        alert('구독이 성공적으로 완료되었습니다!');
+        showActionMessage('success', '구독이 성공적으로 완료되었습니다!');
       } else {
-        alert(result.error || '구독 처리 중 오류가 발생했습니다.');
+        showActionMessage('error', result.error || '구독 처리 중 오류가 발생했습니다.');
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : '구독 처리 실패');
+      showActionMessage('error', err instanceof Error ? err.message : '구독 처리 실패');
     } finally {
       setLoading(false);
     }
@@ -206,6 +212,11 @@ const SubscriptionDashboard: React.FC<SubscriptionDashboardProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 탭 네비게이션 */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">

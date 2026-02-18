@@ -52,6 +52,12 @@ const AISettingsManager: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingSettings, setEditingSettings] = useState<AIServiceSettings | null>(null);
   const [testingConnection, setTestingConnection] = useState<number | null>(null);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   
   const [formData, setFormData] = useState<SettingsFormData>({
     name: '',
@@ -180,13 +186,13 @@ const AISettingsManager: React.FC = () => {
       const result = await response.json();
       
       if (result.success) {
-        alert('연결 테스트 성공!');
+        showActionMessage('success', '연결 테스트 성공!');
       } else {
-        alert(`연결 테스트 실패: ${result.message}`);
+        showActionMessage('error', `연결 테스트 실패: ${result.message}`);
       }
     } catch (error) {
       console.error('Connection test failed:', error);
-      alert('연결 테스트 중 오류가 발생했습니다.');
+      showActionMessage('error', '연결 테스트 중 오류가 발생했습니다.');
     } finally {
       setTestingConnection(null);
     }
@@ -546,6 +552,11 @@ const AISettingsManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>

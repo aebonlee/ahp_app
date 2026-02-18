@@ -18,6 +18,12 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, on
   const [newValue, setNewValue] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<any>(null);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const criteria = [
     { id: 'productivity', name: '개발 생산성 효율화', weight: 0.40386 },
@@ -92,11 +98,16 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, on
   };
 
   const captureResults = () => {
-    alert('화면 캡처 기능 (구현 예정) - 서버에 저장되지 않으니 캡처하여 보관하세요.');
+    showActionMessage('info', '화면 캡처 기능 (구현 예정) - 서버에 저장되지 않으니 캡처하여 보관하세요.');
   };
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <ScreenID id={SCREEN_IDS.ADMIN.STEP3_SENS} />
       <Card title="서브 기능 2) 민감도 분석">
         <div className="space-y-6">

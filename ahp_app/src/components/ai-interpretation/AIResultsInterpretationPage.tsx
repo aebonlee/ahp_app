@@ -68,6 +68,12 @@ interface AIResultsInterpretationPageProps {
 const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<string>('project-selection');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -256,7 +262,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
     if (!analysisResult) return;
     
     console.log(`분석 결과를 ${format} 형식으로 내보내기:`, analysisResult);
-    alert(`${format.toUpperCase()} 형식으로 분석 보고서가 생성되었습니다. (구현 예정)`);
+    showActionMessage('success', `${format.toUpperCase()} 형식으로 분석 보고서가 생성되었습니다. (구현 예정)`);
   };
 
   const renderProjectSelection = () => (
@@ -761,6 +767,11 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <PageHeader
         title="AI 결과 분석 & 해석"
         description="AHP 평가 결과를 AI가 분석하고 해석하여 의사결정 인사이트를 제공합니다"

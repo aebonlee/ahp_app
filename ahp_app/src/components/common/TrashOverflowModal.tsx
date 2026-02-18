@@ -18,10 +18,16 @@ const TrashOverflowModal: React.FC<TrashOverflowModalProps> = ({
 }) => {
   const [selectedForDeletion, setSelectedForDeletion] = useState<string>('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const handlePermanentDelete = async () => {
     if (!selectedForDeletion) {
-      alert('영구 삭제할 프로젝트를 선택해주세요.');
+      showActionMessage('error', '영구 삭제할 프로젝트를 선택해주세요.');
       return;
     }
 
@@ -46,10 +52,10 @@ const TrashOverflowModal: React.FC<TrashOverflowModalProps> = ({
       // 원래 삭제하려던 프로젝트를 휴지통으로 이동
       await onDeleteAfterCleanup(projectToDelete);
       
-      alert('프로젝트가 영구 삭제되고 새 프로젝트가 휴지통으로 이동되었습니다.');
+      showActionMessage('success', '프로젝트가 영구 삭제되고 새 프로젝트가 휴지통으로 이동되었습니다.');
     } catch (error) {
       console.error('영구 삭제 처리 실패:', error);
-      alert('영구 삭제 중 오류가 발생했습니다.');
+      showActionMessage('error', '영구 삭제 중 오류가 발생했습니다.');
     } finally {
       setIsDeleting(false);
     }
@@ -65,6 +71,11 @@ const TrashOverflowModal: React.FC<TrashOverflowModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-[60] px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
         {/* 헤더 */}
         <div className="px-6 py-4 border-b bg-orange-50">

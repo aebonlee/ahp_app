@@ -27,6 +27,13 @@ const ProjectSelection: React.FC<ProjectSelectionProps> = ({
   evaluatorId, 
   onProjectSelect 
 }) => {
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
+
   const [assignedProjects] = useState<AssignedProject[]>([
   // setAssignedProjects - 현재 미사용
     {
@@ -110,7 +117,7 @@ const ProjectSelection: React.FC<ProjectSelectionProps> = ({
     
     // Workshop access restriction check
     if (!project.workshopActive) {
-      alert(MESSAGES.WORKSHOP_ACCESS_RESTRICTED);
+      showActionMessage('error', MESSAGES.WORKSHOP_ACCESS_RESTRICTED);
       return;
     }
     
@@ -137,6 +144,11 @@ const ProjectSelection: React.FC<ProjectSelectionProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <ScreenID id={SCREEN_IDS.RATER.PROJECT_SELECT} />
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">

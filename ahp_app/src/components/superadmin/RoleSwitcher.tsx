@@ -16,6 +16,12 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
 }) => {
   const [isConfirming, setIsConfirming] = useState(false);
   const [password, setPassword] = useState('');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const roleInfo = {
     service_admin: {
@@ -76,9 +82,9 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   const handleConfirmSwitch = () => {
     if (password === 'admin123') { // TODO: 실제 비밀번호 확인
       onRoleSwitch(targetRole);
-      alert(`${info.title} 모드로 전환되었습니다.`);
+      showActionMessage('success', `${info.title} 모드로 전환되었습니다.`);
     } else {
-      alert('비밀번호가 틀렸습니다.');
+      showActionMessage('error', '비밀번호가 틀렸습니다.');
     }
     setPassword('');
     setIsConfirming(false);
@@ -86,6 +92,11 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>

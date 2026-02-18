@@ -97,7 +97,7 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
       setSelectedProject(projectDetails);
       setCurrentStep('demographic');
     } catch (error) {
-      alert('프로젝트 데이터 로드에 실패했습니다.');
+      console.log('프로젝트 데이터 로드에 실패했습니다.');
     }
   };
 

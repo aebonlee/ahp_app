@@ -29,6 +29,12 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
   const [activeTab, setActiveTab] = useState<'input' | 'examples'>('input');
   const [parseResult, setParseResult] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const handleParse = () => {
     if (!inputText.trim()) {
@@ -137,7 +143,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     
     if (validationErrors.length > 0) {
       console.error('❌ 데이터 검증 실패:', validationErrors);
-      alert(`데이터 검증 오류:\n${validationErrors.join('\n')}`);
+      showActionMessage('error', `데이터 검증 오류: ${validationErrors.join(', ')}`);
       return;
     }
     
@@ -297,6 +303,11 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <Card title="🗂️ 계층구조 일괄 입력">
           <div className="flex flex-col h-full max-h-[80vh]">

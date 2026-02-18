@@ -65,6 +65,7 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
   readOnly = false,
   className = ''
 }) => {
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [newParticipant, setNewParticipant] = useState({
     name: '',
@@ -80,6 +81,11 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | Participant['status']>('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 샘플 데이터 로드
   useEffect(() => {
@@ -225,7 +231,7 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
 
   const addParticipant = async () => {
     if (!newParticipant.name || !newParticipant.email) {
-      alert('이름과 이메일은 필수 입력 항목입니다.');
+      showActionMessage('error', '이름과 이메일은 필수 입력 항목입니다.');
       return;
     }
 
@@ -282,7 +288,7 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
     setIsLoading(true);
     // 실제로는 API 호출
     setTimeout(() => {
-      alert(`${participantIds.length}명에게 알림 이메일을 전송했습니다.`);
+      showActionMessage('success', `${participantIds.length}명에게 알림 이메일을 전송했습니다.`);
       setIsLoading(false);
     }, 1000);
   };
@@ -350,6 +356,11 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 및 통계 */}
       <Card title="참가자 관리">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

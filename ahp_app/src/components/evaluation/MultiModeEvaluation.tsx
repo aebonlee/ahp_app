@@ -77,6 +77,13 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
   className = ''
 }) => {
   const [currentMode, setCurrentMode] = useState<EvaluationMode>(initialMode);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
+
   const [settings, setSettings] = useState<EvaluationSettings>({
     mode: initialMode,
     scale: {
@@ -389,7 +396,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     const isValid = await validateEvaluation();
     
     if (!isValid && settings.validation.completenessCheck) {
-      alert('평가를 완료하기 전에 검증 오류를 수정해주세요.');
+      showActionMessage('error', '평가를 완료하기 전에 검증 오류를 수정해주세요.');
       return;
     }
 
@@ -638,6 +645,11 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {renderModeSelector()}
       
       {renderEvaluationInterface()}

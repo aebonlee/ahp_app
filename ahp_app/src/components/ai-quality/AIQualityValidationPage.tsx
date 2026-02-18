@@ -44,6 +44,12 @@ interface AIQualityValidationPageProps {
 const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<string>('upload');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [validationText, setValidationText] = useState<string>('');
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -124,7 +130,7 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
   // AI 품질 검증 시작
   const startValidation = async () => {
     if (!uploadedFile && !validationText.trim()) {
-      alert('검증할 문서를 업로드하거나 텍스트를 입력해주세요.');
+      showActionMessage('error', '검증할 문서를 업로드하거나 텍스트를 입력해주세요.');
       return;
     }
 
@@ -284,7 +290,7 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
       setActiveTab('results');
     } catch (error) {
       console.error('검증 실패:', error);
-      alert('검증 중 오류가 발생했습니다.');
+      showActionMessage('error', '검증 중 오류가 발생했습니다.');
     } finally {
       setValidating(false);
     }
@@ -813,7 +819,7 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
             onClick={() => {
               // 개선된 문서 다운로드 (구현 예정)
               console.log('개선된 문서 생성');
-              alert('개선된 문서가 생성되었습니다. (구현 예정)');
+              showActionMessage('info', '개선된 문서가 생성되었습니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
             style={{ backgroundColor: 'var(--success-primary)' }}
@@ -825,7 +831,7 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
             onClick={() => {
               // 검증 보고서 다운로드 (구현 예정)
               console.log('검증 보고서 다운로드');
-              alert('검증 보고서가 다운로드됩니다. (구현 예정)');
+              showActionMessage('info', '검증 보고서가 다운로드됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
             style={{ backgroundColor: 'var(--accent-primary)' }}
@@ -856,6 +862,11 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <PageHeader
         title="AI 논문 품질 검증"
         description="작성된 논문의 학술적 품질을 AI가 다각도로 검증하고 개선 제안을 제공합니다"

@@ -28,6 +28,12 @@ const TrashBin: React.FC<TrashBinProps> = ({
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     loadTrashedProjects();
@@ -87,11 +93,11 @@ const TrashBin: React.FC<TrashBinProps> = ({
       
       // 목록에서 제거
       setTrashedProjects(prev => prev.filter(p => p.id !== projectId));
-      
-      alert('프로젝트가 성공적으로 복원되었습니다.');
+
+      showActionMessage('success', '프로젝트가 성공적으로 복원되었습니다.');
     } catch (error) {
       console.error('Failed to restore project:', error);
-      alert('프로젝트 복원에 실패했습니다.');
+      showActionMessage('error', '프로젝트 복원에 실패했습니다.');
     } finally {
       setActionLoading(null);
     }
@@ -115,11 +121,11 @@ const TrashBin: React.FC<TrashBinProps> = ({
       
       // 목록에서 제거
       setTrashedProjects(prev => prev.filter(p => p.id !== projectId));
-      
-      alert('프로젝트가 영구 삭제되었습니다.');
+
+      showActionMessage('success', '프로젝트가 영구 삭제되었습니다.');
     } catch (error) {
       console.error('Failed to permanently delete project:', error);
-      alert('영구 삭제에 실패했습니다.');
+      showActionMessage('error', '영구 삭제에 실패했습니다.');
     } finally {
       setActionLoading(null);
     }
@@ -150,6 +156,11 @@ const TrashBin: React.FC<TrashBinProps> = ({
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>

@@ -32,6 +32,12 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
   const [isBenefitCriterion, setIsBenefitCriterion] = useState(true);
   const [saving, setSaving] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const API_BASE_URL = process.env.NODE_ENV === 'development' 
     ? 'http://localhost:5000' 
@@ -57,7 +63,7 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
 
   const updateValue = (alternativeId: string, newValue: number) => {
     if (newValue <= 0) {
-      alert('값은 0보다 커야 합니다.');
+      showActionMessage('error', '값은 0보다 커야 합니다.');
       return;
     }
 
@@ -94,12 +100,12 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
 
   const validateInputs = (): boolean => {
     if (values.some(v => v.value <= 0)) {
-      alert('모든 값은 0보다 커야 합니다.');
+      showActionMessage('error', '모든 값은 0보다 커야 합니다.');
       return false;
     }
 
     if (values.every(v => v.value === values[0].value)) {
-      alert('모든 대안의 값이 동일합니다. 차별화된 값을 입력해주세요.');
+      showActionMessage('error', '모든 대안의 값이 동일합니다. 차별화된 값을 입력해주세요.');
       return false;
     }
 
@@ -132,18 +138,18 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
           .filter(result => result.error)
           .map(result => result.error)
           .join(', ');
-        alert(`일부 저장에 실패했습니다: ${errorMessages}`);
+        showActionMessage('error', `일부 저장에 실패했습니다: ${errorMessages}`);
         return;
       }
 
-      alert('직접입력 평가가 성공적으로 저장되었습니다.');
+      showActionMessage('success', '직접입력 평가가 성공적으로 저장되었습니다.');
       
       if (onComplete) {
         onComplete(values);
       }
     } catch (error) {
       console.error('Failed to save direct input values:', error);
-      alert('저장에 실패했습니다. 다시 시도해주세요.');
+      showActionMessage('error', '저장에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setSaving(false);
     }
@@ -164,6 +170,11 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
   return (
     <Card title={`직접입력 평가: ${criterionName}`}>
       <div className="space-y-6">
+        {actionMessage && (
+          <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+            {actionMessage.text}
+          </div>
+        )}
         {/* 안내 메시지 */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h5 className="font-medium text-blue-800 mb-2">📊 정량 데이터 입력</h5>

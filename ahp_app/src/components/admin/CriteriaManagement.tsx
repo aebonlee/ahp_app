@@ -61,6 +61,13 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   };
 
   // UI 상태
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
+
   const [showTemplates, setShowTemplates] = useState(false);
   const [showBulkInput, setShowBulkInput] = useState(false);
   const [activeInputMode, setActiveInputMode] = useState<'template' | 'bulk' | 'visual' | null>(null);
@@ -289,10 +296,10 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         setHasTempChanges(false);
         setEditingIds(new Set());
         
-        alert('모든 기준이 초기화되었습니다.');
+        showActionMessage('success', '모든 기준이 초기화되었습니다.');
       } catch (error) {
         console.error('기준 초기화 실패:', error);
-        alert('기준 초기화 중 오류가 발생했습니다.');
+        showActionMessage('error', '기준 초기화 중 오류가 발생했습니다.');
       } finally {
         setIsLoading(false);
       }
@@ -306,7 +313,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     const flatCriteria = flattenCriteria(criteriaToSave);
     
     if (flatCriteria.length === 0) {
-      alert('저장할 기준이 없습니다.');
+      showActionMessage('error', '저장할 기준이 없습니다.');
       return;
     }
 
@@ -448,13 +455,13 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         // 저장 후 다시 로드하여 동기화
         await loadCriteria();
         
-        alert('기준이 성공적으로 저장되었습니다.');
+        showActionMessage('success', '기준이 성공적으로 저장되었습니다.');
       } else {
         throw new Error('일부 기준 저장 실패');
       }
     } catch (error) {
       console.error('❌ 기준 저장 실패:', error);
-      alert(`기준 저장 중 오류가 발생했습니다: ${error}`);
+      showActionMessage('error', `기준 저장 중 오류가 발생했습니다: ${error}`);
     } finally {
       setIsSaving(false);
     }
@@ -763,7 +770,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     setShowTemplates(false);
     setActiveInputMode(null);
     
-    alert(`'${template.name}' 템플릿이 적용되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+    showActionMessage('success', `'${template.name}' 템플릿이 적용되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
   };
 
   // 일괄 입력 처리
@@ -782,7 +789,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     // 데이터 검증
     if (!importedCriteria || importedCriteria.length === 0) {
       console.warn('⚠️ 비어있는 일괄 입력 데이터');
-      alert('가져올 데이터가 비어있습니다.');
+      showActionMessage('error', '가져올 데이터가 비어있습니다.');
       return;
     }
     
@@ -837,7 +844,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       setShowBulkInput(false);
       setActiveInputMode(null);
       
-      alert(`계층 구조 구성에 문제가 있어 모든 기준을 루트 레벨로 추가했습니다. (${normalizedCriteria.length}개)\n수동으로 계층 구조를 조정할 수 있습니다.`);
+      showActionMessage('info', `계층 구조 구성에 문제가 있어 모든 기준을 루트 레벨로 추가했습니다. (${normalizedCriteria.length}개)\n수동으로 계층 구조를 조정할 수 있습니다.`);
       return;
     }
     
@@ -859,7 +866,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       .map(([level, count]) => `레벨 ${level}: ${count}개`)
       .join(', ');
       
-    alert(`${normalizedCriteria.length}개의 기준이 추가되었습니다.\n${statsText}\n'저장하기' 버튼을 눌러 최종 저장하세요.`);
+    showActionMessage('success', `${normalizedCriteria.length}개의 기준이 추가되었습니다. ${statsText} '저장하기' 버튼을 눌러 최종 저장하세요.`);
   };
 
   // 시각적 빌더 데이터 변환
@@ -915,7 +922,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     setCriteria(convertedCriteria);
     setHasTempChanges(true);
     
-    alert(`${convertedCriteria.length}개의 기준이 시각적 빌더에서 추가되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
+    showActionMessage('success', `${convertedCriteria.length}개의 기준이 시각적 빌더에서 추가되었습니다. '저장하기' 버튼을 눌러 최종 저장하세요.`);
   };
 
   // 모든 기준 가져오기 (평면 구조)
@@ -925,6 +932,11 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <Card title="평가 기준 설정">
         <div className="space-y-6">
           {/* 상단 안내 메시지 */}

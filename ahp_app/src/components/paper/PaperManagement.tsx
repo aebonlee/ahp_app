@@ -53,6 +53,12 @@ const PaperManagement: React.FC = () => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
 
   const formatCitation = (ref: Reference): string => {
@@ -294,7 +300,7 @@ const PaperManagement: React.FC = () => {
             <div className="text-4xl mb-4">📊</div>
             <h4 className="text-lg font-medium text-gray-900 mb-2">분석 결과가 없습니다</h4>
             <p className="text-gray-500 mb-6">완료된 AHP 프로젝트의 분석 결과를 논문에 활용할 수 있습니다</p>
-            <Button variant="outline" onClick={() => alert('AHP 프로젝트를 먼저 완료해주세요')}>
+            <Button variant="outline" onClick={() => showActionMessage('info', 'AHP 프로젝트를 먼저 완료해주세요')}>
               프로젝트 관리로 이동
             </Button>
           </div>
@@ -367,7 +373,7 @@ const PaperManagement: React.FC = () => {
           <div className="text-4xl mb-4">📋</div>
           <h4 className="text-lg font-medium text-gray-900 mb-2">설문조사 결과가 없습니다</h4>
           <p className="text-gray-500 mb-6">인구통계학적 설문조사를 먼저 실시하고 응답을 수집해주세요</p>
-          <Button variant="outline" onClick={() => alert('인구통계 설문조사 기능을 먼저 이용해주세요')}>
+          <Button variant="outline" onClick={() => showActionMessage('info', '인구통계 설문조사 기능을 먼저 이용해주세요')}>
             설문조사 관리로 이동
           </Button>
         </div>
@@ -389,11 +395,11 @@ const PaperManagement: React.FC = () => {
   };
 
   const exportSurveyData = (format: string) => {
-    alert(`${format.toUpperCase()} 형식 다운로드 기능은 준비 중입니다.`);
+    showActionMessage('info', `${format.toUpperCase()} 형식 다운로드 기능은 준비 중입니다.`);
   };
 
   const generateReportPDF = () => {
-    alert('분석 보고서 PDF 생성 기능은 준비 중입니다.');
+    showActionMessage('info', '분석 보고서 PDF 생성 기능은 준비 중입니다.');
   };
 
   const renderAIGeneratorTab = () => (
@@ -475,6 +481,11 @@ const PaperManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 탭 네비게이션 */}
       <Card>
         <div className="border-b border-gray-200">

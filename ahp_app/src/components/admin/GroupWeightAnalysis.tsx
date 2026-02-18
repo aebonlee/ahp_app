@@ -19,6 +19,13 @@ interface GroupWeightAnalysisProps {
 }
 
 const GroupWeightAnalysis: React.FC<GroupWeightAnalysisProps> = ({ projectId }) => {
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
+
   const [evaluators, setEvaluators] = useState<Evaluator[]>([
     { id: 'p001', name: '평가자 1', status: 'completed', progress: 100, weight: 1.0, included: true },
     { id: 'p002', name: '평가자 2', status: 'completed', progress: 100, weight: 1.0, included: true },
@@ -69,7 +76,7 @@ const GroupWeightAnalysis: React.FC<GroupWeightAnalysisProps> = ({ projectId }) 
 
   const exportToExcel = () => {
     // Simulate Excel export
-    alert('Excel 파일로 내보내기 기능 (구현 예정)');
+    showActionMessage('info', 'Excel 파일로 내보내기 기능 (구현 예정)');
   };
 
   const completedEvaluators = evaluators.filter(e => e.status === 'completed');
@@ -77,6 +84,11 @@ const GroupWeightAnalysis: React.FC<GroupWeightAnalysisProps> = ({ projectId }) 
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <ScreenID id={SCREEN_IDS.ADMIN.STEP3_WEIGHTS} />
       <Card title="그룹별 가중치 도출">
         <div className="space-y-6">

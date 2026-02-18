@@ -15,6 +15,12 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
   const [errors, setErrors] = useState<string[]>([]);
   const [bulkEmail, setBulkEmail] = useState('');
   const [inputMode, setInputMode] = useState<'individual' | 'bulk'>('individual');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const addEmailField = () => {
     setEmails([...emails, '']);
@@ -74,7 +80,7 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
       });
 
       if (response.data) {
-        alert(`${response.data.invitations_created}명의 평가자에게 초대를 발송했습니다.`);
+        showActionMessage('success', `${response.data.invitations_created}명의 평가자에게 초대를 발송했습니다.`);
         // Reset form
         setEmails(['']);
         setBulkEmail('');
@@ -91,6 +97,11 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
 
   return (
     <div className="bg-white rounded-2xl shadow-card p-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <h2 className="text-xl font-bold mb-6">평가자 초대</h2>
 
       {/* Input Mode Toggle */}

@@ -47,6 +47,12 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showBulkQR, setShowBulkQR] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [evaluationStats, setEvaluationStats] = useState<{
     total: number;
     pending: number;
@@ -174,7 +180,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
   const handleAddEvaluator = async () => {
     // 평가자 수 제한 체크
     if (evaluators.length >= maxEvaluators) {
-      alert(`평가자 배정 한도(${maxEvaluators}명)에 도달했습니다.\n${currentPlan}에서는 프로젝트당 최대 ${maxEvaluators}명까지 배정할 수 있습니다.`);
+      showActionMessage('error', `평가자 배정 한도(${maxEvaluators}명)에 도달했습니다. ${currentPlan}에서는 프로젝트당 최대 ${maxEvaluators}명까지 배정할 수 있습니다.`);
       return;
     }
 
@@ -271,7 +277,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
       console.log('✅ 평가자가 삭제되었습니다.');
     } catch (error) {
       console.error('❌ 평가자 삭제 실패:', error);
-      alert('평가자 삭제 중 오류가 발생했습니다.');
+      showActionMessage('error', '평가자 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -310,6 +316,11 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <Card title="평가자 배정">
         <div className="space-y-6">
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
@@ -562,7 +573,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
                 variant="secondary"
                 onClick={async () => {
                   console.log('✅ 평가자 데이터가 PostgreSQL에 자동 저장되었습니다.');
-                  alert('평가자 목록이 저장되었습니다.');
+                  showActionMessage('success', '평가자 목록이 저장되었습니다.');
                 }}
               >
                 저장

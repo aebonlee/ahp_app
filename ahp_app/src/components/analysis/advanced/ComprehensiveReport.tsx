@@ -9,6 +9,12 @@ interface ComprehensiveReportProps {
 const ComprehensiveReport: React.FC<ComprehensiveReportProps> = ({ projectId }) => {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<any>(null);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const generateReport = async () => {
     try {
@@ -28,12 +34,12 @@ const ComprehensiveReport: React.FC<ComprehensiveReportProps> = ({ projectId }) 
 
   const exportPDF = () => {
     // PDF 내보내기 로직 (추후 구현)
-    alert('PDF 내보내기 기능은 준비 중입니다.');
+    showActionMessage('info', 'PDF 내보내기 기능은 준비 중입니다.');
   };
 
   const exportExcel = () => {
     // Excel 내보내기 로직 (추후 구현)
-    alert('Excel 내보내기 기능은 준비 중입니다.');
+    showActionMessage('info', 'Excel 내보내기 기능은 준비 중입니다.');
   };
 
   if (loading) {
@@ -62,6 +68,11 @@ const ComprehensiveReport: React.FC<ComprehensiveReportProps> = ({ projectId }) 
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* Report Header */}
       <div className="bg-white rounded-2xl shadow-card p-6">
         <div className="flex items-center justify-between mb-6">

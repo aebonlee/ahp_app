@@ -35,6 +35,12 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     // 설문조사 데이터 로드
@@ -135,7 +141,7 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
       setIsCompleted(true);
     } catch (error) {
       console.error('설문 제출 실패:', error);
-      alert('설문 제출에 실패했습니다. 다시 시도해주세요.');
+      showActionMessage('error', '설문 제출에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -350,6 +356,11 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 survey-sm:px-6 py-4 survey-sm:py-6">

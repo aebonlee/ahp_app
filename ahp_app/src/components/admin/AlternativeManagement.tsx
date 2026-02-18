@@ -80,6 +80,12 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingAlternative, setEditingAlternative] = useState({ name: '', description: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 프로젝트별 대안 데이터 저장 (현재 미사용 - 향후 PostgreSQL 연동 시 활용)
   // const saveProjectAlternatives = async (alternativesData: Alternative[]) => {
@@ -240,6 +246,11 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <Card title="대안 추가">
         <div className="space-y-6">
           {/* 논문 작성 권장 구조 안내 */}
@@ -469,7 +480,7 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
                 variant="secondary"
                 onClick={async () => {
                   console.log('✅ 대안 데이터가 PostgreSQL에 자동 저장되었습니다.');
-                  alert('대안 목록이 저장되었습니다.');
+                  showActionMessage('success', '대안 목록이 저장되었습니다.');
                 }}
               >
                 저장

@@ -19,6 +19,12 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [projects, setProjects] = useState<any[]>([]); // 프로젝트 개수 추적용
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 설문 개수 제한 (프로젝트 개수와 동일)
   const MAX_SURVEYS_PER_PROJECT = 3; // 프로젝트당 최대 3개 설문
@@ -91,10 +97,10 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
       setCurrentView('list');
       
       // 성공 알림
-      alert(`설문조사가 생성되었습니다!\n평가자 링크: ${newSurvey.evaluator_link}`);
+      showActionMessage('success', `설문조사가 생성되었습니다! 평가자 링크: ${newSurvey.evaluator_link}`);
     } catch (error: any) {
       console.error('설문조사 생성 실패:', error);
-      alert(error.message || '설문조사 생성에 실패했습니다.');
+      showActionMessage('error', error.message || '설문조사 생성에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -120,14 +126,14 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
       await fetchSurveys(); // 목록 새로고침
     } catch (error) {
       console.error('설문조사 상태 변경 실패:', error);
-      alert('설문조사 상태 변경에 실패했습니다.');
+      showActionMessage('error', '설문조사 상태 변경에 실패했습니다.');
     }
   };
 
   // 평가자 링크 복사
   const copyEvaluatorLink = (link: string) => {
     navigator.clipboard.writeText(link);
-    alert('평가자 링크가 클립보드에 복사되었습니다!');
+    showActionMessage('success', '평가자 링크가 클립보드에 복사되었습니다!');
   };
 
   // QR 코드 생성
@@ -135,7 +141,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
     const survey = surveys.find(s => s.id === surveyId);
     if (survey) {
       // TODO: QR 코드 생성 라이브러리 사용
-      alert(`QR 코드 생성 기능은 준비 중입니다.\n링크: ${survey.evaluatorLink}`);
+      showActionMessage('info', `QR 코드 생성 기능은 준비 중입니다. 링크: ${survey.evaluatorLink}`);
     }
   };
 
@@ -166,10 +172,10 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
       }
       
       await fetchSurveys(); // 목록 새로고침
-      alert('설문조사가 삭제되었습니다.');
+      showActionMessage('success', '설문조사가 삭제되었습니다.');
     } catch (error) {
       console.error('설문조사 삭제 실패:', error);
-      alert('설문조사 삭제에 실패했습니다.');
+      showActionMessage('error', '설문조사 삭제에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -177,6 +183,11 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
 
   const renderSurveyList = () => (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
@@ -218,7 +229,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
             variant="primary" 
             onClick={() => {
               if (surveys.length >= MAX_SURVEYS_PER_PROJECT) {
-                alert(`프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다.\n기존 설문을 삭제한 후 새로 만들어주세요.`);
+                showActionMessage('error', `프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다. 기존 설문을 삭제한 후 새로 만들어주세요.`);
                 return;
               }
               setCurrentView('create');
@@ -286,7 +297,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
                 size="sm"
                 onClick={() => {
                   if (surveys.length >= MAX_SURVEYS_PER_PROJECT) {
-                    alert(`프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다.\n기존 설문을 삭제한 후 새로 만들어주세요.`);
+                    showActionMessage('error', `프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다. 기존 설문을 삭제한 후 새로 만들어주세요.`);
                     return;
                   }
                   setCurrentView('create');
@@ -300,7 +311,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
                 size="sm"
                 onClick={() => {
                   // TODO: 가이드 PDF 다운로드
-                  alert('설문조사 가이드 PDF 다운로드 기능은 준비 중입니다.');
+                  showActionMessage('info', '설문조사 가이드 PDF 다운로드 기능은 준비 중입니다.');
                 }}
               >
                 📄 가이드 다운로드
@@ -325,7 +336,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
               variant="primary" 
               onClick={() => {
                 if (surveys.length >= MAX_SURVEYS_PER_PROJECT) {
-                  alert(`프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다.`);
+                  showActionMessage('error', `프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다.`);
                   return;
                 }
                 setCurrentView('create');
@@ -497,6 +508,11 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
 
   const renderCreateSurvey = () => (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold flex items-center" style={{ color: 'var(--text-primary)' }}>
           <span className="text-3xl mr-3">📝</span>
@@ -524,6 +540,11 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
 
   const renderResponses = () => (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold flex items-center" style={{ color: 'var(--text-primary)' }}>
           <span className="text-3xl mr-3">📊</span>
@@ -585,7 +606,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
             </p>
             <Button variant="primary" className="mt-4" onClick={() => {
               // TODO: CSV 내보내기 기능
-              alert('CSV 내보내기 기능은 준비 중입니다.');
+              showActionMessage('info', 'CSV 내보내기 기능은 준비 중입니다.');
             }}>
               📊 CSV 내보내기
             </Button>
@@ -597,6 +618,11 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
 
   const renderEditSurvey = () => (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold flex items-center" style={{ color: 'var(--text-primary)' }}>
           <span className="text-3xl mr-3">✏️</span>
@@ -633,10 +659,10 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
               
               await fetchSurveys(); // 목록 새로고침
               setCurrentView('list');
-              alert('설문조사가 수정되었습니다!');
+              showActionMessage('success', '설문조사가 수정되었습니다!');
             } catch (error) {
               console.error('설문조사 수정 실패:', error);
-              alert('설문조사 수정에 실패했습니다.');
+              showActionMessage('error', '설문조사 수정에 실패했습니다.');
             } finally {
               setIsLoading(false);
             }

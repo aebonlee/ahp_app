@@ -20,6 +20,12 @@ const SurveyFormBuilder: React.FC<SurveyFormBuilderProps> = ({ onSave, onCancel,
   const [questions, setQuestions] = useState<Question[]>(initialSurvey?.questions || []);
   const [isPreview, setIsPreview] = useState(false);
   const [showTemplateSelection, setShowTemplateSelection] = useState(!initialSurvey); // 편집 모드면 템플릿 선택 스킵
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 기본 허수 템플릿들
   const demographicTemplates = {
@@ -357,7 +363,7 @@ const SurveyFormBuilder: React.FC<SurveyFormBuilderProps> = ({ onSave, onCancel,
     if (onSave) {
       onSave(questions, { title: surveyTitle, description: surveyDescription });
     }
-    alert('설문이 저장되었습니다!');
+    showActionMessage('success', '설문이 저장되었습니다!');
   };
 
   const renderPreview = () => {
@@ -461,7 +467,12 @@ const SurveyFormBuilder: React.FC<SurveyFormBuilderProps> = ({ onSave, onCancel,
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="backdrop-blur-xl rounded-2xl p-8 shadow-lg" style={{ 
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
+      <div className="backdrop-blur-xl rounded-2xl p-8 shadow-lg" style={{
         backgroundColor: 'var(--card-bg)', 
         border: '1px solid var(--card-border)' 
       }}>

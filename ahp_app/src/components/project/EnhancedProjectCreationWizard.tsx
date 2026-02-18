@@ -925,13 +925,25 @@ const CompletionStep: React.FC<{
   projectTitle: string;
   onNavigate?: (path: string) => void;
 }> = ({ projectId, qrCodeUrl, shortLink, projectTitle, onNavigate }) => {
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('클립보드에 복사되었습니다!');
+    showActionMessage('info', '클립보드에 복사되었습니다!');
   };
 
   return (
     <div className="py-8">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="text-center mb-8">
         <div className="text-6xl mx-auto mb-4">✅</div>
         <h2 className="text-3xl font-bold text-gray-900 mb-2">

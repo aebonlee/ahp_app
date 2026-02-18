@@ -120,6 +120,12 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
   });
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 서버에서 사용자 설정 로드 (localStorage 제거됨)
   useEffect(() => {
@@ -264,10 +270,10 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       if (window.confirm('가져온 데이터로 현재 설정을 덮어쓰시겠습니까?')) {
         setSettings(importData.settings || importData);
         await saveSettingsToAPI();
-        alert('설정을 성공적으로 가져왔습니다.');
+        showActionMessage('success', '설정을 성공적으로 가져왔습니다.');
       }
     } catch (error) {
-      alert('파일을 읽는 중 오류가 발생했습니다.');
+      showActionMessage('error', '파일을 읽는 중 오류가 발생했습니다.');
     }
   };
 
@@ -296,7 +302,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
   // 비밀번호 변경 함수
   const handlePasswordChange = async () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert('새 비밀번호가 일치하지 않습니다.');
+      showActionMessage('error', '새 비밀번호가 일치하지 않습니다.');
       return;
     }
 
@@ -314,14 +320,14 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       });
 
       if (response.ok) {
-        alert('비밀번호가 성공적으로 변경되었습니다.');
+        showActionMessage('success', '비밀번호가 성공적으로 변경되었습니다.');
         setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       } else {
         const error = await response.json();
-        alert(error.message || '비밀번호 변경에 실패했습니다.');
+        showActionMessage('error', error.message || '비밀번호 변경에 실패했습니다.');
       }
     } catch (error) {
-      alert('비밀번호 변경 중 오류가 발생했습니다.');
+      showActionMessage('error', '비밀번호 변경 중 오류가 발생했습니다.');
     }
   };
 
@@ -345,15 +351,15 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       });
 
       if (response.ok) {
-        alert('계정이 삭제되었습니다.');
+        showActionMessage('success', '계정이 삭제되었습니다.');
         // 로그아웃 처리
         window.location.href = '/';
       } else {
         const error = await response.json();
-        alert(error.message || '계정 삭제에 실패했습니다.');
+        showActionMessage('error', error.message || '계정 삭제에 실패했습니다.');
       }
     } catch (error) {
-      alert('계정 삭제 중 오류가 발생했습니다.');
+      showActionMessage('error', '계정 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -397,6 +403,11 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <PageHeader
         title="개인 설정"
         description="계정 정보와 개인 환경설정을 관리합니다"

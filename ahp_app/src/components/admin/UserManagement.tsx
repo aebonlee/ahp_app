@@ -38,6 +38,12 @@ const UserManagement: React.FC<UserManagementProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
   const [createLoading, setCreateLoading] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [formData, setFormData] = useState({
     email: '',
     first_name: '',
@@ -168,7 +174,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
       try {
         await onDeleteUser(user.id);
       } catch (error) {
-        alert(error instanceof Error ? error.message : '사용자 삭제에 실패했습니다.');
+        showActionMessage('error', error instanceof Error ? error.message : '사용자 삭제에 실패했습니다.');
       }
     }
   };
@@ -196,6 +202,11 @@ const UserManagement: React.FC<UserManagementProps> = ({
 
   return (
     <div className="max-w-6xl mx-auto">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           사용자 관리

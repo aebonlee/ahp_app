@@ -27,6 +27,12 @@ const SecureLoginFormContent: React.FC<SecureLoginFormProps> = ({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [securityErrors, setSecurityErrors] = useState<string[]>([]);
   const [rateLimitExceeded, setRateLimitExceeded] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const { token: csrfToken } = useCSRF();
 
@@ -57,7 +63,7 @@ const SecureLoginFormContent: React.FC<SecureLoginFormProps> = ({
     }
 
     if (securityErrors.length > 0) {
-      alert('보안 오류가 있습니다. 입력을 확인해주세요.');
+      showActionMessage('error', '보안 오류가 있습니다. 입력을 확인해주세요.');
       return;
     }
 
@@ -76,7 +82,7 @@ const SecureLoginFormContent: React.FC<SecureLoginFormProps> = ({
   const handleRateLimitExceeded = (resetTime: number) => {
     setRateLimitExceeded(true);
     const resetDate = new Date(resetTime);
-    alert(`너무 많은 로그인 시도가 있었습니다. ${resetDate.toLocaleTimeString()} 이후에 다시 시도해주세요.`);
+    showActionMessage('error', `너무 많은 로그인 시도가 있었습니다. ${resetDate.toLocaleTimeString()} 이후에 다시 시도해주세요.`);
   };
 
   const getUserIdentifier = () => {
@@ -199,6 +205,11 @@ const SecureLoginFormContent: React.FC<SecureLoginFormProps> = ({
       windowMs={15 * 60 * 1000}
       onRateLimitExceeded={handleRateLimitExceeded}
     >
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{
         background: 'linear-gradient(to bottom right, var(--bg-elevated), var(--accent-primary), var(--accent-secondary))'
       }}>

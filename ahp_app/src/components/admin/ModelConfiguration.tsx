@@ -45,6 +45,12 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
 }) => {
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [alternatives, setAlternatives] = useState<Alternative[]>([]);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [activeTab, setActiveTab] = useState<'criteria' | 'alternatives'>('criteria');
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [helpType, setHelpType] = useState<'project-status' | 'model-building'>('model-building');
@@ -191,12 +197,12 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
 
   const handleSaveModel = () => {
     if (criteria.length < 2) {
-      alert('최소 2개 이상의 기준을 추가해주세요.');
+      showActionMessage('error', '최소 2개 이상의 기준을 추가해주세요.');
       return;
     }
-    
+
     if (alternatives.length < 2) {
-      alert('최소 2개 이상의 대안을 추가해주세요.');
+      showActionMessage('error', '최소 2개 이상의 대안을 추가해주세요.');
       return;
     }
 
@@ -274,6 +280,11 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

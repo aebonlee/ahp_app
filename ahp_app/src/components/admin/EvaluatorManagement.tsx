@@ -38,7 +38,13 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
   onClose
 }) => {
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [editingEvaluator, setEditingEvaluator] = useState<Evaluator | null>(null);
   const [selectAll, setSelectAll] = useState(false);
   const [formData, setFormData] = useState({
@@ -210,13 +216,13 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
         } else {
           loadAllEvaluators();
         }
-        alert(fromProject ? '평가자가 프로젝트에서 제거되었습니다.' : '평가자가 완전히 삭제되었습니다.');
+        showActionMessage('success', fromProject ? '평가자가 프로젝트에서 제거되었습니다.' : '평가자가 완전히 삭제되었습니다.');
       } else {
-        alert('삭제에 실패했습니다.');
+        showActionMessage('error', '삭제에 실패했습니다.');
       }
     } catch (error) {
       console.error('평가자 삭제 오류:', error);
-      alert('삭제 중 오류가 발생했습니다.');
+      showActionMessage('error', '삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -246,13 +252,13 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
         } else {
           loadAllEvaluators();
         }
-        alert('평가자가 성공적으로 추가되었습니다.');
+        showActionMessage('success', '평가자가 성공적으로 추가되었습니다.');
       } else {
-        alert('평가자 추가에 실패했습니다.');
+        showActionMessage('error', '평가자 추가에 실패했습니다.');
       }
     } catch (error) {
       console.error('평가자 추가 오류:', error);
-      alert('추가 중 오류가 발생했습니다.');
+      showActionMessage('error', '추가 중 오류가 발생했습니다.');
     }
   };
 
@@ -297,7 +303,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
       .map(e => e.id);
     
     if (selectedEvaluatorIds.length === 0) {
-      alert('평가자를 선택해주세요.');
+      showActionMessage('error', '평가자를 선택해주세요.');
       return;
     }
     
@@ -315,6 +321,11 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">

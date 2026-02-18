@@ -185,6 +185,13 @@ function App() {
     isVisible: boolean;
   } | null>(null);
 
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
+
   // 세션 서비스 초기화
   useEffect(() => {
     sessionService.setLogoutCallback(() => {
@@ -889,7 +896,7 @@ function App() {
       });
       
       // 사용자에게 구체적인 오류 메시지 제공
-      alert(`프로젝트 생성 실패: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+      showActionMessage('error', `프로젝트 생성 실패: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
       
       // 에러를 다시 throw하지 않고 null 반환 (사용자에게 친화적)
       return null;
@@ -1550,7 +1557,7 @@ function App() {
             onReset={(options) => {
               console.log('시스템 초기화 실행:', options);
               // TODO: 실제 초기화 API 호출
-              alert('시스템 초기화가 완료되었습니다.');
+              showActionMessage('success', '시스템 초기화가 완료되었습니다.');
             }}
           />
         );
@@ -2253,6 +2260,11 @@ function App() {
   // 로그인하지 않은 사용자는 Layout 없이 렌더링 (홈페이지, 로그인, 회원가입)
   return (
     <div className="App min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {renderContent()}
       <ApiErrorModal
         isVisible={showApiErrorModal}

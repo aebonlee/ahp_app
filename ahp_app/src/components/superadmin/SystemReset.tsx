@@ -27,6 +27,12 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
   const [confirmStep, setConfirmStep] = useState(0);
   const [confirmText, setConfirmText] = useState('');
   const [password, setPassword] = useState('');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const resetItems = [
     { 
@@ -86,7 +92,7 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
 
   const handleStartReset = () => {
     if (getSelectedCount() === 0) {
-      alert('초기화할 항목을 선택해주세요.');
+      showActionMessage('error', '초기화할 항목을 선택해주세요.');
       return;
     }
     setConfirmStep(1);
@@ -94,7 +100,7 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
 
   const handleConfirmReset = () => {
     if (confirmText !== 'DELETE') {
-      alert('확인 텍스트가 일치하지 않습니다.');
+      showActionMessage('error', '확인 텍스트가 일치하지 않습니다.');
       return;
     }
     setConfirmStep(2);
@@ -104,13 +110,13 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
     // 개발 환경에서는 임시로 모든 비밀번호 허용
     // TODO: 실제 배포 시 백엔드 API로 비밀번호 검증
     if (!password) {
-      alert('비밀번호를 입력해주세요.');
+      showActionMessage('error', '비밀번호를 입력해주세요.');
       return;
     }
-    
+
     // 초기화 실행
     onReset(resetOptions);
-    alert('시스템 초기화가 시작되었습니다.');
+    showActionMessage('success', '시스템 초기화가 시작되었습니다.');
     setConfirmStep(0);
     setConfirmText('');
     setPassword('');
@@ -118,6 +124,11 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>

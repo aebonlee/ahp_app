@@ -100,6 +100,12 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
   const [whatIfScenario, setWhatIfScenario] = useState<ScenarioInput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeAnalysisTab, setActiveAnalysisTab] = useState<'scenario' | 'sensitivity' | 'montecarlo' | 'risk'>('scenario');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     // 샘플 의사결정 문제 로드
@@ -1055,7 +1061,7 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
           </div>
           
           <div className="flex space-x-4">
-            <Button variant="primary" onClick={() => alert('보고서 생성 기능은 ExportManager와 연동됩니다.')}>
+            <Button variant="primary" onClick={() => showActionMessage('info', '보고서 생성 기능은 ExportManager와 연동됩니다.')}>
               최종 보고서 생성
             </Button>
             <Button variant="secondary">
@@ -1081,6 +1087,11 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 프로세스 단계 */}
       <div className="bg-white border rounded-lg p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">

@@ -233,7 +233,7 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
     if (!node) return;
 
     // 구현 복잡도가 높아 간단한 알림만 표시
-    alert(`레벨 ${direction === 'up' ? '상위로' : '하위로'} 이동 기능은 준비 중입니다.`);
+    console.log(`레벨 ${direction === 'up' ? '상위로' : '하위로'} 이동 기능은 준비 중입니다.`);
   };
 
   // 드래그 앤 드롭 핸들러
@@ -252,7 +252,7 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
     if (!draggedNodeId || draggedNodeId === targetId) return;
 
     // 드래그 앤 드롭으로 재정렬 (간단한 구현)
-    alert('드래그 앤 드롭으로 순서 변경 기능은 준비 중입니다.');
+    console.log('드래그 앤 드롭으로 순서 변경 기능은 준비 중입니다.');
     setDraggedNodeId(null);
   };
 

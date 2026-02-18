@@ -42,6 +42,12 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
   const [linkPrefix, setLinkPrefix] = useState('ahp.link/');
   const [expiryDays, setExpiryDays] = useState(30);
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 설문 링크 생성 함수
   const generateShortLink = (evaluatorId: string, projectId: string): string => {
@@ -123,15 +129,15 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
   // 링크 복사
   const handleCopyLink = (link: string, linkId: string) => {
     navigator.clipboard.writeText(link);
-    
+
     // 복사 통계 업데이트
-    setSurveyLinks(prev => prev.map(l => 
-      l.id === linkId 
+    setSurveyLinks(prev => prev.map(l =>
+      l.id === linkId
         ? { ...l, shareMethod: 'copy' as const, lastAccessed: new Date().toISOString() }
         : l
     ));
-    
-    alert('링크가 클립보드에 복사되었습니다.');
+
+    showActionMessage('success', '링크가 클립보드에 복사되었습니다.');
   };
 
   // 이메일로 보내기
@@ -164,7 +170,7 @@ ${link.projectName} 프로젝트의 AHP 평가에 참여해 주시기 바랍니�
     const message = `[AHP평가] ${link.projectName}\n평가링크: ${link.shortLink}`;
     // 실제로는 SMS API 호출
     console.log('SMS 발송:', message);
-    alert(`SMS 발송 시뮬레이션:\n${message}`);
+    showActionMessage('info', `SMS 발송 시뮬레이션: ${message}`);
     
     setSurveyLinks(prev => prev.map(l => 
       l.id === link.id 
@@ -228,7 +234,7 @@ ${link.projectName} 프로젝트의 AHP 평가에 참여해 주시기 바랍니�
       .join('\n');
     
     navigator.clipboard.writeText(selectedLinkTexts);
-    alert(`${selectedLinks.length}개의 링크가 복사되었습니다.`);
+    showActionMessage('success', `${selectedLinks.length}개의 링크가 복사되었습니다.`);
     setSelectedLinks([]);
   };
 
@@ -264,6 +270,11 @@ ${link.projectName} 프로젝트의 AHP 평가에 참여해 주시기 바랍니�
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900">설문 링크 관리</h2>

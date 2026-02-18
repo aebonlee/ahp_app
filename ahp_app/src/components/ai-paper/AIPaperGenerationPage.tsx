@@ -36,6 +36,12 @@ interface AIPaperGenerationPageProps {
 const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<string>('project-selection');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectData, setProjectData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -203,7 +209,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
 
     // 실제 구현에서는 서버로 내보내기 요청
     console.log(`논문을 ${format} 형식으로 내보내기:`, paperContent);
-    alert(`${format.toUpperCase()} 형식으로 논문이 생성되었습니다. (구현 예정)`);
+    showActionMessage('success', `${format.toUpperCase()} 형식으로 논문이 생성되었습니다. (구현 예정)`);
   };
 
   const renderProjectSelection = () => (
@@ -620,6 +626,11 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <PageHeader
         title="AI 논문 생성"
         description="AHP 프로젝트 데이터를 기반으로 학술 논문을 자동 생성합니다"

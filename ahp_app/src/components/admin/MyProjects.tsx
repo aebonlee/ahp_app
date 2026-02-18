@@ -26,6 +26,12 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft' | 'trash'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -156,14 +162,14 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     try {
       const success = await dataService.restoreProject(projectId);
       if (success) {
-        alert('프로젝트가 성공적으로 복원되었습니다.');
+        showActionMessage('success', '프로젝트가 성공적으로 복원되었습니다.');
         fetchProjects(); // 목록 새로고침
       } else {
-        alert('프로젝트 복원에 실패했습니다.');
+        showActionMessage('error', '프로젝트 복원에 실패했습니다.');
       }
     } catch (error) {
       console.error('Failed to restore project:', error);
-      alert('프로젝트 복원 중 오류가 발생했습니다.');
+      showActionMessage('error', '프로젝트 복원 중 오류가 발생했습니다.');
     }
   };
 
@@ -181,14 +187,14 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     try {
       const success = await dataService.permanentDeleteProject(projectId);
       if (success) {
-        alert('프로젝트가 영구 삭제되었습니다.');
+        showActionMessage('success', '프로젝트가 영구 삭제되었습니다.');
         fetchProjects(); // 목록 새로고침
       } else {
-        alert('프로젝트 영구 삭제에 실패했습니다.');
+        showActionMessage('error', '프로젝트 영구 삭제에 실패했습니다.');
       }
     } catch (error) {
       console.error('Failed to permanently delete project:', error);
-      alert('영구 삭제 중 오류가 발생했습니다.');
+      showActionMessage('error', '영구 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -214,15 +220,15 @@ const MyProjects: React.FC<MyProjectsProps> = ({
         console.log('🗑️ dataService 직접 호출:', project.id);
         const success = await dataService.deleteProject(project.id || '');
         if (success) {
-          alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
+          showActionMessage('success', `"${projectTitle}"가 휴지통으로 이동되었습니다.`);
           fetchProjects(); // 목록 새로고침
         } else {
-          alert('프로젝트 삭제에 실패했습니다.');
+          showActionMessage('error', '프로젝트 삭제에 실패했습니다.');
         }
       }
     } catch (error) {
       console.error('Failed to delete project:', error);
-      alert('프로젝트 삭제 중 오류가 발생했습니다.');
+      showActionMessage('error', '프로젝트 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -233,7 +239,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
       onEditProject(project);
     } else {
       console.log('⚠️ 편집 핸들러가 연결되지 않음');
-      alert('편집 기능을 준비 중입니다.');
+      showActionMessage('info', '편집 기능을 준비 중입니다.');
     }
   };
 
@@ -244,7 +250,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
       onModelBuilder(project);
     } else {
       console.log('⚠️ 모델 구축 핸들러가 연결되지 않음');
-      alert('모델 구축 기능을 준비 중입니다.');
+      showActionMessage('info', '모델 구축 기능을 준비 중입니다.');
     }
   };
 
@@ -255,7 +261,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
       onAnalysis(project);
     } else {
       console.log('⚠️ 결과 분석 핸들러가 연결되지 않음');
-      alert('결과 분석 기능을 준비 중입니다.');
+      showActionMessage('info', '결과 분석 기능을 준비 중입니다.');
     }
   };
 
@@ -272,6 +278,11 @@ const MyProjects: React.FC<MyProjectsProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>

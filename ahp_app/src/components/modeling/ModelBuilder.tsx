@@ -102,6 +102,12 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<ModelTemplate | null>(null);
   const [autoSave, setAutoSave] = useState(true);
   const [currentView, setCurrentView] = useState<'tree' | 'network' | 'matrix' | 'sunburst' | 'treemap'>('tree');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 초기 모델 설정
   useEffect(() => {
@@ -161,7 +167,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
   // 모델 저장
   const handleSave = async () => {
     if (!modelState.hierarchy || !modelState.isValid) {
-      alert('유효하지 않은 모델입니다. 오류를 수정한 후 다시 시도하세요.');
+      showActionMessage('error', '유효하지 않은 모델입니다. 오류를 수정한 후 다시 시도하세요.');
       return;
     }
 
@@ -183,7 +189,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
       
     } catch (error) {
       console.error('모델 저장 중 오류 발생:', error);
-      alert('모델 저장에 실패했습니다.');
+      showActionMessage('error', '모델 저장에 실패했습니다.');
     }
   };
 
@@ -760,6 +766,11 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 및 도구 모음 */}
       <Card>
         <div className="flex justify-between items-center mb-4">

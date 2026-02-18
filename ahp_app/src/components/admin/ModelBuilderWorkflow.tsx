@@ -42,6 +42,12 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [project, setProject] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const loadProjectData = useCallback(async () => {
     try {
@@ -127,13 +133,13 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
         currentStep: 'evaluation'
       }));
       
-      alert('모델 구축이 완료되었습니다. 이제 평가를 시작할 수 있습니다.');
-      
+      showActionMessage('success', '모델 구축이 완료되었습니다. 이제 평가를 시작할 수 있습니다.');
+
       // 완료 콜백 호출 - 평가자 관리 페이지로 이동
       onComplete();
     } catch (error) {
       console.error('모델 완료 처리 실패:', error);
-      alert('모델 완료 처리 중 오류가 발생했습니다.');
+      showActionMessage('error', '모델 완료 처리 중 오류가 발생했습니다.');
     }
   };
 
@@ -302,6 +308,11 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="mb-6">
         <button
           onClick={onBack}
