@@ -153,8 +153,8 @@ export function useProjects(
 
   const restoreProject = useCallback(
     async (projectId: string) => {
-      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/restore`, {
-        method: 'PUT',
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/restore/`, {
+        method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -169,7 +169,7 @@ export function useProjects(
   );
 
   const permanentDeleteProject = useCallback(async (projectId: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/permanent`, {
+    const response = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/permanent_delete/`, {
       method: 'DELETE',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -183,13 +183,14 @@ export function useProjects(
 
   const fetchTrashedProjects = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects/trash/list`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/projects/trash/`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
       if (response.ok) {
         const data = await response.json();
-        return data.projects || [];
+        // DRF: 배열 또는 {results: [...]} 또는 {projects: [...]}
+        return Array.isArray(data) ? data : (data.results || data.projects || []);
       }
     } catch (error) {
       console.error('Failed to fetch trashed projects:', error);
@@ -199,13 +200,14 @@ export function useProjects(
 
   const fetchCriteria = useCallback(async (projectId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/criteria`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
       if (response.ok) {
         const data = await response.json();
-        return data.criteria || [];
+        // DRF: 배열 또는 {results: [...]} 또는 {criteria: [...]}
+        return Array.isArray(data) ? data : (data.results || data.criteria || []);
       }
     } catch (error) {
       console.error('Failed to fetch criteria:', error);
@@ -214,11 +216,11 @@ export function useProjects(
   }, []);
 
   const createCriteria = useCallback(async (projectId: string, criteriaData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/criteria`, {
+    const response = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/add_criteria/`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...criteriaData, project_id: projectId }),
+      body: JSON.stringify({ ...criteriaData, project: projectId }),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -229,13 +231,14 @@ export function useProjects(
 
   const fetchAlternatives = useCallback(async (projectId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/alternatives`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}&type=alternative`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
       if (response.ok) {
         const data = await response.json();
-        return data.alternatives || [];
+        // DRF: 배열 또는 {results: [...]} 또는 {alternatives: [...]}
+        return Array.isArray(data) ? data : (data.results || data.alternatives || []);
       }
     } catch (error) {
       console.error('Failed to fetch alternatives:', error);
@@ -244,11 +247,11 @@ export function useProjects(
   }, []);
 
   const createAlternative = useCallback(async (projectId: string, alternativeData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/alternatives`, {
+    const response = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/add_criteria/`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...alternativeData, project_id: projectId }),
+      body: JSON.stringify({ ...alternativeData, project: projectId, type: 'alternative' }),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -258,11 +261,11 @@ export function useProjects(
   }, []);
 
   const saveEvaluation = useCallback(async (projectId: string, evaluationData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/evaluate`, {
+    const response = await fetch(`${API_BASE_URL}/api/service/evaluations/comparisons/`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project_id: projectId, ...evaluationData }),
+      body: JSON.stringify({ project: projectId, ...evaluationData }),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -287,7 +290,7 @@ export function useProjects(
 
   const createSampleProject = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/projects/`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

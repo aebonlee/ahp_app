@@ -538,37 +538,36 @@ export const criteriaApi = {
 };
 
 // === 대안 API ===
+// 백엔드: Criteria 모델 type='alternative' 필터링으로 구현 (검증: 2026-02-18)
+// CriteriaViewSet filterset_fields: ['project', 'type', 'parent', 'level']
 export const alternativeApi = {
-  // 프로젝트의 대안 목록 조회
+  // 프로젝트의 대안 목록 조회 - criteria?type=alternative 필터링
   getAlternatives: (projectId: string) =>
-    makeRequest<AlternativeData[]>(`/api/service/projects/projects/${projectId}/alternatives/`),
+    makeRequest<AlternativeData[]>(`/api/service/projects/criteria/?project=${projectId}&type=alternative`),
 
-  // 대안 생성
+  // 대안 생성 - ProjectViewSet.add_criteria 액션 (data.project_id에서 URL 구성)
   createAlternative: (data: Omit<AlternativeData, 'id'>) =>
-    makeRequest<AlternativeData>('/api/service/projects/alternatives/', {
+    makeRequest<AlternativeData>(`/api/service/projects/projects/${data.project_id}/add_criteria/`, {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify({ ...data, type: 'alternative' })
     }),
 
-  // 대안 수정
+  // 대안 수정 - criteria/{id}/ 사용
   updateAlternative: (id: string, data: Partial<AlternativeData>) =>
-    makeRequest<AlternativeData>(`/api/service/projects/alternatives/${id}/`, {
+    makeRequest<AlternativeData>(`/api/service/projects/criteria/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(data)
     }),
 
-  // 대안 삭제
+  // 대안 삭제 - criteria/{id}/ 사용
   deleteAlternative: (id: string) =>
-    makeRequest<void>(`/api/service/projects/alternatives/${id}/`, {
+    makeRequest<void>(`/api/service/projects/criteria/${id}/`, {
       method: 'DELETE'
     }),
 
-  // 대안 순서 변경
-  reorderAlternatives: (projectId: string, alternativeIds: string[]) =>
-    makeRequest<void>(`/api/service/projects/projects/${projectId}/alternatives/reorder/`, {
-      method: 'PUT',
-      body: JSON.stringify({ alternativeIds })
-    })
+  // 대안 순서 변경 - 백엔드 미구현 (order 필드 개별 PATCH로 대체 필요)
+  reorderAlternatives: (_projectId: string, _alternativeIds: string[]) =>
+    Promise.reject(new Error('reorderAlternatives: 백엔드 미구현 — criteria order 필드 개별 PATCH 필요'))
 };
 
 // === 평가자 API (Django ProjectMember 사용) ===

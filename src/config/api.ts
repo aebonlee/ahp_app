@@ -48,12 +48,13 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/service/projects/criteria/${id}/`,
     DELETE: (id: string) => `/api/service/projects/criteria/${id}/`
   },
-  // Alternatives - TODO: 백엔드 미구현, projects 앱에 추가 필요
+  // Alternatives - Criteria 모델의 type='alternative' 필터링으로 구현됨 (확인: 2026-02-18)
+  // CriteriaViewSet filterset_fields: ['project', 'type', 'parent', 'level']
   ALTERNATIVES: {
-    LIST: (projectId: string) => `/api/service/projects/projects/${projectId}/alternatives/`,
-    CREATE: (projectId: string) => `/api/service/projects/projects/${projectId}/alternatives/`,
-    UPDATE: (projectId: string, id: string) => `/api/service/projects/projects/${projectId}/alternatives/${id}/`,
-    DELETE: (projectId: string, id: string) => `/api/service/projects/projects/${projectId}/alternatives/${id}/`
+    LIST: (projectId: string) => `/api/service/projects/criteria/?project=${projectId}&type=alternative`,
+    CREATE: (projectId: string) => `/api/service/projects/projects/${projectId}/add_criteria/`,
+    UPDATE: (_projectId: string, id: string) => `/api/service/projects/criteria/${id}/`,
+    DELETE: (_projectId: string, id: string) => `/api/service/projects/criteria/${id}/`
   },
   // Evaluations (쌍대비교 세션)
   EVALUATIONS: {
