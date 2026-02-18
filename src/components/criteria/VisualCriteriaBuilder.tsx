@@ -161,8 +161,45 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
     e.preventDefault();
     if (!draggedNodeId || draggedNodeId === targetId) return;
 
-    // TODO: 노드 이동 로직 구현
-    console.log(`Moving ${draggedNodeId} to ${targetId}`);
+    const isDescendant = (node: CriteriaNode, searchId: string): boolean =>
+      node.children.some(c => c.id === searchId || isDescendant(c, searchId));
+
+    setCriteria(prev => {
+      const dragged = findNode(prev, draggedNodeId!);
+      if (!dragged) return prev;
+
+      // 대상 노드가 드래그 노드의 자손이면 이동 금지
+      if (isDescendant(dragged, targetId)) return prev;
+
+      const removeNode = (nodes: CriteriaNode[], id: string): CriteriaNode[] =>
+        nodes
+          .filter(n => n.id !== id)
+          .map(n => ({ ...n, children: removeNode(n.children, id) }));
+
+      const updateLevels = (nodes: CriteriaNode[], parentLevel: number): CriteriaNode[] =>
+        nodes.map(n => ({
+          ...n,
+          level: parentLevel + 1,
+          children: updateLevels(n.children, parentLevel + 1),
+        }));
+
+      const addToTarget = (nodes: CriteriaNode[], tid: string, nodeToAdd: CriteriaNode): CriteriaNode[] =>
+        nodes.map(n => {
+          if (n.id === tid) {
+            const newChild = { ...nodeToAdd, parent_id: tid };
+            return {
+              ...n,
+              isExpanded: true,
+              children: [...n.children, ...updateLevels([newChild], n.level)],
+            };
+          }
+          return { ...n, children: addToTarget(n.children, tid, nodeToAdd) };
+        });
+
+      const withoutDragged = removeNode(prev, draggedNodeId!);
+      return addToTarget(withoutDragged, targetId, dragged);
+    });
+
     setDraggedNodeId(null);
   };
 

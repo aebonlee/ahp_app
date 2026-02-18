@@ -163,10 +163,22 @@ export const useColorTheme = () => {
     applyColorTheme(currentTheme);
   }, [currentTheme]);
 
-  // Change theme and persist (localStorage 제거)
+  // Change theme and persist to user profile API
   const changeColorTheme = (theme: ColorTheme) => {
     setCurrentTheme(theme);
-    // TODO: 사용자 프로필 API를 통해 테마 설정 저장
+    // Fire-and-forget: persist color theme to profile
+    import('../services/authService').then(({ default: authService }) => {
+      import('../config/api').then(({ API_BASE_URL, API_ENDPOINTS }) => {
+        const token = authService.getAccessToken();
+        if (!token) return;
+        fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.PROFILE}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          credentials: 'include',
+          body: JSON.stringify({ preferences: { color_theme: theme } }),
+        }).catch(() => {/* API 미지원 시 무시 */});
+      });
+    });
   };
 
   // Get all available themes

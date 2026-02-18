@@ -1,11 +1,24 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import authService from '../services/authService';
 
 export type Theme = 'light' | 'dark' | 'system';
 
+const persistThemePreference = (themeMode: string, colorTheme?: string) => {
+  const token = authService.getAccessToken();
+  if (!token) return;
+  fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.PROFILE}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    credentials: 'include',
+    body: JSON.stringify({ preferences: { theme_mode: themeMode, ...(colorTheme ? { color_theme: colorTheme } : {}) } }),
+  }).catch(() => {/* 프로필 API가 미지원이면 무시 */});
+};
+
 export const useTheme = () => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // localStorage 제거됨 - 사용자 프로필 API에서 불러오도록 개선 예정
-    return 'system'; // 기본값
+    // 사용자 프로필 API에서 로드 (초기값 system)
+    return 'system';
   });
 
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
@@ -49,12 +62,12 @@ export const useTheme = () => {
     const currentIndex = themes.indexOf(theme);
     const nextTheme = themes[(currentIndex + 1) % themes.length];
     setTheme(nextTheme);
-    // TODO: 사용자 프로필 API를 통해 테마 설정 저장
+    persistThemePreference(nextTheme);
   };
 
   const setThemeMode = (newTheme: Theme) => {
     setTheme(newTheme);
-    // TODO: 사용자 프로필 API를 통해 테마 설정 저장
+    persistThemePreference(newTheme);
   };
 
   return {

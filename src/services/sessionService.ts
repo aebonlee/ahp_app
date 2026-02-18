@@ -82,16 +82,22 @@ class SessionService {
 
   // 세션 연장 (30분 추가)
   public extendSession(): void {
-    // JWT 토큰 연장은 서버에서 처리
-    // TODO: API 호출로 서버 세션 연장 처리
-    
-    // 30분(1800초) 연장을 위한 타이머 재시작
+    // JWT 리프레시 토큰으로 서버 세션 연장
+    authService.refreshAccessToken().then(result => {
+      if (!result.success) {
+        console.warn('서버 세션 연장 실패:', result.error);
+      }
+    }).catch(err => {
+      console.warn('세션 연장 API 오류:', err);
+    });
+
+    // 클라이언트 타이머 재시작
     this.clearTimers();
-    this.resumeSessionTimer(this.SESSION_DURATION); // 새로운 30분 세션 시작
+    this.resumeSessionTimer(this.SESSION_DURATION);
     this.hideSessionWarning();
-    
+
     console.log('세션이 30분 연장되었습니다.');
-    
+
     // 사용자에게 연장 확인 알림
     this.showExtensionConfirmation();
   }

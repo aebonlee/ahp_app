@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import authService from '../services/authService';
 
 export type Language = 'ko' | 'en' | 'ja' | 'zh';
 
@@ -151,11 +153,19 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
   });
 
   useEffect(() => {
-    // 언어 설정 저장 (localStorage 제거)
-    // TODO: 사용자 프로필 API를 통해 언어 설정 저장
-    
     // HTML lang 속성 업데이트
     document.documentElement.lang = language;
+
+    // 사용자 프로필 API에 언어 설정 저장 (fire-and-forget)
+    const token = authService.getAccessToken();
+    if (token) {
+      fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.PROFILE}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        body: JSON.stringify({ preferences: { language } }),
+      }).catch(() => {/* API 미지원 시 무시 */});
+    }
   }, [language]);
 
   const t = (key: string, params?: Record<string, string>): string => {

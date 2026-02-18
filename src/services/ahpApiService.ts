@@ -217,10 +217,33 @@ class AHPApiService {
         criteriaWeights[element.id] = weights.localWeights[index];
       });
 
+      // 대안 조회 및 기준별 대안 가중치 계산
+      const alternatives = await this.getMatrixElements(projectId, 'alternatives');
+      const numAlternatives = alternatives.length;
+      const alternativeWeights: { [criterionId: string]: { [alternativeId: string]: number } } = {};
+
+      for (const criterion of elements) {
+        // 대안 간 동일 가중치 (사용자 입력 전 기본값)
+        const altMatrix = Array(numAlternatives).fill(null)
+          .map(() => Array(numAlternatives).fill(1));
+
+        if (numAlternatives > 0) {
+          const altWeights = await this.computeWeights(
+            altMatrix,
+            projectId,
+            `alternatives:${criterion.id}`
+          );
+          alternativeWeights[criterion.id] = {};
+          alternatives.forEach((alt, idx) => {
+            alternativeWeights[criterion.id][alt.id] = altWeights.localWeights[idx] ?? (1 / numAlternatives);
+          });
+        }
+      }
+
       const globalWeights = await this.computeGlobalWeights({
         projectId,
         criteriaWeights,
-        alternativeWeights: {}, // 실제로는 대안별 가중치 필요
+        alternativeWeights,
       });
 
       // 5. 최종 집계 (단일 평가자 예시)

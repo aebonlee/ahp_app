@@ -57,9 +57,28 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
       ]);
 
       const completedEvaluators = evaluators.filter((e: any) => e.status === 'completed');
-      const completionRate = evaluators.length > 0 
+      const completionRate = evaluators.length > 0
         ? Math.round((completedEvaluators.length / evaluators.length) * 100)
         : 0;
+
+      // 실제 일관성 비율 조회
+      let consistencyRatio = 0;
+      try {
+        const token = authService.getAccessToken();
+        const resultHeaders: Record<string, string> = {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+        const resultsRes = await fetch(
+          `${API_BASE_URL}${API_ENDPOINTS.RESULTS.GET(projectId)}`,
+          { headers: resultHeaders, credentials: 'include' }
+        );
+        if (resultsRes.ok) {
+          const resultsData = await resultsRes.json();
+          consistencyRatio = resultsData.consistency_ratio ?? resultsData.consistencyRatio ?? 0;
+        }
+      } catch {
+        // 결과가 아직 없으면 0 유지
+      }
 
       setProjectSummary({
         totalCriteria: criteria.length,
@@ -69,7 +88,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
         completionRate,
         pendingEvaluators: evaluators.filter((e: any) => e.status === 'pending').length,
         activeEvaluators: evaluators.filter((e: any) => e.status === 'active').length,
-        consistencyRatio: 0.08, // TODO: 실제 CR 계산 필요
+        consistencyRatio,
         createdDate: new Date().toLocaleDateString('ko-KR'),
         lastModified: new Date().toLocaleDateString('ko-KR')
       });
