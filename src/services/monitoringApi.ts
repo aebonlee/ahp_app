@@ -17,7 +17,7 @@ import type {
   DashboardFilter
 } from '../types/monitoring';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import { API_BASE_URL } from '../config/api';
 
 /**
  * 인증 토큰 가져오기
@@ -559,9 +559,10 @@ export function connectToMonitoringWebSocket(
   onMessage?: (data: any) => void,
   onError?: (error: Event) => void
 ): WebSocket {
+  const wsBase = API_BASE_URL.replace(/^https?:///, 'wss://').replace(/^http:///, 'ws://');
   const wsUrl = projectId 
-    ? `ws://localhost:8000/ws/monitoring/${projectId}/`
-    : `ws://localhost:8000/ws/monitoring/global/`;
+    ? `${wsBase}/ws/monitoring/${projectId}/`
+    : `${wsBase}/ws/monitoring/global/`;
     
   const ws = new WebSocket(wsUrl);
 

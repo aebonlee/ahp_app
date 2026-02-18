@@ -106,7 +106,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
 
   const loadProjectEvaluators = useCallback(async () => {
     try {
-      const response = await fetch(`https://ahp-platform.onrender.com/api/projects/${projectId}/evaluators`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/evaluators`, {
         headers: {
           'Content-Type': 'application/json'
         }

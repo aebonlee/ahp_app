@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Card from '../common/Card';
+import { API_BASE_URL } from '../../config/api';
 
 interface AccessKeyLoginProps {
   onLogin: (evaluatorId: string, projectId: string, evaluatorName: string) => void;
@@ -20,9 +21,6 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
   const [error, setError] = useState('');
   const [keyInfo, setKeyInfo] = useState<AccessKeyInfo | null>(null);
 
-  const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:5000' 
-    : 'https://ahp-platform.onrender.com';
 
   const parseAccessKey = (key: string): { evaluatorCode: string; projectCode: string } | null => {
     // 접속키 형식: "P001-PROJ1234" 또는 "E002-ABC12345"

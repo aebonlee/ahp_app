@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config/api';
 // Subscription and Payment Service
 import { 
   SubscriptionPlan, 
@@ -15,9 +16,7 @@ class SubscriptionService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:8000' 
-      : 'https://ahp-django-backend.onrender.com';
+    this.baseUrl = API_BASE_URL;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
