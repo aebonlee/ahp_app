@@ -16,6 +16,7 @@ import {
   EyeIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
+import { API_BASE_URL } from '../../config/api';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import type {
@@ -79,7 +80,7 @@ const AIResultInterpretation: React.FC<AIResultInterpretationProps> = ({
   const generateInsights = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch('/api/analysis/ai-interpretation', {
+      const response = await fetch(`${API_BASE_URL}/api/analysis/ai-interpretation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

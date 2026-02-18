@@ -12,6 +12,7 @@ import {
   ExclamationTriangleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
+import { API_BASE_URL } from '../../../config/api';
 import Card from '../../common/Card';
 import Button from '../../common/Button';
 import type {
@@ -54,7 +55,7 @@ const GroupEvaluationDashboard: React.FC<GroupEvaluationDashboardProps> = ({
     setError(null);
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/evaluation-groups`, {
+      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/evaluation-groups`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +81,7 @@ const GroupEvaluationDashboard: React.FC<GroupEvaluationDashboardProps> = ({
   // 그룹 멤버 로드
   const loadGroupMembers = useCallback(async (groupId: string) => {
     try {
-      const response = await fetch(`/api/evaluation-groups/${groupId}/members`, {
+      const response = await fetch(`${API_BASE_URL}/api/evaluation-groups/${groupId}/members`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ const GroupEvaluationDashboard: React.FC<GroupEvaluationDashboardProps> = ({
   // 현재 세션 로드
   const loadCurrentSession = useCallback(async (groupId: string) => {
     try {
-      const response = await fetch(`/api/evaluation-groups/${groupId}/current-session`, {
+      const response = await fetch(`${API_BASE_URL}/api/evaluation-groups/${groupId}/current-session`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -193,7 +194,7 @@ const GroupEvaluationDashboard: React.FC<GroupEvaluationDashboardProps> = ({
     maxEvaluators: number;
   }) => {
     try {
-      const response = await fetch('/api/evaluation-groups', {
+      const response = await fetch(`${API_BASE_URL}/api/evaluation-groups`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +226,7 @@ const GroupEvaluationDashboard: React.FC<GroupEvaluationDashboardProps> = ({
   // 그룹 참여
   const handleJoinGroup = async (groupId: string, expertiseLevel: number) => {
     try {
-      const response = await fetch(`/api/evaluation-groups/${groupId}/join`, {
+      const response = await fetch(`${API_BASE_URL}/api/evaluation-groups/${groupId}/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -254,7 +255,7 @@ const GroupEvaluationDashboard: React.FC<GroupEvaluationDashboardProps> = ({
     if (!selectedGroup) return;
 
     try {
-      const response = await fetch('/api/group-evaluation-sessions', {
+      const response = await fetch(`${API_BASE_URL}/api/group-evaluation-sessions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

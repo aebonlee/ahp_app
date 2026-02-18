@@ -13,6 +13,7 @@ import {
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { BellIcon as BellSolidIcon } from '@heroicons/react/24/solid';
+import { API_BASE_URL } from '../../config/api';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import type {
@@ -73,7 +74,7 @@ const AlertSystem: React.FC<AlertSystemProps> = ({
   const loadAlerts = useCallback(async () => {
     try {
       const alertsResponse = await fetch(
-        `/api/monitoring/alerts${projectId ? `?projectId=${projectId}` : ''}`,
+        `${API_BASE_URL}/api/monitoring/alerts${projectId ? `?projectId=${projectId}` : ''}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -89,7 +90,7 @@ const AlertSystem: React.FC<AlertSystemProps> = ({
       }
 
       const anomaliesResponse = await fetch(
-        `/api/monitoring/anomalies${projectId ? `?projectId=${projectId}` : ''}`,
+        `${API_BASE_URL}/api/monitoring/anomalies${projectId ? `?projectId=${projectId}` : ''}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -159,7 +160,7 @@ const AlertSystem: React.FC<AlertSystemProps> = ({
   // 알림 액션 처리
   const handleAlertAction = useCallback(async (alertId: string, action: 'acknowledge' | 'resolve') => {
     try {
-      const response = await fetch(`/api/monitoring/alerts/${alertId}/${action}`, {
+      const response = await fetch(`${API_BASE_URL}/api/monitoring/alerts/${alertId}/${action}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -195,7 +196,7 @@ const AlertSystem: React.FC<AlertSystemProps> = ({
   // 이상 상황 해결 처리
   const handleAnomalyResolve = useCallback(async (anomalyId: string, resolution: string) => {
     try {
-      const response = await fetch(`/api/monitoring/anomalies/${anomalyId}/resolve`, {
+      const response = await fetch(`${API_BASE_URL}/api/monitoring/anomalies/${anomalyId}/resolve`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -294,7 +295,7 @@ const AlertSystem: React.FC<AlertSystemProps> = ({
 
     const handleCreateRule = async () => {
       try {
-        const response = await fetch('/api/monitoring/alert-rules', {
+        const response = await fetch(`${API_BASE_URL}/api/monitoring/alert-rules`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

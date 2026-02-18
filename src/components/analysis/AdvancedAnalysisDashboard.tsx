@@ -13,6 +13,7 @@ import {
   CheckCircleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
+import { API_BASE_URL } from '../../config/api';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import SensitivityAnalysisDashboard from './SensitivityAnalysisDashboard';
@@ -75,7 +76,7 @@ const AdvancedAnalysisDashboard: React.FC<AdvancedAnalysisDashboardProps> = ({
     setProgress({ phase: '종합 분석 시작', progress: 0, message: '분석 파이프라인을 초기화하고 있습니다...' });
 
     try {
-      const response = await fetch('/api/analysis/comprehensive', {
+      const response = await fetch(`${API_BASE_URL}/api/analysis/comprehensive`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +161,7 @@ const AdvancedAnalysisDashboard: React.FC<AdvancedAnalysisDashboardProps> = ({
     }
 
     try {
-      const response = await fetch('/api/analysis/export', {
+      const response = await fetch(`${API_BASE_URL}/api/analysis/export`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

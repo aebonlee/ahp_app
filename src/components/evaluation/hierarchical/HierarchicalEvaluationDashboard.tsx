@@ -9,9 +9,10 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon 
 } from '@heroicons/react/24/outline';
+import { API_BASE_URL } from '../../../config/api';
 import Card from '../../common/Card';
 import Button from '../../common/Button';
-import type { 
+import type {
   HierarchyNode, 
   EvaluationSession, 
   EvaluationProgress,
@@ -160,7 +161,7 @@ const HierarchicalEvaluationDashboard: React.FC<HierarchicalEvaluationDashboardP
     setError(null);
     
     try {
-      const response = await fetch(`/api/projects/${projectId}/hierarchy`, {
+      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/hierarchy`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -196,7 +197,7 @@ const HierarchicalEvaluationDashboard: React.FC<HierarchicalEvaluationDashboardP
   const checkExistingSession = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/evaluation-sessions?projectId=${projectId}&evaluatorId=${evaluatorId}&status=in_progress`,
+        `${API_BASE_URL}/api/evaluation-sessions?projectId=${projectId}&evaluatorId=${evaluatorId}&status=in_progress`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -220,7 +221,7 @@ const HierarchicalEvaluationDashboard: React.FC<HierarchicalEvaluationDashboardP
   // 평가 진행률 로드
   const loadEvaluationProgress = async (sessionId: string) => {
     try {
-      const response = await fetch(`/api/evaluation-sessions/${sessionId}/progress`, {
+      const response = await fetch(`${API_BASE_URL}/api/evaluation-sessions/${sessionId}/progress`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -244,7 +245,7 @@ const HierarchicalEvaluationDashboard: React.FC<HierarchicalEvaluationDashboardP
     setError(null);
 
     try {
-      const response = await fetch('/api/evaluation-sessions', {
+      const response = await fetch(`${API_BASE_URL}/api/evaluation-sessions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -287,7 +288,7 @@ const HierarchicalEvaluationDashboard: React.FC<HierarchicalEvaluationDashboardP
     const newStatus = currentSession.status === 'in_progress' ? 'paused' : 'in_progress';
 
     try {
-      const response = await fetch(`/api/evaluation-sessions/${currentSession.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/evaluation-sessions/${currentSession.id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

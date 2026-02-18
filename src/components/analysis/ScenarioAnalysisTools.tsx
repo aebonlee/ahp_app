@@ -16,6 +16,7 @@ import {
   InformationCircleIcon,
   ArrowsRightLeftIcon
 } from '@heroicons/react/24/outline';
+import { API_BASE_URL } from '../../config/api';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import type {
@@ -93,7 +94,7 @@ const ScenarioAnalysisTools: React.FC<ScenarioAnalysisToolsProps> = ({
   // 프로젝트 데이터 로드
   const loadProjectData = useCallback(async () => {
     try {
-      const response = await fetch(`/api/projects/${projectId}/structure`, {
+      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/structure`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
       });
       
@@ -183,7 +184,7 @@ const ScenarioAnalysisTools: React.FC<ScenarioAnalysisToolsProps> = ({
   const executeScenario = useCallback(async (scenario: ScenarioDefinition) => {
     setStatus('loading');
     try {
-      const response = await fetch('/api/analysis/scenario/execute', {
+      const response = await fetch(`${API_BASE_URL}/api/analysis/scenario/execute`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -216,7 +217,7 @@ const ScenarioAnalysisTools: React.FC<ScenarioAnalysisToolsProps> = ({
 
     setGoalSeeking(prev => ({ ...prev, isRunning: true }));
     try {
-      const response = await fetch('/api/analysis/goal-seeking', {
+      const response = await fetch(`${API_BASE_URL}/api/analysis/goal-seeking`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +254,7 @@ const ScenarioAnalysisTools: React.FC<ScenarioAnalysisToolsProps> = ({
     try {
       const selectedScenarioData = scenarios.filter(s => selectedScenarios.includes(s.id));
       
-      const response = await fetch('/api/analysis/scenario/compare', {
+      const response = await fetch(`${API_BASE_URL}/api/analysis/scenario/compare`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

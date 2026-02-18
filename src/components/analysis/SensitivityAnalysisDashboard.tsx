@@ -14,6 +14,7 @@ import {
   ArrowPathIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
+import { API_BASE_URL } from '../../config/api';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import type {
@@ -64,7 +65,7 @@ const SensitivityAnalysisDashboard: React.FC<SensitivityDashboardProps> = ({
     setProgress({ phase: '분석 초기화', progress: 0, message: '민감도 분석을 시작합니다...' });
 
     try {
-      const response = await fetch('/api/analysis/sensitivity', {
+      const response = await fetch(`${API_BASE_URL}/api/analysis/sensitivity`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
