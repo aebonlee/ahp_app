@@ -57,7 +57,7 @@ const SecureLoginFormContent: React.FC<SecureLoginFormProps> = ({
     }
 
     if (securityErrors.length > 0) {
-      alert('보안 오류가 있습니다. 입력을 확인해주세요.');
+      // Security errors are already displayed in the securityErrors panel below the form
       return;
     }
 
@@ -76,7 +76,7 @@ const SecureLoginFormContent: React.FC<SecureLoginFormProps> = ({
   const handleRateLimitExceeded = (resetTime: number) => {
     setRateLimitExceeded(true);
     const resetDate = new Date(resetTime);
-    alert(`너무 많은 로그인 시도가 있었습니다. ${resetDate.toLocaleTimeString()} 이후에 다시 시도해주세요.`);
+    setSecurityErrors([`너무 많은 로그인 시도가 있었습니다. ${resetDate.toLocaleTimeString()} 이후에 다시 시도해주세요.`]);
   };
 
   const getUserIdentifier = () => {

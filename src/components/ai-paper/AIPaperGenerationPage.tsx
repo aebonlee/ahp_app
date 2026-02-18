@@ -41,6 +41,13 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [paperSections, setPaperSections] = useState<PaperSection[]>([]);
+  const [paperMessage, setPaperMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showPaperMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setPaperMessage({ type, text });
+    setTimeout(() => setPaperMessage(null), 3000);
+  };
+
   const [paperSettings, setPaperSettings] = useState({
     paperType: 'journal',
     language: 'korean',
@@ -203,7 +210,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
 
     // 실제 구현에서는 서버로 내보내기 요청
     console.log(`논문을 ${format} 형식으로 내보내기:`, paperContent);
-    alert(`${format.toUpperCase()} 형식으로 논문이 생성되었습니다. (구현 예정)`);
+    showPaperMessage('info', `${format.toUpperCase()} 형식으로 논문이 생성되었습니다. (구현 예정)`);
   };
 
   const renderProjectSelection = () => (
@@ -628,6 +635,17 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Inline message banner */}
+        {paperMessage && (
+          <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+            paperMessage.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+            paperMessage.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+            'bg-blue-100 text-blue-800 border border-blue-200'
+          }`}>
+            {paperMessage.text}
+          </div>
+        )}
+
         {/* 소개 섹션 */}
         <div className="mb-8">
           <div className="text-center space-y-6">

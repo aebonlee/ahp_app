@@ -107,13 +107,12 @@ const ProjectSelection: React.FC<ProjectSelectionProps> = ({
     if (project.status === 'completed') {
       return; // 완료된 프로젝트는 재입장 불가
     }
-    
-    // Workshop access restriction check
+
+    // Workshop access restriction check — message is shown inline via the badge below the button
     if (!project.workshopActive) {
-      alert(MESSAGES.WORKSHOP_ACCESS_RESTRICTED);
       return;
     }
-    
+
     onProjectSelect(project.id, project.title, project.evaluationMethod);
   };
 

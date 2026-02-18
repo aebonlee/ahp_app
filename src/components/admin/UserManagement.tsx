@@ -48,6 +48,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     status: 'active' as 'active' | 'inactive'
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [deleteError, setDeleteError] = useState<string>('');
 
   // 필터링된 사용자 목록
   const filteredUsers = users.filter(user => {
@@ -165,10 +166,11 @@ const UserManagement: React.FC<UserManagementProps> = ({
 
   const handleDelete = async (user: User) => {
     if (window.confirm(`사용자 "${user.first_name} ${user.last_name}"를 정말 삭제하시겠습니까?`)) {
+      setDeleteError('');
       try {
         await onDeleteUser(user.id);
       } catch (error) {
-        alert(error instanceof Error ? error.message : '사용자 삭제에 실패했습니다.');
+        setDeleteError(error instanceof Error ? error.message : '사용자 삭제에 실패했습니다.');
       }
     }
   };
@@ -277,6 +279,11 @@ const UserManagement: React.FC<UserManagementProps> = ({
             <div className="text-sm text-yellow-700">활성 사용자</div>
           </div>
         </div>
+
+        {/* 삭제 오류 메시지 */}
+        {deleteError && (
+          <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-lg text-sm">{deleteError}</div>
+        )}
 
         {/* 사용자 목록 */}
         {loading ? (

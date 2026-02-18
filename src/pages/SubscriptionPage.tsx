@@ -29,6 +29,12 @@ const SubscriptionPage: React.FC = () => {
   const [usageReport, setUsageReport] = useState<UsageReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [subscriptionMessage, setSubscriptionMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showSubscriptionMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setSubscriptionMessage({ type, text });
+    setTimeout(() => setSubscriptionMessage(null), 3000);
+  };
 
   // Mock user with existing subscription for demo
   const [user] = useState({
@@ -137,12 +143,12 @@ const SubscriptionPage: React.FC = () => {
 
     if (tier === PricingTier.FREE) {
       // Handle free plan signup
-      alert('무료 플랜으로 시작하기 - 가입 프로세스를 진행합니다.');
+      showSubscriptionMessage('info', '무료 플랜으로 시작하기 - 가입 프로세스를 진행합니다.');
       return;
     }
 
     // Handle paid plan selection
-    alert(`${tier} 플랜 (${billingCycle}) 선택됨 - 결제 프로세스를 진행합니다.`);
+    showSubscriptionMessage('info', `${tier} 플랜 (${billingCycle}) 선택됨 - 결제 프로세스를 진행합니다.`);
   };
 
   const handleUpgrade = async (newTier: PricingTier) => {
@@ -162,49 +168,49 @@ const SubscriptionPage: React.FC = () => {
         updatedAt: new Date().toISOString()
       });
       
-      alert(`${newTier} 플랜으로 업그레이드되었습니다.`);
+      showSubscriptionMessage('success', `${newTier} 플랜으로 업그레이드되었습니다.`);
     } catch (err) {
-      alert('업그레이드 중 오류가 발생했습니다.');
+      showSubscriptionMessage('error', '업그레이드 중 오류가 발생했습니다.');
     }
   };
 
   const handleDowngrade = async (newTier: PricingTier) => {
     if (!subscription) return;
-    
+
     try {
       console.log('Downgrading to:', newTier);
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      alert(`${newTier} 플랜으로 다운그레이드가 예약되었습니다. 현재 결제 기간 종료 후 적용됩니다.`);
+
+      showSubscriptionMessage('info', `${newTier} 플랜으로 다운그레이드가 예약되었습니다. 현재 결제 기간 종료 후 적용됩니다.`);
     } catch (err) {
-      alert('다운그레이드 중 오류가 발생했습니다.');
+      showSubscriptionMessage('error', '다운그레이드 중 오류가 발생했습니다.');
     }
   };
 
   const handleCancel = async (reason?: string) => {
     if (!subscription) return;
-    
+
     try {
       console.log('Canceling subscription with reason:', reason);
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setSubscription({
         ...subscription,
         status: SubscriptionStatus.CANCELED,
         canceledAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
-      
-      alert('구독이 취소되었습니다. 현재 결제 기간 종료까지 계속 이용할 수 있습니다.');
+
+      showSubscriptionMessage('info', '구독이 취소되었습니다. 현재 결제 기간 종료까지 계속 이용할 수 있습니다.');
     } catch (err) {
-      alert('구독 취소 중 오류가 발생했습니다.');
+      showSubscriptionMessage('error', '구독 취소 중 오류가 발생했습니다.');
     }
   };
 
   const handleUpdatePaymentMethod = async () => {
-    alert('결제 방법 업데이트 - Stripe Elements 모달을 표시합니다.');
+    showSubscriptionMessage('info', '결제 방법 업데이트 - Stripe Elements 모달을 표시합니다.');
   };
 
   const tabs = [
@@ -242,6 +248,11 @@ const SubscriptionPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {subscriptionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm ${subscriptionMessage.type === 'success' ? 'bg-green-600' : subscriptionMessage.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>
+          {subscriptionMessage.text}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 헤더 */}
         <div className="mb-8">

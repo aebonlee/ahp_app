@@ -40,6 +40,12 @@ const EvaluatorInvitationManager: React.FC<EvaluatorInvitationManagerProps> = ({
 
   const [statusFilter, setStatusFilter] = useState<InvitationStatus | 'all'>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [inviteMessage, setInviteMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showInviteMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setInviteMessage({ type, text });
+    setTimeout(() => setInviteMessage(null), 3000);
+  };
 
   useEffect(() => {
     fetchInvitations(projectId, statusFilter === 'all' ? undefined : statusFilter);
@@ -47,13 +53,13 @@ const EvaluatorInvitationManager: React.FC<EvaluatorInvitationManagerProps> = ({
 
   const handleResend = useCallback(async (invitationId: string, reminderCount: number) => {
     if (reminderCount >= 3) {
-      alert('최대 재발송 횟수(3회)에 도달했습니다. 토큰을 재생성하세요.');
+      showInviteMessage('error', '최대 재발송 횟수(3회)에 도달했습니다. 토큰을 재생성하세요.');
       return;
     }
     setActionLoading(invitationId);
     const success = await resendInvitation(invitationId);
     setActionLoading(null);
-    if (success) alert('리마인더 이메일이 발송되었습니다.');
+    if (success) showInviteMessage('success', '리마인더 이메일이 발송되었습니다.');
   }, [resendInvitation]);
 
   const handleRevoke = useCallback(async (invitationId: string) => {
@@ -68,7 +74,7 @@ const EvaluatorInvitationManager: React.FC<EvaluatorInvitationManagerProps> = ({
     setActionLoading(invitationId);
     const success = await regenerateToken(invitationId, 7);
     setActionLoading(null);
-    if (success) alert('새 초대 링크가 발송되었습니다.');
+    if (success) showInviteMessage('success', '새 초대 링크가 발송되었습니다.');
   }, [regenerateToken]);
 
   const getStatusIcon = (status: InvitationStatus) => {
@@ -124,6 +130,11 @@ const EvaluatorInvitationManager: React.FC<EvaluatorInvitationManagerProps> = ({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      {inviteMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm ${inviteMessage.type === 'success' ? 'bg-green-600' : inviteMessage.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>
+          {inviteMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">

@@ -42,6 +42,12 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [resetConfirm, setResetConfirm] = useState('');
   const [keepArchives, setKeepArchives] = useState(true);
+  const [usageMessage, setUsageMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showUsageMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setUsageMessage({ type, text });
+    setTimeout(() => setUsageMessage(null), 3000);
+  };
 
   // 구독 정보 및 사용량 로드
   useEffect(() => {
@@ -102,21 +108,21 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
       });
 
       if (response.ok) {
-        alert(`사용기간이 ${days}일 연장되었습니다.`);
+        showUsageMessage('success', `사용기간이 ${days}일 연장되었습니다.`);
         loadSubscriptionData();
       } else {
         const error = await response.json();
-        alert(`연장 실패: ${error.message}`);
+        showUsageMessage('error', `연장 실패: ${error.message}`);
       }
     } catch (error) {
       console.error('Failed to extend trial:', error);
-      alert('연장 중 오류가 발생했습니다.');
+      showUsageMessage('error', '연장 중 오류가 발생했습니다.');
     }
   };
 
   const handleResetData = async () => {
     if (!resetConfirm) {
-      alert('비밀번호를 입력해주세요.');
+      showUsageMessage('error', '비밀번호를 입력해주세요.');
       return;
     }
 
@@ -139,16 +145,16 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
 
       if (response.ok) {
         const result = await response.json();
-        alert(`데이터 초기화 완료: ${result.deleted_projects}개 프로젝트 삭제`);
+        showUsageMessage('success', `데이터 초기화 완료: ${result.deleted_projects}개 프로젝트 삭제`);
         setResetConfirm('');
         loadUsageData();
       } else {
         const error = await response.json();
-        alert(`초기화 실패: ${error.message}`);
+        showUsageMessage('error', `초기화 실패: ${error.message}`);
       }
     } catch (error) {
       console.error('Failed to reset data:', error);
-      alert('초기화 중 오류가 발생했습니다.');
+      showUsageMessage('error', '초기화 중 오류가 발생했습니다.');
     }
   };
 
@@ -179,6 +185,11 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      {usageMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm ${usageMessage.type === 'success' ? 'bg-green-600' : usageMessage.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>
+          {usageMessage.text}
+        </div>
+      )}
       <div className="border-b sticky top-0 z-10" style={{ 
         backgroundColor: 'var(--bg-primary)',
         borderBottomColor: 'var(--border-subtle)'

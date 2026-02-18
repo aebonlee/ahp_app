@@ -55,6 +55,13 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
   const [selectedTemplate, setSelectedTemplate] = useState<MaterialTemplate | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generatedMaterial, setGeneratedMaterial] = useState<GeneratedMaterial | null>(null);
+  const [materialsMessage, setMaterialsMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showMaterialsMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setMaterialsMessage({ type, text });
+    setTimeout(() => setMaterialsMessage(null), 3000);
+  };
+
   const [generationSettings, setGenerationSettings] = useState({
     includeMethodology: true,
     includeResults: true,
@@ -147,7 +154,7 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
   // AI 자료 생성 시작
   const startGeneration = async () => {
     if (!selectedProject || !selectedTemplate) {
-      alert('프로젝트와 자료 유형을 선택해주세요.');
+      showMaterialsMessage('error', '프로젝트와 자료 유형을 선택해주세요.');
       return;
     }
 
@@ -180,7 +187,7 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
       setActiveTab('result');
     } catch (error) {
       console.error('자료 생성 실패:', error);
-      alert('자료 생성 중 오류가 발생했습니다.');
+      showMaterialsMessage('error', '자료 생성 중 오류가 발생했습니다.');
     } finally {
       setGenerating(false);
     }
@@ -755,7 +762,7 @@ ${selectedProject?.title} AHP 분석 연구
           <button
             onClick={() => {
               console.log('Word 다운로드');
-              alert('Word 파일이 다운로드됩니다. (구현 예정)');
+              showMaterialsMessage('info', 'Word 파일이 다운로드됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
             style={{ backgroundColor: 'var(--accent-primary)' }}
@@ -766,7 +773,7 @@ ${selectedProject?.title} AHP 분석 연구
           <button
             onClick={() => {
               console.log('PDF 다운로드');
-              alert('PDF 파일이 다운로드됩니다. (구현 예정)');
+              showMaterialsMessage('info', 'PDF 파일이 다운로드됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold transition-colors"
             style={{ backgroundColor: 'var(--success-primary)', color: 'var(--text-primary)' }}
@@ -777,7 +784,7 @@ ${selectedProject?.title} AHP 분석 연구
           <button
             onClick={() => {
               console.log('이메일 전송');
-              alert('이메일로 전송됩니다. (구현 예정)');
+              showMaterialsMessage('info', '이메일로 전송됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
             style={{ backgroundColor: 'var(--warning-primary)' }}
@@ -833,6 +840,17 @@ ${selectedProject?.title} AHP 분석 연구
       />
       
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Inline message banner */}
+        {materialsMessage && (
+          <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+            materialsMessage.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+            materialsMessage.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+            'bg-blue-100 text-blue-800 border border-blue-200'
+          }`}>
+            {materialsMessage.text}
+          </div>
+        )}
+
         {/* 탭 네비게이션 */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>

@@ -52,6 +52,12 @@ const AISettingsManager: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingSettings, setEditingSettings] = useState<AIServiceSettings | null>(null);
   const [testingConnection, setTestingConnection] = useState<number | null>(null);
+  const [connectionMessage, setConnectionMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showConnectionMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setConnectionMessage({ type, text });
+    setTimeout(() => setConnectionMessage(null), 3000);
+  };
   
   const [formData, setFormData] = useState<SettingsFormData>({
     name: '',
@@ -180,13 +186,13 @@ const AISettingsManager: React.FC = () => {
       const result = await response.json();
       
       if (result.success) {
-        alert('연결 테스트 성공!');
+        showConnectionMessage('success', '연결 테스트 성공!');
       } else {
-        alert(`연결 테스트 실패: ${result.message}`);
+        showConnectionMessage('error', `연결 테스트 실패: ${result.message}`);
       }
     } catch (error) {
       console.error('Connection test failed:', error);
-      alert('연결 테스트 중 오류가 발생했습니다.');
+      showConnectionMessage('error', '연결 테스트 중 오류가 발생했습니다.');
     } finally {
       setTestingConnection(null);
     }
@@ -546,6 +552,12 @@ const AISettingsManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {connectionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm ${connectionMessage.type === 'success' ? 'bg-green-600' : connectionMessage.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>
+          {connectionMessage.text}
+        </div>
+      )}
+
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>

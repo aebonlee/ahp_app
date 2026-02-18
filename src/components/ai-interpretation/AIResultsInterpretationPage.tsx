@@ -72,6 +72,13 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [interpretationMessage, setInterpretationMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showInterpretationMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setInterpretationMessage({ type, text });
+    setTimeout(() => setInterpretationMessage(null), 3000);
+  };
+
   const [interpretationSettings, setInterpretationSettings] = useState({
     analysisDepth: 'comprehensive',
     language: 'korean',
@@ -256,7 +263,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
     if (!analysisResult) return;
     
     console.log(`분석 결과를 ${format} 형식으로 내보내기:`, analysisResult);
-    alert(`${format.toUpperCase()} 형식으로 분석 보고서가 생성되었습니다. (구현 예정)`);
+    showInterpretationMessage('info', `${format.toUpperCase()} 형식으로 분석 보고서가 생성되었습니다. (구현 예정)`);
   };
 
   const renderProjectSelection = () => (
@@ -769,6 +776,17 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
       />
       
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Inline message banner */}
+        {interpretationMessage && (
+          <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+            interpretationMessage.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+            interpretationMessage.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+            'bg-blue-100 text-blue-800 border border-blue-200'
+          }`}>
+            {interpretationMessage.text}
+          </div>
+        )}
+
         {/* 탭 네비게이션 */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>

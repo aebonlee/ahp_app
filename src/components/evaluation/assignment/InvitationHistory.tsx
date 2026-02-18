@@ -30,6 +30,12 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, refres
   const [invitations, setInvitations] = useState<BulkInvitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedInvitation, setSelectedInvitation] = useState<BulkInvitation | null>(null);
+  const [historyMessage, setHistoryMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showHistoryMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setHistoryMessage({ type, text });
+    setTimeout(() => setHistoryMessage(null), 3000);
+  };
 
   useEffect(() => {
     loadInvitations();
@@ -88,11 +94,11 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, refres
   const handleResendFailed = async (invitationId: string) => {
     try {
       const response = await api.post(`/evaluations/bulk-invitations/${invitationId}/resend_failed/`);
-      alert(`${response.data.resent_count}개의 이메일을 재발송 대기열에 추가했습니다.`);
+      showHistoryMessage('success', `${response.data.resent_count}개의 이메일을 재발송 대기열에 추가했습니다.`);
       loadInvitations();
     } catch (error) {
       console.error('재발송 실패:', error);
-      alert('재발송에 실패했습니다.');
+      showHistoryMessage('error', '재발송에 실패했습니다.');
     }
   };
 
@@ -108,6 +114,11 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, refres
 
   return (
     <div className="bg-white rounded-2xl shadow-card p-6">
+      {historyMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm ${historyMessage.type === 'success' ? 'bg-green-600' : historyMessage.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>
+          {historyMessage.text}
+        </div>
+      )}
       <h2 className="text-xl font-bold mb-6">초대 발송 기록</h2>
 
       {invitations.length > 0 ? (

@@ -30,6 +30,12 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
 }) => {
   const [criteria, setCriteria] = useState<Criterion[]>(initialCriteria);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [editorMessage, setEditorMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showEditorMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setEditorMessage({ type, text });
+    setTimeout(() => setEditorMessage(null), 3000);
+  };
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [newNodeName, setNewNodeName] = useState('');
@@ -233,7 +239,7 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
     if (!node) return;
 
     // 구현 복잡도가 높아 간단한 알림만 표시
-    alert(`레벨 ${direction === 'up' ? '상위로' : '하위로'} 이동 기능은 준비 중입니다.`);
+    showEditorMessage('info', `레벨 ${direction === 'up' ? '상위로' : '하위로'} 이동 기능은 준비 중입니다.`);
   };
 
   // 드래그 앤 드롭 핸들러
@@ -252,7 +258,7 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
     if (!draggedNodeId || draggedNodeId === targetId) return;
 
     // 드래그 앤 드롭으로 재정렬 (간단한 구현)
-    alert('드래그 앤 드롭으로 순서 변경 기능은 준비 중입니다.');
+    showEditorMessage('info', '드래그 앤 드롭으로 순서 변경 기능은 준비 중입니다.');
     setDraggedNodeId(null);
   };
 
@@ -462,6 +468,11 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
 
   return (
     <div className="space-y-4">
+      {editorMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm ${editorMessage.type === 'success' ? 'bg-green-600' : editorMessage.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>
+          {editorMessage.text}
+        </div>
+      )}
       {/* 툴바 */}
       <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
         <div className="flex items-center space-x-2">

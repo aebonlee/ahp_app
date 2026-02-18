@@ -95,6 +95,12 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
 
   const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [editHistory, setEditHistory] = useState<EditHistoryEntry[]>([]);
+  const [builderMessage, setBuilderMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showBuilderMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setBuilderMessage({ type, text });
+    setTimeout(() => setBuilderMessage(null), 3000);
+  };
   const [showTemplates, setShowTemplates] = useState(false);
   const [showMetadataEditor, setShowMetadataEditor] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -161,7 +167,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
   // 모델 저장
   const handleSave = async () => {
     if (!modelState.hierarchy || !modelState.isValid) {
-      alert('유효하지 않은 모델입니다. 오류를 수정한 후 다시 시도하세요.');
+      showBuilderMessage('error', '유효하지 않은 모델입니다. 오류를 수정한 후 다시 시도하세요.');
       return;
     }
 
@@ -183,7 +189,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
       
     } catch (error) {
       console.error('모델 저장 중 오류 발생:', error);
-      alert('모델 저장에 실패했습니다.');
+      showBuilderMessage('error', '모델 저장에 실패했습니다.');
     }
   };
 
@@ -760,6 +766,11 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {builderMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm ${builderMessage.type === 'success' ? 'bg-green-600' : builderMessage.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>
+          {builderMessage.text}
+        </div>
+      )}
       {/* 헤더 및 도구 모음 */}
       <Card>
         <div className="flex justify-between items-center mb-4">

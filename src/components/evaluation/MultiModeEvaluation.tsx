@@ -104,6 +104,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
   const [confidence, setConfidence] = useState<number>(3); // 1-5 scale
   const [isValidating, setIsValidating] = useState(false);
   const [validationResults, setValidationResults] = useState<any>(null);
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
 
   // 모드별 설명
   const modeDescriptions: { [key in EvaluationMode]: { name: string; description: string; icon: string; difficulty: string } } = {
@@ -389,7 +390,8 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     const isValid = await validateEvaluation();
     
     if (!isValid && settings.validation.completenessCheck) {
-      alert('평가를 완료하기 전에 검증 오류를 수정해주세요.');
+      setValidationMessage('평가를 완료하기 전에 검증 오류를 수정해주세요.');
+      setTimeout(() => setValidationMessage(null), 3000);
       return;
     }
 
@@ -710,6 +712,12 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
               <span className="text-sm font-medium w-12">{confidence}/5</span>
             </div>
           </div>
+
+          {validationMessage && (
+            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">
+              {validationMessage}
+            </div>
+          )}
 
           <div className="flex space-x-3">
             <Button

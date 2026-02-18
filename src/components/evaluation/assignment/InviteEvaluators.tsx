@@ -15,6 +15,7 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
   const [errors, setErrors] = useState<string[]>([]);
   const [bulkEmail, setBulkEmail] = useState('');
   const [inputMode, setInputMode] = useState<'individual' | 'bulk'>('individual');
+  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
 
   const addEmailField = () => {
     setEmails([...emails, '']);
@@ -73,7 +74,8 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
 
     if (result) {
       const skipped = result.duplicates_skipped > 0 ? ` (중복 ${result.duplicates_skipped}명 제외)` : '';
-      alert(`${result.invitations_created}명의 평가자에게 초대를 발송했습니다.${skipped}`);
+      setInviteSuccess(`${result.invitations_created}명의 평가자에게 초대를 발송했습니다.${skipped}`);
+      setTimeout(() => setInviteSuccess(null), 3000);
       setEmails(['']);
       setBulkEmail('');
       setMessage('');
@@ -86,6 +88,10 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
   return (
     <div className="bg-white rounded-2xl shadow-card p-6">
       <h2 className="text-xl font-bold mb-6">평가자 초대</h2>
+
+      {inviteSuccess && (
+        <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-lg text-sm">{inviteSuccess}</div>
+      )}
 
       {/* Input Mode Toggle */}
       <div className="flex gap-2 mb-6">

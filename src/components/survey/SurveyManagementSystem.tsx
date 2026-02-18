@@ -225,11 +225,11 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
               ← 뒤로가기
             </Button>
           )}
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={() => {
               if (surveys.length >= MAX_SURVEYS_PER_PROJECT) {
-                alert(`프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다.\n기존 설문을 삭제한 후 새로 만들어주세요.`);
+                showNotification('info', `프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다. 기존 설문을 삭제한 후 새로 만들어주세요.`);
                 return;
               }
               setCurrentView('create');
@@ -297,7 +297,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
                 size="sm"
                 onClick={() => {
                   if (surveys.length >= MAX_SURVEYS_PER_PROJECT) {
-                    alert(`프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다.\n기존 설문을 삭제한 후 새로 만들어주세요.`);
+                    showNotification('info', `프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다. 기존 설문을 삭제한 후 새로 만들어주세요.`);
                     return;
                   }
                   setCurrentView('create');
@@ -344,11 +344,11 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
             <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
               첫 번째 설문조사를 만들어 평가자들의 정보를 수집해보세요
             </p>
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               onClick={() => {
                 if (surveys.length >= MAX_SURVEYS_PER_PROJECT) {
-                  alert(`프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다.`);
+                  showNotification('info', `프로젝트당 최대 ${MAX_SURVEYS_PER_PROJECT}개의 설문조사만 생성할 수 있습니다.`);
                   return;
                 }
                 setCurrentView('create');
@@ -668,10 +668,10 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
               
               await fetchSurveys(); // 목록 새로고침
               setCurrentView('list');
-              alert('설문조사가 수정되었습니다!');
+              showNotification('success', '설문조사가 수정되었습니다!');
             } catch (error) {
               console.error('설문조사 수정 실패:', error);
-              alert('설문조사 수정에 실패했습니다.');
+              showNotification('error', '설문조사 수정에 실패했습니다.');
             } finally {
               setIsLoading(false);
             }

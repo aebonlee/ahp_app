@@ -38,6 +38,12 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
   const [alternativeRanking, setAlternativeRanking] = useState<ResultRanking[]>([]);
   const [consistencyData, setConsistencyData] = useState<ConsistencyData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [resultsMessage, setResultsMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showResultsMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setResultsMessage({ type, text });
+    setTimeout(() => setResultsMessage(null), 3000);
+  };
 
   // 가상 데이터 생성 (실제로는 API에서 가져올 데이터)
   useEffect(() => {
@@ -115,11 +121,22 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
     };
     
     console.log('Exporting to Excel:', data);
-    alert('Excel 파일로 내보내기 기능이 실행됩니다.');
+    showResultsMessage('info', 'Excel 파일로 내보내기 기능이 실행됩니다.');
   };
 
   return (
     <div className="space-y-6">
+      {/* Inline message banner */}
+      {resultsMessage && (
+        <div className={`px-4 py-3 rounded-lg text-sm font-medium ${
+          resultsMessage.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+          resultsMessage.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+          'bg-blue-100 text-blue-800 border border-blue-200'
+        }`}>
+          {resultsMessage.text}
+        </div>
+      )}
+
       {/* 제어 패널 */}
       <Card title="결과 분석">
         <div className="flex flex-wrap gap-4 mb-4">
@@ -310,18 +327,18 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
         <Card title="세부 분석 내용">
           <div className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <Button variant="secondary" onClick={() => alert('기준별 세부 분석')}>
+              <Button variant="secondary" onClick={() => showResultsMessage('info', '기준별 세부 분석 기능은 준비 중입니다.')}>
                 기준별 평가값 및 중요도
               </Button>
-              <Button variant="secondary" onClick={() => alert('대안별 세부 분석')}>
+              <Button variant="secondary" onClick={() => showResultsMessage('info', '대안별 세부 분석 기능은 준비 중입니다.')}>
                 대안별 평가값 및 중요도
               </Button>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
-              <Button variant="secondary" onClick={() => alert('민감도 분석')}>
+              <Button variant="secondary" onClick={() => showResultsMessage('info', '민감도 분석 기능은 준비 중입니다.')}>
                 민감도 분석
               </Button>
-              <Button variant="secondary" onClick={() => alert('파레토 최적화')}>
+              <Button variant="secondary" onClick={() => showResultsMessage('info', '파레토 최적화 기능은 준비 중입니다.')}>
                 파레토 최적화 결과
               </Button>
             </div>

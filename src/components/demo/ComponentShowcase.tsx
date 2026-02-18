@@ -211,7 +211,7 @@ const ComponentShowcase: React.FC = () => {
                 consistencyRatio={consistencyRatio}
                 isComplete={true}
                 onShowHelper={() => setShowHelper(true)}
-                onShowDetails={() => alert('상세 정보 표시')}
+                onShowDetails={() => console.log('상세 정보 표시')}
                 showTooltip={true}
               />
             </div>

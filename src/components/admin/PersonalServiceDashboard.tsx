@@ -230,6 +230,11 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
+  const [dashboardMessage, setDashboardMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const showDashboardMessage = (type: 'success' | 'error' | 'info', text: string) => {
+    setDashboardMessage({ type, text });
+    setTimeout(() => setDashboardMessage(null), 3000);
+  };
   const [projectForm, setProjectForm] = useState({
     title: '',
     description: '',
@@ -496,18 +501,18 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         console.log('✅ App.tsx onDeleteProject 호출 (휴지통 오버플로우 처리 포함)');
         await onDeleteProject(projectId);
         console.log('✅ App.tsx에서 삭제 처리 완료');
-        
+
         // 삭제 후 실시간 프로젝트 목록 새로고침
         if (refreshProjectList) {
           await refreshProjectList();
           console.log('🔄 프로젝트 삭제 후 실시간 동기화 완료');
         }
-        
+
         // 프로젝트 새로고침 트리거
         setProjectRefreshTrigger(prev => prev + 1);
-        
+
         // 성공 메시지 표시
-        alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
+        showDashboardMessage('success', `"${projectTitle}"가 휴지통으로 이동되었습니다.`);
       } else {
         console.log('⚠️ onDeleteProject prop이 없음 - dataService 직접 호출 (fallback)');
         // Fallback to dataService
@@ -524,8 +529,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           
           // 프로젝트 새로고침 트리거
           setProjectRefreshTrigger(prev => prev + 1);
-          
-          alert(`"${projectTitle}"가 휴지통으로 이동되었습니다.`);
+
+          showDashboardMessage('success', `"${projectTitle}"가 휴지통으로 이동되었습니다.`);
         } else {
           console.error('❌ 프로젝트 삭제 실패 (fallback)');
           throw new Error('프로젝트 삭제에 실패했습니다.');
@@ -535,13 +540,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       console.error('❌ Project deletion error:', error);
       // JSON 에러 메시지 처리
       if (error instanceof Error) {
-        // JSON 파싱 에러인 경우 처리
-        const errorMessage = error.message.includes('JSON') 
+        const errorMessage = error.message.includes('JSON')
           ? '서버 응답 형식 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
           : error.message;
-        alert(errorMessage);
+        showDashboardMessage('error', errorMessage);
       } else {
-        alert('프로젝트 삭제 중 오류가 발생했습니다.');
+        showDashboardMessage('error', '프로젝트 삭제 중 오류가 발생했습니다.');
       }
     }
   };
@@ -556,7 +560,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     if (!editingProject) {
       const quotas = getCurrentQuotas();
       if (projects.length >= quotas.maxProjects) {
-        alert(`프로젝트 생성 한도(${quotas.maxProjects}개)에 도달했습니다.\n${quotas.planName}에서는 최대 ${quotas.maxProjects}개의 프로젝트만 생성할 수 있습니다.`);
+        showDashboardMessage('info', `프로젝트 생성 한도(${quotas.maxProjects}개)에 도달했습니다. ${quotas.planName}에서는 최대 ${quotas.maxProjects}개의 프로젝트만 생성할 수 있습니다.`);
         return;
       }
     }
@@ -650,7 +654,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const handleExportResults = (format: string, data?: any) => {
     // 결과 내보내기 로직
     console.log(`Exporting results to ${format}`, data);
-    alert(`${format.toUpperCase()} 형식으로 결과를 내보내는 기능을 개발 중입니다.`);
+    showDashboardMessage('info', `${format.toUpperCase()} 형식으로 결과를 내보내는 기능을 개발 중입니다.`);
   };
 
   // 프로젝트의 기준 개수 업데이트
@@ -1329,14 +1333,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
 
   const handleExport = async (format: 'csv' | 'excel' | 'pdf' | 'ppt' | 'json', type: 'criteria' | 'alternatives' | 'results') => {
     if (!selectedProjectId || !projectData) {
-      alert('프로젝트를 선택해주세요.');
+      showDashboardMessage('info', '프로젝트를 선택해주세요.');
       return;
     }
 
     try {
       const project = projects.find(p => p.id === selectedProjectId);
       const timestamp = new Date().toISOString().slice(0, 10);
-      
+
       switch (format) {
         case 'csv':
           await handleCSVExport(type, project, timestamp);
@@ -1356,7 +1360,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       }
     } catch (error) {
       console.error('Export failed:', error);
-      alert('내보내기 중 오류가 발생했습니다.');
+      showDashboardMessage('error', '내보내기 중 오류가 발생했습니다.');
     }
   };
 
@@ -1389,7 +1393,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     
     // 임시로 JSON으로 다운로드 (실제로는 Excel 파일 생성)
     downloadFile(JSON.stringify(excelData, null, 2), filename.replace('.xlsx', '.json'), 'application/json');
-    alert('Excel 형식은 개발 중입니다. JSON 형태로 다운로드됩니다.');
+    showDashboardMessage('info', 'Excel 형식은 개발 중입니다. JSON 형태로 다운로드됩니다.');
   };
 
   const handlePDFExport = async (type: string, project: any, timestamp: string) => {
@@ -1399,7 +1403,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     
     // 임시로 HTML로 다운로드
     downloadFile(pdfData, filename.replace('.pdf', '.html'), 'text/html');
-    alert('PDF 형식은 개발 중입니다. HTML 형태로 다운로드됩니다.');
+    showDashboardMessage('info', 'PDF 형식은 개발 중입니다. HTML 형태로 다운로드됩니다.');
   };
 
   const handlePPTExport = async (type: string, project: any, timestamp: string) => {
@@ -1409,7 +1413,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     
     // 임시로 텍스트로 다운로드
     downloadFile(pptData, filename.replace('.pptx', '.txt'), 'text/plain');
-    alert('PowerPoint 형식은 개발 중입니다. 텍스트 형태로 다운로드됩니다.');
+    showDashboardMessage('info', 'PowerPoint 형식은 개발 중입니다. 텍스트 형태로 다운로드됩니다.');
   };
 
   const handleJSONExport = async (type: string, project: any, timestamp: string) => {
@@ -2851,7 +2855,7 @@ ${project?.title} - ${type} 프레젠테이션
                       const criteriaCount = criteriaResponse?.length || 0;
                       
                       if (criteriaCount === 0) {
-                        alert('최소 1개 이상의 평가 기준을 추가해주세요.');
+                        showDashboardMessage('info', '최소 1개 이상의 평가 기준을 추가해주세요.');
                         return;
                       }
                       
@@ -2902,12 +2906,12 @@ ${project?.title} - ${type} 프레젠테이션
                       const alternativesCount = alternativesResponse?.length || 0;
                       
                       if (alternativesCount === 0) {
-                        alert('최소 2개 이상의 대안을 추가해주세요.');
+                        showDashboardMessage('info', '최소 2개 이상의 대안을 추가해주세요.');
                         return;
                       }
-                      
+
                       if (alternativesCount < 2) {
-                        alert('AHP 분석을 위해 최소 2개 이상의 대안이 필요합니다.');
+                        showDashboardMessage('info', 'AHP 분석을 위해 최소 2개 이상의 대안이 필요합니다.');
                         return;
                       }
                       
@@ -5334,6 +5338,14 @@ ${project?.title} - ${type} 프레젠테이션
   // 이외의 경우 메뉴 컨텐츠 렌더링
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      {dashboardMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm ${
+          dashboardMessage.type === 'success' ? 'bg-green-600' :
+          dashboardMessage.type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+        }`}>
+          {dashboardMessage.text}
+        </div>
+      )}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="p-6">
           {renderMenuContent()}
