@@ -116,7 +116,6 @@ const DatabaseManager: React.FC = () => {
           const deleteResponse = await criteriaApi.deleteCriteria(criterion.id, projectId);
           if (deleteResponse.success) {
             projectDeletedCount++;
-            console.log(`✅ 삭제됨: ${criterion.name} (ID: ${criterion.id})`);
           } else {
             deleteErrors.push(`${criterion.name}: ${deleteResponse.error || '알 수 없는 오류'}`);
             console.error(`❌ 삭제 실패: ${criterion.name}`, deleteResponse.error);

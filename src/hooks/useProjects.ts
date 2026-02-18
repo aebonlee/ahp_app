@@ -274,12 +274,10 @@ export function useProjects(
   const handleProjectSelect = useCallback((projectId: string, projectTitle: string) => {
     setSelectedProjectId(projectId);
     setSelectedProjectTitle(projectTitle);
-    console.log(`📋 프로젝트 선택됨: ${projectTitle}`);
   }, []);
 
   const handleProjectStatusChange = useCallback(
     (status: 'terminated' | 'completed') => {
-      console.log(`📊 프로젝트 ${selectedProjectId} 상태 변경: ${status}`);
       onNavigate?.('personal-projects');
       setSelectedProjectId(null);
       setSelectedProjectTitle('');

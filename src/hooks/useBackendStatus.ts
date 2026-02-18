@@ -74,7 +74,6 @@ export function useBackendStatus(): UseBackendStatusReturn {
       });
 
       if (response.ok) {
-        console.log('✅ 백엔드 연결 성공');
         setBackendStatus('available');
 
         // AI 서비스 초기화 (환경변수 기반 OpenAI API 키)
@@ -83,17 +82,14 @@ export function useBackendStatus(): UseBackendStatusReturn {
           const aiService = FIXED_API_KEY ? setAPIKeyDirectly(FIXED_API_KEY, 'openai') : null;
 
           if (aiService) {
-            console.log('✅ AI 서비스 초기화 성공');
             try {
               const isValid = await aiService.validateAPIKey();
               if (!isValid) {
-                console.warn('⚠️ ChatGPT API 키 유효성 검증 실패');
               }
             } catch {
               // 키 검증 실패는 무시
             }
           } else {
-            console.warn('⚠️ REACT_APP_OPENAI_API_KEY 환경변수가 없음');
           }
         } catch (error) {
           console.error('❌ AI 서비스 초기화 중 예외 발생:', error);
@@ -102,7 +98,6 @@ export function useBackendStatus(): UseBackendStatusReturn {
         setBackendStatus('unavailable');
       }
     } catch {
-      console.log('⚠️ 백엔드 연결 실패 (오프라인 모드로 동작)');
       setBackendStatus('unavailable');
     }
   }, []);

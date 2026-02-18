@@ -192,7 +192,6 @@ export function useNavigation({
   const changeTab = useCallback(
     (newTab: string, _projectId?: string, _projectTitle?: string) => {
       setActiveTab(newTab);
-      console.log(`📦 탭 전환: ${newTab}`);
     },
     []
   );
@@ -226,7 +225,6 @@ export function useNavigation({
       setActiveTab('evaluator-dashboard');
       setSelectedProjectId(null);
       setSelectedProjectTitle('');
-      console.log('✅ 평가자 평가 완료');
     },
     []
   );

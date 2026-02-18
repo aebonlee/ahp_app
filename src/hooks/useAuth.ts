@@ -104,7 +104,6 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
         sessionService.startSession();
 
         onLoginSuccess?.(finalUser);
-        console.log('✅ 로그인 성공:', finalUser.email);
       } catch (error) {
         setLoginError(error instanceof Error ? error.message : '로그인에 실패했습니다.');
       } finally {
@@ -148,7 +147,6 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
     setRegisterMode(null);
 
     onLogoutSuccess?.();
-    console.log('✅ 로그아웃 완료');
   }, [onLogoutSuccess]);
 
   const handleGoogleAuth = useCallback(async () => {

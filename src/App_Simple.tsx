@@ -14,8 +14,6 @@ function App() {
 
   // 간단한 초기화
   useEffect(() => {
-    console.log('🚀 앱 초기화 시작');
-    
     // URL 파라미터 확인
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab');
@@ -42,7 +40,6 @@ function App() {
     
     // 초기화 완료
     setTimeout(() => {
-      console.log('✅ 앱 초기화 완료');
       setIsInitializing(false);
     }, 100);
   }, []);
