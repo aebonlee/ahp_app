@@ -4,6 +4,7 @@ import Button from '../common/Button';
 import PairwiseComparison from '../comparison/PairwiseComparison';
 import DemographicSurvey from '../survey/DemographicSurvey';
 import apiService from '../../services/apiService';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
 
 interface Project {
   id: string;
@@ -66,33 +67,47 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
   const loadProjectData = async () => {
     try {
       setLoading(true);
-      
-      // evaluatorToken이 있는 경우 별도 처리 (익명 접근)
+
       if (evaluatorToken) {
-        console.log('🔑 평가자 토큰을 사용한 익명 접근:', evaluatorToken);
-        // TODO: 익명 평가자용 API 엔드포인트 구현 필요
-        // 현재는 기본 API를 사용하되 에러 처리 개선
+        // ── 익명 평가자: invitation token을 쿼리 파라미터로 전달 ──
+        const tokenQuery = `?token=${encodeURIComponent(evaluatorToken)}`;
+        const [projectRes, criteriaRes, altRes] = await Promise.all([
+          fetch(`${API_BASE_URL}${API_ENDPOINTS.PROJECTS.GET(projectId)}${tokenQuery}`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}${API_ENDPOINTS.CRITERIA.LIST(projectId)}${tokenQuery}`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}${API_ENDPOINTS.ALTERNATIVES.LIST(projectId)}${tokenQuery}`, { credentials: 'include' }),
+        ]);
+
+        if (!projectRes.ok) throw new Error(`프로젝트 로드 실패: HTTP ${projectRes.status}`);
+        const [projectData, criteriaData, altData] = await Promise.all([
+          projectRes.json(),
+          criteriaRes.ok ? criteriaRes.json() : Promise.resolve([]),
+          altRes.ok ? altRes.json() : Promise.resolve([]),
+        ]);
+
+        setProject({
+          id: projectId,
+          title: projectData.title || '평가 프로젝트',
+          description: projectData.description || '',
+          criteria: criteriaData.criteria ?? (Array.isArray(criteriaData) ? criteriaData : []),
+          alternatives: altData.alternatives ?? (Array.isArray(altData) ? altData : []),
+        });
+      } else {
+        // ── 인증된 평가자: 기존 apiService 사용 ──
+        const projectResponse = await apiService.projectAPI.fetchById(projectId);
+        if (projectResponse.error) throw new Error(projectResponse.error);
+
+        const criteriaResponse = await apiService.criteriaAPI.fetch(projectId);
+        const alternativesResponse = await apiService.alternativesAPI.fetch(projectId);
+
+        setProject({
+          id: projectId,
+          title: (projectResponse.data as any)?.title || '평가 프로젝트',
+          description: (projectResponse.data as any)?.description || '',
+          criteria: (criteriaResponse.data as any)?.criteria || (criteriaResponse.data as any) || [],
+          alternatives: (alternativesResponse.data as any)?.alternatives || (alternativesResponse.data as any) || [],
+        });
       }
-      
-      // 프로젝트 기본 정보 로드
-      const projectResponse = await apiService.projectAPI.fetchById(projectId);
-      if (projectResponse.error) {
-        throw new Error(projectResponse.error);
-      }
 
-      // 기준 데이터 로드
-      const criteriaResponse = await apiService.criteriaAPI.fetch(projectId);
-      const alternativesResponse = await apiService.alternativesAPI.fetch(projectId);
-
-      const projectData: Project = {
-        id: projectId,
-        title: (projectResponse.data as any)?.title || '평가 프로젝트',
-        description: (projectResponse.data as any)?.description || '',
-        criteria: (criteriaResponse.data as any)?.criteria || (criteriaResponse.data as any) || [],
-        alternatives: (alternativesResponse.data as any)?.alternatives || (alternativesResponse.data as any) || []
-      };
-
-      setProject(projectData);
       calculateProgress();
     } catch (err) {
       console.error('프로젝트 데이터 로드 실패:', err);
