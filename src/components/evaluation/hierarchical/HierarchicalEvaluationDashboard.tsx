@@ -705,10 +705,7 @@ const HierarchicalEvaluationDashboard: React.FC<HierarchicalEvaluationDashboardP
                       <Button 
                         variant="primary" 
                         className="w-full"
-                        onClick={() => {
-                          // TODO: 평가 화면으로 이동
-                          console.log('평가 화면으로 이동');
-                        }}
+                        onClick={() => setActiveTab('evaluation')}
                       >
                         평가 계속하기
                       </Button>

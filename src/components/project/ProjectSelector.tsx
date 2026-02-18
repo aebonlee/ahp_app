@@ -85,8 +85,8 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
         evaluation_mode: (project.evaluation_mode || 'practical') as EvaluationMode,
         workflow_stage: (project.workflow_stage || 'creating') as WorkflowStage,
         created_at: project.created_at || new Date().toISOString(),
-        evaluator_count: 0, // TODO: 실제 평가자 수 계산
-        completion_rate: 0, // TODO: 실제 완료율 계산
+        evaluator_count: project.evaluatorCount ?? 0,
+        completion_rate: project.completionRate ?? 0,
         criteria_count: project.criteria_count || 0,
         alternatives_count: project.alternatives_count || 0,
         last_modified: project.updated_at || project.created_at || new Date().toISOString(),

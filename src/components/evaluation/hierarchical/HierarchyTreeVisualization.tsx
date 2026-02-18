@@ -230,12 +230,12 @@ const TreeNodeContainer: React.FC<{
       level={level}
       isExpanded={expandedNodes.has(node.id)}
       isSelected={selectedNodeId === node.id}
-      isCompleted={false} // TODO: 실제 완료 상태 확인
-      hasIssues={false} // TODO: 실제 문제 상태 확인
+      isCompleted={isNodeCompleted(node.id)}
+      hasIssues={hasNodeIssues(node.id)}
       onToggleExpand={handleToggleExpand}
       onNodeSelect={onNodeSelect}
-      showWeights={showWeights}
-      showProgress={showProgress}
+      showWeights={localShowWeights}
+      showProgress={localShowProgress}
     />
   );
 };
@@ -251,6 +251,8 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
 }) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'tree' | 'list'>('tree');
+  const [localShowWeights, setLocalShowWeights] = useState(showWeights);
+  const [localShowProgress, setLocalShowProgress] = useState(showProgress);
 
   // 계층 구조 트리 구성
   const buildTree = useCallback((nodes: HierarchyNode[]): HierarchyNode[] => {
@@ -307,12 +309,17 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
 
   // 노드 상태 확인 함수들
   const isNodeCompleted = (nodeId: string): boolean => {
-    // TODO: 실제 완료 상태 로직 구현
-    return false;
+    const node = hierarchyNodes.find(n => n.id === nodeId);
+    // 로컬 가중치가 계산되었으면 완료된 것으로 간주
+    return !!(node && typeof node.localWeight === 'number' && node.localWeight > 0);
   };
 
   const hasNodeIssues = (nodeId: string): boolean => {
-    // TODO: 실제 문제 상태 로직 구현
+    if (!evaluationProgress) return false;
+    // 현재 평가 중인 노드이고 평균 일관성 비율이 0.1을 초과하면 문제 있음
+    if (evaluationProgress.currentStep?.nodeId === nodeId) {
+      return evaluationProgress.averageConsistency > 0.1;
+    }
     return false;
   };
 
@@ -346,22 +353,18 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={showWeights}
-                  onChange={(e) => {
-                    // TODO: 상위 컴포넌트에 알림
-                  }}
+                  checked={localShowWeights}
+                  onChange={(e) => setLocalShowWeights(e.target.checked)}
                   className="mr-1"
                 />
                 가중치 표시
               </label>
-              
+
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={showProgress}
-                  onChange={(e) => {
-                    // TODO: 상위 컴포넌트에 알림
-                  }}
+                  checked={localShowProgress}
+                  onChange={(e) => setLocalShowProgress(e.target.checked)}
                   className="mr-1"
                 />
                 진행률 표시
@@ -387,7 +390,7 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
         </div>
 
         {/* 진행률 요약 (옵션) */}
-        {showProgress && evaluationProgress && (
+        {localShowProgress && evaluationProgress && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg">
             <div className="flex items-center justify-between text-sm">
               <span className="text-blue-900 font-medium">
@@ -414,8 +417,8 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
                 hasIssues={hasNodeIssues(rootNode.id)}
                 onToggleExpand={handleToggleExpand}
                 onNodeSelect={onNodeSelect}
-                showWeights={showWeights}
-                showProgress={showProgress}
+                showWeights={localShowWeights}
+                showProgress={localShowProgress}
               />
             ))
           ) : (
@@ -445,7 +448,7 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
               <div className="w-3 h-3 bg-green-100 border border-green-200 rounded" />
               <span>대안</span>
             </div>
-            {showProgress && (
+            {localShowProgress && (
               <>
                 <div className="flex items-center space-x-2">
                   <CheckCircleIcon className="w-3 h-3 text-green-500" />

@@ -120,26 +120,37 @@ const ResultsDataManager: React.FC<ResultsDataManagerProps> = ({
 
   const handleExportToExcel = async () => {
     try {
-      console.log('📊 Excel 내보내기 시작');
-      
-      // TODO: 실제 Excel 내보내기 구현
-      // const blob = await dataService.exportToExcel(projectId);
-      
-      // 시뮬레이션: 다운로드 링크 생성
-      const csvContent = generateCSVContent();
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      
-      link.setAttribute('href', url);
-      link.setAttribute('download', `AHP_Results_${projectId}_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      console.log('✅ Excel 내보내기 완료');
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      const res = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.EXPORT.EXCEL(projectId)}`,
+        { headers, credentials: 'include' }
+      );
+
+      if (res.ok) {
+        const blob = await res.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `AHP_Results_${projectId}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // 백엔드 미지원 시 CSV 폴백
+        const csvContent = generateCSVContent();
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `AHP_Results_${projectId}_${new Date().toISOString().split('T')[0]}.csv`;
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } catch (error) {
       console.error('Failed to export to Excel:', error);
       setError('Excel 내보내기 중 오류가 발생했습니다.');
@@ -173,19 +184,33 @@ const ResultsDataManager: React.FC<ResultsDataManagerProps> = ({
 
   const handleGenerateReport = async () => {
     try {
-      console.log('📄 보고서 생성 시작');
-      
-      // TODO: 실제 PDF 보고서 생성
-      // const reportBlob = await dataService.generateReport(projectId);
-      
-      // 시뮬레이션: HTML 보고서 생성
-      const reportWindow = window.open('', '_blank');
-      if (reportWindow) {
-        reportWindow.document.write(generateHTMLReport());
-        reportWindow.document.close();
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      const res = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.EXPORT.PDF(projectId)}`,
+        { headers, credentials: 'include' }
+      );
+
+      if (res.ok) {
+        const blob = await res.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `AHP_Report_${projectId}_${new Date().toISOString().split('T')[0]}.pdf`;
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // 백엔드 미지원 시 HTML 보고서 폴백
+        const reportWindow = window.open('', '_blank');
+        if (reportWindow) {
+          reportWindow.document.write(generateHTMLReport());
+          reportWindow.document.close();
+        }
       }
-      
-      console.log('✅ 보고서 생성 완료');
     } catch (error) {
       console.error('Failed to generate report:', error);
       setError('보고서 생성 중 오류가 발생했습니다.');

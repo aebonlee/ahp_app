@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { useTranslation } from '../../i18n';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 // 참가자 상태 인터페이스
 interface ParticipantStatus {
@@ -84,7 +86,6 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
     const intervalId = setInterval(() => {
       fetchParticipantData();
       fetchProjectProgress();
-      checkForNotifications();
     }, refreshInterval);
 
     // 초기 데이터 로드
@@ -94,161 +95,152 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
     return () => clearInterval(intervalId);
   }, [projectId, isRealTimeEnabled, refreshInterval]);
 
-  // 참가자 데이터 가져오기
+  // 참가자 데이터 가져오기 (알림 생성 포함)
   const fetchParticipantData = useCallback(async () => {
     try {
-      // 실제로는 API 호출
-      const mockData: ParticipantStatus[] = [
-        {
-          participantId: 'p1',
-          name: '김기술팀장',
-          email: 'kim@example.com',
-          role: 'evaluator',
-          loginTime: new Date(Date.now() - 3600000).toISOString(),
-          lastActivity: new Date(Date.now() - 300000).toISOString(),
-          currentPage: '기준 쌍대비교 (3/5)',
-          completionRate: 60,
-          evaluationStatus: 'in_progress',
-          consistencyRatio: 0.08,
-          totalEvaluations: 15,
-          completedEvaluations: 9,
-          averageResponseTime: 45,
-          deviceInfo: {
-            userAgent: 'Chrome 119.0.0.0',
-            platform: 'Windows',
-            screenResolution: '1920x1080'
-          },
-          connectionStatus: 'online'
-        },
-        {
-          participantId: 'p2',
-          name: '이개발자',
-          email: 'lee@example.com',
-          role: 'evaluator',
-          loginTime: new Date(Date.now() - 7200000).toISOString(),
-          lastActivity: new Date(Date.now() - 1800000).toISOString(),
-          currentPage: '대안 평가 완료',
-          completionRate: 100,
-          evaluationStatus: 'completed',
-          consistencyRatio: 0.06,
-          totalEvaluations: 15,
-          completedEvaluations: 15,
-          averageResponseTime: 32,
-          deviceInfo: {
-            userAgent: 'Firefox 118.0',
-            platform: 'macOS',
-            screenResolution: '2560x1440'
-          },
-          connectionStatus: 'offline'
-        },
-        {
-          participantId: 'p3',
-          name: '박분석가',
-          email: 'park@example.com',
-          role: 'evaluator',
-          loginTime: new Date(Date.now() - 1800000).toISOString(),
-          lastActivity: new Date(Date.now() - 120000).toISOString(),
-          currentPage: '대안 쌍대비교 (2/8)',
-          completionRate: 25,
-          evaluationStatus: 'in_progress',
-          consistencyRatio: 0.15,
-          totalEvaluations: 15,
-          completedEvaluations: 4,
-          averageResponseTime: 78,
-          deviceInfo: {
-            userAgent: 'Safari 17.0',
-            platform: 'iOS',
-            screenResolution: '390x844'
-          },
-          connectionStatus: 'online'
-        },
-        {
-          participantId: 'p4',
-          name: '최연구원',
-          email: 'choi@example.com',
-          role: 'evaluator',
-          lastActivity: new Date(Date.now() - 86400000).toISOString(),
-          currentPage: '미시작',
-          completionRate: 0,
-          evaluationStatus: 'overdue',
-          consistencyRatio: 0,
-          totalEvaluations: 15,
-          completedEvaluations: 0,
-          averageResponseTime: 0,
-          deviceInfo: {
-            userAgent: 'Chrome 118.0.0.0',
-            platform: 'Android',
-            screenResolution: '360x640'
-          },
-          connectionStatus: 'offline'
-        }
-      ];
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
 
-      setParticipants(mockData);
+      let data: any[] = [];
+
+      // 전용 모니터링 엔드포인트 시도
+      const monitorRes = await fetch(
+        `${API_BASE_URL}/api/service/monitoring/${projectId}/participants/`,
+        { headers, credentials: 'include' }
+      ).catch(() => null);
+
+      if (monitorRes?.ok) {
+        const body = await monitorRes.json();
+        data = body.results ?? body;
+      } else {
+        // 평가자 목록 엔드포인트로 폴백
+        const evalRes = await fetch(
+          `${API_BASE_URL}${API_ENDPOINTS.EVALUATORS.LIST(projectId)}`,
+          { headers, credentials: 'include' }
+        );
+        if (evalRes.ok) {
+          const body = await evalRes.json();
+          data = body.results ?? body;
+        }
+      }
+
+      const validStatuses = ['not_started', 'in_progress', 'completed', 'overdue'];
+      const validConnections = ['online', 'offline', 'idle'];
+
+      const participantData: ParticipantStatus[] = data.map((ev: any) => ({
+        participantId: String(ev.id ?? ev.user ?? ''),
+        name: ev.name ?? ev.user_name ?? ev.email?.split('@')[0] ?? '평가자',
+        email: ev.email ?? ev.user_email ?? '',
+        role: ev.role ?? 'evaluator',
+        loginTime: ev.last_login ?? undefined,
+        lastActivity: ev.last_activity ?? ev.updated_at ?? ev.created_at ?? new Date().toISOString(),
+        currentPage: ev.current_page ?? '-',
+        completionRate: typeof ev.completion_rate === 'number' ? ev.completion_rate : 0,
+        evaluationStatus: (validStatuses.includes(ev.evaluation_status)
+          ? ev.evaluation_status : 'not_started') as ParticipantStatus['evaluationStatus'],
+        consistencyRatio: typeof ev.consistency_ratio === 'number' ? ev.consistency_ratio : 0,
+        totalEvaluations: typeof ev.total_evaluations === 'number' ? ev.total_evaluations : 0,
+        completedEvaluations: typeof ev.completed_evaluations === 'number' ? ev.completed_evaluations : 0,
+        averageResponseTime: typeof ev.average_response_time === 'number' ? ev.average_response_time : 0,
+        deviceInfo: {
+          userAgent: ev.device_info?.user_agent ?? '-',
+          platform: ev.device_info?.platform ?? '-',
+          screenResolution: ev.device_info?.screen_resolution ?? '-',
+        },
+        connectionStatus: (validConnections.includes(ev.connection_status)
+          ? ev.connection_status : 'offline') as ParticipantStatus['connectionStatus'],
+      }));
+
+      setParticipants(participantData);
+
+      // 참가자 데이터에서 프로젝트 진행 상태 계산
+      const total = participantData.length;
+      const completed = participantData.filter(p => p.evaluationStatus === 'completed').length;
+      const active = participantData.filter(p => p.connectionStatus === 'online').length;
+      const avgCR = total > 0
+        ? participantData.reduce((sum, p) => sum + p.consistencyRatio, 0) / total
+        : 0;
+      const overall = total > 0
+        ? participantData.reduce((sum, p) => sum + p.completionRate, 0) / total
+        : 0;
+
+      setProjectProgress(prev => ({
+        projectId,
+        projectTitle: prev?.projectTitle ?? '프로젝트',
+        totalParticipants: total,
+        activeParticipants: active,
+        completedParticipants: completed,
+        overallProgress: Math.round(overall * 10) / 10,
+        averageConsistency: Math.round(avgCR * 1000) / 1000,
+        estimatedCompletion: prev?.estimatedCompletion ?? new Date(Date.now() + 86400000).toISOString(),
+        phases: prev?.phases ?? { criteriaEvaluation: 0, alternativeEvaluation: 0, subElementEvaluation: 0 },
+      }));
+
+      // 일관성 비율 초과 참가자 알림 생성
+      const newNotifications: Notification[] = participantData
+        .filter(p => p.consistencyRatio > 0.1)
+        .map(p => ({
+          id: `cr_${p.participantId}`,
+          type: 'warning' as const,
+          participantId: p.participantId,
+          message: `일관성 비율이 0.1을 초과했습니다 (CR: ${p.consistencyRatio.toFixed(3)})`,
+          timestamp: new Date().toISOString(),
+          acknowledged: false,
+        }));
+
+      // 장기 비활성 참가자 알림
+      const inactiveNotifications: Notification[] = participantData
+        .filter(p => {
+          const lastActive = new Date(p.lastActivity).getTime();
+          return Date.now() - lastActive > 86400000 && p.evaluationStatus !== 'completed';
+        })
+        .map(p => ({
+          id: `inactive_${p.participantId}`,
+          type: 'error' as const,
+          participantId: p.participantId,
+          message: '24시간 이상 비활성 상태입니다',
+          timestamp: new Date().toISOString(),
+          acknowledged: false,
+        }));
+
+      setNotifications(prev => {
+        const existingIds = new Set(prev.map(n => n.id));
+        const allNew = [...newNotifications, ...inactiveNotifications]
+          .filter(n => !existingIds.has(n.id));
+        return [...prev, ...allNew];
+      });
     } catch (error) {
       console.error('Failed to fetch participant data:', error);
     }
   }, [projectId]);
 
-  // 프로젝트 진행 상태 가져오기
+  // 프로젝트 제목 가져오기
   const fetchProjectProgress = useCallback(async () => {
     try {
-      // 실제로는 API 호출
-      const mockProgress: ProjectProgress = {
-        projectId,
-        projectTitle: '신기술 도입 우선순위 결정',
-        totalParticipants: 4,
-        activeParticipants: 2,
-        completedParticipants: 1,
-        overallProgress: 46.25,
-        averageConsistency: 0.097,
-        estimatedCompletion: new Date(Date.now() + 86400000).toISOString(),
-        phases: {
-          criteriaEvaluation: 75,
-          alternativeEvaluation: 50,
-          subElementEvaluation: 25
-        }
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      setProjectProgress(mockProgress);
+      const res = await fetch(
+        `${API_BASE_URL}/api/service/projects/projects/${projectId}/`,
+        { headers, credentials: 'include' }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        setProjectProgress(prev =>
+          prev ? { ...prev, projectTitle: data.title ?? prev.projectTitle } : prev
+        );
+      }
     } catch (error) {
-      console.error('Failed to fetch project progress:', error);
+      console.error('Failed to fetch project info:', error);
     }
   }, [projectId]);
-
-  // 알림 확인
-  const checkForNotifications = useCallback(async () => {
-    try {
-      // 실제로는 API 호출
-      const mockNotifications: Notification[] = [
-        {
-          id: 'n1',
-          type: 'warning',
-          participantId: 'p3',
-          message: '일관성 비율이 0.1을 초과했습니다 (CR: 0.15)',
-          timestamp: new Date(Date.now() - 600000).toISOString(),
-          acknowledged: false
-        },
-        {
-          id: 'n2',
-          type: 'error',
-          participantId: 'p4',
-          message: '24시간 이상 비활성 상태입니다',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          acknowledged: false
-        }
-      ];
-
-      setNotifications(prev => {
-        const newNotifications = mockNotifications.filter(
-          newNotif => !prev.some(existingNotif => existingNotif.id === newNotif.id)
-        );
-        return [...prev, ...newNotifications];
-      });
-    } catch (error) {
-      console.error('Failed to check notifications:', error);
-    }
-  }, []);
 
   // 참가자 필터링 및 정렬
   const filteredAndSortedParticipants = useCallback(() => {
