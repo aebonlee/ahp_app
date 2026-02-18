@@ -364,7 +364,6 @@ class SessionService {
     try {
       const token = authService.getAccessToken();
       if (!token) {
-        console.log('⚠️ 토큰 없음 - 세션 새로고침 건너뜀');
         return;
       }
 

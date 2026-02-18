@@ -93,7 +93,6 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
         );
         
         if (response.success && response.data) {
-          console.log('✅ 파일이 영구 저장소에 업로드되었습니다:', response.data);
           
           // 파일 내용 읽기 (로컬에서만 미리보기용)
           const reader = new FileReader();
@@ -348,14 +347,12 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
           {/* FileUpload 컴포넌트로 교체 */}
           <FileUpload
             onFileUploaded={(fileInfo: FileUploadInfo) => {
-              console.log('✅ 파일이 영구 저장되었습니다:', fileInfo);
               setUploadedFile(new File([], fileInfo.original_name, { type: fileInfo.mime_type }));
               
               // 업로드된 파일의 내용을 시뮬레이션 (실제로는 파일 다운로드 필요)
               setValidationText(`논문 내용이 업로드되었습니다: ${fileInfo.original_name}\n\n이곳에 실제 논문 내용이 표시됩니다...`);
             }}
             onFileDeleted={(fileId: string) => {
-              console.log('🗑️ 파일이 삭제되었습니다:', fileId);
               setUploadedFile(null);
               setValidationText('');
             }}

@@ -24,8 +24,6 @@ class ConnectionTester {
    */
   async testBasicConnection(): Promise<ConnectionTestResult> {
     try {
-      console.log('🔍 백엔드 기본 연결 테스트 시작...');
-      console.log('🎯 Target URL:', this.baseUrl);
 
       const response = await fetch(`${this.baseUrl}/health/`, {
         method: 'GET',
@@ -66,7 +64,6 @@ class ConnectionTester {
    */
   async testApiEndpoints(): Promise<ConnectionTestResult> {
     try {
-      console.log('🔍 API 엔드포인트 테스트 시작...');
 
       const endpoints = [
         '/api/v1/projects/',
@@ -132,7 +129,6 @@ class ConnectionTester {
    */
   async testProjectsApi(): Promise<ConnectionTestResult> {
     try {
-      console.log('🔍 프로젝트 API 테스트 시작...');
 
       const response = await fetch(`${this.baseUrl}/api/v1/projects/`, {
         method: 'GET',
@@ -178,7 +174,6 @@ class ConnectionTester {
    */
   async testSocialAuthEndpoints(): Promise<ConnectionTestResult> {
     try {
-      console.log('🔍 소셜 인증 엔드포인트 테스트 시작...');
 
       const socialEndpoints = [
         { name: 'Naver OAuth', endpoint: '/api/service/auth/social/naver/' },
@@ -242,7 +237,6 @@ class ConnectionTester {
    */
   async testDatabaseConnection(): Promise<ConnectionTestResult> {
     try {
-      console.log('🔍 데이터베이스 연결 테스트 시작...');
 
       const response = await fetch(`${this.baseUrl}/db-status/`, {
         method: 'GET',
@@ -287,7 +281,6 @@ class ConnectionTester {
     results: ConnectionTestResult[];
     summary: string;
   }> {
-    console.log('🚀 Frontend ↔ Backend 종합 연동 테스트 시작...');
     console.log('=' .repeat(50));
 
     const results = [
@@ -306,7 +299,6 @@ class ConnectionTester {
       : `⚠️ 일부 테스트 실패 (${successCount}/${results.length})`;
 
     console.log('=' .repeat(50));
-    console.log('📊 연동 테스트 결과:', summary);
 
     results.forEach((result, index) => {
       console.log(`${index + 1}. ${result.message}`);

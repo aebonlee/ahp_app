@@ -91,7 +91,6 @@ const makeDjangoAdminRequest = async <T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log(`🔧 Django Admin API: ${options.method || 'GET'} ${endpoint}`);
     
     const response = await fetch(url, {
       credentials: 'include',

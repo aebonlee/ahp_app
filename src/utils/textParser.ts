@@ -105,7 +105,6 @@ export class TextParser {
       }
       
       // 디버그 로깅
-      console.log(`📊 번호 형식 파싱: "${number}" → 레벨 ${level}`);
       
       const [name, description] = this.extractNameAndDescription(content);
       return { name: name.trim(), description, level };

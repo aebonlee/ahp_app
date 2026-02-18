@@ -106,7 +106,6 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
         consistencyRatio: currentMatrix.consistencyRatio || 0
       };
       
-      console.log(`💾 Saving matrix ${currentMatrix.name} to database...`, matrixData);
       
       // 실제 API 호출로 매트릭스 결과 저장
       // const response = await apiService.evaluationAPI.saveMatrix(matrixData);
@@ -129,7 +128,6 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
           completedAt: new Date().toISOString()
         };
         
-        console.log(`🎯 Saving final evaluation results to database...`, evaluationResults);
         
         // 실제 API 호출로 최종 결과 저장
         // const response = await apiService.evaluationAPI.saveFinalResults(evaluationResults);

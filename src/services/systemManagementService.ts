@@ -85,7 +85,6 @@ const makeSystemRequest = async <T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log(`🔧 System API Request: ${options.method || 'GET'} ${endpoint}`);
     
     const response = await fetch(url, {
       credentials: 'include',

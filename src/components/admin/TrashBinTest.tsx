@@ -25,7 +25,6 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
       try {
         const projects = await onFetchTrashedProjects();
         setTrashedProjects(projects);
-        console.log('✅ 휴지통 프로젝트 로드됨:', projects);
       } catch (error) {
         console.error('❌ 휴지통 프로젝트 로드 실패:', error);
       }
@@ -39,9 +38,7 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
   const handleTestDelete = async (projectId: string, title: string) => {
     try {
       if (onDeleteProject) {
-        console.log('🗑️ 테스트 삭제 시작:', projectId);
         await onDeleteProject(projectId);
-        console.log('✅ 테스트 삭제 완료:', projectId);
         await loadTrashedProjects(); // 휴지통 새로고침
       } else {
         console.warn('삭제 함수가 전달되지 않았습니다.');
