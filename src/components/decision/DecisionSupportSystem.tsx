@@ -582,10 +582,10 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
             <Button variant="primary" onClick={generateSampleEvaluation}>
               고급 분석으로 진행
             </Button>
-            <Button variant="secondary">
+            <Button variant="secondary" onClick={() => setActiveStep('evaluation')}>
               평가 재검토
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => setActiveStep('structuring')}>
               일관성 개선
             </Button>
           </div>

@@ -37,7 +37,6 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
   const buildHierarchy = (flatNodes: TreeNode[]): TreeNode[] => {
     // 이미 계층구조가 있는 경우 그대로 사용
     if (flatNodes.some(node => node.children && node.children.length > 0)) {
-      console.log('🌳 이미 계층구조가 있는 데이터 사용');
       return flatNodes;
     }
 
@@ -66,7 +65,6 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
       }
     });
 
-    console.log(`📊 계층구조 변환 완료: 루트 노드 ${rootNodes.length}개`);
     return rootNodes;
   };
 

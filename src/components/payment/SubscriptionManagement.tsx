@@ -15,6 +15,8 @@ import Button from '../common/Button';
 import Card from '../common/Card';
 import { SubscriptionManagementProps, PricingTier, SubscriptionStatus } from '../../types/payment';
 import { PRICING_PLANS, formatPriceValue, getTierLevel } from '../../data/pricingPlans';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   subscription,
@@ -88,6 +90,29 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
     onCancel(cancelReason);
     setShowCancelModal(false);
     setCancelReason('');
+  };
+
+  const handleDownloadInvoices = async () => {
+    try {
+      const token = authService.getAccessToken();
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.PAYMENT.INVOICES}`, {
+        credentials: 'include',
+        headers,
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoices_${new Date().toISOString().split('T')[0]}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // Open invoices page as fallback
+      window.open(`${API_BASE_URL}${API_ENDPOINTS.PAYMENT.INVOICES}`, '_blank');
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -319,7 +344,7 @@ const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
             </div>
             
             <div className="space-y-3">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={handleDownloadInvoices}>
                 청구서 다운로드
               </Button>
               
