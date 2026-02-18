@@ -79,13 +79,16 @@ export const API_ENDPOINTS = {
     UPDATE_SESSION: (_projectId: string, evaluatorId: string) =>
       `/api/service/evaluations/progress/?evaluator=${evaluatorId}`
   },
-  // Results - analysis 앱
+  // Results - analysis 앱 (검증: 2026-02-18)
+  // AnalysisViewSet at /analysis/analysis/, AdvancedAnalysisViewSet at /analysis/advanced/
   RESULTS: {
     GET: (projectId: string) => `/api/service/analysis/analysis/?project=${projectId}`,
-    INDIVIDUAL: (projectId: string, evaluatorId: string) =>
+    INDIVIDUAL: (_projectId: string, _evaluatorId: string) =>
       `/api/service/analysis/calculate/individual/`,
     CALCULATE_GROUP: (_projectId: string) => `/api/service/analysis/calculate/group/`,
-    SENSITIVITY: (_projectId: string) => `/api/service/analysis/sensitivity/`
+    SENSITIVITY: (_projectId: string) => `/api/service/analysis/sensitivity/`,
+    FINAL_PRIORITIES: '/api/service/analysis/final-priorities/',
+    PROJECT_SUMMARY: (projectId: string) => `/api/service/analysis/project-summary/?project=${projectId}`
   },
   // Surveys - demographic-surveys (evaluations 앱)
   SURVEYS: {
@@ -118,17 +121,22 @@ export const API_ENDPOINTS = {
     REVOKE: (id: string) => `/api/service/evaluations/invitations/${id}/revoke/`,
     REGENERATE: (id: string) => `/api/service/evaluations/invitations/${id}/regenerate_token/`
   },
-  // Payment / Subscription - subscriptions 앱 (payments는 미구현)
+  // Payment / Subscription - subscriptions 앱 (검증: 2026-02-18)
+  // 백엔드 실제 ViewSets: plans, subscriptions, payment-methods, payment-records, usage, alerts
+  // 백엔드 실제 Views: subscribe/, check-limits/, validate-coupon/, stats/
   PAYMENT: {
     PLANS: '/api/service/subscriptions/plans/',
-    CHECKOUT: '/api/service/subscriptions/checkout/',
-    SUBSCRIPTION: '/api/service/subscriptions/subscription/',
-    CANCEL: '/api/service/subscriptions/subscription/cancel/',
-    UPGRADE: '/api/service/subscriptions/subscription/upgrade/',
-    DOWNGRADE: '/api/service/subscriptions/subscription/downgrade/',
-    PAYMENT_METHODS: '/api/service/subscriptions/methods/',
-    INVOICES: '/api/service/subscriptions/invoices/',
-    WEBHOOK: '/api/service/subscriptions/webhook/',
+    CHECKOUT: '/api/service/subscriptions/subscribe/',          // PaymentProcessingView (checkout→subscribe)
+    SUBSCRIPTION: '/api/service/subscriptions/subscriptions/', // UserSubscriptionViewSet (singular→plural)
+    CANCEL: (id: string) => `/api/service/subscriptions/subscriptions/${id}/cancel/`,
+    UPGRADE: (id: string) => `/api/service/subscriptions/subscriptions/${id}/upgrade/`,
+    DOWNGRADE: (id: string) => `/api/service/subscriptions/subscriptions/${id}/downgrade/`,
+    PAYMENT_METHODS: '/api/service/subscriptions/payment-methods/', // (methods→payment-methods)
+    INVOICES: '/api/service/subscriptions/payment-records/',        // (invoices→payment-records)
+    CHECK_LIMITS: '/api/service/subscriptions/check-limits/',
+    VALIDATE_COUPON: '/api/service/subscriptions/validate-coupon/',
+    STATS: '/api/service/subscriptions/stats/',
+    // WEBHOOK: 백엔드 미구현
   },
   // Workshops - TODO: 백엔드 workshops 앱 미등록 (simple_urls.py에 추가 필요)
   WORKSHOPS: {
