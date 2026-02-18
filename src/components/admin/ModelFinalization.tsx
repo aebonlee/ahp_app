@@ -25,6 +25,7 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
   const [alternatives, setAlternatives] = useState<any[]>([]);
   const [evaluators, setEvaluators] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProjectData = async () => {
@@ -56,7 +57,7 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
         
       } catch (error) {
         console.error('Failed to load project data:', error);
-        // 에러 시 빈 배열로 초기화
+        setLoadError('프로젝트 데이터를 불러오는데 실패했습니다. 페이지를 새로 고침하거나 잠시 후 다시 시도해주세요.');
         setCriteria([]);
         setAlternatives([]);
         setEvaluators([]);
@@ -131,6 +132,11 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
 
   return (
     <div className="space-y-6">
+      {loadError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-700">⚠️ {loadError}</p>
+        </div>
+      )}
       <Card title="2-4단계 — 모델 구축">
         <div className="space-y-6">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">

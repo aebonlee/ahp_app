@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import { API_BASE_URL } from '../../config/api';
 
 interface UsageManagementProps {
   user: {
@@ -57,37 +58,39 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
 
   const loadSubscriptionData = async () => {
     try {
-      const response = await fetch('/api/subscription/status', {
+      const response = await fetch(`${API_BASE_URL}/api/service/subscription/status/`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setSubscription(data.subscription);
       }
     } catch (error) {
       console.error('Failed to load subscription data:', error);
+      showUsageMessage('error', '구독 정보를 불러오는데 실패했습니다.');
     }
   };
 
   const loadUsageData = async () => {
     try {
-      const response = await fetch('/api/subscription/usage', {
+      const response = await fetch(`${API_BASE_URL}/api/service/subscription/usage/`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setUsage(data.usage);
       }
     } catch (error) {
       console.error('Failed to load usage data:', error);
+      showUsageMessage('error', '사용량 정보를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -95,7 +98,7 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
 
   const handleExtendTrial = async (days: number) => {
     try {
-      const response = await fetch('/api/subscription/extend', {
+      const response = await fetch(`${API_BASE_URL}/api/service/subscription/extend/`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -131,7 +134,7 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
     }
 
     try {
-      const response = await fetch('/api/subscription/reset-data', {
+      const response = await fetch(`${API_BASE_URL}/api/service/subscription/reset-data/`, {
         method: 'POST',
         credentials: 'include',
         headers: {

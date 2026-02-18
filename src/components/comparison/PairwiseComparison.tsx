@@ -77,6 +77,7 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
   const [comparisons, setComparisons] = useState<Map<string, Comparison>>(new Map());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [currentPairIndex, setCurrentPairIndex] = useState(0);
   const [recentChange, setRecentChange] = useState<{ i: number; j: number; oldValue: number; newValue: number } | undefined>();
 
@@ -123,6 +124,7 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
       setComparisons(comparisonMap);
     } catch (error) {
       console.error('Failed to fetch comparisons:', error);
+      setFetchError('비교 데이터를 불러오는데 실패했습니다. 새로 고침 후 다시 시도해주세요.');
     } finally {
       setLoading(false);
     }
@@ -194,6 +196,8 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
       }
     } catch (error) {
       console.error('Failed to save comparison:', error);
+      setFetchError('비교값 저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      setTimeout(() => setFetchError(null), 4000);
     } finally {
       setSaving(false);
     }
@@ -351,6 +355,22 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
     );
   }
 
+  if (fetchError) {
+    return (
+      <Card title="쌍대비교">
+        <div className="text-center py-8">
+          <div className="text-red-600 mb-3">⚠️ {fetchError}</div>
+          <button
+            onClick={() => { setFetchError(null); fetchComparisons(); }}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            다시 시도
+          </button>
+        </div>
+      </Card>
+    );
+  }
+
   if (!elements || elements.length < 2) {
     return (
       <Card title="쌍대비교">
@@ -370,6 +390,11 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
   return (
     <div className="space-y-6">
       <ScreenID id={demoMode ? SCREEN_IDS.ADMIN.STEP2_PAIRWISE : SCREEN_IDS.RATER.PAIRWISE} />
+      {fetchError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+          ⚠️ {fetchError}
+        </div>
+      )}
       <Card title={`쌍대비교: ${criterionName}`}>
         <div className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

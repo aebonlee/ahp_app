@@ -112,6 +112,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
       setProjects(completedProjects);
     } catch (error) {
       console.error('프로젝트 로드 실패:', error);
+      showInterpretationMessage('error', '프로젝트를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -170,6 +171,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
       startAIAnalysis(mockResult);
     } catch (error) {
       console.error('결과 데이터 로드 실패:', error);
+      showInterpretationMessage('error', '결과 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -232,6 +234,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
       setActiveTab('ai-analysis');
     } catch (error) {
       console.error('AI 분석 실패:', error);
+      showInterpretationMessage('error', 'AI 분석에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setAnalyzing(false);
     }
