@@ -139,7 +139,11 @@ export const API_ENDPOINTS = {
   },
   // Service Status
   STATUS: '/api/service/status/',
-  DATA: '/api/service/data/'
+  DATA: '/api/service/data/',
+  // System Reset (super admin only)
+  SYSTEM: {
+    RESET: '/api/service/admin/system/reset/'
+  }
 };
 
 // HTTP 상태 코드

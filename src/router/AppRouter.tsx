@@ -412,8 +412,8 @@ const AppRouter: React.FC<AppRouterProps> = ({
         <SystemReset
           onBack={() => setActiveTab('super-admin-dashboard')}
           onReset={(options: any) => {
-            console.log('시스템 초기화 실행:', options);
-            alert('시스템 초기화가 완료되었습니다.');
+            console.log('시스템 초기화 완료:', options);
+            setActiveTab('super-admin-dashboard');
           }}
         />
       );

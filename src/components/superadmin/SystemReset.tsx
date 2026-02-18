@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import authService from '../../services/authService';
 
 interface SystemResetProps {
   onBack: () => void;
@@ -27,6 +29,8 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
   const [confirmStep, setConfirmStep] = useState(0);
   const [confirmText, setConfirmText] = useState('');
   const [password, setPassword] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [resetError, setResetError] = useState('');
 
   const resetItems = [
     { 
@@ -86,34 +90,86 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
 
   const handleStartReset = () => {
     if (getSelectedCount() === 0) {
-      alert('초기화할 항목을 선택해주세요.');
-      return;
+      return; // button is disabled when count === 0
     }
     setConfirmStep(1);
   };
 
   const handleConfirmReset = () => {
     if (confirmText !== 'DELETE') {
-      alert('확인 텍스트가 일치하지 않습니다.');
-      return;
+      return; // button is disabled when text doesn't match
     }
+    setResetError('');
     setConfirmStep(2);
   };
 
-  const handleFinalReset = () => {
-    // 개발 환경에서는 임시로 모든 비밀번호 허용
-    // TODO: 실제 배포 시 백엔드 API로 비밀번호 검증
+  const handleFinalReset = async () => {
     if (!password) {
-      alert('비밀번호를 입력해주세요.');
+      setResetError('비밀번호를 입력해주세요.');
       return;
     }
-    
-    // 초기화 실행
-    onReset(resetOptions);
-    alert('시스템 초기화가 시작되었습니다.');
-    setConfirmStep(0);
-    setConfirmText('');
-    setPassword('');
+
+    setIsVerifying(true);
+    setResetError('');
+
+    try {
+      // Get current user's email for password verification
+      const token = authService.getAccessToken();
+      const meRes = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.ME}`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: 'include',
+      });
+
+      if (!meRes.ok) {
+        throw new Error('현재 사용자 정보를 가져올 수 없습니다.');
+      }
+
+      const meData = await meRes.json();
+      const email = meData.email;
+
+      if (!email) {
+        throw new Error('사용자 이메일을 확인할 수 없습니다.');
+      }
+
+      // Verify password via backend login endpoint
+      const verifyRes = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGIN}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!verifyRes.ok) {
+        throw new Error('비밀번호가 올바르지 않습니다.');
+      }
+
+      // Password verified — call system reset API
+      const resetToken = authService.getAccessToken();
+      const resetRes = await fetch(`${API_BASE_URL}${API_ENDPOINTS.SYSTEM.RESET}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(resetToken ? { Authorization: `Bearer ${resetToken}` } : {})
+        },
+        credentials: 'include',
+        body: JSON.stringify(resetOptions),
+      });
+
+      if (!resetRes.ok) {
+        const errData = await resetRes.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.error || `초기화 요청 실패 (HTTP ${resetRes.status})`);
+      }
+
+      // Notify parent and reset local state
+      onReset(resetOptions);
+      setConfirmStep(0);
+      setConfirmText('');
+      setPassword('');
+    } catch (err: any) {
+      setResetError(err.message || '비밀번호 검증 중 오류가 발생했습니다.');
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -314,33 +370,46 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); setResetError(''); }}
+              onKeyDown={(e) => e.key === 'Enter' && !isVerifying && handleFinalReset()}
               placeholder="비밀번호 입력"
               className="w-full px-4 py-3 rounded-lg border"
-              style={{ 
+              style={{
                 backgroundColor: 'var(--bg-primary)',
-                borderColor: 'var(--border-light)',
+                borderColor: resetError ? '#EF4444' : 'var(--border-light)',
                 color: 'var(--text-primary)'
               }}
               autoFocus
+              disabled={isVerifying}
             />
+            {resetError && (
+              <p className="text-sm text-red-600 font-medium">{resetError}</p>
+            )}
             <div className="flex space-x-3">
               <button
                 onClick={handleFinalReset}
-                className="flex-1 py-3 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700"
+                disabled={isVerifying || !password}
+                className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
+                  isVerifying || !password
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                    : 'bg-red-600 text-white hover:bg-red-700'
+                }`}
               >
-                🔄 시스템 초기화 실행
+                {isVerifying ? '🔄 비밀번호 검증 중...' : '🔄 시스템 초기화 실행'}
               </button>
               <button
                 onClick={() => {
                   setConfirmStep(0);
                   setConfirmText('');
                   setPassword('');
+                  setResetError('');
                 }}
+                disabled={isVerifying}
                 className="px-6 py-3 rounded-lg font-semibold"
-                style={{ 
+                style={{
                   backgroundColor: 'var(--bg-subtle)',
-                  color: 'var(--text-primary)'
+                  color: 'var(--text-primary)',
+                  opacity: isVerifying ? 0.5 : 1
                 }}
               >
                 취소
