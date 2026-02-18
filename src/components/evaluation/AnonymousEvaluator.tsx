@@ -133,8 +133,6 @@ const AnonymousEvaluator: React.FC = () => {
     setError('');
     
     try {
-      console.log('🔍 익명 평가 초기화:', { projectId, sessionId });
-      
       // Try to recover existing session first
       if (sessionId) {
         await attemptSessionRecovery();
@@ -164,7 +162,6 @@ const AnonymousEvaluator: React.FC = () => {
         // Load progress and comparisons
         await loadSessionProgress(response.data.id);
         
-        console.log('✅ 세션 복구 성공:', response.data.id);
       }
     } catch (error) {
       console.warn('⚠️ 세션 복구 실패, 새 세션으로 진행');
@@ -178,7 +175,6 @@ const AnonymousEvaluator: React.FC = () => {
       if (recoveredData) {
         setRecoveryData(recoveredData);
         setShowRecoveryModal(true);
-        console.log('📂 자동 복구 데이터 발견');
       }
     } catch (error) {
       console.warn('⚠️ 자동 복구 실패');
@@ -206,8 +202,6 @@ const AnonymousEvaluator: React.FC = () => {
       if (alternativesResponse.success && alternativesResponse.data) {
         setAlternatives(alternativesResponse.data);
       }
-      
-      console.log('✅ 프로젝트 데이터 로딩 완료');
       
       // 데이터 로딩 완료 후 비교 쌍 생성 (세션이 있는 경우)
       if (session) {
@@ -268,8 +262,6 @@ const AnonymousEvaluator: React.FC = () => {
         isAnonymous: registrationData.isAnonymous
       };
       
-      console.log('📝 세션 생성:', evaluatorData);
-      
       const response = await anonymousEvaluationService.createSession(projectId, evaluatorData);
       
       if (response.success && response.data) {
@@ -287,7 +279,6 @@ const AnonymousEvaluator: React.FC = () => {
         }, 100);
         
         setSuccess('평가 세션이 생성되었습니다!');
-        console.log('✅ 세션 생성 성공:', response.data.id);
       } else {
         throw new Error(response.error || '세션 생성에 실패했습니다.');
       }
@@ -335,8 +326,7 @@ const AnonymousEvaluator: React.FC = () => {
     });
     
     setComparisons(allComparisons);
-    console.log('🔄 비교 쌍 생성 완료:', allComparisons.length, '개');
-    
+
     // 첫 번째 비교의 시작 시간 설정
     if (allComparisons.length > 0) {
       comparisonStartTime.current = Date.now();
@@ -408,7 +398,6 @@ const AnonymousEvaluator: React.FC = () => {
           await handleEvaluationComplete();
         }
         
-        console.log('✅ 비교 저장 성공:', currentComparison.id);
       } else {
         throw new Error(response.error || '비교 저장에 실패했습니다.');
       }
@@ -443,8 +432,6 @@ const AnonymousEvaluator: React.FC = () => {
         setTimeout(() => {
           navigate('/evaluation-complete');
         }, 3000);
-        
-        console.log('🎉 평가 완료:', session.id);
       } else {
         throw new Error(response.error || '평가 완료 처리에 실패했습니다.');
       }

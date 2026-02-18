@@ -133,27 +133,16 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   useEffect(() => {
     // App.tsx에서 'home' 탭일 때도 fetchProjects를 호출하도록 수정했으므로
     // 이제 PersonalServiceDashboard에서 중복 로딩할 필요가 없습니다.
-    console.log('🔍 PersonalServiceDashboard 프로젝트 상태:', {
-      externalProjects: externalProjects?.length || 0,
-      hasAttemptedLoad,
-      isAutoLoading
-    });
-    
     // 상위에서 프로젝트가 전달되지 않고, 아직 로딩 시도하지 않았으면 자동 로딩
     if (!externalProjects?.length && !hasAttemptedLoad && !isAutoLoading) {
-      console.log('🔄 PersonalServiceDashboard: 프로젝트 자동 로딩 시작...');
       const autoLoadProjects = async () => {
         setIsAutoLoading(true);
         setHasAttemptedLoad(true);
         
         try {
           const projects = await dataService.getProjects();
-          console.log('✅ 자동 로딩 성공:', projects.length, '개 프로젝트');
-          
+
           // 상위에서 이미 프로젝트를 로드하고 있을 것이므로 새로고침 메시지 제거
-          if (projects.length > 0) {
-            console.log('✅ 프로젝트 로드 완료 - 상위 컴포넌트에서 처리됨');
-          }
         } catch (error) {
           console.error('❌ 프로젝트 자동 로딩 실패:', error);
           setError('프로젝트를 불러오는데 실패했습니다. 새로고침을 시도해보세요.');
@@ -168,11 +157,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
 
   // props의 user가 변경될 때 내부 상태도 업데이트
   useEffect(() => {
-    console.log('👀 PersonalServiceDashboard: props user 변경 감지', {
-      이전내부사용자: user,
-      새props사용자: initialUser,
-      변경됨: user.first_name !== initialUser.first_name || user.last_name !== initialUser.last_name
-    });
     if (user.first_name !== initialUser.first_name || user.last_name !== initialUser.last_name) {
       setUser(initialUser);
     }
@@ -180,12 +164,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
 
   // 사용자 정보 업데이트 처리
   const handleUserUpdate = (updatedUser: typeof initialUser) => {
-    console.log('🔄 PersonalServiceDashboard: handleUserUpdate 호출!', {
-      이전사용자: user,
-      새사용자: updatedUser,
-      onUserUpdate존재: !!onUserUpdate
-    });
-    
     // 새로운 객체 참조를 만들어 React 리렌더링 보장
     const newUserObject = {
       ...updatedUser,
@@ -195,7 +173,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     
     setUser(newUserObject);
     if (onUserUpdate) {
-      console.log('🚀 PersonalServiceDashboard: App.tsx로 전파!', newUserObject);
       onUserUpdate(newUserObject);
     }
   };
@@ -263,14 +240,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   // 실시간 프로젝트 동기화 함수
   const refreshProjectList = useCallback(async () => {
     try {
-      console.log('🔄 프로젝트 목록 실시간 새로고침 시작...');
       const updatedProjects = await dataService.getProjects();
-      
+
       // App.tsx의 프로젝트 목록 업데이트를 위한 이벤트 발생
       if (onCreateProject && updatedProjects.length > 0) {
         // 새로고침 트리거를 통해 상위 컴포넌트에 알림
         setProjectRefreshTrigger(prev => prev + 1);
-        console.log('✅ 프로젝트 목록 새로고침 완료:', updatedProjects.length, '개');
       }
       
       return updatedProjects;
@@ -290,17 +265,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
     
-    console.log('🔍 PersonalServiceDashboard 초기화:', { 
-      tabParam, 
-      externalActiveTab,
-      urlSearch: window.location.search,
-      externalProjects: externalProjects?.length,
-      projects: projects?.length,
-      projectsData: projects
-    });
-    
     if (tabParam === 'demographic-survey') {
-      console.log('✅ demographic-survey 탭으로 설정');
       return 'demographic-survey';
     }
     
@@ -318,8 +283,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     externalActiveTab === 'decision-support-system' ? 'decision-support' :
     externalActiveTab === 'personal-settings' ? 'settings' :
     'dashboard';
-    
-    console.log('📊 최종 activeMenu 설정:', result);
+
     return result;
   });
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
@@ -379,7 +343,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   // externalActiveTab이 변경되면 activeMenu도 업데이트
   useEffect(() => {
     if (externalActiveTab && ['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(externalActiveTab)) {
-      console.log('🔄 externalActiveTab 변경 감지:', externalActiveTab);
       setActiveMenu(externalActiveTab as any);
     }
   }, [externalActiveTab]);
@@ -400,9 +363,8 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     }
     
     // 슈퍼 관리자 모드이고 personal-service로 접근한 경우
-    if ((user?.role === 'super_admin' || isAdminEmail) && isSuperMode && 
+    if ((user?.role === 'super_admin' || isAdminEmail) && isSuperMode &&
         (externalActiveTab === 'personal-service' || externalActiveTab === 'admin-dashboard' || externalActiveTab === 'user-home')) {
-      console.log('🚀 슈퍼 관리자 모드 감지 - super-admin-dashboard로 리다이렉트');
       if (externalOnTabChange) {
         externalOnTabChange('super-admin-dashboard');
       }
@@ -457,7 +419,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
 
 
   const handleEditProject = (project: ProjectData | UserProject) => {
-    console.log('✏️ 프로젝트 편집 시작:', project.title);
     
     // ProjectData를 UserProject 형식으로 변환
     const userProject: UserProject = {
@@ -494,18 +455,13 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     
     // MyProjects에서 이미 확인을 받았으므로 여기서는 확인하지 않음
     try {
-      console.log('🗑️ 삭제 시작:', projectId, projectTitle);
-      
       // App.tsx의 onDeleteProject 사용 (휴지통 오버플로우 처리 포함)
       if (onDeleteProject) {
-        console.log('✅ App.tsx onDeleteProject 호출 (휴지통 오버플로우 처리 포함)');
         await onDeleteProject(projectId);
-        console.log('✅ App.tsx에서 삭제 처리 완료');
 
         // 삭제 후 실시간 프로젝트 목록 새로고침
         if (refreshProjectList) {
           await refreshProjectList();
-          console.log('🔄 프로젝트 삭제 후 실시간 동기화 완료');
         }
 
         // 프로젝트 새로고침 트리거
@@ -514,17 +470,13 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         // 성공 메시지 표시
         showDashboardMessage('success', `"${projectTitle}"가 휴지통으로 이동되었습니다.`);
       } else {
-        console.log('⚠️ onDeleteProject prop이 없음 - dataService 직접 호출 (fallback)');
         // Fallback to dataService
         const success = await dataService.deleteProject(projectId);
-        
+
         if (success) {
-          console.log('✅ 백엔드 삭제 완료 (fallback)');
-          
           // 삭제 후 실시간 프로젝트 목록 새로고침
           if (refreshProjectList) {
             await refreshProjectList();
-            console.log('🔄 프로젝트 삭제 후 실시간 동기화 완료');
           }
           
           // 프로젝트 새로고침 트리거
@@ -568,10 +520,10 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     setLoading(true);
     setError(null);
 
-    try {
-      console.log('💾 통합 데이터 서비스로 프로젝트 저장');
+    try {;
       
       if (editingProject) {
+
         // 편집 모드 - 프로젝트 수정
         const updatedProject = await dataService.updateProject(editingProject.id!, {
           title: projectForm.title,
@@ -594,19 +546,14 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           };
           
           // 프로젝트 수정 완료 후 실시간 새로고침
-          console.log('✅ 프로젝트 수정 완료');
           await refreshProjectList();
-          console.log('🔄 프로젝트 수정 후 실시간 동기화 완료');
         } else {
           throw new Error('프로젝트 수정에 실패했습니다.');
         }
       } else {
         // 생성 모드 - 새 프로젝트 생성
-        console.log('🔍 프로젝트 생성 시작:', projectForm.title);
-        
         let newProject;
         if (onCreateProject) {
-          console.log('✅ App.tsx onCreateProject prop 사용');
           newProject = await onCreateProject({
             title: projectForm.title,
             description: projectForm.description,
@@ -616,7 +563,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             workflow_stage: projectForm.workflow_stage
           });
         } else {
-          console.log('⚠️ dataService 직접 호출 (fallback)');
           newProject = await dataService.createProject({
             title: projectForm.title,
             description: projectForm.description,
@@ -627,16 +573,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           });
         }
         
-        console.log('✅ 프로젝트 생성 결과:', newProject);
-        
         if (newProject) {
           // 새 프로젝트 생성 완료 - App.tsx에서 관리됨
           setSelectedProjectId(newProject.id || '');
-          console.log('✅ 새 프로젝트 생성 완료:', newProject.title);
-          
+
           // 실시간 프로젝트 목록 새로고침
           await refreshProjectList();
-          console.log('🔄 실시간 동기화 완료');
         } else {
           throw new Error('프로젝트 생성에 실패했습니다.');
         }
@@ -661,7 +603,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const handleCriteriaCountUpdate = (count: number) => {
     if (selectedProjectId) {
       // 기준 수 업데이트는 App.tsx에서 관리
-      console.log('🔢 기준 수 업데이트:', count);
     }
   };
 
@@ -669,7 +610,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const handleAlternativesCountUpdate = (count: number) => {
     if (selectedProjectId) {
       // 대안 수 업데이트는 App.tsx에서 관리
-      console.log('🔢 대안 수 업데이트:', count);
     }
   };
 
@@ -833,12 +773,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
 
   const renderOverview = () => {
-    console.log('🎯 renderOverview 호출됨! projects 상태:', {
-      projectsLength: projects?.length,
-      projects: projects,
-      quotas: getCurrentQuotas()
-    });
-    
     // 최근 프로젝트 가져오기 (최대 3개)
     const recentProjects = (projects || [])
       .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
@@ -1281,12 +1215,10 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
             projectId={selectedProjectId} 
             onFinalize={() => {
               // 모델 확정 후 로그 출력
-              console.log('✅ 모델 구축 완료:', selectedProjectId);
               setCurrentStep('overview');
             }}
             onNavigateToEvaluators={() => {
               // 평가자 관리 페이지로 자동 이동
-              console.log('🔄 평가자 관리 페이지로 이동:', selectedProjectId);
               if (externalOnTabChange) {
                 externalOnTabChange('evaluators');
               } else {
@@ -1890,19 +1822,14 @@ ${project?.title} - ${type} 프레젠테이션
         <MyProjects
           refreshTrigger={projectRefreshTrigger}
           onCreateNew={() => {
-            console.log('🆕 프로젝트 추가 버튼 클릭됨');
-            console.log('externalOnTabChange 존재:', !!externalOnTabChange);
             if (externalOnTabChange) {
-              console.log('📍 project-workflow로 이동 중...');
               externalOnTabChange('project-workflow');
             } else {
-              console.log('📍 creation으로 이동 중...');
               handleTabChange('creation');
             }
           }}
           onProjectSelect={(project) => {
             setSelectedProjectId(project.id || '');
-            console.log('프로젝트 선택:', project.title);
           }}
           onEditProject={(project) => {
             setEditingProject({
@@ -1931,7 +1858,6 @@ ${project?.title} - ${type} 프레젠테이션
           }}
           onDeleteProject={handleDeleteProject}
           onModelBuilder={(project) => {
-            console.log('🏗️ 모델 구축 버튼 클릭:', project.id, project.title);
             setSelectedProjectId(project.id || '');
             if (externalOnTabChange) {
               externalOnTabChange('model-builder');
@@ -1940,7 +1866,6 @@ ${project?.title} - ${type} 프레젠테이션
             }
           }}
           onAnalysis={(project) => {
-            console.log('📊 결과 분석 버튼 클릭:', project.id, project.title);
             setSelectedProjectId(project.id || '');
             if (externalOnTabChange) {
               externalOnTabChange('results-analysis');
@@ -2363,7 +2288,6 @@ ${project?.title} - ${type} 프레젠테이션
                             e.stopPropagation();
                             setSelectedProjectId(project.id || '');
                             setActiveProject(project.id || null);
-                            console.log('⚙️ 모델 구성 버튼 클릭:', project.id, project.title);
                             handleTabChange('model-builder');
                           }}
                           className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
@@ -2378,7 +2302,6 @@ ${project?.title} - ${type} 프레젠테이션
                             e.stopPropagation();
                             setSelectedProjectId(project.id || '');
                             setActiveProject(project.id || null);
-                            console.log('📊 결과 분석 버튼 클릭:', project.id, project.title);
                             handleTabChange('results-analysis');
                           }}
                           className="p-2 rounded-lg transition-colors"
@@ -2400,7 +2323,6 @@ ${project?.title} - ${type} 프레젠테이션
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.log('🗑️ 삭제 버튼 클릭됨:', project.id, project.title);
                             handleDeleteProject(project.id || '');
                           }}
                           className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition-colors border border-red-200"
@@ -2555,7 +2477,6 @@ ${project?.title} - ${type} 프레젠테이션
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              console.log('🗑️ 삭제 버튼 클릭됨 (리스트뷰):', project.id, project.title);
                               handleDeleteProject(project.id || '');
                             }}
                             className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition-colors border border-red-200"
@@ -2611,7 +2532,6 @@ ${project?.title} - ${type} 프레젠테이션
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ProjectCreation
           onProjectCreated={() => {
-            console.log('✅ 프로젝트 생성 완료 - project-workflow로 이동');
             if (externalOnTabChange) {
               externalOnTabChange('project-workflow');
             } else {
@@ -2620,7 +2540,6 @@ ${project?.title} - ${type} 프레젠테이션
             setProjectRefreshTrigger(prev => prev + 1);
           }}
           onCancel={() => {
-            console.log('❌ 프로젝트 생성 취소 - my-projects로 돌아감');
             if (externalOnTabChange) {
               externalOnTabChange('my-projects');
             } else {
@@ -2628,7 +2547,6 @@ ${project?.title} - ${type} 프레젠테이션
             }
           }}
           createProject={async (projectData) => {
-            console.log('🚀 프로젝트 생성 시작:', projectData);
             try {
               // ProjectCreation에서 오는 데이터를 ProjectData 형식으로 변환
               const convertedData = {
@@ -2643,12 +2561,9 @@ ${project?.title} - ${type} 프레젠테이션
               
               if (onCreateProject) {
                 const result = await onCreateProject(convertedData);
-                console.log('✅ 프로젝트 생성 성공:', result);
                 return result;
               } else {
-                console.log('⚠️ onCreateProject 콜백이 없어 dataService 사용');
                 const result = await dataService.createProject(convertedData);
-                console.log('✅ dataService로 프로젝트 생성 성공:', result);
                 return result;
               }
             } catch (error) {
@@ -2834,11 +2749,9 @@ ${project?.title} - ${type} 프레젠테이션
               <CriteriaManagement 
                 projectId={newProjectId}
                 onComplete={() => {
-                  console.log('✅ 기준 설정 완료');
                   // 자동으로 다음 단계로 이동하지 않고 사용자가 버튼을 클릭하도록 함
                 }}
                 onCriteriaChange={(criteriaCount) => {
-                  console.log('📝 기준 변경됨:', criteriaCount, '개');
                 }}
               />
               
@@ -2859,10 +2772,8 @@ ${project?.title} - ${type} 프레젠테이션
                         return;
                       }
                       
-                      console.log(`✅ 기준 ${criteriaCount}개 확인됨. 다음 단계로 진행`);
                       setNewProjectStep(3);
                     } catch (error) {
-                      console.log('⚠️ 기준 확인 실패, 다음 단계로 진행');
                       setNewProjectStep(3);
                     }
                   }}
@@ -2885,11 +2796,9 @@ ${project?.title} - ${type} 프레젠테이션
               <AlternativeManagement 
                 projectId={newProjectId}
                 onComplete={() => {
-                  console.log('✅ 대안 설정 완료');
                   // 자동으로 다음 단계로 이동하지 않고 사용자가 버튼을 클릭하도록 함
                 }}
                 onAlternativesChange={(alternativesCount) => {
-                  console.log('📝 대안 변경됨:', alternativesCount, '개');
                 }}
               />
               
@@ -2915,10 +2824,8 @@ ${project?.title} - ${type} 프레젠테이션
                         return;
                       }
                       
-                      console.log(`✅ 대안 ${alternativesCount}개 확인됨. 다음 단계로 진행`);
                       setNewProjectStep(4);
                     } catch (error) {
-                      console.log('⚠️ 대안 확인 실패, 다음 단계로 진행');
                       setNewProjectStep(4);
                     }
                   }}
@@ -2949,7 +2856,6 @@ ${project?.title} - ${type} 프레젠테이션
                     variant="secondary" 
                     onClick={() => {
                       // 평가자 없이 진행 (본인만 평가)
-                      console.log('✅ 평가자 배정 건너뛰고 모델 구축으로 이동');
                       setSelectedProjectId(newProjectId || '');
                       handleTabChange('model-builder');
                       setNewProjectStep(1);
@@ -2966,13 +2872,11 @@ ${project?.title} - ${type} 프레젠테이션
                         const evaluatorsResponse = await dataService.getEvaluators(newProjectId);
                         const evaluatorsCount = evaluatorsResponse?.length || 0;
                         
-                        console.log(`✅ 평가자 ${evaluatorsCount}명과 함께 모델 구축으로 이동`);
                         setSelectedProjectId(newProjectId || '');
                         handleTabChange('model-builder');
                         setNewProjectStep(1);
                         setNewProjectId(null);
                       } catch (error) {
-                        console.log('⚠️ 평가자 확인 실패, 모델 구축으로 진행');
                         setSelectedProjectId(newProjectId || '');
                         handleTabChange('model-builder');
                         setNewProjectStep(1);
@@ -3969,48 +3873,18 @@ ${project?.title} - ${type} 프레젠테이션
       }
     }
     
-    console.log('🔍 PersonalServiceDashboard 렌더링 조건 체크:', {
-      userRole: user?.role,
-      isAdminEmail,
-      isSuperMode,
-      activeMenu,
-      condition1: user?.role === 'super_admin',
-      condition2: isAdminEmail,
-      condition3: isSuperMode,
-      condition4: activeMenu === 'dashboard',
-      overallCondition: (user?.role === 'super_admin' || isAdminEmail) && isSuperMode && activeMenu === 'dashboard',
-      willRedirect: (user?.role === 'super_admin' || isAdminEmail) && isSuperMode && activeMenu === 'dashboard'
-    });
-
     // 슈퍼 관리자 모드일 때는 슈퍼 관리자 대시보드로 리다이렉트
     if ((user?.role === 'super_admin' || isAdminEmail) && isSuperMode && activeMenu === 'dashboard') {
-      console.log('🔄 슈퍼 관리자 대시보드로 리다이렉트 - 조건 충족됨');
       if (externalOnTabChange) {
         externalOnTabChange('super-admin-dashboard');
       }
       return null;
     }
     
-    console.log('✅ 리다이렉트 조건 통과 - PersonalServiceDashboard 계속 렌더링');
-    
-    console.log('📊 PersonalServiceDashboard switch case:', { 
-      activeMenu, 
-      userRole: user?.role,
-      activeMenuType: typeof activeMenu,
-      activeMenuString: String(activeMenu),
-      switchComparison: {
-        'dashboard': activeMenu === 'dashboard',
-        'projects': activeMenu === 'projects', 
-        'creation': activeMenu === 'creation'
-      }
-    });
-    
     switch (activeMenu) {
       case 'dashboard':
-        console.log('🏠 Dashboard case 진입:', { userRole: user?.role, isServiceUser: user?.role === 'service_user' });
         // 사용자 역할에 따라 다른 대시보드 표시
         if (user?.role === 'service_user') {
-          console.log('👤 PersonalUserDashboard 렌더링');
           // 일반 사용자용 대시보드 표시
           return (
             <PersonalUserDashboard 
@@ -4023,7 +3897,6 @@ ${project?.title} - ${type} 프레젠테이션
             />
           );
         } else {
-          console.log('👑 관리자용 대시보드 렌더링 - renderOverview() 호출');
           // 관리자용 대시보드 표시
           return renderOverview();
         }
@@ -4032,19 +3905,14 @@ ${project?.title} - ${type} 프레젠테이션
           <MyProjects
             refreshTrigger={projectRefreshTrigger}
             onCreateNew={() => {
-              console.log('🆕 프로젝트 추가 버튼 클릭됨 (projects 메뉴)');
-              console.log('externalOnTabChange 존재:', !!externalOnTabChange);
               if (externalOnTabChange) {
-                console.log('📍 project-workflow로 이동 중...');
                 externalOnTabChange('project-workflow');
               } else {
-                console.log('📍 creation으로 이동 중...');
                 setActiveMenu('creation');
               }
             }}
             onProjectSelect={(project) => {
               setSelectedProjectId(project.id || '');
-              console.log('프로젝트 선택:', project.title);
             }}
             onEditProject={(project) => {
               setEditingProject({
@@ -4073,12 +3941,10 @@ ${project?.title} - ${type} 프레젠테이션
             }}
             onDeleteProject={handleDeleteProject}
             onModelBuilder={(project) => {
-              console.log('🏗️ 모델 구축 버튼 클릭 (projects 메뉴):', project.id, project.title);
               setSelectedProjectId(project.id || '');
               setActiveMenu('model-builder');
             }}
             onAnalysis={(project) => {
-              console.log('📊 결과 분석 버튼 클릭 (projects 메뉴):', project.id, project.title);
               setSelectedProjectId(project.id || '');
               setActiveMenu('analysis');
             }}
@@ -4194,11 +4060,9 @@ ${project?.title} - ${type} 프레젠테이션
       case 'project-wizard':
       case 'demographic-setup':
       case 'evaluator-invitation':
-        console.log('🚀 전체 화면 메뉴 감지 - null 반환:', activeMenu);
         return null;
-        
+
       default:
-        console.log('🔄 Default case 진입 - renderOverview() 호출:', { activeMenu, userRole: user?.role });
         return renderOverview();
     }
   };

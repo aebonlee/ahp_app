@@ -41,13 +41,10 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
     setError('');
     
     try {
-      console.log('🔧 시스템 데이터 로딩 시작');
-      
       // Load configurations
       const configResponse = await systemManagementService.getConfigurations();
       if (configResponse.success && configResponse.data) {
         setConfigurations(configResponse.data);
-        console.log('✅ 시스템 설정 로딩 완료:', configResponse.data.length, '개');
       } else {
         console.warn('⚠️ 시스템 설정 로딩 실패, 기본값 사용');
         // Fallback to default configurations
@@ -58,7 +55,6 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
       const backupResponse = await systemManagementService.getBackups();
       if (backupResponse.success && backupResponse.data) {
         setBackups(backupResponse.data);
-        console.log('✅ 백업 상태 로딩 완료:', backupResponse.data.length, '개');
       } else {
         console.warn('⚠️ 백업 상태 로딩 실패');
         setBackups([]);
@@ -68,14 +64,12 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
       const healthResponse = await systemManagementService.getSystemHealth();
       if (healthResponse.success && healthResponse.data) {
         setSystemHealth(healthResponse.data);
-        console.log('✅ 시스템 상태 로딩 완료');
       }
       
       // Load maintenance tasks
       const tasksResponse = await systemManagementService.getMaintenanceTasks();
       if (tasksResponse.success && tasksResponse.data) {
         setMaintenanceTasks(tasksResponse.data);
-        console.log('✅ 유지보수 작업 로딩 완료:', tasksResponse.data.length, '개');
       } else {
         // Fallback to default tasks
         setMaintenanceTasks(getDefaultMaintenanceTasks());
@@ -223,8 +217,6 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
     setError('');
     
     try {
-      console.log('🔧 설정 업데이트:', configId, newValue);
-      
       const response = await systemManagementService.updateConfiguration(configId, newValue);
       
       if (response.success && response.data) {
@@ -267,8 +259,6 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         setError('');
         
         try {
-          console.log('💾 백업 생성 시작:', type);
-          
           const response = await systemManagementService.createBackup(type);
           
           if (response.success && response.data) {
@@ -369,8 +359,6 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         setError('');
         
         try {
-          console.log('🔧 유지보수 작업 실행:', taskId);
-          
           const response = await systemManagementService.runMaintenanceTask(taskId);
           
           if (response.success && response.data) {
@@ -418,8 +406,6 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
     setError('');
     
     try {
-      console.log('💾 백업 다운로드:', backupId);
-      
       const response = await systemManagementService.downloadBackup(backupId);
       
       if (response.success) {
@@ -447,8 +433,6 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         setError('');
         
         try {
-          console.log('🔄 백업 복원:', backupId);
-          
           const response = await systemManagementService.restoreBackup(backupId);
           
           if (response.success && response.data) {
@@ -492,8 +476,6 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         setError('');
         
         try {
-          console.log('🗑️ 백업 삭제:', backupId);
-          
           const response = await systemManagementService.deleteBackup(backupId);
           
           if (response.success) {
@@ -538,8 +520,6 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         setError('');
         
         try {
-          console.log('🗑️ 캐시 정리:', cacheType);
-          
           const response = await systemManagementService.clearCache(cacheType);
           
           if (response.success) {
@@ -571,8 +551,6 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
     setError('');
     
     try {
-      console.log('🌡️ 시스템 상태 점검 실행');
-      
       const response = await systemManagementService.runHealthCheck();
       
       if (response.success && response.data) {

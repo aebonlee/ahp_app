@@ -45,20 +45,6 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     try {
       const result = TextParser.parseText(inputText);
       
-      // 파싱 결과 디버깅
-      console.log('📝 파싱 결과:', {
-        total: result.criteria.length,
-        byLevel: result.criteria.reduce((acc, c) => {
-          acc[c.level] = (acc[c.level] || 0) + 1;
-          return acc;
-        }, {} as Record<number, number>),
-        details: result.criteria.map(c => ({
-          name: c.name,
-          level: c.level,
-          description: c.description
-        }))
-      });
-      
       // 기존 기준과의 중복 검사 (기존 기준이 있을 때만)
       if (existingCriteria && existingCriteria.length > 0) {
         const existingNames = getAllCriteria(existingCriteria).map(c => c.name.toLowerCase());
@@ -91,11 +77,6 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 
     // 파싱된 기준을 실제 Criterion 객체로 변환 (평면 구조로)
     const convertedCriteria = convertParsedCriteriaFlat(parseResult.criteria);
-    
-    console.log('✅ 변환된 기준:', {
-      total: convertedCriteria.length,
-      flatList: convertedCriteria
-    });
     
     // 평면 구조의 전체 기준 리스트를 import
     onImport(convertedCriteria);

@@ -40,12 +40,7 @@ class AuthService {
       
       // 3. 토큰 만료 확인 및 정리
       if (this.accessToken && this.isTokenExpired(this.accessToken)) {
-        console.log('🔄 만료된 토큰 감지 - 자동 정리');
         this.clearTokens();
-      }
-      
-      if (this.accessToken) {
-        console.log('✅ 세션 복원 성공 - 로그인 상태 유지');
       }
     } catch (error) {
       console.warn('❌ 토큰 로딩 실패:', error);
@@ -68,7 +63,6 @@ class AuthService {
     localStorage.setItem('ahp_access_token', tokens.access);
     localStorage.setItem('ahp_refresh_token', tokens.refresh);
     
-    console.log('💾 토큰 저장 완료 - 세션 유지 강화');
   }
 
   /**
@@ -91,7 +85,6 @@ class AuthService {
       this.tokenRefreshTimer = null;
     }
     
-    console.log('🧹 토큰 정리 완료 - 완전 로그아웃');
   }
 
   /**
@@ -204,7 +197,6 @@ class AuthService {
       // admin@ahp.com은 슈퍼 관리자로 처리
       if (user.email === 'admin@ahp.com') {
         user.role = 'super_admin';
-        console.log('🔑 슈퍼 관리자 권한 부여:', user.email);
       }
       
       const tokens = { access, refresh };
@@ -285,7 +277,6 @@ class AuthService {
       // admin@ahp.com은 슈퍼 관리자로 처리
       if (result.data.email === 'admin@ahp.com') {
         result.data.role = 'super_admin';
-        console.log('🔑 getCurrentUser - 슈퍼 관리자 권한 부여:', result.data.email);
       }
       return result.data;
     }
@@ -328,7 +319,6 @@ class AuthService {
         }
 
         this.initTokenRefresh();
-        console.log('🔄 토큰 갱신 완료 - 세션 연장');
         return { success: true };
       }
 

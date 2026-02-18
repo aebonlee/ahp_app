@@ -33,7 +33,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
     const savedStep = localStorage.getItem('workflowStep');
     
     if (savedProjectId && savedProjectData && savedStep) {
-      console.log('📥 저장된 워크플로우 상태 복원');
       try {
         return {
           currentStep: parseInt(savedStep),
@@ -76,8 +75,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
     try {
       setLoading(true);
       setError(null);
-      console.log('🔄 프로젝트 생성 시작:', projectData);
-      
       const createdProject = await dataService.createProject({
         title: projectData.title,
         description: projectData.description,
@@ -88,9 +85,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
         workflow_stage: 'creating'
       });
 
-      console.log('📦 생성된 프로젝트 데이터:', createdProject);
-      console.log('🔍 프로젝트 ID:', createdProject?.id);
-
       if (!createdProject || !createdProject.id) {
         throw new Error('프로젝트 ID가 반환되지 않았습니다.');
       }
@@ -100,8 +94,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
       localStorage.setItem('currentProjectData', JSON.stringify(createdProject));
       localStorage.setItem('workflowStep', '2');
 
-      console.log('✅ 프로젝트 생성 성공, Step 2로 전환');
-      
       setWorkflowState(prev => ({
         ...prev,
         currentStep: 2,
@@ -109,12 +101,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
         projectData: createdProject
       }));
 
-      console.log('📊 업데이트된 워크플로우 상태:', {
-        currentStep: 2,
-        projectId: createdProject.id,
-        projectData: createdProject
-      });
-      
     } catch (error) {
       console.error('❌ 프로젝트 생성 실패:', error);
       setError('프로젝트 생성에 실패했습니다. 다시 시도해주세요.');
@@ -125,7 +111,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
 
   // 기준 설정 완료 핸들러
   const handleCriteriaComplete = () => {
-    console.log(`✅ 기준 설정 완료: ${workflowState.criteriaCount}개`);
     localStorage.setItem('workflowStep', '3');
     setWorkflowState(prev => ({
       ...prev,
@@ -135,7 +120,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
 
   // 대안 설정 완료 핸들러
   const handleAlternativesComplete = () => {
-    console.log(`✅ 대안 설정 완료: ${workflowState.alternativesCount}개`);
     localStorage.setItem('workflowStep', '4');
     setWorkflowState(prev => ({
       ...prev,
@@ -145,7 +129,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
 
   // 평가자 배정 완료 핸들러
   const handleEvaluatorsComplete = () => {
-    console.log(`✅ 평가자 배정 완료: ${workflowState.evaluatorsCount}명`);
     localStorage.setItem('workflowStep', '5');
     setWorkflowState(prev => ({
       ...prev,

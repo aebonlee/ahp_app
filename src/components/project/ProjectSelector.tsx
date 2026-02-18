@@ -70,8 +70,6 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     setError(null);
     
     try {
-      console.log('📊 dataService로 프로젝트 로드 중...');
-      
       // dataService를 사용하여 프로젝트 로드 (자동으로 온라인/오프라인 모드 처리)
       const projectsData = await dataService.getProjects();
       
@@ -94,7 +92,6 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       }));
       
       setProjects(formattedProjects);
-      console.log(`✅ ${formattedProjects.length}개 프로젝트 로드 완료`);
       
     } catch (error: any) {
       console.error('프로젝트 로드 실패:', error);

@@ -53,7 +53,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
     // 실제 DB에서 평가자 데이터 로드
     const loadProjectEvaluators = async () => {
       try {
-        console.log('🔍 실제 DB에서 평가자 조회 시작:', projectId);
         const evaluatorsData = await cleanDataService.getEvaluators(projectId);
         
         // EvaluatorData를 Evaluator 인터페이스로 변환
@@ -70,14 +69,12 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
         }));
         
         setEvaluators(convertedEvaluators);
-        console.log(`✅ Loaded ${convertedEvaluators.length} evaluators from DB for project ${projectId}`);
-        
+
         // 통계 업데이트
         updateEvaluationStats(convertedEvaluators);
       } catch (error) {
         console.error('❌ Failed to load evaluators from DB:', error);
         setEvaluators([]);
-        console.log(`⚠️ Starting with empty evaluator list for project ${projectId} due to DB error`);
       }
     };
 
@@ -156,8 +153,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
     }
 
     try {
-      console.log('🔍 실제 DB에 평가자 생성 시작:', newEvaluator.name);
-      
       const evaluatorData: Omit<EvaluatorData, 'id'> = {
         project_id: projectId,
         name: newEvaluator.name,
@@ -169,8 +164,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
       const createdEvaluator = await cleanDataService.createEvaluator(evaluatorData);
       
       if (createdEvaluator) {
-        console.log('✅ 평가자 생성 성공:', createdEvaluator.id);
-        
         // 생성된 평가자를 목록에 추가
         const newEval: Evaluator = {
           id: createdEvaluator.id,
@@ -187,8 +180,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
         setEvaluators(prev => [...prev, newEval]);
         setNewEvaluator({ name: '', email: '' });
         setErrors({});
-        
-        console.log('✅ 평가자가 성공적으로 추가되었습니다.');
       } else {
         console.error('❌ 평가자 생성 실패');
         setErrors({ general: '평가자 생성에 실패했습니다.' });
@@ -207,7 +198,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
         : evaluator
     );
     setEvaluators(updatedEvaluators);
-    console.log('✅ 평가자 초대 상태 업데이트됨:', id);
   };
 
   const handleDeleteEvaluator = async (id: string) => {
@@ -216,14 +206,11 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
     }
 
     try {
-      console.log('🗑️ 평가자 삭제 시작:', id);
-      
       // dataService로 평가자 삭제
       await cleanDataService.deleteEvaluator(id, projectId);
       
       // 로컬 상태에서도 제거
       setEvaluators(prev => prev.filter(e => e.id !== id));
-      console.log('✅ 평가자가 삭제되었습니다.');
     } catch (error) {
       console.error('❌ 평가자 삭제 실패:', error);
       setErrors({ general: '평가자 삭제 중 오류가 발생했습니다.' });
@@ -502,7 +489,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
               <Button 
                 variant="secondary"
                 onClick={async () => {
-                  console.log('✅ 평가자 데이터가 PostgreSQL에 자동 저장되었습니다.');
                 }}
               >
                 저장

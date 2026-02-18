@@ -111,7 +111,6 @@ const AHPResearchWorkflow: React.FC<AHPResearchWorkflowProps> = ({
   const handleProjectCreated = useCallback((newProjectData: ProjectData) => {
     setProjectData(newProjectData);
     setCurrentStep(1); // 모델 구축 단계로 이동
-    console.log('✅ 프로젝트 생성 완료:', newProjectData);
   }, []);
 
   // 모델 구축 완료
@@ -121,7 +120,6 @@ const AHPResearchWorkflow: React.FC<AHPResearchWorkflowProps> = ({
       setProjectData(prev => prev ? { ...prev, status: 'evaluator_assignment' } : null);
     }
     setCurrentStep(2); // 평가자 배정 단계로 이동
-    console.log('✅ 모델 구축 완료:', nodes);
   }, [projectData]);
 
   // 평가자 배정 완료
@@ -131,7 +129,6 @@ const AHPResearchWorkflow: React.FC<AHPResearchWorkflowProps> = ({
       setProjectData(prev => prev ? { ...prev, status: 'evaluation_in_progress' } : null);
     }
     setCurrentStep(3); // 평가 진행 단계로 이동
-    console.log('✅ 평가자 배정 완료:', assignedEvaluators);
   }, [projectData]);
 
   // 평가 완료 (시뮬레이션)
@@ -176,7 +173,6 @@ const AHPResearchWorkflow: React.FC<AHPResearchWorkflowProps> = ({
       setProjectData(prev => prev ? { ...prev, status: 'results_available' } : null);
     }
     setCurrentStep(4); // 결과 분석 단계로 이동
-    console.log('✅ 평가 완료 및 결과 집계:', mockResults);
   }, [evaluators, projectData]);
 
   // 워크플로우 완료
@@ -400,7 +396,6 @@ const AHPResearchWorkflow: React.FC<AHPResearchWorkflowProps> = ({
             groupResult={groupResult || undefined}
             nodes={modelData}
             onExportResults={() => {
-              console.log('📊 결과 내보내기');
               // 실제 내보내기 로직
             }}
             onBackToEvaluation={() => {

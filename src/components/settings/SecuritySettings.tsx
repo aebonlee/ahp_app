@@ -84,8 +84,6 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
     setError('');
 
     try {
-      console.log('🔧 2FA 설정 완료 처리');
-      
       // Update local state
       setTwoFactorStatus(prev => ({
         ...prev,

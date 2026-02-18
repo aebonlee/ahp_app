@@ -92,8 +92,6 @@ const makeAnonymousEvalRequest = async <T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log(`🔍 Anonymous Eval API: ${options.method || 'GET'} ${endpoint}`);
-    
     const response = await fetch(url, {
       credentials: 'include',
       ...options,
@@ -348,7 +346,6 @@ export const anonymousEvaluationUtils = {
         stored_at: new Date().toISOString()
       };
       localStorage.setItem(`session_${session.id}`, JSON.stringify(sessionData));
-      console.log('✅ Session stored locally:', session.id);
     } catch (error) {
       console.error('❌ Failed to store session locally:', error);
     }
@@ -359,7 +356,6 @@ export const anonymousEvaluationUtils = {
       const stored = localStorage.getItem(`session_${sessionId}`);
       if (stored) {
         const data = JSON.parse(stored);
-        console.log('📂 Session retrieved from local storage:', sessionId);
         return data;
       }
     } catch (error) {
@@ -463,7 +459,6 @@ export const anonymousEvaluationUtils = {
       try {
         await anonymousEvaluationService.updateSessionActivity(sessionId);
         await anonymousEvaluationService.syncLocalData(sessionId);
-        console.log('🔄 Auto-save completed for session:', sessionId);
       } catch (error) {
         console.error('❌ Auto-save failed:', error);
       }
@@ -497,7 +492,6 @@ export const anonymousEvaluationUtils = {
       if (sessionKey) {
         const response = await anonymousEvaluationService.recoverSession(sessionKey);
         if (response.success && response.data) {
-          console.log('🔄 Session recovered successfully');
           return response.data;
         }
       }
@@ -506,7 +500,6 @@ export const anonymousEvaluationUtils = {
       const localBackup = localStorage.getItem('anonymous_session_backup');
       if (localBackup) {
         const backupData = JSON.parse(localBackup);
-        console.log('📂 Session recovered from local backup');
         return backupData;
       }
       

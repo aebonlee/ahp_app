@@ -176,8 +176,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
           
           setSuccess(`파일 업로드 완료: ${file.name}`);
           onFileUploaded?.(response.data!);
-          
-          console.log('✅ 파일 업로드 완료:', response.data);
         } else {
           throw new Error(response.error || '파일 업로드에 실패했습니다.');
         }
@@ -246,7 +244,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
         }));
         setSuccess('파일이 삭제되었습니다.');
         onFileDeleted?.(fileId);
-        console.log('✅ 파일 삭제 완료:', fileId);
       } else {
         throw new Error(response.error || '파일 삭제에 실패했습니다.');
       }
@@ -262,7 +259,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
       if (response.success && response.data) {
         // Open download URL in new tab
         window.open(response.data.download_url, '_blank');
-        console.log('✅ 파일 다운로드 시작:', file.original_name);
       } else {
         throw new Error(response.error || '파일 다운로드에 실패했습니다.');
       }

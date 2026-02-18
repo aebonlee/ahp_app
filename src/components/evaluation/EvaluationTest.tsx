@@ -34,13 +34,11 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
   const loadRealProjects = async () => {
     try {
       setLoading(true);
-      console.log('🔍 평가 테스트: 실제 프로젝트 데이터 로드 시작...');
       const projects = await dataService.getProjects();
-      
+
       // 활성 프로젝트만 필터링
       const activeProjects = projects.filter(p => p.status === 'active' || p.status === 'completed');
       setRealProjects(activeProjects);
-      console.log('✅ 평가 테스트: 실제 프로젝트', activeProjects.length, '개 로드 완료');
     } catch (error) {
       console.error('❌ 평가 테스트: 프로젝트 로드 실패:', error);
     } finally {
@@ -51,14 +49,10 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
   // 프로젝트와 관련 데이터 로드
   const loadProjectDetails = async (project: ProjectData): Promise<TestProject> => {
     try {
-      console.log('🔍 프로젝트 상세 정보 로드:', project.title);
-      
       const [criteria, alternatives] = await Promise.all([
         dataService.getCriteria(project.id || ''),
         dataService.getAlternatives(project.id || '')
       ]);
-      
-      console.log('✅ 로드 완료 - 기준:', criteria.length, '개, 대안:', alternatives.length, '개');
       
       return {
         id: project.id || '',

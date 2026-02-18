@@ -144,16 +144,6 @@ const makeRequest = async <T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    // PUT 요청에 대한 상세 로그
-    if (options.method === 'PUT' && endpoint.includes('/projects/')) {
-      console.log('🌐 HTTP PUT 요청 상세:', {
-        url,
-        method: options.method,
-        bodyContent: options.body ? JSON.parse(options.body as string) : 'no body',
-        headers: { ...getAuthHeaders(), ...options.headers }
-      });
-    }
-    
     const response = await fetch(url, {
       credentials: 'include',
       ...options,
@@ -163,16 +153,6 @@ const makeRequest = async <T>(
       }
     });
     
-    // PUT 응답에 대한 상세 로그
-    if (options.method === 'PUT' && endpoint.includes('/projects/')) {
-      console.log('📤 HTTP PUT 응답 상세:', {
-        status: response.status,
-        statusText: response.statusText,
-        contentType: response.headers.get('content-type'),
-        ok: response.ok
-      });
-    }
-
     // DELETE 요청의 경우 응답 본문이 없을 수 있음
     const isDeleteRequest = options.method?.toUpperCase() === 'DELETE';
     
@@ -212,7 +192,6 @@ const makeRequest = async <T>(
       // 500 에러 특별 처리 - 백엔드 상세 에러 메시지 추출
       if (response.status === 500) {
         const errorDetail = data?.detail || data?.error || data?.message || '서버 내부 오류';
-        console.error('🔥 서버 500 에러 상세:', errorDetail);
         throw new Error(`서버 오류: ${errorDetail}`);
       }
       
@@ -227,14 +206,6 @@ const makeRequest = async <T>(
         };
       }
       
-      // 400 에러 상세 분석
-      if (response.status === 400) {
-        console.error('🔍 400 Bad Request 상세 분석:', {
-          errorData: data,
-          errorType: typeof data,
-          errorKeys: data && typeof data === 'object' ? Object.keys(data) : 'N/A'
-        });
-      }
       
       throw new Error(data.message || data.error || `HTTP ${response.status}: API 요청 실패`);
     }
@@ -339,39 +310,11 @@ export const projectApi = {
     if (data.dueDate !== undefined) djangoData.deadline = data.dueDate; // dueDate → deadline 매핑
     if (data.settings !== undefined) djangoData.settings = data.settings; // settings 필드 추가
     
-    console.log('🔍 projectApi.updateProject 호출:', {
-      projectId: id,
-      inputData: data,
-      djangoDataToSend: djangoData,
-      hasSettings: !!data.settings,
-      settingsStructure: data.settings ? Object.keys(data.settings) : 'none',
-      settingsStringified: data.settings ? JSON.stringify(data.settings) : 'none'
-    });
-    
-    // 실제 전송되는 JSON 문자열 확인
-    const requestBody = JSON.stringify(djangoData);
-    console.log('📤 실제 전송 JSON:', requestBody);
-    console.log('📊 JSON 길이:', requestBody.length);
-    
-    // 각 필드 개별 확인
-    console.log('🔍 각 필드 상세 분석:');
-    console.log('  - title:', typeof djangoData.title, djangoData.title);
-    console.log('  - description:', typeof djangoData.description, djangoData.description);
-    console.log('  - objective:', typeof djangoData.objective, djangoData.objective);
-    console.log('  - settings:', typeof djangoData.settings, djangoData.settings ? 'exists' : 'null');
-    
     const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`, {
       method: 'PATCH',
       body: JSON.stringify(djangoData)
     });
-    
-    console.log('📡 projectApi.updateProject 응답:', {
-      success: response.success,
-      error: response.error,
-      message: response.message,
-      statusInfo: response.data ? 'has data' : 'no data'
-    });
-    
+
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProject = normalizeProjectData(response.data);
@@ -423,14 +366,10 @@ export const projectApi = {
 export const criteriaApi = {
   // 프로젝트의 기준 목록 조회
   getCriteria: async (projectId: string) => {
-    // Django CriteriaViewSet의 filter 사용
-    console.log('📤 Django Criteria API 조회:', projectId);
-    
     // CriteriaViewSet은 project 필드로 필터링 지원
     const response = await makeRequest<any>(`/api/service/projects/criteria/?project=${projectId}`);
-    
+
     if (response.success && response.data) {
-      console.log('✅ PostgreSQL DB에서 기준 조회 성공');
       
       // Django REST Framework 페이지네이션 처리
       let criteriaList: CriteriaData[] = [];
@@ -508,7 +447,6 @@ export const criteriaApi = {
       } else if (isValidUUID(parentIdString) || isNumericId(parentIdString)) {
         // UUID이거나 숫자 ID인 경우 모두 허용
         validParentId = parentIdString;
-        console.log('✅ 유효한 parent_id:', parentIdString, '(타입:', isValidUUID(parentIdString) ? 'UUID' : '숫자 ID', ')');
       } else {
         console.warn('⚠️ 유효하지 않은 ID 형식:', parentIdString);
         validParentId = null;
@@ -532,43 +470,25 @@ export const criteriaApi = {
         is_active: true
       };
     
-      console.log('📤 Django Criteria API 요청 (시도 ' + (attemptCount + 1) + '):', {
-        endpoint: '/api/service/projects/criteria/',
-        name: criteriaName,
-        originalName: data.name,
-        projectId: projectId
-      });
-      
       // CriteriaViewSet의 create endpoint 사용
       const response = await makeRequest<CriteriaData>('/api/service/projects/criteria/', {
         method: 'POST',
         body: JSON.stringify(requestData)
       });
-      
-      console.log('📥 Django Criteria API 응답:', {
-        success: response.success,
-        error: response.error,
-        message: response.message
-      });
-      
+
       if (response.success) {
-        console.log('✅ PostgreSQL DB에 기준 저장 성공:', response.data);
-        if (criteriaName !== data.name) {
-          console.log(`ℹ️ 기준명이 '${data.name}'에서 '${criteriaName}'으로 변경되어 저장되었습니다.`);
-        }
         return response;
       }
-      
+
       // 중복 이름 에러 처리
-      if (response.error && 
-          (response.error.includes('already exists') || 
+      if (response.error &&
+          (response.error.includes('already exists') ||
            response.error.includes('중복') ||
            response.error.includes('duplicate'))) {
         attemptCount++;
         if (attemptCount < maxAttempts) {
           // 번호 추가하여 재시도
           criteriaName = `${data.name}_${attemptCount + 1}`;
-          console.log(`⚠️ 중복된 기준명 감지. '${criteriaName}'으로 재시도합니다.`);
           continue;
         }
       }
@@ -597,15 +517,11 @@ export const criteriaApi = {
 
   // 기준 삭제
   deleteCriteria: async (criteriaId: string, projectId?: string) => {
-    // Django CriteriaViewSet의 delete endpoint 사용
-    console.log('📤 Django Criteria API 삭제:', criteriaId);
-    
     const response = await makeRequest<void>(`/api/service/projects/criteria/${criteriaId}/`, {
       method: 'DELETE'
     });
-    
+
     if (response.success) {
-      console.log('✅ PostgreSQL DB에서 기준 삭제 성공');
       return response;
     }
     

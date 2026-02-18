@@ -11,15 +11,8 @@ class CleanDataService {
   // === 프로젝트 관리 ===
   async getProjects(): Promise<ProjectData[]> {
     try {
-      console.log('🔍 실제 DB에서 프로젝트 조회 시작...');
       const response = await projectApi.getProjects();
-      
-      console.log('📡 DB 응답 상세:', {
-        success: response.success,
-        data: response.data,
-        error: response.error
-      });
-      
+
       if (response.success && response.data) {
         // projectApi에서 이미 정규화된 데이터를 반환하므로 직접 사용
         const projects = Array.isArray(response.data) ? response.data : [];
@@ -37,25 +30,20 @@ class CleanDataService {
           return isValid;
         });
         
-        console.log('✅ 유효한 프로젝트 조회 성공:', validProjects.length, '개');
-        console.log('📋 유효한 프로젝트 목록:', validProjects);
         return validProjects;
       }
       console.error('❌ 프로젝트 조회 실패: response.success =', response.success, 'data =', response.data, 'error =', response.error);
       return [];
     } catch (error) {
       console.error('❌ 프로젝트 조회 중 오류:', error);
-      console.error('🚨 백엔드 DB 연결 실패 - 관리자에게 문의하세요');
       throw error;
     }
   }
 
   async getProject(id: string): Promise<ProjectData | null> {
     try {
-      console.log('🔍 실제 DB에서 프로젝트 단건 조회:', id);
       const response = await projectApi.getProject(id);
       if (response.success && response.data) {
-        console.log('✅ 프로젝트 단건 조회 성공');
         return response.data;
       }
       console.error('❌ 프로젝트 단건 조회 실패');
@@ -68,27 +56,18 @@ class CleanDataService {
 
   async createProject(data: Omit<ProjectData, 'id'>): Promise<ProjectData | null> {
     try {
-      console.log('🔍 실제 DB에 프로젝트 생성 시작:', data.title);
-      
       // 생성 전 프로젝트 수 확인
       const beforeResponse = await this.getProjects();
-      const beforeCount = beforeResponse.length;
-      console.log('📊 생성 전 프로젝트 수:', beforeCount);
-      
+
       const response = await projectApi.createProject(data);
       if (response.success && response.data) {
-        console.log('✅ 프로젝트 생성 응답 수신:', Object.keys(response.data));
-        
         // ID가 응답에 없으면 목록을 다시 조회해서 새 프로젝트 찾기
         if (!response.data.id) {
-          console.log('⚠️ 응답에 ID 없음, 목록 재조회로 새 프로젝트 찾기...');
-          
           // 잠시 대기 후 목록 재조회
           await new Promise(resolve => setTimeout(resolve, 1000));
-          
+
           const afterResponse = await this.getProjects();
-          console.log('📊 생성 후 프로젝트 수:', afterResponse.length);
-          
+
           // 새로 생성된 프로젝트 찾기 (제목으로 매칭)
           const newProject = afterResponse.find(p => 
             p.title === data.title && 
@@ -96,10 +75,8 @@ class CleanDataService {
           );
           
           if (newProject) {
-            console.log('✅ 새 프로젝트 찾기 성공:', newProject.id);
             return newProject;
           } else {
-            console.warn('⚠️ 새 프로젝트를 찾을 수 없음, 응답 데이터 사용');
             // ID 없이라도 생성된 데이터 반환
             return {
               ...response.data,
@@ -109,24 +86,20 @@ class CleanDataService {
           }
         }
         
-        console.log('✅ 프로젝트 생성 성공:', response.data.id);
         return response.data;
       }
       console.error('❌ 프로젝트 생성 실패:', response.error || 'Unknown error');
       throw new Error(response.error || '프로젝트 생성에 실패했습니다.');
     } catch (error) {
       console.error('❌ 프로젝트 생성 중 오류:', error);
-      console.error('🚨 백엔드 DB 연결 실패 - 관리자에게 문의하세요');
       throw error;
     }
   }
 
   async updateProject(id: string, data: Partial<ProjectData>): Promise<ProjectData | null> {
     try {
-      console.log('🔍 실제 DB에서 프로젝트 수정 시작:', id);
       const response = await projectApi.updateProject(id, data);
       if (response.success && response.data) {
-        console.log('✅ 프로젝트 수정 성공');
         return response.data;
       }
       console.error('❌ 프로젝트 수정 실패');
@@ -139,10 +112,8 @@ class CleanDataService {
 
   async deleteProject(id: string): Promise<boolean> {
     try {
-      console.log('🗑️ 실제 DB에서 프로젝트 삭제 시작:', id);
       const response = await projectApi.deleteProject(id);
       if (response.success) {
-        console.log('✅ 프로젝트 삭제 성공');
         return true;
       }
       console.error('❌ 프로젝트 삭제 실패');
@@ -155,15 +126,8 @@ class CleanDataService {
 
   async getTrashedProjects(): Promise<ProjectData[]> {
     try {
-      console.log('🔍 실제 DB에서 휴지통 프로젝트 조회 시작...');
       const response = await projectApi.getTrashedProjects();
-      
-      console.log('📡 휴지통 DB 응답 상세:', {
-        success: response.success,
-        data: response.data,
-        error: response.error
-      });
-      
+
       if (response.success && response.data) {
         // projectApi에서 이미 정규화된 데이터를 반환하므로 직접 사용
         const projects = Array.isArray(response.data) ? response.data : [];
@@ -180,7 +144,6 @@ class CleanDataService {
           return isValid;
         });
         
-        console.log('✅ 유효한 휴지통 프로젝트 조회 성공:', validProjects.length, '개');
         return validProjects;
       }
       console.error('❌ 휴지통 프로젝트 조회 실패');
@@ -193,10 +156,8 @@ class CleanDataService {
 
   async restoreProject(id: string): Promise<boolean> {
     try {
-      console.log('♻️ 실제 DB에서 프로젝트 복원 시작:', id);
       const response = await projectApi.restoreProject(id);
       if (response.success) {
-        console.log('✅ 프로젝트 복원 성공');
         return true;
       }
       console.error('❌ 프로젝트 복원 실패');
@@ -209,10 +170,8 @@ class CleanDataService {
 
   async permanentDeleteProject(id: string): Promise<boolean> {
     try {
-      console.log('🗑️ 실제 DB에서 프로젝트 영구 삭제 시작:', id);
       const response = await projectApi.permanentDeleteProject(id);
       if (response.success) {
-        console.log('✅ 프로젝트 영구 삭제 성공');
         return true;
       }
       console.error('❌ 프로젝트 영구 삭제 실패');
@@ -226,25 +185,12 @@ class CleanDataService {
   // === 기준 관리 ===
   async getCriteria(projectId: string): Promise<CriteriaData[]> {
     try {
-      console.log('🔍 PostgreSQL DB에서 기준 조회 시작:', projectId);
       const response = await criteriaApi.getCriteria(projectId);
-      
+
       if (response.success && response.data) {
         // response.data가 이미 배열로 처리되어 옴
         const dataArray = Array.isArray(response.data) ? response.data : [];
-        
-        // 백엔드 데이터 상세 로깅
-        console.log('🔍 백엔드에서 받은 원시 데이터 (처음 3개):', 
-          dataArray.slice(0, 3).map(item => ({
-            id: item.id,
-            name: item.name,
-            level: item.level,
-            parent: item.parent,
-            parent_id: item.parent_id,
-            type: item.type
-          }))
-        );
-        
+
         // type이 'criteria' 또는 없는 항목만 필터링 (alternative 제외)
         const criteria = dataArray
           .filter((item: any) => !item.type || item.type === 'criteria')
@@ -252,14 +198,10 @@ class CleanDataService {
             // level 필드 상세 처리
             const originalLevel = item.level;
             const finalLevel = originalLevel || 1;
-            
-            console.log(`📊 Level 처리: ${item.name} - 원본: ${originalLevel} → 최종: ${finalLevel}`);
-            
+
             // parent_id 정규화 - 숫자 ID를 문자열로 변환
             const normalizedParentId = item.parent || item.parent_id;
             const parentIdString = normalizedParentId ? String(normalizedParentId) : null;
-            
-            console.log(`🔗 Parent ID 처리: ${item.name} - 원본: ${normalizedParentId} (타입: ${typeof normalizedParentId}) → 변환: ${parentIdString}`);
             
             return {
               id: String(item.id), // ID도 문자열로 변환
@@ -277,30 +219,19 @@ class CleanDataService {
             };
           });
         
-        console.log('✅ PostgreSQL DB 기준 조회 성공:', criteria.length, '개');
         return criteria;
       }
-      
+
       console.warn('⚠️ PostgreSQL DB 기준 조회 실패');
       return [];
     } catch (error) {
       console.error('❌ PostgreSQL DB 기준 조회 중 오류:', error);
-      console.error('🚨 백엔드 PostgreSQL DB 연결을 확인해주세요');
       return [];
     }
   }
 
   async createCriteria(data: Omit<CriteriaData, 'id'>): Promise<CriteriaData | null> {
     try {
-      console.log('🔍 PostgreSQL DB에 기준 생성 시작:', {
-        name: data.name,
-        project_id: data.project_id,
-        project_id_type: typeof data.project_id,
-        level: data.level,
-        parent_id: data.parent_id,
-        parent_id_type: typeof data.parent_id,
-        description: data.description
-      });
       
       if (!data.project_id) {
         console.error('❌ 프로젝트 ID가 없습니다:', data);
@@ -324,8 +255,6 @@ class CleanDataService {
         );
         
         if (exactDuplicate) {
-          console.warn(`⚠️ 완전 중복 발견: "${data.name}" (레벨: ${data.level}, parent: ${data.parent_id})`);
-          console.log(`🔗 기존 데이터 사용: ID ${exactDuplicate.id}`);
           return exactDuplicate;
         }
         
@@ -336,19 +265,13 @@ class CleanDataService {
         );
         
         if (nameDuplicate) {
-          console.warn(`⚠️ 이름 중복 발견: "${data.name}" - 기존: L${nameDuplicate.level}, 새로운: L${data.level}`);
           // 다른 레벨이나 부모인 경우 경고만 하고 계속 진행
-          if (nameDuplicate.level !== data.level || 
-              normalizeParentId(nameDuplicate.parent_id) !== normalizeParentId(data.parent_id)) {
-            console.log('🔄 다른 레벨/부모이므로 생성 계속');
-          } else {
+          if (!(nameDuplicate.level !== data.level ||
+              normalizeParentId(nameDuplicate.parent_id) !== normalizeParentId(data.parent_id))) {
             // 완전히 동일한 경우
-            console.log(`🔗 동일한 기준 발견 - 기존 데이터 사용: ID ${nameDuplicate.id}`);
             return nameDuplicate;
           }
         }
-        
-        console.log(`✅ 중복 없음 - 새 기준 생성 가능: "${data.name}"`);
         
       } catch (dupError) {
         console.warn('⚠️ 중복 검사 중 오류 (계속 진행):', dupError);
@@ -360,15 +283,7 @@ class CleanDataService {
         type: 'criteria'
       });
       
-      console.log('📥 PostgreSQL DB 기준 생성 API 응답:', {
-        success: response.success,
-        error: response.error,
-        hasData: !!response.data,
-        dataId: response.data?.id
-      });
-      
       if (response.success && response.data) {
-        console.log('✅ PostgreSQL DB에 기준 생성 성공:', response.data);
         
         // 프로젝트의 criteria_count 업데이트
         try {
@@ -385,15 +300,9 @@ class CleanDataService {
       
       const errorMsg = response.error || '기준 생성에 실패했습니다.';
       console.error('❌ PostgreSQL DB 저장 실패:', errorMsg);
-      console.error('🚨 백엔드 API 응답 상세:', {
-        requestData: data,
-        responseError: response.error,
-        responseMessage: response.message
-      });
       
       // 백엔드에서 already exists 에러가 발생한 경우
       if (errorMsg.includes('already exists') || errorMsg.includes('이미 존재')) {
-        console.log('🔗 백엔드 중복 에러 감지 - 기존 데이터 찾기 시도');
         
         // 기존 데이터 찾기 시도
         try {
@@ -404,7 +313,6 @@ class CleanDataService {
               (!c.type || c.type === 'criteria')
             );
             if (existing) {
-              console.log(`🎆 기존 데이터 발견 및 반환: ${existing.name} (ID: ${existing.id})`);
               // 기존 데이터가 있으면 그대로 반환 (중복 저장 방지)
               return existing;
             }
@@ -420,7 +328,6 @@ class CleanDataService {
       throw new Error(errorMsg);
     } catch (error) {
       console.error('❌ PostgreSQL DB 기준 생성 중 오류:', error);
-      console.error('🚨 백엔드 PostgreSQL DB가 정상 작동하지 않습니다');
       
       if (error instanceof Error) {
         throw new Error(`PostgreSQL DB 기준 생성 실패: ${error.message}`);
@@ -446,13 +353,10 @@ class CleanDataService {
 
   async deleteCriteria(criteriaId: string, projectId?: string): Promise<boolean> {
     try {
-      console.log('🗑️ PostgreSQL DB에서 기준 삭제 시작:', criteriaId);
-      
       // Criteria API를 사용하여 삭제 (projectId도 전달)
       const response = await criteriaApi.deleteCriteria(criteriaId, projectId);
-      
+
       if (response.success) {
-        console.log('✅ PostgreSQL DB에서 기준 삭제 성공:', criteriaId);
         
         // 프로젝트의 criteria_count 업데이트
         if (projectId) {
@@ -481,7 +385,6 @@ class CleanDataService {
   // Django에서는 Criteria 모델을 사용하며 type='alternative'로 구분
   async getAlternatives(projectId: string): Promise<AlternativeData[]> {
     try {
-      console.log('🔍 대안 조회 시작 (Criteria API with type=alternative):', projectId);
       
       // Criteria API를 사용하여 type='alternative'인 항목 조회
       const response = await criteriaApi.getCriteria(projectId);
@@ -501,10 +404,9 @@ class CleanDataService {
             cost: item.cost || 0
           }));
         
-        console.log('✅ 대안 조회 성공:', alternatives.length, '개');
         return alternatives;
       }
-      
+
       console.warn('⚠️ 대안 조회 실패');
       return [];
     } catch (error) {
@@ -515,7 +417,6 @@ class CleanDataService {
 
   async createAlternative(data: Omit<AlternativeData, 'id'>): Promise<AlternativeData | null> {
     try {
-      console.log('🔍 대안 생성 시작 (Criteria API with type=alternative):', data.name);
       
       if (!data.project_id) {
         throw new Error('프로젝트 ID가 필요합니다.');
@@ -540,7 +441,6 @@ class CleanDataService {
       });
       
       if (response.success && response.data) {
-        console.log('✅ 대안 생성 성공:', data.name);
         
         // CriteriaData를 AlternativeData로 변환
         const newAlternative: AlternativeData = {
@@ -574,7 +474,6 @@ class CleanDataService {
 
   async updateAlternative(alternativeId: string, data: Partial<AlternativeData>): Promise<boolean> {
     try {
-      console.log('🔄 대안 수정 시작 (Criteria API):', alternativeId);
       
       // Criteria API를 사용하여 수정 (type='alternative' 유지)
       const updateData = {
@@ -586,10 +485,9 @@ class CleanDataService {
       const response = await criteriaApi.updateCriteria(alternativeId, updateData);
       
       if (response.success) {
-        console.log('✅ 대안 수정 성공:', alternativeId);
         return true;
       }
-      
+
       console.error('❌ 대안 수정 실패:', response.error);
       return false;
     } catch (error) {
@@ -600,14 +498,11 @@ class CleanDataService {
 
   async deleteAlternative(alternativeId: string, projectId?: string): Promise<boolean> {
     try {
-      console.log('🗑️ 대안 삭제 시작 (Criteria API):', alternativeId);
       
       // Criteria API를 사용하여 삭제
       const response = await criteriaApi.deleteCriteria(alternativeId);
       
       if (response.success) {
-        console.log('✅ 대안 삭제 성공:', alternativeId);
-        
         // 프로젝트의 alternatives_count 업데이트
         if (projectId) {
           try {
@@ -635,13 +530,10 @@ class CleanDataService {
   // 평가자는 프로젝트 settings 메타데이터에 저장
   async getEvaluators(projectId: string): Promise<EvaluatorData[]> {
     try {
-      console.log('🔍 프로젝트 메타데이터에서 평가자 조회:', projectId);
-      
       // 프로젝트 메타데이터에서 평가자 조회
       const projectResponse = await projectApi.getProject(projectId);
       if (projectResponse.success && projectResponse.data) {
         const evaluators = projectResponse.data.settings?.evaluators || [];
-        console.log('✅ 평가자 조회 성공:', evaluators.length, '개');
         return evaluators;
       }
       
@@ -655,34 +547,22 @@ class CleanDataService {
 
   async createEvaluator(data: Omit<EvaluatorData, 'id'>): Promise<EvaluatorData | null> {
     try {
-      console.log('🔍 평가자 생성 시작 (프로젝트 메타데이터):', data.name, data.email);
-      console.log('🔍 프로젝트 ID:', data.project_id);
-      
       if (!data.project_id) {
         throw new Error('프로젝트 ID가 필요합니다.');
       }
       
       // 프로젝트 조회
-      console.log('📥 프로젝트 조회 중...');
       const projectResponse = await projectApi.getProject(data.project_id);
-      console.log('📥 프로젝트 조회 응답:', projectResponse);
-      
+
       if (!projectResponse.success || !projectResponse.data) {
         throw new Error(`프로젝트를 찾을 수 없습니다. (ID: ${data.project_id})`);
       }
       
       const currentProject = projectResponse.data;
-      console.log('📋 현재 프로젝트 데이터:', {
-        id: currentProject.id,
-        title: currentProject.title,
-        settings: currentProject.settings
-      });
-      
+
       // settings가 null이면 빈 객체로 초기화
       const currentSettings = currentProject.settings || {};
       const existingEvaluators = currentSettings.evaluators || [];
-      console.log('👥 기존 평가자 수:', existingEvaluators.length);
-      console.log('📋 현재 settings 구조:', currentSettings);
       
       // 중복 검사
       const isDuplicate = existingEvaluators.some((e: any) => 
@@ -702,8 +582,6 @@ class CleanDataService {
         status: 'pending'
       };
       
-      console.log('✨ 새 평가자 데이터:', newEvaluator);
-      
       // 메타데이터 업데이트 - Django가 받을 수 있는 형태로 수정
       const updatedEvaluators = [...existingEvaluators, newEvaluator];
       
@@ -722,13 +600,7 @@ class CleanDataService {
         settings: newSettings // JSON 객체 그대로 전송
       };
       
-      console.log('🔄 프로젝트 업데이트 데이터:', updateData);
-      console.log('🔄 현재 프로젝트 settings:', currentSettings);
-      console.log('🔄 새로운 settings:', newSettings);
-      console.log('🔄 업데이트할 평가자 목록:', updatedEvaluators);
-      
       const updateResponse = await projectApi.updateProject(data.project_id, updateData);
-      console.log('🔄 프로젝트 업데이트 응답:', updateResponse);
       
       // 응답 상세 분석
       if (!updateResponse.success) {
@@ -740,7 +612,6 @@ class CleanDataService {
       }
       
       if (updateResponse.success) {
-        console.log('✅ 평가자 생성 성공:', newEvaluator.name);
         return newEvaluator;
       }
       
@@ -754,8 +625,6 @@ class CleanDataService {
 
   async deleteEvaluator(evaluatorId: string, projectId?: string): Promise<boolean> {
     try {
-      console.log('🗑️ 평가자 삭제 시작:', evaluatorId);
-      
       // projectId가 없으면 모든 프로젝트에서 검색
       if (!projectId) {
         const projects = await this.getProjects();
@@ -804,7 +673,6 @@ class CleanDataService {
       });
       
       if (updateResponse.success) {
-        console.log('✅ 평가자 삭제 성공:', evaluatorId);
         return true;
       }
       
@@ -818,10 +686,8 @@ class CleanDataService {
   // === 평가 데이터 관리 ===
   async saveEvaluation(data: PairwiseComparisonData): Promise<any> {
     try {
-      console.log('🔍 실제 DB에 평가 데이터 저장 시작');
       const response = await evaluationApi.savePairwiseComparison(data);
       if (response.success && response.data) {
-        console.log('✅ 평가 데이터 저장 성공');
         return response.data;
       }
       console.error('❌ 평가 데이터 저장 실패');
