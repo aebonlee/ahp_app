@@ -84,23 +84,12 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       setIsLoading(true);
       setErrorMessage(null);
       const loadedCriteria = await cleanDataService.getCriteria(projectId);
-      
-      console.log('🔍 백엔드에서 로드된 기준 데이터:', loadedCriteria);
-      
+
       // parent_id, parent, level, order 필드 정규화
       const normalizedCriteria = (loadedCriteria || []).map((c, index) => {
         // 백엔드에서 parent 또는 parent_id 필드 모두 처리
         const parentId = c.parent || c.parent_id || null;
-        
-        console.log(`🔍 백엔드 데이터 정규화: ${c.name}`, {
-          originalId: c.id,
-          originalParent: c.parent,
-          originalParentId: c.parent_id,
-          resolvedParentId: parentId,
-          originalLevel: c.level,
-          originalOrder: c.order
-        });
-        
+
         return {
           id: c.id || generateUUID(),
           name: c.name,
@@ -114,26 +103,9 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         };
       });
       
-      console.log('🔄 정규화된 기준 데이터:', normalizedCriteria);
-      
       // 계층 구조 구성
       const hierarchicalCriteria = buildHierarchy(normalizedCriteria);
-      
-      console.log('🌳 구성된 계층구조:', hierarchicalCriteria);
-      
-      // 계층 구조 통계 확인
-      const flatStats = flattenCriteria(hierarchicalCriteria);
-      const level1Count = flatStats.filter(c => c.level === 1).length;
-      const level2PlusCount = flatStats.filter(c => c.level > 1).length;
-      const maxLevel = Math.max(...flatStats.map(c => c.level || 1));
-      
-      console.log('📊 로드된 계층 구조 통계:', {
-        total: flatStats.length,
-        level1: level1Count,
-        level2Plus: level2PlusCount,
-        maxDepth: maxLevel
-      });
-      
+
       setCriteria(hierarchicalCriteria);
       setSavedCriteria(hierarchicalCriteria);
       setTempCriteria([]);
@@ -157,8 +129,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
 
   // 계층 구조 구성 (개선된 버전)
   const buildHierarchy = (flatCriteria: Criterion[]): Criterion[] => {
-    console.log('🔨 계층구조 구성 시작:', flatCriteria);
-    
     const criteriaMap = new Map<string, Criterion>();
     const rootCriteria: Criterion[] = [];
 
@@ -168,8 +138,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       criteriaMap.set(idString, { ...criterion, id: idString, children: [] });
     });
 
-    console.log('📋 기준 맵 생성 완료:', Array.from(criteriaMap.keys()));
-
     // 2단계: 계층 구조 구성
     flatCriteria.forEach(criterion => {
       const idString = String(criterion.id);
@@ -177,18 +145,13 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       
       // parent_id 문자열 정규화
       const parentIdString = criterion.parent_id ? String(criterion.parent_id) : null;
-      
-      console.log(`🔍 부모-자식 관계 확인: ${criterionObj.name} (ID: ${idString}, Level: ${criterion.level}) → 부모 ID: ${parentIdString}`);
-      
+
       // parent_id가 있고 해당 부모가 맵에 존재하는 경우
       if (parentIdString && criteriaMap.has(parentIdString)) {
         const parent = criteriaMap.get(parentIdString);
         if (parent) {
           parent.children = parent.children || [];
           parent.children.push(criterionObj);
-          
-          // 자식의 level 유지 (이미 정확한 level이 설정되어 있음)
-          console.log(`✅ 자식 연결 성공: ${criterionObj.name} (level ${criterionObj.level}) → ${parent.name} (level ${parent.level})`);
         }
       } else {
         // parent_id가 없거나 부모를 찾을 수 없는 경우 루트로 처리
@@ -201,7 +164,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           });
         }
         rootCriteria.push(criterionObj);
-        console.log(`🌳 루트 기준으로 처리: ${criterionObj.name} (level: ${criterionObj.level})`);
       }
     });
 
@@ -216,8 +178,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     };
     
     sortByOrder(rootCriteria);
-    
-    console.log('✅ 계층구조 구성 완료:', rootCriteria);
+
     return rootCriteria;
   };
 
@@ -266,8 +227,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         
         // Django 백엔드에서 모든 기준 삭제
         const existingCriteria = await cleanDataService.getCriteria(projectId);
-        console.log(`🗑️ 삭제할 기준 개수: ${existingCriteria.length}`);
-        
+
         let deleteCount = 0;
         let deleteErrors = [];
         
@@ -278,21 +238,14 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
               const result = await cleanDataService.deleteCriteria(criterion.id, projectId);
               if (result) {
                 deleteCount++;
-                console.log(`✅ 기준 '${criterion.name}' (ID: ${criterion.id}) 삭제 성공`);
               } else {
                 deleteErrors.push(`${criterion.name} (ID: ${criterion.id})`);
-                console.error(`❌ 기준 '${criterion.name}' 삭제 실패`);
               }
             } catch (error) {
               deleteErrors.push(`${criterion.name} (ID: ${criterion.id})`);
-              console.error(`❌ 기준 '${criterion.name}' 삭제 중 오류:`, error);
+              console.error(`기준 '${criterion.name}' 삭제 중 오류:`, error);
             }
           }
-        }
-        
-        console.log(`📦 삭제 결과: ${deleteCount}/${existingCriteria.length} 성공`);
-        if (deleteErrors.length > 0) {
-          console.warn(`⚠️ 삭제 실패 기준:`, deleteErrors);
         }
         
         // 백엔드 동기화를 위한 짧은 대기
@@ -302,8 +255,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         try {
           const remainingCriteria = await cleanDataService.getCriteria(projectId);
           if (remainingCriteria.length > 0) {
-            console.warn(`⚠️ ${remainingCriteria.length}개의 기준이 여전히 남아있습니다:`, 
-              remainingCriteria.map(c => c.name));
             // 남은 기준 강제 삭제 시도
             for (const criterion of remainingCriteria) {
               if (criterion.id) {
@@ -388,12 +339,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     setErrorMessage(null);
     setSuccessMessage(null);
     try {
-      console.log('💾 계층 구조 저장 시작:', {
-        originalHierarchy: criteriaToSave,
-        flattenedCount: flatCriteria.length,
-        maxLevel: Math.max(...flatCriteria.map(c => c.level || 1))
-      });
-
       // 기존 기준 모두 삭제 (계층 구조 재구성을 위해)
       const existingCriteria = await cleanDataService.getCriteria(projectId);
       for (const criterion of existingCriteria) {
@@ -420,31 +365,19 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         let resolvedLevel = criterion.level || 1;
         
         if (criterion.parent_id) {
-          console.log('🔍 parent_id 매핑 시작:', {
-            criterionName: criterion.name,
-            criterionParentId: criterion.parent_id,
-            mapHasParent: createdCriteriaMap.has(criterion.parent_id),
-            mapKeys: Array.from(createdCriteriaMap.keys()),
-            mapSize: createdCriteriaMap.size
-          });
-          
           if (createdCriteriaMap.has(criterion.parent_id)) {
             // 이미 생성된 부모 기준의 실제 ID 사용
             const parentCriteria = createdCriteriaMap.get(criterion.parent_id);
-            console.log('🔍 찾은 부모 기준:', parentCriteria);
-            
+
             parentId = parentCriteria?.id;
-            
+
             // 부모의 레벨 + 1로 자식 레벨 설정
             if (parentCriteria?.level !== undefined) {
               resolvedLevel = parentCriteria.level + 1;
             }
-            
-            console.log(`🔗 부모-자식 관계 설정: ${criterion.name} (level ${resolvedLevel}) → parent: ${parentCriteria?.name} (level ${parentCriteria?.level}), parentId: ${parentId}`);
           } else if (!isTempId(criterion.parent_id)) {
             // 유효한 UUID이지만 매핑에 없는 경우 (기존 저장된 부모)
             parentId = criterion.parent_id;
-            console.log(`🔗 기존 부모 기준 사용: ${criterion.name} → parent ID: ${parentId}`);
           } else {
             // 임시 ID이지만 매핑에 없는 경우 - 경고하고 루트로 처리
             console.warn(`⚠️ 부모를 찾을 수 없는 임시 ID: ${criterion.parent_id} for ${criterion.name}`);
@@ -468,22 +401,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           is_active: true
         };
         
-        console.log('💾 저장할 기준 데이터:', {
-          name: criteriaData.name,
-          level: criteriaData.level,
-          order: criteriaData.order,
-          originalParentId: criterion.parent_id,
-          resolvedParentId: parentId,
-          originalId: criterion.id,
-          originalLevel: criterion.level,
-          resolvedLevel: resolvedLevel,
-          isTempId: isTempId(criterion.id),
-          parentIsTempId: criterion.parent_id ? isTempId(criterion.parent_id) : false,
-          fullRequestData: criteriaData
-        });
-        
-        console.log('🚀 백엔드로 전송할 완전한 데이터:', JSON.stringify(criteriaData, null, 2));
-        
         let result = null;
         try {
           // API 서비스가 존재하는지 확인
@@ -494,16 +411,12 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           result = await cleanDataService.createCriteria(criteriaData);
           
           if (result && result.id) {
-            // 이름이 변경되었거나 기존 데이터를 반환받았다면 사용자에게 알림
-            if (result.name !== criterion.name) {
-              console.log(`ℹ️ 기준명 처리: '${criterion.name}' → '${result.name}'`);
-            }
-            console.log(`✅ 기준 '${result.name}' 저장/연결 성공 (ID: ${result.id})`);
+            // result validated
           } else {
             throw new Error('서버에서 유효하지 않은 응답을 받았습니다');
           }
         } catch (saveError: any) {
-          console.error(`❌ 기준 '${criterion.name}' 저장 실패:`, saveError);
+          console.error(`기준 '${criterion.name}' 저장 실패:`, saveError);
           
           // 네트워크 오류 처리
           if (saveError.name === 'NetworkError' || saveError.message?.includes('fetch')) {
@@ -514,7 +427,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           
           // 중복 오류인 경우 특별 처리
           if (saveError.message && (saveError.message.includes('이미 존재') || saveError.message.includes('UNIQUE constraint'))) {
-            console.log(`⚠️ 중복 기준 '${criterion.name}' - 건너뛰고 계속 진행`);
             // 중복은 에러가 아니라 경고로 처리하고 계속 진행
             continue;
           }
@@ -528,14 +440,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         
         // 생성된 기준을 매핑에 저장 (자식 기준들이 참조할 수 있도록)
         // 레벨 정보도 함께 저장
-        console.log('🗃️ createdCriteriaMap 저장:', {
-          originalId: criterion.id,
-          result: result,
-          resultId: result?.id,
-          resultType: typeof result,
-          resolvedLevel: resolvedLevel
-        });
-        
+
         // 원본 임시 ID를 키로 하여 생성된 기준 정보 저장
         const mappedCriteria = {
           ...result,
@@ -543,20 +448,11 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           level: resolvedLevel,
           name: result?.name || criterion.name
         };
-        
+
         createdCriteriaMap.set(criterion.id, mappedCriteria);
-        
-        console.log('🗃️ 매핑 확인:', {
-          key: criterion.id,
-          stored: mappedCriteria,
-          mapSize: createdCriteriaMap.size,
-          allKeys: Array.from(createdCriteriaMap.keys())
-        });
       }
-      
+
       if (success) {
-        console.log('✅ 기준 저장 성공');
-        
         // 저장 후 다시 로드하여 동기화
         await loadCriteria();
         
@@ -566,7 +462,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         throw new Error('일부 기준 저장 실패');
       }
     } catch (error) {
-      console.error('❌ 기준 저장 실패:', error);
+      console.error('기준 저장 실패:', error);
       setErrorMessage(`기준 저장 중 오류가 발생했습니다. 다시 시도해주세요.`);
       setTimeout(() => setErrorMessage(null), 5000);
     } finally {
@@ -627,9 +523,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     // 백그라운드에서 자동 저장
     try {
       await handleSaveCriteria();
-      console.log('✅ 자동 저장 완료');
     } catch (error) {
-      console.error('❌ 자동 저장 실패:', error);
+      console.error('자동 저장 실패:', error);
       // 저장 실패 시 사용자에게 알림 (선택적)
       // alert('자동 저장에 실패했습니다. 수동으로 저장해주세요.');
     }

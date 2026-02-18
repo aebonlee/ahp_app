@@ -48,15 +48,8 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
     const urlParams = new URLSearchParams(window.location.search);
     const stepParam = urlParams.get('step');
     
-    console.log('🎯 평가자 워크플로우 URL 파라미터:', { 
-      projectId, 
-      evaluatorToken, 
-      step: stepParam 
-    });
-    
     if (stepParam && ['intro', 'demographic', 'criteria', 'alternatives', 'complete'].includes(stepParam)) {
       setCurrentStep(stepParam as any);
-      console.log('📍 URL에서 단계 설정:', stepParam);
     }
   }, []);
 
@@ -275,7 +268,6 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
               projectId={projectId}
               evaluatorId={evaluatorToken || `evaluator_${Date.now()}`}
               onSave={(data) => {
-                console.log('📋 인구통계 데이터 저장됨:', data);
                 handleDemographicComplete();
               }}
               initialData={{}}

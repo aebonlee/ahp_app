@@ -50,11 +50,9 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
       setIsLoading(true);
       setErrors({});
       try {
-        console.log(`🔍 프로젝트 ${projectId}의 대안 데이터 로드 중...`);
         const alternativesData = await dataService.getAlternatives(projectId);
         const convertedAlternatives = (alternativesData || []).map(convertToAlternative);
         setAlternatives(convertedAlternatives);
-        console.log(`✅ ${convertedAlternatives.length}개 대안 로드 완료`);
         
         // 부모 컴포넌트에 개수 알림
         if (onAlternativesChange) {
@@ -132,7 +130,6 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
         order: maxOrder + 1
       });
 
-      console.log('🔄 대안 추가 중...', alternativeData);
       const createdAlternative = await dataService.createAlternative(alternativeData);
       
       if (!createdAlternative) {
@@ -140,8 +137,6 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
         return;
       }
 
-      console.log('✅ 대안이 성공적으로 추가되었습니다:', createdAlternative);
-      
       // 데이터 다시 로드
       const updatedAlternativesData = await dataService.getAlternatives(projectId);
       const convertedUpdatedAlternatives = (updatedAlternativesData || []).map(convertToAlternative);
@@ -190,7 +185,6 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
         description: editingAlternative.description
       };
 
-      console.log('🔄 대안 수정 중...', updatedData);
       const success = await dataService.updateAlternative(editingId, updatedData);
       
       if (success) {
@@ -222,15 +216,11 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
 
   const handleDeleteAlternative = async (id: string) => {
     try {
-      console.log('🗑️ 대안 삭제:', id);
       const success = await dataService.deleteAlternative(id, projectId);
-      
+
       if (!success) {
-        console.error('❌ 대안 삭제 실패');
         return;
       }
-
-      console.log('✅ 대안이 삭제되었습니다:', id);
       
       // 데이터 다시 로드
       const updatedAlternativesData = await dataService.getAlternatives(projectId);
@@ -242,7 +232,7 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
         onAlternativesChange(convertedUpdatedAlternatives.length);
       }
     } catch (error) {
-      console.error('❌ 대안 삭제 실패:', error);
+      console.error('대안 삭제 실패:', error);
     }
   };
 
@@ -529,10 +519,9 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
               )}
             </div>
             <div className="flex space-x-3">
-              <Button 
+              <Button
                 variant="secondary"
                 onClick={async () => {
-                  console.log('✅ 대안 데이터가 PostgreSQL에 자동 저장되었습니다.');
                 }}
               >
                 저장
