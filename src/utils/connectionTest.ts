@@ -66,8 +66,8 @@ class ConnectionTester {
     try {
 
       const endpoints = [
-        '/api/v1/projects/',
-        '/api/service/auth/profile/', 
+        '/api/service/projects/projects/',
+        '/api/service/accounts/dashboard/',
         '/health/',
         '/api/service/auth/social/naver/',
         '/api/service/auth/social/google/',
@@ -130,7 +130,7 @@ class ConnectionTester {
   async testProjectsApi(): Promise<ConnectionTestResult> {
     try {
 
-      const response = await fetch(`${this.baseUrl}/api/v1/projects/`, {
+      const response = await fetch(`${this.baseUrl}/api/service/projects/projects/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

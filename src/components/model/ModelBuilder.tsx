@@ -97,8 +97,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       }
 
       // 프로젝트 정보 조회
-      const projectResponse = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
-        
+      const projectResponse = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/`, {
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -106,26 +105,27 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       const projectData = await projectResponse.json();
 
       // 기준 조회
-      const criteriaResponse = await fetch(`${API_BASE_URL}/api/v1/criteria/?project=${projectId}`, {
+      const criteriaResponse = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}`, {
         headers: { 'Content-Type': 'application/json' },
       });
 
       let criteria: Criterion[] = [];
       if (criteriaResponse.ok) {
         const criteriaData = await criteriaResponse.json();
-        criteria = criteriaData.criteria || [];
+        // DRF: 배열 또는 {results: [...]} 형식
+        criteria = Array.isArray(criteriaData) ? criteriaData : (criteriaData.results || criteriaData.criteria || []);
       }
 
-      // 대안 조회
-      const alternativesResponse = await fetch(`${API_BASE_URL}/api/v1/alternatives/?project=${projectId}`, {
-        
+      // 대안 조회 (Criteria 모델의 type='alternative' 필터링)
+      const alternativesResponse = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}&type=alternative`, {
         headers: { 'Content-Type': 'application/json' },
       });
 
       let alternatives: Alternative[] = [];
       if (alternativesResponse.ok) {
         const alternativesData = await alternativesResponse.json();
-        alternatives = alternativesData.alternatives || [];
+        // DRF: 배열 또는 {results: [...]} 형식
+        alternatives = Array.isArray(alternativesData) ? alternativesData : (alternativesData.results || alternativesData.alternatives || []);
       }
 
       setProject({
@@ -177,18 +177,19 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       setSaving(true);
       const level = parentId ? getLevel(parentId) + 1 : 1;
       
-      const response = await fetch(`${API_BASE_URL}/api/v1/criteria/`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          project_id: projectId,
+          project: projectId,
           name: newCriterionName,
           description: newCriterionDescription,
-          parent_id: parentId,
+          parent: parentId,
           level,
-          order_index: getNextOrderIndex(parentId)
+          order: getNextOrderIndex(parentId),
+          type: 'criteria'
         }),
       });
 
@@ -211,17 +212,18 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     try {
       setSaving(true);
       
-      const response = await fetch(`${API_BASE_URL}/api/v1/alternatives/`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/`, {
         method: 'POST',
-        
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          project_id: projectId,
+          project: projectId,
           name: newAlternativeName,
           description: newAlternativeDescription,
-          order_index: (project?.alternatives.length || 0) + 1
+          type: 'alternative',
+          order: (project?.alternatives.length || 0) + 1,
+          level: 0
         }),
       });
 
@@ -240,9 +242,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
   const deleteCriterion = async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/criteria/${id}/`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/${id}/`, {
         method: 'DELETE',
-        
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -255,9 +256,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
   const deleteAlternative = async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/alternatives/${id}/`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/${id}/`, {
         method: 'DELETE',
-        
         headers: { 'Content-Type': 'application/json' },
       });
 
