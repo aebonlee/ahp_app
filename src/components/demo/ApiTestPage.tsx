@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AHPApiService from '../../services/ahpApiService';
+import { API_BASE_URL } from '../../config/api';
 
 interface TestResult {
   step: string;
@@ -49,7 +50,7 @@ const ApiTestPage: React.FC = () => {
       // 1. Health Check
       const startTime = Date.now();
       try {
-        const response = await fetch('http://localhost:5000/api/health');
+        const response = await fetch(`${API_BASE_URL}/health/`);
         const healthData = await response.json();
         updateTestResult(0, {
           status: 'success',
@@ -251,7 +252,7 @@ const ApiTestPage: React.FC = () => {
             </div>
           </div>
           <div className="text-sm text-gray-600">
-            <strong>참고:</strong> 백엔드 서버가 http://localhost:5000에서 실행 중이어야 합니다.
+            <strong>참고:</strong> 백엔드 서버: {API_BASE_URL}
           </div>
         </div>
 
