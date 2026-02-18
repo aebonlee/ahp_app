@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import { directEvaluationAPI, apiHelpers } from '../../services/apiService';
 import { MESSAGES } from '../../constants/messages';
+import { API_BASE_URL } from '../../config/api';
 
 interface DirectInputValue {
   alternativeId: string;
@@ -39,9 +40,6 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
     setTimeout(() => setInputMessage(null), 3000);
   };
 
-  const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:5000' 
-    : 'https://ahp-platform.onrender.com';
 
   useEffect(() => {
     // 초기값 설정

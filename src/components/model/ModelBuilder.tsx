@@ -4,6 +4,7 @@ import Button from '../common/Button';
 import EvaluatorAssignment from '../admin/EvaluatorAssignment';
 import CanvasModelBuilder from './CanvasModelBuilder';
 import { DEMO_PROJECTS, DEMO_CRITERIA, DEMO_ALTERNATIVES } from '../../data/demoData';
+import { API_BASE_URL } from '../../config/api';
 import { 
   Squares2X2Icon, 
   ListBulletIcon, 
@@ -64,9 +65,6 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
   const [newAlternativeDescription, setNewAlternativeDescription] = useState('');
   const [activeTab, setActiveTab] = useState<'criteria' | 'alternatives' | 'evaluators' | 'settings'>('criteria');
 
-  const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:8000' 
-    : 'https://ahp-django-backend.onrender.com';
 
   // 캔버스 모델 저장 핸들러
   const handleCanvasModelSave = useCallback((canvasNodes: any[]) => {
@@ -77,7 +75,6 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     // 실제 API 저장 로직 (여기서는 시뮬레이션)
     setTimeout(() => {
       setSaving(false);
-      console.log('✅ 캔버스 모델 저장 완료:', canvasNodes);
       onSave?.();
     }, 1000);
   }, [onSave]);

@@ -215,9 +215,10 @@ const AlertSystem: React.FC<AlertSystemProps> = ({
 
   // WebSocket 연결
   useEffect(() => {
-    const wsUrl = projectId 
-      ? `ws://localhost:8000/ws/alerts/${projectId}/`
-      : `ws://localhost:8000/ws/alerts/global/`;
+    const wsBaseUrl = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+    const wsUrl = projectId
+      ? `${wsBaseUrl}/ws/alerts/${projectId}/`
+      : `${wsBaseUrl}/ws/alerts/global/`;
     
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;

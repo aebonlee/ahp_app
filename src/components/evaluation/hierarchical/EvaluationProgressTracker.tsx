@@ -2,19 +2,20 @@
 // Opus 4.1 설계 문서 기반
 
 import React, { useState, useEffect } from 'react';
-import { 
-  ClockIcon, 
-  CheckCircleIcon, 
+import {
+  ClockIcon,
+  CheckCircleIcon,
   ExclamationTriangleIcon,
   PlayIcon,
-  PauseIcon 
+  PauseIcon
 } from '@heroicons/react/24/outline';
 import Card from '../../common/Card';
-import type { 
-  EvaluationProgress, 
+import type {
+  EvaluationProgress,
   EvaluationSession,
-  HierarchyWebSocketMessage 
+  HierarchyWebSocketMessage
 } from '../../../types/hierarchy';
+import { API_BASE_URL } from '../../../config/api';
 
 interface EvaluationProgressTrackerProps {
   sessionId: string;
@@ -38,7 +39,8 @@ const EvaluationProgressTracker: React.FC<EvaluationProgressTrackerProps> = ({
   useEffect(() => {
     if (!sessionId) return;
 
-    const wsUrl = `ws://localhost:8000/ws/evaluation/${sessionId}/`;
+    const wsBaseUrl = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+    const wsUrl = `${wsBaseUrl}/ws/evaluation/${sessionId}/`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {

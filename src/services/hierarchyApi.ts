@@ -1,7 +1,7 @@
 // 계층적 평가 시스템 API 서비스
 // Opus 4.1 설계 문서 기반
 
-import type { 
+import type {
   HierarchyNode,
   EvaluationSession,
   EvaluationProgress,
@@ -12,8 +12,7 @@ import type {
   SubmitComparisonRequest,
   HierarchyAPIResponse
 } from '../types/hierarchy';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+import { API_BASE_URL } from '../config/api';
 
 // API 호출 유틸리티
 async function apiCall<T>(
@@ -238,7 +237,8 @@ export const hierarchyApi = {
 
   // 실시간 업데이트 (WebSocket)
   createWebSocketConnection(sessionId: string): WebSocket {
-    const wsUrl = `ws://localhost:8000/ws/evaluation/${sessionId}/`;
+    const wsBaseUrl = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+    const wsUrl = `${wsBaseUrl}/ws/evaluation/${sessionId}/`;
     return new WebSocket(wsUrl);
   },
 

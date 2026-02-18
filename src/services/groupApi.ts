@@ -16,8 +16,7 @@ import type {
   StartDelphiRoundRequest,
   GroupAPIResponse
 } from '../types/group';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import { API_BASE_URL } from '../config/api';
 
 /**
  * 인증 토큰 가져오기
@@ -533,7 +532,8 @@ export function connectToGroupWebSocket(
   onMessage?: (data: any) => void,
   onError?: (error: Event) => void
 ): WebSocket {
-  const wsUrl = `ws://localhost:8000/ws/group/${groupId}/`;
+  const wsBaseUrl = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+  const wsUrl = `${wsBaseUrl}/ws/group/${groupId}/`;
   const ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {

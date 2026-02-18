@@ -321,7 +321,8 @@ const HierarchicalEvaluationDashboard: React.FC<HierarchicalEvaluationDashboardP
   useEffect(() => {
     if (!currentSession) return;
 
-    const wsUrl = `ws://localhost:8000/ws/evaluation/${currentSession.id}/`;
+    const wsBaseUrl = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+    const wsUrl = `${wsBaseUrl}/ws/evaluation/${currentSession.id}/`;
     const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {

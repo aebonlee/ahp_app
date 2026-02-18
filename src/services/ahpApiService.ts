@@ -3,7 +3,7 @@
  * 쌍대비교 → 통합 → 결과 API 시퀀스 구현
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+import { API_BASE_URL } from '../config/api';
 
 
 // API 요청 헬퍼

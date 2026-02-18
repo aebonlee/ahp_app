@@ -130,7 +130,8 @@ const GroupEvaluationDashboard: React.FC<GroupEvaluationDashboardProps> = ({
       wsConnection.close();
     }
 
-    const wsUrl = `ws://localhost:8000/ws/group/${groupId}/`;
+    const wsBaseUrl = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+    const wsUrl = `${wsBaseUrl}/ws/group/${groupId}/`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
