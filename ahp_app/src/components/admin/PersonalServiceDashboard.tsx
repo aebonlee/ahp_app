@@ -4734,14 +4734,14 @@ ${project?.title} - ${type} 프레젠테이션
           
         {/* 요금제 관리 버튼 */}
         <div className="mt-6 flex justify-center space-x-4">
-          <button 
-            onClick={() => window.open('#/personal-service?menu=payment', '_blank')}
+          <button
+            onClick={() => setActiveMenu('payment')}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
           >
             결제 관리
           </button>
-          <button 
-            onClick={() => window.open('#/personal-service?menu=payment', '_blank')}
+          <button
+            onClick={() => setActiveMenu('payment')}
             className="px-6 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-all duration-200"
           >
             플랜 변경

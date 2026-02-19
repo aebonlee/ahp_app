@@ -8,6 +8,7 @@ import Button from '../../common/Button';
 import Modal from '../../common/Modal';
 import { UIIcon } from '../../common/UIIcon';
 import Tooltip from '../../common/Tooltip';
+import api from '../../services/api';
 
 interface PromptTemplate {
   id: number;
@@ -65,7 +66,13 @@ const PromptTemplateManager: React.FC = () => {
     is_active: true
   });
 
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '/api';
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const categoryOptions = [
     { value: 'research', label: '연구 지원', icon: '🔬' },
@@ -82,13 +89,12 @@ const PromptTemplateManager: React.FC = () => {
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/templates/`);
-      if (response.ok) {
-        const data = await response.json();
-        setTemplates(data);
+      const response = await api.get('/ai-management/api/templates/');
+      if (response.success && response.data) {
+        setTemplates(response.data);
       }
     } catch (error) {
-      console.error('Failed to fetch templates:', error);
+      showActionMessage('error', '템플릿 목록을 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -96,21 +102,17 @@ const PromptTemplateManager: React.FC = () => {
 
   const handleCreateTemplate = async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/templates/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.post('/ai-management/api/templates/', formData);
 
-      if (response.ok) {
+      if (response.success) {
         await fetchTemplates();
         setShowCreateModal(false);
         resetForm();
+      } else {
+        showActionMessage('error', response.error || '템플릿 생성에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to create template:', error);
+      showActionMessage('error', '템플릿 생성 중 오류가 발생했습니다.');
     }
   };
 
@@ -118,51 +120,51 @@ const PromptTemplateManager: React.FC = () => {
     if (!editingTemplate) return;
 
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/templates/${editingTemplate.id}/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.put(`/ai-management/api/templates/${editingTemplate.id}/`, formData);
 
-      if (response.ok) {
+      if (response.success) {
         await fetchTemplates();
         setEditingTemplate(null);
         resetForm();
+      } else {
+        showActionMessage('error', response.error || '템플릿 수정에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to update template:', error);
+      showActionMessage('error', '템플릿 수정 중 오류가 발생했습니다.');
     }
   };
 
-  const handleDeleteTemplate = async (templateId: number) => {
-    if (!window.confirm('정말로 이 템플릿을 삭제하시겠습니까?')) return;
+  const handleDeleteTemplate = (templateId: number) => {
+    setPendingDeleteId(templateId);
+  };
 
+  const confirmDeleteTemplate = async () => {
+    if (pendingDeleteId === null) return;
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/templates/${templateId}/`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
+      const response = await api.delete(`/ai-management/api/templates/${pendingDeleteId}/`);
+      if (response.success) {
         await fetchTemplates();
+        showActionMessage('success', '템플릿이 삭제되었습니다.');
+      } else {
+        showActionMessage('error', response.error || '템플릿 삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to delete template:', error);
+      showActionMessage('error', '템플릿 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
   const handleUseTemplate = async (templateId: number) => {
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/templates/${templateId}/use_template/`, {
-        method: 'POST'
-      });
+      const response = await api.post(`/ai-management/api/templates/${templateId}/use_template/`, {});
 
-      if (response.ok) {
+      if (response.success) {
         await fetchTemplates();
       }
     } catch (error) {
       console.error('Failed to use template:', error);
+      showActionMessage('error', '템플릿 사용 처리 중 오류가 발생했습니다.');
     }
   };
 
@@ -489,6 +491,11 @@ const PromptTemplateManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
@@ -618,14 +625,14 @@ const PromptTemplateManager: React.FC = () => {
               <h4 className="font-medium mb-2">설명</h4>
               <p className="text-gray-700">{previewTemplate.description}</p>
             </div>
-            
+
             <div>
               <h4 className="font-medium mb-2">프롬프트 템플릿</h4>
               <div className="bg-gray-50 p-3 rounded max-h-40 overflow-y-auto">
                 <pre className="whitespace-pre-wrap text-sm">{previewTemplate.template}</pre>
               </div>
             </div>
-            
+
             {previewTemplate.variables.length > 0 && (
               <div>
                 <h4 className="font-medium mb-2">변수 목록</h4>
@@ -644,7 +651,7 @@ const PromptTemplateManager: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             <div className="flex justify-end">
               <Button onClick={() => setPreviewTemplate(null)} variant="outline">
                 닫기
@@ -653,6 +660,21 @@ const PromptTemplateManager: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="템플릿 삭제 확인"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">정말로 이 템플릿을 삭제하시겠습니까?</p>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setPendingDeleteId(null)} variant="outline">취소</Button>
+            <Button onClick={confirmDeleteTemplate} className="bg-red-600 hover:bg-red-700 text-white">삭제</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

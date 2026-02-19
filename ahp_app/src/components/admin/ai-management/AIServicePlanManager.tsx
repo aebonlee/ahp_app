@@ -8,6 +8,7 @@ import Button from '../../common/Button';
 import Modal from '../../common/Modal';
 import { UIIcon } from '../../common/UIIcon';
 import Tooltip from '../../common/Tooltip';
+import api from '../../services/api';
 
 interface AIServicePlan {
   id: number;
@@ -50,8 +51,13 @@ const AIServicePlanManager: React.FC = () => {
     description: '',
     is_active: true
   });
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '/api';
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     fetchPlans();
@@ -60,13 +66,12 @@ const AIServicePlanManager: React.FC = () => {
   const fetchPlans = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/plans/`);
-      if (response.ok) {
-        const data = await response.json();
-        setPlans(data);
+      const response = await api.get('/ai-management/api/plans/');
+      if (response.success && response.data) {
+        setPlans(response.data);
       }
     } catch (error) {
-      console.error('Failed to fetch plans:', error);
+      showActionMessage('error', '요금제 목록을 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -74,21 +79,17 @@ const AIServicePlanManager: React.FC = () => {
 
   const handleCreatePlan = async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/plans/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.post('/ai-management/api/plans/', formData);
 
-      if (response.ok) {
+      if (response.success) {
         await fetchPlans();
         setShowCreateModal(false);
         resetForm();
+      } else {
+        showActionMessage('error', response.error || '요금제 생성에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to create plan:', error);
+      showActionMessage('error', '요금제 생성 중 오류가 발생했습니다.');
     }
   };
 
@@ -96,37 +97,38 @@ const AIServicePlanManager: React.FC = () => {
     if (!editingPlan) return;
 
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/plans/${editingPlan.id}/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.put(`/ai-management/api/plans/${editingPlan.id}/`, formData);
 
-      if (response.ok) {
+      if (response.success) {
         await fetchPlans();
         setEditingPlan(null);
         resetForm();
+      } else {
+        showActionMessage('error', response.error || '요금제 수정에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to update plan:', error);
+      showActionMessage('error', '요금제 수정 중 오류가 발생했습니다.');
     }
   };
 
-  const handleDeletePlan = async (planId: number) => {
-    if (!window.confirm('정말로 이 요금제를 삭제하시겠습니까?')) return;
+  const handleDeletePlan = (planId: number) => {
+    setPendingDeleteId(planId);
+  };
 
+  const confirmDeletePlan = async () => {
+    if (pendingDeleteId === null) return;
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/plans/${planId}/`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
+      const response = await api.delete(`/ai-management/api/plans/${pendingDeleteId}/`);
+      if (response.success) {
         await fetchPlans();
+        showActionMessage('success', '요금제가 삭제되었습니다.');
+      } else {
+        showActionMessage('error', response.error || '요금제 삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to delete plan:', error);
+      showActionMessage('error', '요금제 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
@@ -349,6 +351,11 @@ const AIServicePlanManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
@@ -424,6 +431,21 @@ const AIServicePlanManager: React.FC = () => {
             <Button onClick={handleUpdatePlan}>
               수정
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="요금제 삭제 확인"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">정말로 이 요금제를 삭제하시겠습니까?</p>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setPendingDeleteId(null)} variant="outline">취소</Button>
+            <Button onClick={confirmDeletePlan} className="bg-red-600 hover:bg-red-700 text-white">삭제</Button>
           </div>
         </div>
       </Modal>

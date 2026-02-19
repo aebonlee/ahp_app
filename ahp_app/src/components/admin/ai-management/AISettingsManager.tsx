@@ -8,6 +8,7 @@ import Button from '../../common/Button';
 import Modal from '../../common/Modal';
 import { UIIcon } from '../../common/UIIcon';
 import Tooltip from '../../common/Tooltip';
+import api from '../../services/api';
 
 interface AIServiceSettings {
   id: number;
@@ -53,6 +54,7 @@ const AISettingsManager: React.FC = () => {
   const [editingSettings, setEditingSettings] = useState<AIServiceSettings | null>(null);
   const [testingConnection, setTestingConnection] = useState<number | null>(null);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -75,8 +77,6 @@ const AISettingsManager: React.FC = () => {
     is_default: false
   });
 
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '/api';
-
   const providerOptions = [
     { value: 'openai', label: 'OpenAI', icon: '🤖' },
     { value: 'claude', label: 'Claude (Anthropic)', icon: '🧠' },
@@ -98,13 +98,12 @@ const AISettingsManager: React.FC = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/settings/`);
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
+      const response = await api.get('/ai-management/api/settings/');
+      if (response.success && response.data) {
+        setSettings(response.data);
       }
     } catch (error) {
-      console.error('Failed to fetch settings:', error);
+      showActionMessage('error', 'AI 설정을 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -112,21 +111,17 @@ const AISettingsManager: React.FC = () => {
 
   const handleCreateSettings = async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/settings/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.post('/ai-management/api/settings/', formData);
 
-      if (response.ok) {
+      if (response.success) {
         await fetchSettings();
         setShowCreateModal(false);
         resetForm();
+      } else {
+        showActionMessage('error', response.error || 'AI 설정 생성에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to create settings:', error);
+      showActionMessage('error', 'AI 설정 생성 중 오류가 발생했습니다.');
     }
   };
 
@@ -142,53 +137,49 @@ const AISettingsManager: React.FC = () => {
             return dataWithoutApiKey;
           })();
 
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/settings/${editingSettings.id}/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData)
-      });
+      const response = await api.put(`/ai-management/api/settings/${editingSettings.id}/`, updateData);
 
-      if (response.ok) {
+      if (response.success) {
         await fetchSettings();
         setEditingSettings(null);
         resetForm();
+      } else {
+        showActionMessage('error', response.error || 'AI 설정 수정에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to update settings:', error);
+      showActionMessage('error', 'AI 설정 수정 중 오류가 발생했습니다.');
     }
   };
 
-  const handleDeleteSettings = async (settingsId: number) => {
-    if (!window.confirm('정말로 이 AI 설정을 삭제하시겠습니까?')) return;
+  const handleDeleteSettings = (settingsId: number) => {
+    setPendingDeleteId(settingsId);
+  };
 
+  const confirmDeleteSettings = async () => {
+    if (pendingDeleteId === null) return;
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/settings/${settingsId}/`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
+      const response = await api.delete(`/ai-management/api/settings/${pendingDeleteId}/`);
+      if (response.success) {
         await fetchSettings();
+        showActionMessage('success', 'AI 설정이 삭제되었습니다.');
+      } else {
+        showActionMessage('error', response.error || 'AI 설정 삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to delete settings:', error);
+      showActionMessage('error', 'AI 설정 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
   const handleTestConnection = async (settingsId: number) => {
     try {
       setTestingConnection(settingsId);
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/settings/${settingsId}/test_connection/`, {
-        method: 'POST'
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
+      const response = await api.post(`/ai-management/api/settings/${settingsId}/test_connection/`, {});
+      if (response.success && response.data?.success) {
         showActionMessage('success', '연결 테스트 성공!');
       } else {
-        showActionMessage('error', `연결 테스트 실패: ${result.message}`);
+        showActionMessage('error', `연결 테스트 실패: ${response.data?.message || response.error || '알 수 없는 오류'}`);
       }
     } catch (error) {
       showActionMessage('error', '연결 테스트 중 오류가 발생했습니다.');
@@ -199,15 +190,14 @@ const AISettingsManager: React.FC = () => {
 
   const handleMakeDefault = async (settingsId: number) => {
     try {
-      const response = await fetch(`${apiBaseUrl}/ai-management/api/settings/${settingsId}/make_default/`, {
-        method: 'POST'
-      });
-
-      if (response.ok) {
+      const response = await api.post(`/ai-management/api/settings/${settingsId}/make_default/`, {});
+      if (response.success) {
         await fetchSettings();
+      } else {
+        showActionMessage('error', response.error || '기본 설정 변경에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to make default:', error);
+      showActionMessage('error', '기본 설정 변경 중 오류가 발생했습니다.');
     }
   };
 
@@ -617,7 +607,7 @@ const AISettingsManager: React.FC = () => {
       >
         <div className="space-y-4">
           {renderSettingsForm()}
-          
+
           <div className="flex justify-end gap-2 pt-4">
             <Button
               onClick={() => {
@@ -631,6 +621,21 @@ const AISettingsManager: React.FC = () => {
             <Button onClick={handleUpdateSettings}>
               수정
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="AI 설정 삭제 확인"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">정말로 이 AI 설정을 삭제하시겠습니까?</p>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setPendingDeleteId(null)} variant="outline">취소</Button>
+            <Button onClick={confirmDeleteSettings} className="bg-red-600 hover:bg-red-700 text-white">삭제</Button>
           </div>
         </div>
       </Modal>

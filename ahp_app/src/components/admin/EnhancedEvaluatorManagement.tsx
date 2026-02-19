@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { API_BASE_URL } from '../../config/api';
+import Modal from '../common/Modal';
+import api from '../../services/api';
 
 interface Evaluator {
   id: string;
@@ -44,6 +45,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
   const [selectAll, setSelectAll] = useState(false);
   const [loading, setLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -72,16 +74,9 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
   const loadEvaluators = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/${projectId ? `?project=${projectId}` : ''}`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setEvaluators(data.evaluators || []);
+      const response = await api.get(`/api/service/evaluators/${projectId ? `?project=${projectId}` : ''}`);
+      if (response.success && response.data) {
+        setEvaluators(response.data.evaluators || []);
       } else {
         setEvaluators([]);
       }
@@ -99,35 +94,35 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
   };
 
   const handleSelectEvaluator = (evaluatorId: string) => {
-    setEvaluators(evaluators.map(e => 
+    setEvaluators(evaluators.map(e =>
       e.id === evaluatorId ? { ...e, isSelected: !e.isSelected } : e
     ));
   };
 
   const validateForm = () => {
     const newErrors: any = {};
-    
+
     if (!formData.email.trim()) {
       newErrors.email = '이메일을 입력해주세요.';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = '올바른 이메일 형식이 아닙니다.';
     }
-    
+
     if (!formData.name.trim()) {
       newErrors.name = '이름을 입력해주세요.';
     }
-    
+
     if (formData.phone && !/^[0-9-]+$/.test(formData.phone)) {
       newErrors.phone = '전화번호는 숫자와 하이픈(-)만 입력 가능합니다.';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleAddEvaluator = async () => {
     if (!validateForm()) return;
-    
+
     const newEvaluator: Evaluator = {
       id: `eval-${Date.now()}`,
       email: formData.email,
@@ -140,21 +135,13 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...formData,
-          projectId
-        })
+      const response = await api.post(`/api/service/evaluators/`, {
+        ...formData,
+        projectId
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setEvaluators([data.evaluator, ...evaluators]);
+      if (response.success && response.data) {
+        setEvaluators([response.data.evaluator, ...evaluators]);
       } else {
         // 실패 시 로컬에만 추가 (데모 모드)
         setEvaluators([newEvaluator, ...evaluators]);
@@ -177,7 +164,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
 
   const handleSendInvitations = async () => {
     const selectedEvaluators = evaluators.filter(e => e.isSelected);
-    
+
     if (selectedEvaluators.length === 0) {
       showActionMessage('error', '초대할 평가자를 선택해주세요.');
       return;
@@ -188,10 +175,10 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
       for (const evaluator of selectedEvaluators) {
         // 평가 링크 생성
         const evaluationLink = `${window.location.origin}/?tab=evaluator-dashboard&project=${projectId}&evaluator=${evaluator.id}`;
-        
+
         // 단축 URL 생성
         const shortLink = await generateShortLink(evaluationLink);
-        
+
         // 이메일 초대 발송
         const emailContent = {
           to: evaluator.email,
@@ -214,26 +201,19 @@ ${inviteData.message}
 
         // 실제 이메일 발송 (백엔드 API 또는 이메일 서비스 사용)
         try {
-          await fetch(`${API_BASE_URL}/api/service/evaluators/invite/`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              evaluatorId: evaluator.id,
-              projectId,
-              emailContent,
-              shortLink
-            })
+          await api.post(`/api/service/evaluators/invite/`, {
+            evaluatorId: evaluator.id,
+            projectId,
+            emailContent,
+            shortLink
           });
         } catch {
           // 이메일 발송 실패 시 무시 (연구자가 링크를 직접 공유)
         }
 
         // 상태 업데이트
-        setEvaluators(prev => prev.map(e => 
-          e.id === evaluator.id 
+        setEvaluators(prev => prev.map(e =>
+          e.id === evaluator.id
             ? { ...e, invitationStatus: 'sent', invitationLink: evaluationLink, shortLink }
             : e
         ));
@@ -250,21 +230,24 @@ ${inviteData.message}
     }
   };
 
-  const handleDeleteEvaluator = async (evaluatorId: string) => {
-    if (window.confirm('평가자를 삭제하시겠습니까? 배정된 프로젝트에서 제외되며 평가 데이터가 삭제됩니다.')) {
-      try {
-        await fetch(`${API_BASE_URL}/api/service/evaluators/${evaluatorId}/`, {
-          method: 'DELETE',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        setEvaluators(evaluators.filter(e => e.id !== evaluatorId));
-      } catch (error) {
-        showActionMessage('error', '평가자 삭제 중 오류가 발생했습니다.');
+  const handleDeleteEvaluator = (evaluatorId: string) => {
+    setPendingDeleteId(evaluatorId);
+  };
+
+  const confirmDeleteEvaluator = async () => {
+    if (pendingDeleteId === null) return;
+    try {
+      const response = await api.delete(`/api/service/evaluators/${pendingDeleteId}/`);
+      if (response.success) {
+        setEvaluators(evaluators.filter(e => e.id !== pendingDeleteId));
+        showActionMessage('success', '평가자가 삭제되었습니다.');
+      } else {
+        showActionMessage('error', response.error || '평가자 삭제에 실패했습니다.');
       }
+    } catch (error) {
+      showActionMessage('error', '평가자 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
@@ -273,7 +256,7 @@ ${inviteData.message}
     showActionMessage('success', '링크가 클립보드에 복사되었습니다.');
   };
 
-  const filteredEvaluators = evaluators.filter(e => 
+  const filteredEvaluators = evaluators.filter(e =>
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -287,6 +270,22 @@ ${inviteData.message}
           {actionMessage.text}
         </div>
       )}
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="평가자 삭제 확인"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">이 평가자를 삭제하시겠습니까? 배정된 프로젝트에서 제외되며 평가 데이터가 삭제됩니다.</p>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setPendingDeleteId(null)} variant="outline">취소</Button>
+            <Button onClick={confirmDeleteEvaluator} className="bg-red-600 hover:bg-red-700 text-white">삭제</Button>
+          </div>
+        </div>
+      </Modal>
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
@@ -521,12 +520,12 @@ ${inviteData.message}
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   {evaluator.invitationStatus === 'pending' && (
                     <button
                       onClick={() => {
-                        setEvaluators(prev => prev.map(e => 
+                        setEvaluators(prev => prev.map(e =>
                           e.id === evaluator.id ? { ...e, isSelected: true } : e
                         ));
                         setShowInviteForm(true);
@@ -539,7 +538,7 @@ ${inviteData.message}
                   {evaluator.invitationStatus === 'sent' && (
                     <button
                       onClick={() => {
-                        setEvaluators(prev => prev.map(e => 
+                        setEvaluators(prev => prev.map(e =>
                           e.id === evaluator.id ? { ...e, isSelected: true } : e
                         ));
                         setShowInviteForm(true);
