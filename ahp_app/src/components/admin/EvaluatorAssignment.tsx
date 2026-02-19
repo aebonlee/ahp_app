@@ -63,19 +63,16 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
   useEffect(() => {
     // 실제 DB에서 평가자 데이터 로드
     const loadProjectEvaluators = async () => {
+      const base = window.location.href.split('?')[0].replace(/\/$/, '');
       try {
-        console.log('🔍 실제 DB에서 평가자 조회 시작:', projectId);
         const evaluatorsData = await cleanDataService.getEvaluators(projectId);
-        
+
         // EvaluatorData를 Evaluator 인터페이스로 변환
         const convertedEvaluators: Evaluator[] = evaluatorsData.map((evaluator: EvaluatorData) => {
-          const evalLink = evaluator.access_key 
-            ? `${window.location.origin}/evaluator?project=${projectId}&key=${evaluator.access_key}` 
+          const evalLink = evaluator.access_key
+            ? `${base}/?project=${projectId}&key=${evaluator.access_key}`
             : undefined;
-          const surveyUrl = evaluator.access_key 
-            ? `${window.location.origin}/demographic-survey?project=${projectId}&evaluator=${evaluator.id}&key=${evaluator.access_key}`
-            : undefined;
-          
+
           return {
             id: evaluator.id,
             project_id: evaluator.project_id,
@@ -86,25 +83,21 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
             progress: 0,
             code: evaluator.access_key || `EVL${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`,
             inviteLink: evalLink,
-            demographicSurveyUrl: surveyUrl,
             demographicSurveyCompleted: false
           };
         });
-        
+
         setEvaluators(convertedEvaluators);
-        console.log(`✅ Loaded ${convertedEvaluators.length} evaluators from DB for project ${projectId}`);
-        
+
         // 통계 업데이트
         updateEvaluationStats(convertedEvaluators);
-        
+
         // 부모 컴포넌트에 평가자 수 전달
         if (onEvaluatorsChange) {
           onEvaluatorsChange(convertedEvaluators.length);
         }
       } catch (error) {
-        console.error('❌ Failed to load evaluators from DB:', error);
         setEvaluators([]);
-        console.log(`⚠️ Starting with empty evaluator list for project ${projectId} due to DB error`);
         if (onEvaluatorsChange) {
           onEvaluatorsChange(0);
         }
@@ -190,8 +183,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
     }
 
     try {
-      console.log('🔍 실제 DB에 평가자 생성 시작:', newEvaluator.name);
-      
       const evaluatorData: Omit<EvaluatorData, 'id'> = {
         project_id: projectId,
         name: newEvaluator.name,
@@ -199,16 +190,13 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
         access_key: generateAccessKey(),
         status: 'pending'
       };
-      
+
       const createdEvaluator = await cleanDataService.createEvaluator(evaluatorData);
-      
+
       if (createdEvaluator) {
-        console.log('✅ 평가자 생성 성공:', createdEvaluator.id);
-        
-        // 생성된 평가자를 목록에 추가
-        const evalLink = `${window.location.origin}/evaluator?project=${projectId}&key=${createdEvaluator.access_key}`;
-        const surveyUrl = `${window.location.origin}/demographic-survey?project=${projectId}&evaluator=${createdEvaluator.id}&key=${createdEvaluator.access_key}`;
-        
+        const base = window.location.href.split('?')[0].replace(/\/$/, '');
+        const evalLink = `${base}/?project=${projectId}&key=${createdEvaluator.access_key}`;
+
         const newEval: Evaluator = {
           id: createdEvaluator.id,
           project_id: createdEvaluator.project_id,
@@ -219,27 +207,21 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
           progress: 0,
           code: createdEvaluator.access_key,
           inviteLink: evalLink,
-          demographicSurveyUrl: surveyUrl,
           demographicSurveyCompleted: false
         };
-        
+
         const updatedEvaluators = [...evaluators, newEval];
         setEvaluators(updatedEvaluators);
         setNewEvaluator({ name: '', email: '' });
         setErrors({});
-        
-        // 부모 컴포넌트에 평가자 수 업데이트
+
         if (onEvaluatorsChange) {
           onEvaluatorsChange(updatedEvaluators.length);
         }
-        
-        console.log('✅ 평가자가 성공적으로 추가되었습니다.');
       } else {
-        console.error('❌ 평가자 생성 실패');
         setErrors({ general: '평가자 생성에 실패했습니다.' });
       }
     } catch (error) {
-      console.error('❌ 평가자 추가 중 오류:', error);
       setErrors({ general: error instanceof Error ? error.message : '평가자 추가 중 오류가 발생했습니다.' });
     }
   };
@@ -252,7 +234,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
         : evaluator
     );
     setEvaluators(updatedEvaluators);
-    console.log('✅ 평가자 초대 상태 업데이트됨:', id);
   };
 
   const handleDeleteEvaluator = async (id: string) => {
@@ -261,23 +242,15 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
     }
 
     try {
-      console.log('🗑️ 평가자 삭제 시작:', id);
-      
-      // dataService로 평가자 삭제
       await cleanDataService.deleteEvaluator(id, projectId);
-      
-      // 로컬 상태에서도 제거
+
       const updatedEvaluators = evaluators.filter(e => e.id !== id);
       setEvaluators(updatedEvaluators);
-      
-      // 부모 컴포넌트에 평가자 수 업데이트
+
       if (onEvaluatorsChange) {
         onEvaluatorsChange(updatedEvaluators.length);
       }
-      
-      console.log('✅ 평가자가 삭제되었습니다.');
     } catch (error) {
-      console.error('❌ 평가자 삭제 실패:', error);
       showActionMessage('error', '평가자 삭제 중 오류가 발생했습니다.');
     }
   };
@@ -570,12 +543,9 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
               )}
             </div>
             <div className="flex space-x-3">
-              <Button 
+              <Button
                 variant="secondary"
-                onClick={async () => {
-                  console.log('✅ 평가자 데이터가 PostgreSQL에 자동 저장되었습니다.');
-                  showActionMessage('success', '평가자 목록이 저장되었습니다.');
-                }}
+                onClick={() => showActionMessage('success', '평가자 목록이 저장되었습니다.')}
               >
                 저장
               </Button>

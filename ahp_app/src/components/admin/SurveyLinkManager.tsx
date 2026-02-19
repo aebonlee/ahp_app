@@ -49,21 +49,17 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
     return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}`;
   };
 
-  const buildEvalLink = (evalId: string, token?: string): string => {
-    const base = window.location.origin;
-    if (token) {
-      return `${base}/?tab=anonymous-evaluator&token=${token}`;
-    }
-    return `${base}/?tab=anonymous-evaluator&evaluation=${evalId}`;
-  };
-
   const loadLinks = useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
     try {
-      const [evalsRes, invitesRes] = await Promise.allSettled([
+      // 앱 base URL: GitHub Pages (/ahp_app/) 및 localhost 모두 지원
+      const base = window.location.href.split('?')[0].replace(/\/$/, '');
+
+      const [evalsRes, invitesRes, projectRes] = await Promise.allSettled([
         apiService.get<any>(`/api/service/evaluations/evaluations/?project=${projectId}&page_size=100`),
         apiService.get<any>(`/api/service/evaluations/invitations/?project=${projectId}&page_size=100`),
+        apiService.get<any>(`/api/service/projects/projects/${projectId}/`),
       ]);
 
       const evals: any[] = evalsRes.status === 'fulfilled' && evalsRes.value?.data
@@ -74,6 +70,9 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
         ? (invitesRes.value.data.results ?? invitesRes.value.data)
         : [];
 
+      const projectData: any = projectRes.status === 'fulfilled' ? projectRes.value?.data : null;
+      const settingsEvaluators: any[] = projectData?.settings?.evaluators ?? [];
+
       // token map: evaluator id → invitation token
       const tokenMap: Record<string, string> = {};
       invites.forEach((inv: any) => {
@@ -82,16 +81,21 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
         }
       });
 
-      const links: SurveyLink[] = evals.map((ev: any) => {
+      // 1. Django Evaluation 레코드 기반 링크
+      // URL: ?project=X&token=Y (토큰 있을 때) 또는 ?project=X&evaluation=Z
+      // App.tsx evaluator-workflow 케이스가 project/token/key 파라미터를 모두 처리함
+      const djangoLinks: SurveyLink[] = evals.map((ev: any) => {
         const token = tokenMap[String(ev.evaluator)];
-        const link = buildEvalLink(ev.id, token);
+        const link = token
+          ? `${base}/?project=${projectId}&token=${token}`
+          : `${base}/?project=${projectId}&evaluation=${ev.id}`;
         return {
-          id: ev.id,
+          id: `eval-${ev.id}`,
           evaluatorId: String(ev.evaluator),
           evaluatorName: ev.evaluator_name || ev.evaluator_username || '평가자',
           evaluatorUsername: ev.evaluator_username || '',
           projectId: String(ev.project),
-          projectName: projectName || '',
+          projectName: projectName || projectData?.title || '',
           link,
           qrCode: generateQRCode(link),
           createdAt: ev.created_at,
@@ -102,7 +106,33 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
         };
       });
 
-      setSurveyLinks(links);
+      // 2. project.settings.evaluators 기반 링크 (EvaluatorAssignment 방식)
+      // URL: ?project=X&key=Y — App.tsx evaluator-workflow에서 urlParams.get('key')로 처리됨
+      const djangoEmails = new Set(djangoLinks.map(l => l.evaluatorUsername.toLowerCase()));
+
+      const settingsLinks: SurveyLink[] = settingsEvaluators
+        .filter((ev: any) => ev.access_key)
+        .filter((ev: any) => !djangoEmails.has((ev.email || '').toLowerCase()))
+        .map((ev: any) => {
+          const link = `${base}/?project=${projectId}&key=${ev.access_key}`;
+          return {
+            id: `settings-${ev.id || ev.access_key}`,
+            evaluatorId: String(ev.id || ev.access_key),
+            evaluatorName: ev.name || ev.email || '평가자',
+            evaluatorUsername: ev.email || '',
+            projectId: String(projectId),
+            projectName: projectName || projectData?.title || '',
+            link,
+            qrCode: generateQRCode(link),
+            createdAt: ev.created_at || new Date().toISOString(),
+            expiresAt: ev.expires_at || undefined,
+            progress: 0,
+            status: (ev.status as SurveyLink['status']) || 'pending',
+            invitationToken: ev.access_key,
+          };
+        });
+
+      setSurveyLinks([...djangoLinks, ...settingsLinks]);
     } catch (err) {
       showActionMessage('error', '링크 데이터를 불러오지 못했습니다.');
     } finally {
