@@ -22,11 +22,11 @@ export const RETRY_config = {
 export const API_ENDPOINTS = {
   // Auth - JWT 토큰 기반 인증
   AUTH: {
-    LOGIN: '/api/service/auth/login/',
+    LOGIN: '/api/service/auth/token/',          // JWT 토큰 발급 (simplejwt)
     REGISTER: '/api/service/auth/register/',
     LOGOUT: '/api/service/auth/logout/',
-    ME: '/api/service/auth/profile/',
-    PROFILE: '/api/service/auth/profile/',
+    ME: '/api/service/accounts/me/',             // 실제 존재하는 엔드포인트
+    PROFILE: '/api/service/accounts/me/',        // GET/PATCH 모두 지원
     REFRESH: '/api/service/auth/token/refresh/'
   },
   // Projects - Django 백엔드 실제 경로 (URL 중복 제거)
@@ -37,50 +37,50 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/service/projects/projects/${id}/`,
     DELETE: (id: string) => `/api/service/projects/projects/${id}/`
   },
-  // Criteria - Django REST Framework 프로젝트 액션 경로
+  // Criteria - CriteriaViewSet: /projects/criteria/ with ?project= filter
   CRITERIA: {
-    LIST: (projectId: string) => `/api/service/projects/${projectId}/criteria/`,
-    CREATE: (projectId: string) => `/api/service/projects/${projectId}/add_criteria/`,
+    LIST: (projectId: string) => `/api/service/projects/criteria/?project=${projectId}`,
+    CREATE: '/api/service/projects/criteria/',
     UPDATE: (id: string) => `/api/service/projects/criteria/${id}/`,
     DELETE: (id: string) => `/api/service/projects/criteria/${id}/`
   },
-  // Alternatives
+  // Alternatives - criteria에서 type=alternative 로 구분
   ALTERNATIVES: {
-    LIST: (projectId: string) => `/api/v1/alternatives/?project=${projectId}`,
-    CREATE: '/api/v1/alternatives/',
-    UPDATE: (id: string) => `/api/v1/alternatives/${id}/`,
-    DELETE: (id: string) => `/api/v1/alternatives/${id}/`
+    LIST: (projectId: string) => `/api/service/projects/criteria/?project=${projectId}&type=alternative`,
+    CREATE: '/api/service/projects/criteria/',
+    UPDATE: (id: string) => `/api/service/projects/criteria/${id}/`,
+    DELETE: (id: string) => `/api/service/projects/criteria/${id}/`
   },
   // Evaluations
   EVALUATIONS: {
-    SUBMIT: '/api/v1/comparisons/',
-    GET_MATRIX: (projectId: string) => `/api/v1/comparisons/?project=${projectId}`,
-    COMPUTE: '/api/v1/results/',
-    RESULTS: (projectId: string) => `/api/v1/results/?project=${projectId}`
+    SUBMIT: '/api/service/evaluations/comparisons/',
+    GET_MATRIX: (projectId: string) => `/api/service/evaluations/comparisons/?project=${projectId}`,
+    COMPUTE: '/api/service/analysis/calculate/individual/',
+    RESULTS: (projectId: string) => `/api/service/analysis/project-summary/?project_id=${projectId}`
   },
-  // Evaluators
+  // Evaluators - EvaluationInvitationViewSet: /evaluations/invitations/
   EVALUATORS: {
-    LIST: (projectId: string) => `/api/service/evaluators/?project=${projectId}`,
-    ADD: '/api/service/evaluators/',
-    UPDATE: (id: string) => `/api/service/evaluators/${id}/`,
-    REMOVE: (id: string) => `/api/service/evaluators/${id}/`,
-    SEND_INVITATIONS: (projectId: string) => `/api/service/evaluators/invite/`
+    LIST: (projectId: string) => `/api/service/evaluations/invitations/?project=${projectId}`,
+    ADD: '/api/service/evaluations/invitations/',
+    UPDATE: (id: string) => `/api/service/evaluations/invitations/${id}/`,
+    REMOVE: (id: string) => `/api/service/evaluations/invitations/${id}/`,
+    SEND_INVITATIONS: (projectId: string) => `/api/service/evaluations/bulk-invitations/`
   },
-  // Comparisons
+  // Comparisons - PairwiseComparisonViewSet: /evaluations/comparisons/
   COMPARISONS: {
-    SAVE: '/api/v1/comparisons/',
-    GET: (projectId: string, evaluatorId?: string) => 
-      `/api/v1/comparisons/?project=${projectId}${evaluatorId ? `&evaluator=${evaluatorId}` : ''}`,
+    SAVE: '/api/service/evaluations/comparisons/',
+    GET: (projectId: string, evaluatorId?: string) =>
+      `/api/service/evaluations/comparisons/?project=${projectId}${evaluatorId ? `&evaluator=${evaluatorId}` : ''}`,
     UPDATE_SESSION: (projectId: string, evaluatorId: string) =>
-      `/api/v1/comparisons/${evaluatorId}/progress/`
+      `/api/service/evaluations/progress/${evaluatorId}/`
   },
-  // Results
+  // Results - AnalysisViewSet custom endpoints
   RESULTS: {
-    GET: (projectId: string) => `/api/v1/results/${projectId}/`,
+    GET: (projectId: string) => `/api/service/analysis/project-summary/?project_id=${projectId}`,
     INDIVIDUAL: (projectId: string, evaluatorId: string) =>
-      `/api/v1/results/individual/?project=${projectId}&evaluator=${evaluatorId}`,
-    CALCULATE_GROUP: (projectId: string) => `/api/v1/results/group/`,
-    SENSITIVITY: (projectId: string) => `/api/v1/results/sensitivity/?project=${projectId}`
+      `/api/service/analysis/calculate/individual/`,
+    CALCULATE_GROUP: (projectId: string) => `/api/service/analysis/calculate/group/`,
+    SENSITIVITY: (projectId: string) => `/api/service/analysis/sensitivity/`
   },
   // Surveys - 설문조사 관련 API
   SURVEYS: {
