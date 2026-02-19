@@ -46,14 +46,12 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
     return `${baseUrl}/ahp_app`;
   };
 
-  // Generate short URL code (6 characters)
+  // Generate short URL code (6 characters, cryptographically secure)
   const generateShortCode = (): string => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = '';
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // 36 chars
+    const array = new Uint8Array(6);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => chars[byte % 36]).join('');
   };
 
   // Initialize evaluation sessions

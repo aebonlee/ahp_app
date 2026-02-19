@@ -157,7 +157,10 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
 
   const generateShortLink = async (longUrl: string): Promise<string> => {
     // 간단한 단축 URL 생성 (실제로는 bit.ly, TinyURL 등의 API 사용)
-    const shortCode = Math.random().toString(36).substring(2, 8);
+    const charset = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const array = new Uint8Array(6);
+    crypto.getRandomValues(array);
+    const shortCode = Array.from(array, byte => charset[byte % 36]).join('');
     const baseUrl = window.location.origin;
     return `${baseUrl}/e/${shortCode}`;
   };

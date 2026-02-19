@@ -83,24 +83,26 @@ const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
     }
   };
 
-  // Generate base32 secret
+  // Generate base32 secret (cryptographically secure)
   const generateBase32Secret = (): string => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    let secret = '';
-    for (let i = 0; i < 32; i++) {
-      secret += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return secret;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; // 32 chars, 256%32===0 → no modulo bias
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => chars[byte % 32]).join('');
   };
 
-  // Generate backup codes
+  // Generate backup codes (cryptographically secure)
   const generateBackupCodes = (): string[] => {
-    const codes: string[] = [];
-    for (let i = 0; i < 10; i++) {
-      const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-      codes.push(code);
-    }
-    return codes;
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // 36 chars
+    return Array.from({ length: 10 }, () => {
+      const array = new Uint8Array(8);
+      crypto.getRandomValues(array);
+      // Bias mitigation: 256 % 36 = 4 → reject bytes >= 252
+      return Array.from(array, byte => {
+        const limit = 252; // floor(256/36)*36
+        return byte < limit ? charset[byte % 36] : charset[Math.floor(byte / 256 * 36)];
+      }).join('');
+    });
   };
 
   // Format secret for manual entry

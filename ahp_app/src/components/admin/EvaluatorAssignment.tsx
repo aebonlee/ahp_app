@@ -122,7 +122,11 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
   // };
 
   const generateAccessKey = (): string => {
-    return 'KEY_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const array = new Uint8Array(8);
+    crypto.getRandomValues(array);
+    const key = Array.from(array, byte => charset[byte % 36]).join('');
+    return 'KEY_' + key;
   };
 
   const updateEvaluationStats = (evaluatorList: Evaluator[]) => {
