@@ -285,7 +285,11 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
                     <Button
                       size="sm"
                       variant="error"
-                      onClick={handle2FADisable}
+                      onClick={() => {
+                        setPromptAction('disable_2fa');
+                        setPromptPassword('');
+                        setShowPasswordPrompt(true);
+                      }}
                       disabled={loading}
                     >
                       비활성화
