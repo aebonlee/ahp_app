@@ -84,7 +84,6 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
       const data = res.data as any;
       setWorkshops(Array.isArray(data) ? data : (data.results ?? []));
     } catch (err) {
-      console.error('워크숍 목록 로딩 실패:', err);
       showActionMessage('error', '워크숍 목록을 불러오는데 실패했습니다.');
     } finally {
       setIsLoading(false);

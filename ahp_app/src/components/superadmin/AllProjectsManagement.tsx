@@ -117,7 +117,6 @@ const AllProjectsManagement: React.FC = () => {
       await apiService.delete(`/api/service/projects/projects/${projectId}/`);
       fetchProjects();
     } catch (error) {
-      console.error('프로젝트 삭제 실패:', error);
       showActionMessage('error', '프로젝트 삭제에 실패했습니다.');
     }
   };
