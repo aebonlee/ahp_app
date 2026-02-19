@@ -1,29 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import { useTranslation } from '../../i18n';
+import apiService from '../../services/apiService';
 
 // 참가자 상태 인터페이스
 interface ParticipantStatus {
   participantId: string;
   name: string;
-  email: string;
   role: string;
-  loginTime?: string;
   lastActivity: string;
-  currentPage: string;
   completionRate: number;
   evaluationStatus: 'not_started' | 'in_progress' | 'completed' | 'overdue';
   consistencyRatio: number;
   totalEvaluations: number;
   completedEvaluations: number;
-  averageResponseTime: number; // 평균 응답 시간 (초)
-  deviceInfo: {
-    userAgent: string;
-    platform: string;
-    screenResolution: string;
-  };
-  connectionStatus: 'online' | 'offline' | 'idle';
 }
 
 // 프로젝트 진행 상태
@@ -35,12 +25,6 @@ interface ProjectProgress {
   completedParticipants: number;
   overallProgress: number;
   averageConsistency: number;
-  estimatedCompletion: string;
-  phases: {
-    criteriaEvaluation: number;
-    alternativeEvaluation: number;
-    subElementEvaluation: number;
-  };
 }
 
 // 알림 인터페이스
@@ -64,8 +48,6 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
   className = '',
   onParticipantSelect
 }) => {
-  const { t } = useTranslation();
-  
   // 상태 관리
   const [participants, setParticipants] = useState<ParticipantStatus[]>([]);
   const [projectProgress, setProjectProgress] = useState<ProjectProgress | null>(null);
@@ -77,114 +59,37 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
   const [sortBy, setSortBy] = useState<'name' | 'progress' | 'lastActivity' | 'consistency'>('lastActivity');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // 실시간 데이터 업데이트
-  useEffect(() => {
-    if (!isRealTimeEnabled) return;
-
-    const intervalId = setInterval(() => {
-      fetchParticipantData();
-      fetchProjectProgress();
-      checkForNotifications();
-    }, refreshInterval);
-
-    // 초기 데이터 로드
-    fetchParticipantData();
-    fetchProjectProgress();
-
-    return () => clearInterval(intervalId);
-  }, [projectId, isRealTimeEnabled, refreshInterval]);
-
   // 참가자 데이터 가져오기
   const fetchParticipantData = useCallback(async () => {
+    if (!projectId) return;
     try {
-      // 실제로는 API 호출
-      const mockData: ParticipantStatus[] = [
-        {
-          participantId: 'p1',
-          name: '김기술팀장',
-          email: 'kim@example.com',
-          role: 'evaluator',
-          loginTime: new Date(Date.now() - 3600000).toISOString(),
-          lastActivity: new Date(Date.now() - 300000).toISOString(),
-          currentPage: '기준 쌍대비교 (3/5)',
-          completionRate: 60,
-          evaluationStatus: 'in_progress',
-          consistencyRatio: 0.08,
-          totalEvaluations: 15,
-          completedEvaluations: 9,
-          averageResponseTime: 45,
-          deviceInfo: {
-            userAgent: 'Chrome 119.0.0.0',
-            platform: 'Windows',
-            screenResolution: '1920x1080'
-          },
-          connectionStatus: 'online'
-        },
-        {
-          participantId: 'p2',
-          name: '이개발자',
-          email: 'lee@example.com',
-          role: 'evaluator',
-          loginTime: new Date(Date.now() - 7200000).toISOString(),
-          lastActivity: new Date(Date.now() - 1800000).toISOString(),
-          currentPage: '대안 평가 완료',
-          completionRate: 100,
-          evaluationStatus: 'completed',
-          consistencyRatio: 0.06,
-          totalEvaluations: 15,
-          completedEvaluations: 15,
-          averageResponseTime: 32,
-          deviceInfo: {
-            userAgent: 'Firefox 118.0',
-            platform: 'macOS',
-            screenResolution: '2560x1440'
-          },
-          connectionStatus: 'offline'
-        },
-        {
-          participantId: 'p3',
-          name: '박분석가',
-          email: 'park@example.com',
-          role: 'evaluator',
-          loginTime: new Date(Date.now() - 1800000).toISOString(),
-          lastActivity: new Date(Date.now() - 120000).toISOString(),
-          currentPage: '대안 쌍대비교 (2/8)',
-          completionRate: 25,
-          evaluationStatus: 'in_progress',
-          consistencyRatio: 0.15,
-          totalEvaluations: 15,
-          completedEvaluations: 4,
-          averageResponseTime: 78,
-          deviceInfo: {
-            userAgent: 'Safari 17.0',
-            platform: 'iOS',
-            screenResolution: '390x844'
-          },
-          connectionStatus: 'online'
-        },
-        {
-          participantId: 'p4',
-          name: '최연구원',
-          email: 'choi@example.com',
-          role: 'evaluator',
-          lastActivity: new Date(Date.now() - 86400000).toISOString(),
-          currentPage: '미시작',
-          completionRate: 0,
-          evaluationStatus: 'overdue',
-          consistencyRatio: 0,
-          totalEvaluations: 15,
-          completedEvaluations: 0,
-          averageResponseTime: 0,
-          deviceInfo: {
-            userAgent: 'Chrome 118.0.0.0',
-            platform: 'Android',
-            screenResolution: '360x640'
-          },
-          connectionStatus: 'offline'
-        }
-      ];
+      const res = await apiService.get<any>(
+        `/api/service/evaluations/evaluations/?project=${projectId}&page_size=100`
+      );
+      if (res?.data) {
+        const evals: any[] = res.data.results ?? res.data;
+        const mapped: ParticipantStatus[] = evals.map((ev: any) => {
+          const apiStatus = ev.status ?? '';
+          let evaluationStatus: ParticipantStatus['evaluationStatus'] = 'not_started';
+          if (apiStatus === 'completed') evaluationStatus = 'completed';
+          else if (apiStatus === 'in_progress') evaluationStatus = 'in_progress';
+          else if (apiStatus === 'expired') evaluationStatus = 'overdue';
+          else if ((ev.progress ?? 0) > 0) evaluationStatus = 'in_progress';
 
-      setParticipants(mockData);
+          return {
+            participantId: String(ev.id),
+            name: ev.evaluator_name || ev.evaluator?.name || `평가자 ${ev.id}`,
+            role: 'evaluator',
+            lastActivity: ev.updated_at || ev.created_at || new Date().toISOString(),
+            completionRate: Math.round(ev.progress ?? 0),
+            evaluationStatus,
+            consistencyRatio: ev.consistency_ratio ?? 0,
+            totalEvaluations: ev.total_comparisons ?? 0,
+            completedEvaluations: ev.completed_comparisons ?? 0,
+          };
+        });
+        setParticipants(mapped);
+      }
     } catch (error) {
       console.error('Failed to fetch participant data:', error);
     }
@@ -192,63 +97,97 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
 
   // 프로젝트 진행 상태 가져오기
   const fetchProjectProgress = useCallback(async () => {
+    if (!projectId) return;
     try {
-      // 실제로는 API 호출
-      const mockProgress: ProjectProgress = {
-        projectId,
-        projectTitle: '신기술 도입 우선순위 결정',
-        totalParticipants: 4,
-        activeParticipants: 2,
-        completedParticipants: 1,
-        overallProgress: 46.25,
-        averageConsistency: 0.097,
-        estimatedCompletion: new Date(Date.now() + 86400000).toISOString(),
-        phases: {
-          criteriaEvaluation: 75,
-          alternativeEvaluation: 50,
-          subElementEvaluation: 25
-        }
-      };
-
-      setProjectProgress(mockProgress);
+      const res = await apiService.get<any>(
+        `/api/service/analysis/project-summary/?project_id=${projectId}`
+      );
+      if (res?.data) {
+        const d = res.data;
+        const total = d.total_evaluations ?? 0;
+        const completed = d.completed_evaluations ?? 0;
+        const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+        setProjectProgress(prev => ({
+          projectId,
+          projectTitle: d.project_title || prev?.projectTitle || '프로젝트',
+          totalParticipants: total,
+          activeParticipants: prev?.activeParticipants ?? 0, // participants 상태에서 파생
+          completedParticipants: completed,
+          overallProgress: progress,
+          averageConsistency: d.average_consistency_ratio ?? 0,
+        }));
+      }
     } catch (error) {
       console.error('Failed to fetch project progress:', error);
     }
   }, [projectId]);
 
-  // 알림 확인
-  const checkForNotifications = useCallback(async () => {
-    try {
-      // 실제로는 API 호출
-      const mockNotifications: Notification[] = [
-        {
-          id: 'n1',
-          type: 'warning',
-          participantId: 'p3',
-          message: '일관성 비율이 0.1을 초과했습니다 (CR: 0.15)',
-          timestamp: new Date(Date.now() - 600000).toISOString(),
-          acknowledged: false
-        },
-        {
-          id: 'n2',
-          type: 'error',
-          participantId: 'p4',
-          message: '24시간 이상 비활성 상태입니다',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          acknowledged: false
-        }
-      ];
+  // 알림 확인 (participants 데이터에서 파생)
+  const checkForNotifications = useCallback((currentParticipants: ParticipantStatus[]) => {
+    const newNotifications: Notification[] = [];
+    const now = Date.now();
 
+    currentParticipants.forEach(p => {
+      // CR > 0.1 경고
+      if (p.consistencyRatio > 0.1 && p.completedEvaluations > 0) {
+        newNotifications.push({
+          id: `cr-warning-${p.participantId}`,
+          type: 'warning',
+          participantId: p.participantId,
+          message: `일관성 비율이 0.1을 초과했습니다 (CR: ${p.consistencyRatio.toFixed(3)})`,
+          timestamp: new Date().toISOString(),
+          acknowledged: false,
+        });
+      }
+      // 24시간 이상 비활성
+      const lastActiveMs = new Date(p.lastActivity).getTime();
+      if (!isNaN(lastActiveMs) && now - lastActiveMs > 86400000 && p.evaluationStatus !== 'completed') {
+        newNotifications.push({
+          id: `inactive-${p.participantId}`,
+          type: 'error',
+          participantId: p.participantId,
+          message: '24시간 이상 비활성 상태입니다',
+          timestamp: new Date().toISOString(),
+          acknowledged: false,
+        });
+      }
+    });
+
+    if (newNotifications.length > 0) {
       setNotifications(prev => {
-        const newNotifications = mockNotifications.filter(
-          newNotif => !prev.some(existingNotif => existingNotif.id === newNotif.id)
-        );
-        return [...prev, ...newNotifications];
+        const existingIds = new Set(prev.map(n => n.id));
+        const uniqueNew = newNotifications.filter(n => !existingIds.has(n.id));
+        return uniqueNew.length > 0 ? [...prev, ...uniqueNew] : prev;
       });
-    } catch (error) {
-      console.error('Failed to check notifications:', error);
     }
   }, []);
+
+  // 실시간 데이터 업데이트
+  useEffect(() => {
+    if (!projectId) return;
+
+    const loadAll = async () => {
+      await fetchParticipantData();
+      await fetchProjectProgress();
+    };
+
+    loadAll();
+
+    if (!isRealTimeEnabled) return undefined;
+
+    const intervalId = setInterval(loadAll, refreshInterval);
+    return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, isRealTimeEnabled, refreshInterval]);
+
+  // participants 변경 시 알림 재계산 및 activeParticipants 업데이트
+  useEffect(() => {
+    if (participants.length === 0) return;
+    checkForNotifications(participants);
+    const active = participants.filter(p => p.evaluationStatus === 'in_progress').length;
+    setProjectProgress(prev => prev ? { ...prev, activeParticipants: active } : prev);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [participants]);
 
   // 참가자 필터링 및 정렬
   const filteredAndSortedParticipants = useCallback(() => {
@@ -260,9 +199,9 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
     }
 
     // 정렬
-    filtered.sort((a, b) => {
+    filtered = [...filtered].sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'name':
           comparison = a.name.localeCompare(b.name);
@@ -305,15 +244,6 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
     }
   };
 
-  // 연결 상태 색상 반환
-  const getConnectionColor = (status: ParticipantStatus['connectionStatus']) => {
-    switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'idle': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
   // 참가자 세부 정보 토글
   const toggleParticipantDetails = (participantId: string) => {
     setSelectedParticipant(prev => prev === participantId ? '' : participantId);
@@ -327,11 +257,11 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
     const now = Date.now();
     const time = new Date(timestamp).getTime();
     const diff = now - time;
-    
+
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days > 0) return `${days}일 전`;
     if (hours > 0) return `${hours}시간 전`;
     if (minutes > 0) return `${minutes}분 전`;
@@ -350,7 +280,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
             </p>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <span className="text-sm">실시간 업데이트</span>
@@ -361,7 +291,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
               className="rounded"
             />
           </div>
-          
+
           <select
             value={refreshInterval}
             onChange={(e) => setRefreshInterval(Number(e.target.value))}
@@ -384,7 +314,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
               .filter(n => !n.acknowledged)
               .slice(0, 5)
               .map(notification => (
-                <div 
+                <div
                   key={notification.id}
                   className={`p-3 rounded border-l-4 ${
                     notification.type === 'error' ? 'border-red-500 bg-red-50' :
@@ -428,16 +358,16 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
               <div className="text-sm text-gray-600">명</div>
             </div>
           </Card>
-          
+
           <Card title="현재 활성">
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">
                 {projectProgress.activeParticipants}
               </div>
-              <div className="text-sm text-gray-600">명 온라인</div>
+              <div className="text-sm text-gray-600">명 진행중</div>
             </div>
           </Card>
-          
+
           <Card title="평가 완료">
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-600">
@@ -446,7 +376,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
               <div className="text-sm text-gray-600">명 완료</div>
             </div>
           </Card>
-          
+
           <Card title="평균 일관성">
             <div className="text-center">
               <div className={`text-3xl font-bold ${
@@ -460,27 +390,20 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
         </div>
       )}
 
-      {/* 평가 단계별 진행률 */}
+      {/* 전체 진행률 바 */}
       {projectProgress && (
-        <Card title="단계별 진행률">
-          <div className="space-y-4">
-            {Object.entries(projectProgress.phases).map(([phase, progress]) => (
-              <div key={phase}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>
-                    {phase === 'criteriaEvaluation' ? '기준 평가' :
-                     phase === 'alternativeEvaluation' ? '대안 평가' : '하위요소 평가'}
-                  </span>
-                  <span>{progress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+        <Card title="전체 진행률">
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span>완료 ({projectProgress.completedParticipants}/{projectProgress.totalParticipants}명)</span>
+              <span>{projectProgress.overallProgress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${projectProgress.overallProgress}%` }}
+              ></div>
+            </div>
           </div>
         </Card>
       )}
@@ -498,7 +421,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
             <option value="completed">완료</option>
             <option value="overdue">지연</option>
           </select>
-          
+
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
@@ -509,7 +432,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
             <option value="progress">진행률</option>
             <option value="consistency">일관성</option>
           </select>
-          
+
           <Button
             variant="secondary"
             onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
@@ -517,7 +440,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
             {sortOrder === 'asc' ? '↑' : '↓'}
           </Button>
         </div>
-        
+
         <div className="text-sm text-gray-600">
           {filteredAndSortedParticipants().length}명 표시 중
         </div>
@@ -525,122 +448,109 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
 
       {/* 참가자 목록 */}
       <Card title="참가자 상태">
-        <div className="space-y-4">
-          {filteredAndSortedParticipants().map(participant => (
-            <div key={participant.participantId} className="border rounded-lg p-4">
-              <div 
-                className="flex justify-between items-start cursor-pointer"
-                onClick={() => toggleParticipantDetails(participant.participantId)}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
+        {participants.length === 0 ? (
+          <p className="text-gray-500 text-center py-6">
+            이 프로젝트에 배정된 평가자가 없습니다.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {filteredAndSortedParticipants().map(participant => (
+              <div key={participant.participantId} className="border rounded-lg p-4">
+                <div
+                  className="flex justify-between items-start cursor-pointer"
+                  onClick={() => toggleParticipantDetails(participant.participantId)}
+                >
+                  <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
                       {participant.name.charAt(0)}
                     </div>
-                    <div 
-                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                        getConnectionColor(participant.connectionStatus)
+
+                    <div>
+                      <h4 className="font-medium">{participant.name}</h4>
+                      <p className="text-xs text-gray-500">
+                        마지막 활동: {formatTimeAgo(participant.lastActivity)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className={`px-2 py-1 rounded text-xs ${getStatusColor(participant.evaluationStatus)}`}>
+                      {participant.evaluationStatus === 'completed' ? '완료' :
+                       participant.evaluationStatus === 'in_progress' ? '진행중' :
+                       participant.evaluationStatus === 'overdue' ? '지연' : '미시작'}
+                    </span>
+                    <div className="mt-1 text-sm font-medium">
+                      {participant.completionRate}%
+                    </div>
+                  </div>
+                </div>
+
+                {/* 진행률 바 */}
+                <div className="mt-3">
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>진행률</span>
+                    <span>{participant.completedEvaluations}/{participant.totalEvaluations} 완료</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        participant.evaluationStatus === 'completed' ? 'bg-green-500' :
+                        participant.evaluationStatus === 'in_progress' ? 'bg-blue-500' :
+                        participant.evaluationStatus === 'overdue' ? 'bg-red-500' : 'bg-gray-400'
                       }`}
+                      style={{ width: `${participant.completionRate}%` }}
                     ></div>
                   </div>
-                  
-                  <div>
-                    <h4 className="font-medium">{participant.name}</h4>
-                    <p className="text-sm text-gray-600">{participant.currentPage}</p>
-                    <p className="text-xs text-gray-500">
-                      마지막 활동: {formatTimeAgo(participant.lastActivity)}
-                    </p>
-                  </div>
                 </div>
-                
-                <div className="text-right">
-                  <span className={`px-2 py-1 rounded text-xs ${getStatusColor(participant.evaluationStatus)}`}>
-                    {participant.evaluationStatus === 'completed' ? '완료' :
-                     participant.evaluationStatus === 'in_progress' ? '진행중' :
-                     participant.evaluationStatus === 'overdue' ? '지연' : '미시작'}
+
+                {/* 일관성 지표 */}
+                <div className="mt-2 flex justify-between items-center text-sm">
+                  <span>일관성 비율 (CR):</span>
+                  <span className={`font-medium ${
+                    participant.consistencyRatio <= 0.1 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {participant.consistencyRatio > 0 ? participant.consistencyRatio.toFixed(3) : '-'}
                   </span>
-                  <div className="mt-1 text-sm font-medium">
-                    {participant.completionRate}%
-                  </div>
                 </div>
-              </div>
-              
-              {/* 진행률 바 */}
-              <div className="mt-3">
-                <div className="flex justify-between text-xs text-gray-600 mb-1">
-                  <span>진행률</span>
-                  <span>{participant.completedEvaluations}/{participant.totalEvaluations} 완료</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      participant.evaluationStatus === 'completed' ? 'bg-green-500' :
-                      participant.evaluationStatus === 'in_progress' ? 'bg-blue-500' :
-                      participant.evaluationStatus === 'overdue' ? 'bg-red-500' : 'bg-gray-400'
-                    }`}
-                    style={{ width: `${participant.completionRate}%` }}
-                  ></div>
-                </div>
-              </div>
-              
-              {/* 일관성 지표 */}
-              <div className="mt-2 flex justify-between items-center text-sm">
-                <span>일관성 비율 (CR):</span>
-                <span className={`font-medium ${
-                  participant.consistencyRatio <= 0.1 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {participant.consistencyRatio.toFixed(3)}
-                </span>
-              </div>
-              
-              {/* 세부 정보 (토글) */}
-              {selectedParticipant === participant.participantId && (
-                <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600">이메일:</span>
-                      <span className="ml-2">{participant.email}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">평균 응답시간:</span>
-                      <span className="ml-2">{participant.averageResponseTime}초</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">플랫폼:</span>
-                      <span className="ml-2">{participant.deviceInfo.platform}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">해상도:</span>
-                      <span className="ml-2">{participant.deviceInfo.screenResolution}</span>
-                    </div>
-                    {participant.loginTime && (
-                      <div className="col-span-2">
-                        <span className="text-gray-600">로그인 시간:</span>
+
+                {/* 세부 정보 (토글) */}
+                {selectedParticipant === participant.participantId && (
+                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-600">역할:</span>
+                        <span className="ml-2">{participant.role}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">완료 비교:</span>
                         <span className="ml-2">
-                          {new Date(participant.loginTime).toLocaleString('ko-KR')}
+                          {participant.completedEvaluations} / {participant.totalEvaluations}
                         </span>
                       </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex space-x-2 mt-3">
-                    <Button variant="secondary" className="text-xs">
-                      메시지 보내기
-                    </Button>
-                    <Button variant="secondary" className="text-xs">
-                      진행 상황 상세보기
-                    </Button>
-                    {participant.evaluationStatus === 'overdue' && (
-                      <Button variant="primary" className="text-xs">
-                        알림 재전송
+                      <div className="col-span-2">
+                        <span className="text-gray-600">마지막 활동:</span>
+                        <span className="ml-2">
+                          {new Date(participant.lastActivity).toLocaleString('ko-KR')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-2 mt-3">
+                      <Button variant="secondary" className="text-xs">
+                        진행 상황 상세보기
                       </Button>
-                    )}
+                      {participant.evaluationStatus === 'overdue' && (
+                        <Button variant="primary" className="text-xs">
+                          알림 재전송
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
     </div>
   );
