@@ -1,8 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import MatrixGrid from './MatrixGrid';
 import JudgmentHelper from './JudgmentHelper';
+import apiService from '../../services/apiService';
+
+interface CriterionItem {
+  id: string;
+  name: string;
+}
+
+interface ComparisonItem {
+  id: string;
+  criteriaAId: string;
+  criteriaBId: string;
+  value: number;
+}
 
 interface Matrix {
   id: string;
@@ -26,150 +39,240 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
   onComplete,
   onBack
 }) => {
-  const [matrices, setMatrices] = useState<Matrix[]>([
-    {
-      id: 'criteria',
-      name: '주요 기준 비교',
-      items: ['성능', '비용', '사용성'],
-      values: Array(3).fill(null).map(() => Array(3).fill(1)),
-      completed: false
-    },
-    {
-      id: 'performance',
-      name: '성능 세부기준 비교',
-      items: ['처리속도', '안정성'],
-      values: Array(2).fill(null).map(() => Array(2).fill(1)),
-      completed: false
-    },
-    {
-      id: 'alternatives_performance',
-      name: '성능 관점 대안 비교',
-      items: ['대안 A', '대안 B', '대안 C'],
-      values: Array(3).fill(null).map(() => Array(3).fill(1)),
-      completed: false
-    }
-  ]);
-
-  const [currentMatrixIndex, setCurrentMatrixIndex] = useState(0);
+  const [criteria, setCriteria] = useState<CriterionItem[]>([]);
+  const [comparisons, setComparisons] = useState<ComparisonItem[]>([]);
+  const [evaluationId, setEvaluationId] = useState<string>('');
+  const [matrix, setMatrix] = useState<Matrix | null>(null);
   const [showHelper, setShowHelper] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
-  const currentMatrix = matrices[currentMatrixIndex];
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({ type, text });
+    setTimeout(() => setActionMessage(null), 4000);
+  };
+
+  // criteria + comparisons → 대칭 행렬 생성
+  const buildMatrix = useCallback((
+    criteriaList: CriterionItem[],
+    compList: ComparisonItem[]
+  ): Matrix => {
+    const n = criteriaList.length;
+    const values: number[][] = Array.from({ length: n }, (_, i) =>
+      Array.from({ length: n }, (_, j) => {
+        if (i === j) return 1;
+        const cA = criteriaList[i].id;
+        const cB = criteriaList[j].id;
+        const comp = compList.find(c =>
+          (c.criteriaAId === cA && c.criteriaBId === cB) ||
+          (c.criteriaAId === cB && c.criteriaBId === cA)
+        );
+        if (!comp || comp.value == null) return 1;
+        return comp.criteriaAId === cA ? comp.value : 1 / comp.value;
+      })
+    );
+    return {
+      id: 'criteria',
+      name: '기준 쌍대비교',
+      items: criteriaList.map(c => c.name),
+      values,
+      completed: false,
+    };
+  }, []);
+
+  const loadData = useCallback(async () => {
+    if (!projectId) return;
+    setIsLoading(true);
+    setLoadError(false);
+    try {
+      // 1. 현재 사용자의 평가 조회
+      const evalsRes = await apiService.get<any>(
+        `/api/service/evaluations/evaluations/?project=${projectId}&page_size=10`
+      );
+      const evalsList: any[] = evalsRes.data?.results ?? evalsRes.data ?? [];
+      const evalItem = evalsList[0];
+      if (!evalItem) {
+        setLoadError(true);
+        return;
+      }
+      const evalId = String(evalItem.id);
+      setEvaluationId(evalId);
+
+      // 2. 기준 + 비교쌍 병렬 로드
+      const [criteriaRes, comparisonsRes] = await Promise.allSettled([
+        apiService.get<any>(`/api/service/projects/criteria/?project=${projectId}&page_size=100`),
+        apiService.get<any>(`/api/service/evaluations/comparisons/?evaluation=${evalId}&page_size=100`),
+      ]);
+
+      const criteriaList: CriterionItem[] =
+        criteriaRes.status === 'fulfilled'
+          ? (criteriaRes.value.data?.results ?? criteriaRes.value.data ?? []).map((c: any) => ({
+              id: String(c.id),
+              name: c.name || c.title || `기준 ${c.id}`,
+            }))
+          : [];
+
+      const compList: ComparisonItem[] =
+        comparisonsRes.status === 'fulfilled'
+          ? (comparisonsRes.value.data?.results ?? comparisonsRes.value.data ?? []).map((c: any) => ({
+              id: String(c.id),
+              criteriaAId: String(c.criteria_a),
+              criteriaBId: String(c.criteria_b),
+              value: c.value ?? 1,
+            }))
+          : [];
+
+      setCriteria(criteriaList);
+      setComparisons(compList);
+
+      if (criteriaList.length >= 2) {
+        setMatrix(buildMatrix(criteriaList, compList));
+      } else {
+        setLoadError(true);
+      }
+    } catch (error) {
+      console.error('Failed to load evaluation data:', error);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [projectId, buildMatrix]);
 
   useEffect(() => {
-    // 현재 매트릭스의 일관성 비율 계산
-    if (currentMatrix && currentMatrix.items.length >= 3) {
-      const cr = calculateConsistencyRatio(currentMatrix.values);
-      setMatrices(prev => prev.map((matrix, index) => 
-        index === currentMatrixIndex 
-          ? { ...matrix, consistencyRatio: cr }
-          : matrix
-      ));
+    loadData();
+  }, [loadData]);
 
-      // CR > 0.1이면 판단 도우미 자동 표시
-      if (cr > 0.1) {
-        setShowHelper(true);
-      }
-    }
-  }, [currentMatrix?.values, currentMatrix, currentMatrixIndex]);
+  // 행렬 값 변경 → 로컬 상태만 업데이트 (저장은 완료 시)
+  const handleMatrixUpdate = useCallback((newValues: number[][]) => {
+    setMatrix(prev => prev ? { ...prev, values: newValues } : prev);
+  }, []);
 
-  const calculateConsistencyRatio = (values: number[][]): number => {
-    // 실제 CR 계산 로직 구현 (간략화된 버전)
-    const n = values.length;
-    if (n < 3) return 0;
-
-    // 임의의 CR 값 반환 (실제로는 고유값 계산 필요)
-    const mockCR = Math.random() * 0.15;
-    return parseFloat(mockCR.toFixed(3));
-  };
-
-  const handleMatrixUpdate = (newValues: number[][]) => {
-    setMatrices(prev => prev.map((matrix, index) => 
-      index === currentMatrixIndex 
-        ? { ...matrix, values: newValues }
-        : matrix
-    ));
-  };
-
-  const handleMatrixComplete = async () => {
-    const updatedMatrices = [...matrices];
-    updatedMatrices[currentMatrixIndex].completed = true;
-    setMatrices(updatedMatrices);
-
-    // 현재 매트릭스 결과를 DB에 저장
-    try {
-      const matrixData = {
-        projectId: Number(projectId),
-        matrixName: currentMatrix.name,
-        matrixType: currentMatrix.id,
-        values: currentMatrix.values,
-        items: currentMatrix.items,
-        consistencyRatio: currentMatrix.consistencyRatio || 0
-      };
-      
-      console.log(`💾 Saving matrix ${currentMatrix.name} to database...`, matrixData);
-      
-      // 실제 API 호출로 매트릭스 결과 저장
-      // const response = await apiService.evaluationAPI.saveMatrix(matrixData);
-      // console.log('✅ Matrix saved successfully:', response);
-      
-    } catch (error) {
-      console.error('❌ Failed to save matrix to database:', error);
-    }
-
-    if (currentMatrixIndex < matrices.length - 1) {
-      setCurrentMatrixIndex(currentMatrixIndex + 1);
-      setShowHelper(false);
-    } else {
-      // 모든 매트릭스 완료 - 최종 결과 저장
-      try {
-        const evaluationResults = {
-          projectId: Number(projectId),
-          evaluatorId: 'current_user', // 실제 사용자 ID로 교체 필요
-          matrices: updatedMatrices,
-          completedAt: new Date().toISOString()
-        };
-        
-        console.log(`🎯 Saving final evaluation results to database...`, evaluationResults);
-        
-        // 실제 API 호출로 최종 결과 저장
-        // const response = await apiService.evaluationAPI.saveFinalResults(evaluationResults);
-        // console.log('✅ Final results saved successfully:', response);
-        
-      } catch (error) {
-        console.error('❌ Failed to save final results to database:', error);
-      }
-      
-      onComplete();
-    }
-  };
-
-  const isMatrixCompleted = () => {
-    if (!currentMatrix) return false;
-    
-    const n = currentMatrix.items.length;
+  // 입력된 셀 수 기반 진행률
+  const getProgressPercentage = useCallback(() => {
+    if (!matrix) return 0;
+    const n = matrix.items.length;
+    const total = (n * (n - 1)) / 2;
+    if (total === 0) return 100;
+    let filled = 0;
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
-        if (currentMatrix.values[i][j] === 1 && i !== j) {
-          return false; // 대각선이 아닌 요소가 1이면 미완료
-        }
+        if (matrix.values[i][j] !== 1) filled++;
       }
     }
-    return true;
+    return Math.round((filled / total) * 100);
+  }, [matrix]);
+
+  // 완료: 비교값 저장 → CR 계산 → onComplete 호출
+  const handleComplete = async () => {
+    if (!evaluationId || !matrix) return;
+    setIsSaving(true);
+    try {
+      // 상위 삼각 비교쌍 모두 PATCH
+      const patchPromises: Promise<any>[] = [];
+      for (let i = 0; i < criteria.length; i++) {
+        for (let j = i + 1; j < criteria.length; j++) {
+          const comp = comparisons.find(c =>
+            (c.criteriaAId === criteria[i].id && c.criteriaBId === criteria[j].id) ||
+            (c.criteriaAId === criteria[j].id && c.criteriaBId === criteria[i].id)
+          );
+          if (!comp) continue;
+          // comp 방향에 맞게 값 결정
+          const value = comp.criteriaAId === criteria[i].id
+            ? matrix.values[i][j]
+            : matrix.values[j][i];
+          patchPromises.push(
+            apiService.patch<any>(
+              `/api/service/evaluations/comparisons/${comp.id}/`,
+              { value }
+            )
+          );
+        }
+      }
+      await Promise.allSettled(patchPromises);
+
+      // CR 계산 (calculate/individual)
+      try {
+        const crRes = await apiService.post<any>(
+          '/api/service/analysis/calculate/individual/',
+          { evaluation_id: evaluationId }
+        );
+        const cr: number = crRes?.data?.consistency_ratio ?? 0;
+        setMatrix(prev => prev ? { ...prev, consistencyRatio: cr, completed: true } : prev);
+
+        if (cr > 0.1) {
+          setShowHelper(true);
+          showActionMessage('error', `일관성 비율 CR=${cr.toFixed(3)} > 0.1 — 비교값을 재검토해주세요.`);
+          return;
+        }
+      } catch {
+        // CR 계산 실패 시 경고만 출력하고 완료 진행
+        console.warn('CR calculation failed, proceeding without CR check.');
+      }
+
+      showActionMessage('success', '평가가 저장되었습니다.');
+      setTimeout(() => onComplete(), 1000);
+    } catch (error) {
+      console.error('Failed to save evaluation:', error);
+      showActionMessage('error', '저장에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const getProgressPercentage = () => {
-    const completedCount = matrices.filter(m => m.completed).length;
-    const currentProgress = isMatrixCompleted() ? 1 : 0;
-    return Math.round(((completedCount + currentProgress) / matrices.length) * 100);
-  };
+  // ─── 로딩 / 에러 상태 ───────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="page-evaluator">
+        <div className="page-content content-width-evaluator flex items-center justify-center" style={{ minHeight: '16rem' }}>
+          <div className="text-center">
+            <div className="text-4xl mb-4">⏳</div>
+            <p className="text-lg">평가 데이터를 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  if (loadError || !matrix) {
+    return (
+      <div className="page-evaluator">
+        <div className="page-content content-width-evaluator">
+          <div className="page-header">
+            <Button variant="secondary" onClick={onBack}>← 뒤로</Button>
+          </div>
+          <Card className="text-center p-8">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+              평가 데이터를 불러올 수 없습니다
+            </h2>
+            <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
+              이 프로젝트에 배정된 평가가 없거나 기준이 2개 미만입니다.
+            </p>
+            <Button variant="secondary" onClick={loadData}>다시 시도</Button>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── 메인 렌더 ─────────────────────────────────────────────────
   return (
     <div className="page-evaluator">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
+          actionMessage.type === 'success' ? 'bg-green-100 text-green-800' :
+          actionMessage.type === 'info'    ? 'bg-blue-100 text-blue-800' :
+                                            'bg-red-100 text-red-800'
+        }`}>
+          {actionMessage.text}
+        </div>
+      )}
+
       <div className="page-content content-width-evaluator">
         <div className="page-header">
-          <h1 className="page-title">
-            단계 2 — 평가하기 / 쌍대비교
-          </h1>
+          <h1 className="page-title">단계 2 — 평가하기 / 쌍대비교</h1>
           <p className="page-subtitle">
             프로젝트: <span className="font-medium">{projectTitle}</span>
           </p>
@@ -180,150 +283,95 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
           </div>
         </div>
 
-        {/* Progress Indicator */}
+        {/* 진행률 */}
         <div className="card-enhanced p-4 mb-6">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>전체 진행률</span>
+            <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+              전체 진행률
+            </span>
             <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {currentMatrixIndex + 1} / {matrices.length} 매트릭스
+              {isSaving ? '저장 중...' : `${getProgressPercentage()}% 완료`}
             </span>
           </div>
           <div className="w-full rounded-full h-3" style={{ backgroundColor: 'var(--bg-elevated)' }}>
-            <div 
+            <div
               className="h-3 rounded-full transition-all duration-300"
-              style={{ 
+              style={{
                 width: `${getProgressPercentage()}%`,
                 background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))'
               }}
             />
           </div>
-          <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            {getProgressPercentage()}% 완료
-          </div>
-        </div>
-
-        {/* Matrix Navigation */}
-        <div className="card-enhanced p-4 mb-6">
-          <div className="flex flex-wrap gap-2">
-            {matrices.map((matrix, index) => (
-              <button
-                key={matrix.id}
-                onClick={() => {
-                  if (matrix.completed || index === currentMatrixIndex) {
-                    setCurrentMatrixIndex(index);
-                  }
-                }}
-                disabled={!matrix.completed && index !== currentMatrixIndex}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300"
-                style={{
-                  backgroundColor: index === currentMatrixIndex 
-                    ? 'var(--accent-primary)'
-                    : matrix.completed 
-                    ? 'var(--status-success-light)'
-                    : 'var(--bg-elevated)',
-                  color: index === currentMatrixIndex 
-                    ? 'white'
-                    : matrix.completed 
-                    ? 'var(--status-success-text)'
-                    : 'var(--text-muted)',
-                  borderColor: index === currentMatrixIndex 
-                    ? 'var(--accent-primary)'
-                    : matrix.completed 
-                    ? 'var(--status-success-border)'
-                    : 'var(--border-light)',
-                  border: '1px solid',
-                  cursor: !matrix.completed && index !== currentMatrixIndex ? 'not-allowed' : 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  if (matrix.completed || index === currentMatrixIndex) {
-                    if (index !== currentMatrixIndex) {
-                      e.currentTarget.style.backgroundColor = 'var(--status-success-bg)';
-                      e.currentTarget.style.color = 'white';
-                    }
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (index !== currentMatrixIndex && matrix.completed) {
-                    e.currentTarget.style.backgroundColor = 'var(--status-success-light)';
-                    e.currentTarget.style.color = 'var(--status-success-text)';
-                  }
-                }}
-              >
-                <span className="mr-2">
-                  {matrix.completed ? '✓' : index + 1}
-                </span>
-                {matrix.name}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Matrix Area */}
+          {/* 행렬 영역 */}
           <div className="lg:col-span-2">
-            <Card title={currentMatrix?.name || ''}>
-              {currentMatrix && (
-                <div className="space-y-4">
-                  <MatrixGrid
-                    items={currentMatrix.items}
-                    values={currentMatrix.values}
-                    onUpdate={handleMatrixUpdate}
-                  />
+            <Card title={matrix.name}>
+              <div className="space-y-4">
+                <MatrixGrid
+                  items={matrix.items}
+                  values={matrix.values}
+                  onUpdate={handleMatrixUpdate}
+                />
 
-                  {/* Consistency Ratio */}
-                  {currentMatrix.items.length >= 3 && currentMatrix.consistencyRatio !== undefined && (
-                    <div className="mt-4">
-                      <div className="p-3 rounded-lg border"
-                           style={{
-                             backgroundColor: currentMatrix.consistencyRatio <= 0.1 
-                               ? 'var(--status-success-light)' 
-                               : 'var(--status-warning-light)',
-                             borderColor: currentMatrix.consistencyRatio <= 0.1 
-                               ? 'var(--status-success-border)' 
-                               : 'var(--status-warning-border)'
-                           }}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                            비일관성비율 (CR)
-                          </span>
-                          <span className="font-semibold"
-                                style={{
-                                  color: currentMatrix.consistencyRatio <= 0.1 
-                                    ? 'var(--status-success-text)' 
-                                    : 'var(--status-warning-text)'
-                                }}>
-                            {currentMatrix.consistencyRatio.toFixed(3)}
-                          </span>
-                        </div>
-                        <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                          {currentMatrix.consistencyRatio <= 0.1 
-                            ? '✓ 일관성이 양호합니다' 
-                            : '⚠ 일관성을 개선해주세요 (기준: ≤ 0.1)'}
-                        </div>
+                {/* CR 표시 */}
+                {matrix.items.length >= 3 && matrix.consistencyRatio !== undefined && (
+                  <div className="mt-4">
+                    <div
+                      className="p-3 rounded-lg border"
+                      style={{
+                        backgroundColor: matrix.consistencyRatio <= 0.1
+                          ? 'var(--status-success-light)'
+                          : 'var(--status-warning-light)',
+                        borderColor: matrix.consistencyRatio <= 0.1
+                          ? 'var(--status-success-border)'
+                          : 'var(--status-warning-border)'
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                          비일관성비율 (CR)
+                        </span>
+                        <span
+                          className="font-semibold"
+                          style={{
+                            color: matrix.consistencyRatio <= 0.1
+                              ? 'var(--status-success-text)'
+                              : 'var(--status-warning-text)'
+                          }}
+                        >
+                          {matrix.consistencyRatio.toFixed(3)}
+                        </span>
+                      </div>
+                      <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+                        {matrix.consistencyRatio <= 0.1
+                          ? '✓ 일관성이 양호합니다'
+                          : '⚠ 일관성을 개선해주세요 (기준: ≤ 0.1)'}
                       </div>
                     </div>
-                  )}
-
-                  {/* Next Button */}
-                  <div className="flex justify-end mt-6">
-                    <Button
-                      onClick={handleMatrixComplete}
-                      variant="primary"
-                      size="lg"
-                      disabled={!isMatrixCompleted()}
-                    >
-                      {currentMatrixIndex === matrices.length - 1 ? '평가 완료' : '다음'}
-                    </Button>
                   </div>
+                )}
+
+                {/* 완료 버튼 */}
+                <div className="flex justify-end mt-6">
+                  <Button
+                    onClick={handleComplete}
+                    variant="primary"
+                    size="lg"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? '저장 중...' : '평가 완료'}
+                  </Button>
                 </div>
-              )}
+              </div>
             </Card>
           </div>
 
-          {/* Side Panel */}
+          {/* 사이드 패널 */}
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-4">
-              {/* Help Button */}
+              {/* 판단 도우미 버튼 */}
               <Card>
                 <div className="text-center">
                   <button
@@ -344,44 +392,35 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
                     }}
                   >
                     <span className="text-2xl">❓</span>
-                    <div className="text-sm font-medium mt-1">
-                      판단 도우미
-                    </div>
+                    <div className="text-sm font-medium mt-1">판단 도우미</div>
                   </button>
                 </div>
               </Card>
 
-              {/* Judgment Helper Panel */}
               {showHelper && (
-                <JudgmentHelper 
-                  currentMatrix={currentMatrix}
+                <JudgmentHelper
+                  currentMatrix={matrix}
                   onClose={() => setShowHelper(false)}
                 />
               )}
 
-              {/* Scale Reference */}
+              {/* 척도 안내 */}
               <Card title="쌍대비교 척도">
                 <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-weight-semibold)' }}>1</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>동등하게 중요</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-weight-semibold)' }}>3</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>약간 더 중요</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-weight-semibold)' }}>5</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>중요</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-weight-semibold)' }}>7</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>매우 중요</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-weight-semibold)' }}>9</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>절대적으로 중요</span>
-                  </div>
+                  {([
+                    [1, '동등하게 중요'],
+                    [3, '약간 더 중요'],
+                    [5, '중요'],
+                    [7, '매우 중요'],
+                    [9, '절대적으로 중요'],
+                  ] as [number, string][]).map(([v, label]) => (
+                    <div key={v} className="flex justify-between">
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-weight-semibold)' }}>
+                        {v}
+                      </span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                    </div>
+                  ))}
                   <div className="text-center mt-2" style={{ color: 'var(--text-muted)' }}>
                     2, 4, 6, 8은 중간값
                   </div>
