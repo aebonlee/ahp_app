@@ -46,7 +46,7 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ projectId, refreshKey
   const loadProgressData = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/evaluations/progress/${projectId}/project_progress/`);
+      const response = await api.get(`/api/service/evaluations/progress/${projectId}/project_progress/`);
       setProgressData(response.data);
     } catch (error) {
       console.error('진행률 데이터 로드 실패:', error);

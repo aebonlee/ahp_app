@@ -44,7 +44,7 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, refres
   const loadInvitations = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/evaluations/bulk-invitations/');
+      const response = await api.get('/api/service/evaluations/bulk-invitations/');
       const projectInvitations = (response.data.results || response.data).filter(
         (inv: any) => inv.project === projectId
       );
@@ -93,7 +93,7 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, refres
 
   const handleResendFailed = async (invitationId: string) => {
     try {
-      const response = await api.post(`/evaluations/bulk-invitations/${invitationId}/resend_failed/`);
+      const response = await api.post(`/api/service/evaluations/bulk-invitations/${invitationId}/resend_failed/`);
       showActionMessage('success', `${response.data.resent_count}개의 이메일을 재발송 대기열에 추가했습니다.`);
       loadInvitations();
     } catch (error) {

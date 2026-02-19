@@ -50,7 +50,7 @@ const RealTimeMonitoringDashboard: React.FC<RealTimeMonitoringDashboardProps> = 
   const fetchMonitoringData = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/evaluation/progress/${projectId}`);
+      const response = await api.get(`/api/service/evaluations/progress/${projectId}`);
       setData(response.data);
     } catch (error) {
       console.error('모니터링 데이터 로드 실패:', error);
