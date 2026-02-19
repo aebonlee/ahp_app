@@ -48,7 +48,7 @@ const AllProjectsManagement: React.FC = () => {
         ...(statusFilter !== 'all' && { status: statusFilter })
       });
 
-      const response = await apiService.get<any>(`/api/projects/?${params}`);
+      const response = await apiService.get<any>(`/api/service/projects/projects/?${params}`);
       
       if (response.data) {
         const data = response.data as any;
@@ -114,7 +114,7 @@ const AllProjectsManagement: React.FC = () => {
     if (!window.confirm('정말 이 프로젝트를 삭제하시겠습니까?')) return;
     
     try {
-      await apiService.delete(`/api/projects/${projectId}/`);
+      await apiService.delete(`/api/service/projects/projects/${projectId}/`);
       fetchProjects();
     } catch (error) {
       console.error('프로젝트 삭제 실패:', error);
@@ -125,7 +125,7 @@ const AllProjectsManagement: React.FC = () => {
   // 프로젝트 상태 변경
   const handleStatusChange = async (projectId: string, newStatus: string) => {
     try {
-      await apiService.patch(`/api/projects/${projectId}/`, { status: newStatus });
+      await apiService.patch(`/api/service/projects/projects/${projectId}/`, { status: newStatus });
       fetchProjects();
     } catch (error) {
       console.error('상태 변경 실패:', error);

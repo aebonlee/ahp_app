@@ -759,12 +759,27 @@ export const normalizeProjectListResponse = (
 export const advancedAnalysisApi = {
   // 일반 GET 요청 메서드
   get: (url: string) => makeRequest<any>(url),
-  
+
   // 일반 POST 요청 메서드
   post: (url: string, data?: any) => makeRequest<any>(url, {
     method: 'POST',
     body: data ? JSON.stringify(data) : undefined
   }),
+
+  // 일반 PUT 요청 메서드
+  put: (url: string, data?: any) => makeRequest<any>(url, {
+    method: 'PUT',
+    body: data ? JSON.stringify(data) : undefined
+  }),
+
+  // 일반 PATCH 요청 메서드
+  patch: (url: string, data?: any) => makeRequest<any>(url, {
+    method: 'PATCH',
+    body: data ? JSON.stringify(data) : undefined
+  }),
+
+  // 일반 DELETE 요청 메서드
+  delete: (url: string) => makeRequest<any>(url, { method: 'DELETE' }),
   
   // 민감도 분석
   runSensitivityAnalysis: (projectId: string, data: any) =>
@@ -810,7 +825,10 @@ const apiExports = {
   auth: authApi,
   // 일반 메서드 추가 (기존 코드 호환성)
   get: advancedAnalysisApi.get,
-  post: advancedAnalysisApi.post
+  post: advancedAnalysisApi.post,
+  put: advancedAnalysisApi.put,
+  patch: advancedAnalysisApi.patch,
+  delete: advancedAnalysisApi.delete
 };
 
 export default apiExports;
