@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../../common/Card';
 import Button from '../../common/Button';
 import { UIIcon } from '../../common/UIIcon';
+import api from '../../../services/api';
 
 interface UsageStats {
   total_requests: number;
@@ -36,9 +37,8 @@ const AIUsageAnalytics: React.FC = () => {
   const [monthlyStats, setMonthlyStats] = useState<UsageStats | null>(null);
   const [userStats, setUserStats] = useState<UserUsageData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'daily' | 'monthly' | 'users'>('daily');
-
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '/api';
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -47,28 +47,35 @@ const AIUsageAnalytics: React.FC = () => {
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true);
+      setError(null);
+
       const [dailyResponse, monthlyResponse, userResponse] = await Promise.all([
-        fetch(`${apiBaseUrl}/ai-management/api/usage-logs/daily_stats/`),
-        fetch(`${apiBaseUrl}/ai-management/api/usage-logs/monthly_stats/`),
-        fetch(`${apiBaseUrl}/ai-management/api/users/summary/`)
+        api.get('/ai-management/api/usage-logs/daily_stats/'),
+        api.get('/ai-management/api/usage-logs/monthly_stats/'),
+        api.get('/ai-management/api/users/summary/')
       ]);
 
-      if (dailyResponse.ok) {
-        const data = await dailyResponse.json();
-        setDailyStats(data);
+      if (dailyResponse.success && dailyResponse.data) {
+        setDailyStats(dailyResponse.data);
       }
 
-      if (monthlyResponse.ok) {
-        const data = await monthlyResponse.json();
-        setMonthlyStats(data);
+      if (monthlyResponse.success && monthlyResponse.data) {
+        setMonthlyStats(monthlyResponse.data);
       }
 
-      if (userResponse.ok) {
-        const data = await userResponse.json();
-        setUserStats(data);
+      if (userResponse.success && userResponse.data) {
+        setUserStats(userResponse.data);
       }
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+
+      const errors = [dailyResponse, monthlyResponse, userResponse]
+        .filter(r => !r.success)
+        .map(r => r.error)
+        .filter(Boolean);
+      if (errors.length > 0) {
+        setError(`일부 분석 데이터를 불러오지 못했습니다: ${errors.join(', ')}`);
+      }
+    } catch (err: any) {
+      setError(err.message || '분석 데이터를 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -280,6 +287,22 @@ const AIUsageAnalytics: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* 에러 배너 */}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2 text-red-700">
+            <UIIcon emoji="⚠️" />
+            <span className="text-sm">{error}</span>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="text-red-500 hover:text-red-700 text-xs ml-4"
+          >
+            닫기
+          </button>
+        </div>
+      )}
+
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>

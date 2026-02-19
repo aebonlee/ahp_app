@@ -4,10 +4,10 @@ import Button from '../common/Button';
 import EvaluatorAssignment from '../admin/EvaluatorAssignment';
 import CanvasModelBuilder from './CanvasModelBuilder';
 import { DEMO_PROJECTS, DEMO_CRITERIA, DEMO_ALTERNATIVES } from '../../data/demoData';
-import { API_BASE_URL } from '../../config/api';
-import { 
-  Squares2X2Icon, 
-  ListBulletIcon, 
+import api from '../../services/api';
+import {
+  Squares2X2Icon,
+  ListBulletIcon,
   ArrowRightIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon
@@ -50,12 +50,13 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+  const [error, setError] = useState<string | null>(null);
+
   // 빌더 모드 선택
   const [builderMode, setBuilderMode] = useState<'select' | 'canvas' | 'form'>('select');
   const [modelData, setModelData] = useState<any[]>([]);
   const [modelCompleted, setModelCompleted] = useState(false);
-  
+
   // 기존 상태들
   const [editingCriterion, setEditingCriterion] = useState<string | null>(null);
   const [newCriterionName, setNewCriterionName] = useState('');
@@ -70,7 +71,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     setModelData(canvasNodes);
     setModelCompleted(true);
     setSaving(true);
-    
+
     // 실제 API 저장 로직 (여기서는 시뮬레이션)
     setTimeout(() => {
       setSaving(false);
@@ -81,7 +82,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
   const fetchProject = useCallback(async () => {
     try {
       setLoading(true);
-      
+      setError(null);
+
       if (demoMode) {
         // 데모 모드에서는 샘플 데이터 사용
         const demoProject = DEMO_PROJECTS.find(p => p.id === projectId);
@@ -96,32 +98,28 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       }
 
       // 프로젝트 정보 조회
-      const projectResponse = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/`, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const projectResponse = await api.get(`/api/service/projects/projects/${projectId}/`);
 
-      if (!projectResponse.ok) throw new Error('Failed to fetch project');
-      const projectData = await projectResponse.json();
+      if (!projectResponse.success || !projectResponse.data) {
+        throw new Error(projectResponse.error || 'Failed to fetch project');
+      }
+      const projectData = projectResponse.data;
 
       // 기준 조회
-      const criteriaResponse = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}`, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const criteriaResponse = await api.get(`/api/service/projects/criteria/?project=${projectId}`);
 
       let criteria: Criterion[] = [];
-      if (criteriaResponse.ok) {
-        const criteriaData = await criteriaResponse.json();
+      if (criteriaResponse.success && criteriaResponse.data) {
+        const criteriaData = criteriaResponse.data;
         criteria = criteriaData.results ?? criteriaData.criteria ?? (Array.isArray(criteriaData) ? criteriaData : []);
       }
 
       // 대안 조회
-      const alternativesResponse = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}&type=alternative`, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const alternativesResponse = await api.get(`/api/service/projects/criteria/?project=${projectId}&type=alternative`);
 
       let alternatives: Alternative[] = [];
-      if (alternativesResponse.ok) {
-        const alternativesData = await alternativesResponse.json();
+      if (alternativesResponse.success && alternativesResponse.data) {
+        const alternativesData = alternativesResponse.data;
         alternatives = alternativesData.results ?? alternativesData.alternatives ?? (Array.isArray(alternativesData) ? alternativesData : []);
       }
 
@@ -130,8 +128,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
         criteria: buildHierarchy(criteria),
         alternatives
       });
-    } catch {
-      // project data unavailable — keep empty state
+    } catch (err: any) {
+      setError(err.message || '프로젝트 데이터를 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -172,31 +170,28 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
     try {
       setSaving(true);
+      setError(null);
       const level = parentId ? getLevel(parentId) + 1 : 1;
-      
-      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          project_id: projectId,
-          name: newCriterionName,
-          description: newCriterionDescription,
-          parent_id: parentId,
-          level,
-          order_index: getNextOrderIndex(parentId)
-        }),
+
+      const response = await api.post(`/api/service/projects/criteria/`, {
+        project_id: projectId,
+        name: newCriterionName,
+        description: newCriterionDescription,
+        parent_id: parentId,
+        level,
+        order_index: getNextOrderIndex(parentId)
       });
 
-      if (!response.ok) throw new Error('Failed to create criterion');
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to create criterion');
+      }
 
       setNewCriterionName('');
       setNewCriterionDescription('');
       setEditingCriterion(null);
       fetchProject();
-    } catch {
-      // save failure — state unchanged
+    } catch (err: any) {
+      setError(err.message || '기준 추가에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -207,29 +202,26 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
     try {
       setSaving(true);
-      
-      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          project_id: projectId,
-          name: newAlternativeName,
-          description: newAlternativeDescription,
-          type: 'alternative',
-          order_index: (project?.alternatives.length || 0) + 1
-        }),
+      setError(null);
+
+      const response = await api.post(`/api/service/projects/criteria/`, {
+        project_id: projectId,
+        name: newAlternativeName,
+        description: newAlternativeDescription,
+        type: 'alternative',
+        order_index: (project?.alternatives.length || 0) + 1
       });
 
-      if (!response.ok) throw new Error('Failed to create alternative');
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to create alternative');
+      }
 
       setNewAlternativeName('');
       setNewAlternativeDescription('');
       setEditingAlternative(null);
       fetchProject();
-    } catch {
-      // save failure — state unchanged
+    } catch (err: any) {
+      setError(err.message || '대안 추가에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -237,29 +229,29 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
   const deleteCriterion = async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/${id}/`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      setError(null);
+      const response = await api.delete(`/api/service/projects/criteria/${id}/`);
 
-      if (!response.ok) throw new Error('Failed to delete criterion');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to delete criterion');
+      }
       fetchProject();
-    } catch {
-      // delete failure — state unchanged
+    } catch (err: any) {
+      setError(err.message || '기준 삭제에 실패했습니다.');
     }
   };
 
   const deleteAlternative = async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/${id}/`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      setError(null);
+      const response = await api.delete(`/api/service/projects/criteria/${id}/`);
 
-      if (!response.ok) throw new Error('Failed to delete alternative');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to delete alternative');
+      }
       fetchProject();
-    } catch {
-      // delete failure — state unchanged
+    } catch (err: any) {
+      setError(err.message || '대안 삭제에 실패했습니다.');
     }
   };
 
@@ -310,7 +302,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
         <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg mb-2">
           <div className="flex-1">
             <div className="flex items-center space-x-2">
-              <span className={`px-2 py-1 text-xs rounded-full ${ 
+              <span className={`px-2 py-1 text-xs rounded-full ${
                 criterion.level === 1 ? 'bg-blue-100 text-blue-800' :
                 criterion.level === 2 ? 'bg-green-100 text-green-800' :
                 criterion.level === 3 ? 'bg-yellow-100 text-yellow-800' :
@@ -341,7 +333,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
             </button>
           </div>
         </div>
-        
+
         {editingCriterion === criterion.id && (
           <div className="ml-6 p-3 bg-gray-50 border border-gray-200 rounded-lg mb-2">
             <div className="space-y-2">
@@ -381,8 +373,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
             </div>
           </div>
         )}
-        
-        {criterion.children && criterion.children.map(child => 
+
+        {criterion.children && criterion.children.map(child =>
           renderCriterion(child, depth + 1)
         )}
       </div>
@@ -400,6 +392,11 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
   if (!project) {
     return (
       <Card title="모델 빌더">
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
         <div className="text-center py-8">프로젝트를 찾을 수 없습니다.</div>
       </Card>
     );
@@ -414,6 +411,12 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
   if (builderMode === 'select') {
     return (
       <div className="space-y-6">
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start justify-between">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="ml-2 text-red-500 hover:text-red-700 font-bold">×</button>
+          </div>
+        )}
         <Card title={`모델 구축 방식 선택: ${project?.title || 'Loading...'}`}>
           <div className="space-y-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -433,7 +436,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* 캔버스 기반 빌더 */}
               <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-transparent hover:border-blue-200">
-                <div 
+                <div
                   className="p-6 text-center"
                   onClick={() => setBuilderMode('canvas')}
                 >
@@ -460,7 +463,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
               {/* 폼 기반 빌더 */}
               <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-transparent hover:border-gray-200">
-                <div 
+                <div
                   className="p-6 text-center"
                   onClick={() => setBuilderMode('form')}
                 >
@@ -491,7 +494,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
               <div className="flex items-center">
                 <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-2" />
                 <p className="text-sm text-yellow-700">
-                  <strong>추천:</strong> 처음 사용하시거나 복잡한 구조가 필요한 경우 
+                  <strong>추천:</strong> 처음 사용하시거나 복잡한 구조가 필요한 경우
                   <strong className="text-yellow-800">캔버스 기반 빌더</strong>를 권장합니다.
                 </p>
               </div>
@@ -524,7 +527,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
             <div className="bg-green-100 rounded-full p-4 mx-auto w-16 h-16 flex items-center justify-center">
               <CheckCircleIcon className="h-8 w-8 text-green-600" />
             </div>
-            
+
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 모델 구축이 완료되었습니다!
@@ -546,8 +549,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
             </div>
 
             <div className="flex justify-center space-x-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setModelCompleted(false);
                   setBuilderMode('canvas');
@@ -555,9 +558,9 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
               >
                 모델 수정
               </Button>
-              
-              <Button 
-                variant="primary" 
+
+              <Button
+                variant="primary"
                 onClick={handleProceedToEvaluation}
                 className="flex items-center"
               >
@@ -574,6 +577,12 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
   // 폼 기반 빌더 (기존 로직)
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="ml-2 text-red-500 hover:text-red-700 font-bold">×</button>
+        </div>
+      )}
       <Card title={`모델 빌더: ${project?.title || 'Loading...'}`}>
         <div className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -588,8 +597,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
                 <h4 className="font-medium text-green-800 mb-1">💡 캔버스 빌더 사용하기</h4>
                 <p className="text-sm text-green-700">더 직관적이고 편리한 캔버스 기반 빌더를 사용해보세요!</p>
               </div>
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 size="sm"
                 onClick={() => setBuilderMode('canvas')}
                 className="flex items-center"
@@ -606,8 +615,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
               <button
                 onClick={() => setActiveTab('criteria')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'criteria' 
-                    ? 'border-blue-500 text-blue-600' 
+                  activeTab === 'criteria'
+                    ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -616,8 +625,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
               <button
                 onClick={() => setActiveTab('alternatives')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'alternatives' 
-                    ? 'border-blue-500 text-blue-600' 
+                  activeTab === 'alternatives'
+                    ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -626,8 +635,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
               <button
                 onClick={() => setActiveTab('evaluators')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'evaluators' 
-                    ? 'border-blue-500 text-blue-600' 
+                  activeTab === 'evaluators'
+                    ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -636,8 +645,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
               <button
                 onClick={() => setActiveTab('settings')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'settings' 
-                    ? 'border-blue-500 text-blue-600' 
+                  activeTab === 'settings'
+                    ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -797,7 +806,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       )}
 
       {activeTab === 'evaluators' && (
-        <EvaluatorAssignment 
+        <EvaluatorAssignment
           projectId={projectId}
           onComplete={() => {
             // 평가자 배정 완료 후 처리
@@ -815,7 +824,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
                 향후 버전에서 평가 방법론, 일관성 임계값 등의 설정을 관리할 수 있습니다.
               </p>
             </div>
-            
+
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <h6 className="font-medium mb-2">현재 설정</h6>
               <div className="text-sm text-gray-600 space-y-1">

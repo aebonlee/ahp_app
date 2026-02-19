@@ -13,6 +13,7 @@ import AISettingsManager from './ai-management/AISettingsManager';
 import UserAIAccessManager from './ai-management/UserAIAccessManager';
 import AIUsageAnalytics from './ai-management/AIUsageAnalytics';
 import PromptTemplateManager from './ai-management/PromptTemplateManager';
+import api from '../../services/api';
 
 interface AIManagementDashboardProps {
   userRole?: string;
@@ -42,9 +43,7 @@ const AIManagementDashboard: React.FC<AIManagementDashboardProps> = ({
     overLimitUsers: 0
   });
   const [loading, setLoading] = useState(true);
-
-  // API 기본 설정
-  const apiBaseUrl = process.env.REACT_APP_API_URL || '/api';
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDashboardStats();
@@ -53,17 +52,18 @@ const AIManagementDashboard: React.FC<AIManagementDashboardProps> = ({
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-      
+      setError(null);
+
       // 병렬로 여러 통계 API 호출
       const [accessResponse, usageResponse] = await Promise.all([
-        fetch(`${apiBaseUrl}/ai-management/api/user-access/overview/`),
-        fetch(`${apiBaseUrl}/ai-management/api/usage-logs/daily_stats/`)
+        api.get('/ai-management/api/user-access/overview/'),
+        api.get('/ai-management/api/usage-logs/daily_stats/')
       ]);
 
-      if (accessResponse.ok && usageResponse.ok) {
-        const accessData = await accessResponse.json();
-        const usageData = await usageResponse.json();
-        
+      if (accessResponse.success && usageResponse.success) {
+        const accessData = accessResponse.data;
+        const usageData = usageResponse.data;
+
         setStats({
           totalUsers: accessData.total_users || 0,
           activeUsers: accessData.active_users || 0,
@@ -72,9 +72,12 @@ const AIManagementDashboard: React.FC<AIManagementDashboardProps> = ({
           totalCost: usageData.total_cost || 0,
           overLimitUsers: accessData.over_limit_users || 0
         });
+      } else {
+        const errMsg = accessResponse.error || usageResponse.error || '대시보드 통계를 불러오지 못했습니다.';
+        setError(errMsg);
       }
-    } catch (error) {
-      console.error('Dashboard stats fetch error:', error);
+    } catch (err: any) {
+      setError(err.message || '대시보드 통계를 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -256,6 +259,22 @@ const AIManagementDashboard: React.FC<AIManagementDashboardProps> = ({
 
   return (
     <div className="w-full h-full">
+      {/* 에러 배너 */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2 text-red-700">
+            <UIIcon emoji="⚠️" />
+            <span className="text-sm">{error}</span>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="text-red-500 hover:text-red-700 text-xs ml-4"
+          >
+            닫기
+          </button>
+        </div>
+      )}
+
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">

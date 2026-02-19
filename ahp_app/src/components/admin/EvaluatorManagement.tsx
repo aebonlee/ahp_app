@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { API_BASE_URL } from '../../config/api';
+import Modal from '../common/Modal';
+import api from '../../services/api';
 
 interface Evaluator {
   id: string;
@@ -31,6 +32,13 @@ interface EvaluatorManagementProps {
   onClose?: () => void;
 }
 
+interface ConfirmState {
+  isOpen: boolean;
+  evaluatorId: string;
+  fromProject: boolean;
+  message: string;
+}
+
 const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
   projectId,
   projectName,
@@ -40,6 +48,12 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [confirmState, setConfirmState] = useState<ConfirmState>({
+    isOpen: false,
+    evaluatorId: '',
+    fromProject: false,
+    message: ''
+  });
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -64,45 +78,45 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
     ];
 
     const demoEvaluators: Evaluator[] = [
-      { 
-        id: '1', 
-        email: 'evaluator1@company.com', 
-        name: '김평가', 
+      {
+        id: '1',
+        email: 'evaluator1@company.com',
+        name: '김평가',
         phone: '010-1234-5678',
-        assignedProjects: [demoProjects[0], demoProjects[1]], 
+        assignedProjects: [demoProjects[0], demoProjects[1]],
         lastActive: '1시간 전',
         status: 'active'
       },
-      { 
-        id: '2', 
-        email: 'evaluator2@company.com', 
-        name: '이분석', 
+      {
+        id: '2',
+        email: 'evaluator2@company.com',
+        name: '이분석',
         phone: '010-2345-6789',
-        assignedProjects: [demoProjects[0], demoProjects[2]], 
+        assignedProjects: [demoProjects[0], demoProjects[2]],
         lastActive: '2시간 전',
         status: 'active'
       },
-      { 
-        id: '3', 
-        email: 'evaluator3@company.com', 
-        name: '박의사', 
+      {
+        id: '3',
+        email: 'evaluator3@company.com',
+        name: '박의사',
         phone: '010-3456-7890',
-        assignedProjects: [demoProjects[1]], 
+        assignedProjects: [demoProjects[1]],
         lastActive: '1일 전',
         status: 'active'
       },
-      { 
-        id: '4', 
-        email: 'evaluator4@company.com', 
-        name: '최결정', 
-        assignedProjects: [], 
+      {
+        id: '4',
+        email: 'evaluator4@company.com',
+        name: '최결정',
+        assignedProjects: [],
         lastActive: '3일 전',
         status: 'inactive'
       }
     ];
-    
+
     if (projectId) {
-      setEvaluators(demoEvaluators.filter(e => 
+      setEvaluators(demoEvaluators.filter(e =>
         e.assignedProjects?.some(p => p.projectId === projectId)
       ));
     } else {
@@ -111,35 +125,19 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
   }, [projectId]);
 
   const loadProjectEvaluators = useCallback(async () => {
-    try {
-      const response = await fetch(`https://ahp-platform.onrender.com/api/projects/${projectId}/evaluators`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setEvaluators(data.evaluators || []);
-      }
-    } catch (error) {
+    const response = await api.get(`/api/projects/${projectId}/evaluators`);
+    if (response.success && response.data) {
+      setEvaluators(response.data.evaluators || []);
+    } else {
       loadDemoData();
     }
   }, [projectId, loadDemoData]);
 
   const loadAllEvaluators = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setEvaluators(data.evaluators || []);
-      }
-    } catch (error) {
+    const response = await api.get('/api/service/evaluators/');
+    if (response.success && response.data) {
+      setEvaluators(response.data.evaluators || []);
+    } else {
       loadDemoData();
     }
   }, [loadDemoData]);
@@ -161,107 +159,94 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
   };
 
   const handleSelectEvaluator = (evaluatorId: string) => {
-    setEvaluators(evaluators.map(e => 
+    setEvaluators(evaluators.map(e =>
       e.id === evaluatorId ? { ...e, isSelected: !e.isSelected } : e
     ));
   };
 
   const validateForm = () => {
     const newErrors: any = {};
-    
+
     if (!formData.email.trim()) {
       newErrors.email = '이메일을 입력해주세요.';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = '올바른 이메일 형식이 아닙니다.';
     }
-    
+
     if (!formData.name.trim()) {
       newErrors.name = '이름을 입력해주세요.';
     }
-    
+
     if (formData.phone && !/^[0-9-]+$/.test(formData.phone)) {
       newErrors.phone = '전화번호는 숫자와 하이픈(-)만 입력 가능합니다.';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleDeleteEvaluator = async (evaluatorId: string, fromProject?: boolean) => {
-    // Note: In production, replace with proper modal confirmation
-    const shouldDelete = window.confirm(fromProject ? 
-      '이 평가자를 현재 프로젝트에서 제거하시겠습니까?' : 
-      '이 평가자를 모든 프로젝트에서 완전히 삭제하시겠습니까?'
-    );
-    if (!shouldDelete) return;
+  const requestDeleteEvaluator = (evaluatorId: string, fromProject: boolean) => {
+    setConfirmState({
+      isOpen: true,
+      evaluatorId,
+      fromProject,
+      message: fromProject
+        ? '이 평가자를 현재 프로젝트에서 제거하시겠습니까?'
+        : '이 평가자를 모든 프로젝트에서 완전히 삭제하시겠습니까?'
+    });
+  };
 
-    try {
-      const url = fromProject && projectId 
-        ? `${API_BASE_URL}/api/service/evaluators/${evaluatorId}/project/${projectId}/`
-        : `${API_BASE_URL}/api/service/evaluators/${evaluatorId}/`;
+  const confirmDeleteEvaluator = async () => {
+    const { evaluatorId, fromProject } = confirmState;
+    setConfirmState(prev => ({ ...prev, isOpen: false }));
 
-      const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+    const endpoint = fromProject && projectId
+      ? `/api/service/evaluators/${evaluatorId}/project/${projectId}/`
+      : `/api/service/evaluators/${evaluatorId}/`;
 
-      if (response.ok) {
-        // 성공 시 목록 다시 로드
-        if (projectId) {
-          loadProjectEvaluators();
-        } else {
-          loadAllEvaluators();
-        }
-        showActionMessage('success', fromProject ? '평가자가 프로젝트에서 제거되었습니다.' : '평가자가 완전히 삭제되었습니다.');
+    const response = await api.delete(endpoint);
+
+    if (response.success) {
+      if (projectId) {
+        loadProjectEvaluators();
       } else {
-        showActionMessage('error', '삭제에 실패했습니다.');
+        loadAllEvaluators();
       }
-    } catch (error) {
-      showActionMessage('error', '삭제 중 오류가 발생했습니다.');
+      showActionMessage('success', fromProject ? '평가자가 프로젝트에서 제거되었습니다.' : '평가자가 완전히 삭제되었습니다.');
+    } else {
+      showActionMessage('error', response.error || '삭제에 실패했습니다.');
     }
   };
 
   const handleAddEvaluator = async () => {
     if (!validateForm()) return;
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/service/evaluators/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...formData,
-          projectId: projectId || null
-        })
-      });
 
-      if (response.ok) {
-        setFormData({ email: '', name: '', phone: '' });
-        setShowAddForm(false);
-        setErrors({});
-        
-        // 목록 다시 로드
-        if (projectId) {
-          loadProjectEvaluators();
-        } else {
-          loadAllEvaluators();
-        }
-        showActionMessage('success', '평가자가 성공적으로 추가되었습니다.');
+    const response = await api.post('/api/service/evaluators/', {
+      ...formData,
+      projectId: projectId || null
+    });
+
+    if (response.success) {
+      setFormData({ email: '', name: '', phone: '' });
+      setShowAddForm(false);
+      setErrors({});
+
+      // 목록 다시 로드
+      if (projectId) {
+        loadProjectEvaluators();
       } else {
-        showActionMessage('error', '평가자 추가에 실패했습니다.');
+        loadAllEvaluators();
       }
-    } catch (error) {
-      showActionMessage('error', '추가 중 오류가 발생했습니다.');
+      showActionMessage('success', '평가자가 성공적으로 추가되었습니다.');
+    } else {
+      showActionMessage('error', response.error || '평가자 추가에 실패했습니다.');
     }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAddEvaluatorDemo = () => {
     if (!validateForm()) return;
-    
+
     const newEvaluator: Evaluator = {
       id: `eval-${Date.now()}`,
       email: formData.email,
@@ -271,7 +256,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
       createdAt: new Date().toISOString(),
       lastActive: '방금 전'
     };
-    
+
     setEvaluators([newEvaluator, ...evaluators]);
     setFormData({ email: '', name: '', phone: '' });
     setShowAddForm(false);
@@ -280,13 +265,13 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
 
   const handleEditEvaluator = () => {
     if (!validateForm()) return;
-    
-    setEvaluators(evaluators.map(e => 
-      e.id === editingEvaluator?.id 
+
+    setEvaluators(evaluators.map(e =>
+      e.id === editingEvaluator?.id
         ? { ...e, ...formData, lastActive: '방금 전' }
         : e
     ));
-    
+
     setEditingEvaluator(null);
     setFormData({ email: '', name: '', phone: '' });
     setErrors({});
@@ -297,18 +282,18 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
     const selectedEvaluatorIds = evaluators
       .filter(e => e.isSelected)
       .map(e => e.id);
-    
+
     if (selectedEvaluatorIds.length === 0) {
       showActionMessage('error', '평가자를 선택해주세요.');
       return;
     }
-    
+
     if (onAssign) {
       onAssign(selectedEvaluatorIds);
     }
   };
 
-  const filteredEvaluators = evaluators.filter(e => 
+  const filteredEvaluators = evaluators.filter(e =>
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -322,13 +307,40 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
           {actionMessage.text}
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <Modal
+        isOpen={confirmState.isOpen}
+        onClose={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
+        title="확인"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="secondary"
+              onClick={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
+            >
+              취소
+            </Button>
+            <Button
+              variant="primary"
+              onClick={confirmDeleteEvaluator}
+            >
+              확인
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-700">{confirmState.message}</p>
+      </Modal>
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
             {projectId ? `평가자 배정 - ${projectName}` : '평가자 관리'}
           </h2>
           <p className="mt-1 text-sm text-gray-600">
-            {projectId 
+            {projectId
               ? '프로젝트에 평가자를 배정하거나 제외합니다.'
               : '평가자를 추가, 수정, 삭제할 수 있습니다.'}
           </p>
@@ -475,7 +487,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
                         evaluator.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {evaluator.status === 'active' ? '활성' : 
+                        {evaluator.status === 'active' ? '활성' :
                          evaluator.status === 'pending' ? '대기' : '비활성'}
                       </span>
                     </div>
@@ -483,7 +495,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
                       {evaluator.email}
                       {evaluator.phone && ` · ${evaluator.phone}`}
                     </div>
-                    
+
                     {/* 프로젝트 할당 정보 */}
                     {evaluator.assignedProjects && evaluator.assignedProjects.length > 0 && (
                       <div className="mt-2">
@@ -501,7 +513,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
                         </div>
                       </div>
                     )}
-                    
+
                     {evaluator.lastActive && (
                       <div className="text-xs text-gray-400 mt-1">
                         최근 활동: {evaluator.lastActive}
@@ -509,7 +521,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => {
@@ -525,19 +537,19 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
                   >
                     수정
                   </button>
-                  
+
                   {projectId && (
                     <button
-                      onClick={() => handleDeleteEvaluator(evaluator.id, true)}
+                      onClick={() => requestDeleteEvaluator(evaluator.id, true)}
                       className="text-sm text-orange-600 hover:text-orange-800 px-2 py-1 rounded"
                       title="이 프로젝트에서만 제거"
                     >
                       제거
                     </button>
                   )}
-                  
+
                   <button
-                    onClick={() => handleDeleteEvaluator(evaluator.id, false)}
+                    onClick={() => requestDeleteEvaluator(evaluator.id, false)}
                     className="text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded"
                     title="모든 프로젝트에서 완전 삭제"
                   >
