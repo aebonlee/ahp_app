@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 
@@ -28,11 +28,17 @@ interface ExportManagerProps {
 const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, onClose }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const actionMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    if (actionMessageTimerRef.current) clearTimeout(actionMessageTimerRef.current);
     setActionMessage({type, text});
-    setTimeout(() => setActionMessage(null), 3000);
+    actionMessageTimerRef.current = setTimeout(() => setActionMessage(null), 3000);
   };
+
+  useEffect(() => {
+    return () => { if (actionMessageTimerRef.current) clearTimeout(actionMessageTimerRef.current); };
+  }, []);
 
   const [options, setOptions] = useState<ExportOptions>({
     format: 'csv',

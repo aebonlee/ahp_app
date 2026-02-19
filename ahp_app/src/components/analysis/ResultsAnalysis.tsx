@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import apiService from '../../services/apiService';
@@ -35,11 +35,17 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId }) => {
   const [activeView, setActiveView] = useState<'progress' | 'ranking' | 'consistency' | 'detailed'>('progress');
   const [viewMode, setViewMode] = useState<'distributive' | 'ideal'>('distributive');
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const actionMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    if (actionMessageTimerRef.current) clearTimeout(actionMessageTimerRef.current);
     setActionMessage({type, text});
-    setTimeout(() => setActionMessage(null), 3000);
+    actionMessageTimerRef.current = setTimeout(() => setActionMessage(null), 3000);
   };
+
+  useEffect(() => {
+    return () => { if (actionMessageTimerRef.current) clearTimeout(actionMessageTimerRef.current); };
+  }, []);
   const [evaluationProgress, setEvaluationProgress] = useState<EvaluationProgress[]>([]);
   const [criteriaRanking, setCriteriaRanking] = useState<ResultRanking[]>([]);
   const [consistencyData, setConsistencyData] = useState<ConsistencyData[]>([]);
