@@ -110,8 +110,7 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
     try {
       const res = await apiService.get(`/api/service/workshops/sessions/${workshop.id}/`);
       setSelectedWorkshop(res.data as WorkshopSession);
-    } catch (err) {
-      console.error('워크숍 상세 로딩 실패:', err);
+    } catch {
       setSelectedWorkshop(workshop);
     }
   };

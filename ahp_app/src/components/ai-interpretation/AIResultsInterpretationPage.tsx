@@ -111,7 +111,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
   // 프로젝트 선택 및 결과 로드
   const selectProjectAndLoadResults = async (project: Project) => {
     if (!project.id) {
-      console.error('프로젝트 ID가 없습니다.');
+      showActionMessage('error', '프로젝트 ID가 없습니다.');
       return;
     }
 
@@ -169,7 +169,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
       // AI 분석 자동 시작
       startAIAnalysis(result);
     } catch (error) {
-      console.error('결과 데이터 로드 실패:', error);
+      showActionMessage('error', '결과 데이터 로드 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -185,8 +185,8 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
       if (aiService) {
         try {
           await aiService.interpretAHPResults(selectedProject, result);
-        } catch (error) {
-          console.error('AI 분석 실패:', error);
+        } catch {
+          // AI 분석 부분 실패 — 계속 진행
         }
       }
       
@@ -227,7 +227,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
       setAnalysisResult(prev => prev ? { ...prev, insights } : null);
       setActiveTab('ai-analysis');
     } catch (error) {
-      console.error('AI 분석 실패:', error);
+      showActionMessage('error', 'AI 분석 중 오류가 발생했습니다.');
     } finally {
       setAnalyzing(false);
     }
