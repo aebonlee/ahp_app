@@ -86,7 +86,6 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
         setEvaluators([]);
       }
     } catch (error) {
-      console.error('Failed to load evaluators:', error);
       setEvaluators([]);
     } finally {
       setLoading(false);
@@ -165,7 +164,6 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
       setShowAddForm(false);
       setErrors({});
     } catch (error) {
-      console.error('Failed to add evaluator:', error);
       showActionMessage('error', '평가자 추가 중 오류가 발생했습니다.');
     }
   };
@@ -229,13 +227,8 @@ ${inviteData.message}
               shortLink
             })
           });
-        } catch (error) {
-          console.log('이메일 발송 실패 (데모 모드):', error);
-        }
-
-        // SMS 발송 (옵션)
-        if (inviteData.sendSMS && evaluator.phone) {
-          console.log(`SMS 발송: ${evaluator.phone} - ${shortLink}`);
+        } catch {
+          // 이메일 발송 실패 시 무시 (연구자가 링크를 직접 공유)
         }
 
         // 상태 업데이트
@@ -251,7 +244,6 @@ ${inviteData.message}
       setSelectAll(false);
       setEvaluators(evaluators.map(e => ({ ...e, isSelected: false })));
     } catch (error) {
-      console.error('Failed to send invitations:', error);
       showActionMessage('error', '초대 발송 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -271,7 +263,6 @@ ${inviteData.message}
         
         setEvaluators(evaluators.filter(e => e.id !== evaluatorId));
       } catch (error) {
-        console.error('Failed to delete evaluator:', error);
         showActionMessage('error', '평가자 삭제 중 오류가 발생했습니다.');
       }
     }

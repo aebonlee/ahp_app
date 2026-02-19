@@ -41,22 +41,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     return storedMode === 'true';
   });
   
-  // userRole 확인 - 디버깅
-  console.log('🔍 === Sidebar Debug ===');
-  console.log('🔍 userRole:', userRole);
-  console.log('🔍 userRole === "super_admin":', userRole === 'super_admin');
-  console.log('🔍 isSuperAdminMode:', isSuperAdminMode);
-  
-  // localStorage 직접 확인
-  const storedUser = localStorage.getItem('ahp_user');
-  if (storedUser) {
-    const user = JSON.parse(storedUser);
-    console.log('🔍 localStorage user:', user);
-    console.log('🔍 localStorage user.role:', user.role);
-    console.log('🔍 localStorage user.email:', user.email);
-  }
-  console.log('🔍 ==================');
-
   const toggleCategory = (categoryId: string) => {
     // 모든 주요 카테고리 리스트 (슈퍼 관리자 메뉴 포함)
     const mainCategories = ['basic', 'advanced', 'research', 'ai', 'super-admin'];
@@ -589,7 +573,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     const newMode = !isSuperAdminMode;
                     setIsSuperAdminMode(newMode);
                     localStorage.setItem('ahp_super_mode', newMode.toString());
-                    console.log('🔄 토글 버튼 클릭! 새 상태:', newMode);
                   }}
                   className="w-full p-2 rounded-lg transition-all flex items-center justify-center"
                   style={{

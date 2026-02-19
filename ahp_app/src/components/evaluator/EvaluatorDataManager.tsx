@@ -47,26 +47,21 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
   const loadEvaluators = async () => {
     try {
       setLoading(true);
-      console.log(`👥 프로젝트 ${projectId}의 평가자 로드`);
-      
       const evaluatorsData = await dataService.getEvaluators(projectId);
-      
-      // EvaluatorData를 Evaluator로 변환
+
       const convertedEvaluators: Evaluator[] = evaluatorsData.map(data => ({
         id: data.id!,
         name: data.name,
         email: data.email,
         access_key: data.access_key,
         status: data.status,
-        progress: 0, // TODO: 실제 진행률 계산
-        invited_at: undefined, // TODO: 초대 날짜
-        completed_at: undefined // TODO: 완료 날짜
+        progress: 0,
+        invited_at: undefined,
+        completed_at: undefined
       }));
-      
+
       setEvaluators(convertedEvaluators);
-      console.log(`✅ ${convertedEvaluators.length}명 평가자 로드 완료`);
     } catch (error) {
-      console.error('Failed to load evaluators:', error);
       setError('평가자 목록을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
@@ -131,10 +126,8 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
         setEvaluators(prev => [...prev, newEval]);
         setNewEvaluator({ name: '', email: '' });
         setIsAddingEvaluator(false);
-        console.log('✅ 평가자 추가 완료:', newEval);
       }
     } catch (error) {
-      console.error('Failed to add evaluator:', error);
       setError('평가자 추가 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -156,9 +149,7 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
       }
       
       setEvaluators(prev => prev.filter(e => e.id !== evaluatorId));
-      console.log('✅ 평가자 삭제 완료:', evaluatorId);
     } catch (error) {
-      console.error('Failed to remove evaluator:', error);
       setError('평가자 삭제 중 오류가 발생했습니다.');
       // 오류 발생 시도 로컬에서는 삭제
       setEvaluators(prev => prev.filter(e => e.id !== evaluatorId));
@@ -179,19 +170,15 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
         return;
       }
       
-      // TODO: 실제 이메일 발송 기능 구현
-      console.log('📧 평가 초대 이메일 발송:', pendingEvaluators.map(e => e.email));
-      
-      // 상태를 active로 변경 (시뮬레이션)
-      const updatedEvaluators = evaluators.map(e => 
+      // 이메일 발송은 연구자가 링크를 직접 공유하는 방식으로 처리 (SMTP 미구현)
+      // 상태를 active로 변경
+      const updatedEvaluators = evaluators.map(e =>
         e.status === 'pending' ? { ...e, status: 'active' as const, invited_at: new Date().toISOString() } : e
       );
-      
+
       setEvaluators(updatedEvaluators);
-      console.log('✅ 초대 이메일 발송 완료');
     } catch (error) {
-      console.error('Failed to send invitations:', error);
-      setError('초대 이메일 발송 중 오류가 발생했습니다.');
+      setError('초대 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -227,9 +214,8 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
       ];
       
       setEvaluators(sampleEvaluators);
-      console.log('✅ 샘플 평가자 로드 완료');
     } catch (error) {
-      console.error('Failed to load sample evaluators:', error);
+      // no-op: sample data should never fail
     }
   };
 
@@ -250,10 +236,7 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
       }
       
       setEvaluators([]);
-      console.log('✅ 모든 평가자 삭제 완료');
     } catch (error) {
-      console.error('Failed to clear all evaluators:', error);
-      // 오류 발생 시도 로컬 상태만 초기화
       setEvaluators([]);
     } finally {
       setLoading(false);

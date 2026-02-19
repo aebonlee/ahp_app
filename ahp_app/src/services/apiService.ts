@@ -244,22 +244,22 @@ export const evaluatorAPI = {
     project: string;
     evaluator: number;
     message?: string;
-  }) => apiClient.post('/api/v1/evaluations/invitations/', data),
+  }) => apiClient.post('/api/service/evaluations/invitations/', data),
 
   fetchByProject: (projectId: string) =>
-    apiClient.get(`/api/v1/evaluations/invitations/?project=${projectId}`),
+    apiClient.get(`/api/service/evaluations/invitations/?project=${projectId}`),
 
   list: (projectId: string) =>
-    apiClient.get(`/api/v1/evaluations/evaluations/?project=${projectId}`),
+    apiClient.get(`/api/service/evaluations/evaluations/?project=${projectId}`),
 
   updateWeight: (evaluatorId: string, data: any) =>
-    apiClient.patch(`/api/v1/evaluations/invitations/${evaluatorId}/`, data),
+    apiClient.patch(`/api/service/evaluations/invitations/${evaluatorId}/`, data),
 
   remove: (evaluatorId: string) =>
-    apiClient.delete(`/api/v1/evaluations/invitations/${evaluatorId}/`),
+    apiClient.delete(`/api/service/evaluations/invitations/${evaluatorId}/`),
 
   fetchProgress: (projectId: string) =>
-    apiClient.get(`/api/v1/evaluations/evaluations/?project=${projectId}&status=in_progress`),
+    apiClient.get(`/api/service/evaluations/evaluations/?project=${projectId}&status=in_progress`),
 
   validateAccessKey: (token: string) =>
     apiClient.get(`/api/service/evaluations/invitations/by_token/?token=${token}`),
@@ -292,11 +292,11 @@ export const resultsAPI = {
 
 // 기존 API들 (호환성 유지)
 export const projectAPI = {
-  fetch: () => apiClient.get('/api/v1/projects/projects/'),
-  fetchById: (id: string) => apiClient.get(`/api/v1/projects/projects/${id}/`),
-  create: (data: any) => apiClient.post('/api/v1/projects/projects/', data),
-  update: (id: string, data: any) => apiClient.patch(`/api/v1/projects/projects/${id}/`, data),
-  delete: (id: string) => apiClient.delete(`/api/v1/projects/projects/${id}/`),
+  fetch: () => apiClient.get('/api/service/projects/projects/'),
+  fetchById: (id: string) => apiClient.get(`/api/service/projects/projects/${id}/`),
+  create: (data: any) => apiClient.post('/api/service/projects/projects/', data),
+  update: (id: string, data: any) => apiClient.patch(`/api/service/projects/projects/${id}/`, data),
+  delete: (id: string) => apiClient.delete(`/api/service/projects/projects/${id}/`),
 };
 
 export const criteriaAPI = {

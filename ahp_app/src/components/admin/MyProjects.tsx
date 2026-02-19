@@ -73,7 +73,6 @@ const MyProjects: React.FC<MyProjectsProps> = ({
         setProjects([]);
       }
     } catch (error) {
-      console.error('프로젝트 로딩 실패:', error);
       setProjects([]);
     } finally {
       setLoading(false);
@@ -168,7 +167,6 @@ const MyProjects: React.FC<MyProjectsProps> = ({
         showActionMessage('error', '프로젝트 복원에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to restore project:', error);
       showActionMessage('error', '프로젝트 복원 중 오류가 발생했습니다.');
     }
   };
@@ -193,7 +191,6 @@ const MyProjects: React.FC<MyProjectsProps> = ({
         showActionMessage('error', '프로젝트 영구 삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to permanently delete project:', error);
       showActionMessage('error', '영구 삭제 중 오류가 발생했습니다.');
     }
   };
@@ -210,14 +207,11 @@ const MyProjects: React.FC<MyProjectsProps> = ({
     try {
       if (onDeleteProject) {
         // 부모 컴포넌트의 삭제 함수 사용 (확인 없이)
-        console.log('🗑️ 부모 컴포넌트 삭제 함수 호출:', project.id);
         await onDeleteProject(project.id || '');
         // 성공 메시지는 부모에서 처리하므로 여기서는 생략
-        console.log('✅ 삭제 완료');
         fetchProjects(); // 목록 새로고침
       } else {
         // 직접 dataService 사용
-        console.log('🗑️ dataService 직접 호출:', project.id);
         const success = await dataService.deleteProject(project.id || '');
         if (success) {
           showActionMessage('success', `"${projectTitle}"가 휴지통으로 이동되었습니다.`);
@@ -227,40 +221,33 @@ const MyProjects: React.FC<MyProjectsProps> = ({
         }
       }
     } catch (error) {
-      console.error('Failed to delete project:', error);
       showActionMessage('error', '프로젝트 삭제 중 오류가 발생했습니다.');
     }
   };
 
   // 프로젝트 편집
   const handleEditProject = (project: ProjectData) => {
-    console.log('✏️ 프로젝트 편집 시작:', project.title);
     if (onEditProject) {
       onEditProject(project);
     } else {
-      console.log('⚠️ 편집 핸들러가 연결되지 않음');
       showActionMessage('info', '편집 기능을 준비 중입니다.');
     }
   };
 
   // 모델 구축
   const handleModelBuilder = (project: ProjectData) => {
-    console.log('🏗️ 모델 구축 시작:', project.title, project.id);
     if (onModelBuilder) {
       onModelBuilder(project);
     } else {
-      console.log('⚠️ 모델 구축 핸들러가 연결되지 않음');
       showActionMessage('info', '모델 구축 기능을 준비 중입니다.');
     }
   };
 
   // 결과 분석
   const handleAnalysis = (project: ProjectData) => {
-    console.log('📊 결과 분석 시작:', project.title, project.id);
     if (onAnalysis) {
       onAnalysis(project);
     } else {
-      console.log('⚠️ 결과 분석 핸들러가 연결되지 않음');
       showActionMessage('info', '결과 분석 기능을 준비 중입니다.');
     }
   };
@@ -295,12 +282,8 @@ const MyProjects: React.FC<MyProjectsProps> = ({
         </div>
         <button
           onClick={() => {
-            console.log('🔘 MyProjects 버튼 클릭됨');
-            console.log('onCreateNew 함수 존재:', !!onCreateNew);
             if (onCreateNew) {
               onCreateNew();
-            } else {
-              console.log('❌ onCreateNew 함수가 없습니다');
             }
           }}
           className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
@@ -376,12 +359,8 @@ const MyProjects: React.FC<MyProjectsProps> = ({
           {!searchTerm && (
             <button
               onClick={() => {
-                console.log('🔘 MyProjects 빈 상태 버튼 클릭됨');
-                console.log('onCreateNew 함수 존재:', !!onCreateNew);
                 if (onCreateNew) {
                   onCreateNew();
-                } else {
-                  console.log('❌ onCreateNew 함수가 없습니다');
                 }
               }}
               className="px-6 py-3 rounded-lg transition-colors"

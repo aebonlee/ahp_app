@@ -39,6 +39,7 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
   const [currentStep, setCurrentStep] = useState<'intro' | 'criteria' | 'alternatives' | 'complete'>('intro');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [needsLogin, setNeedsLogin] = useState(false);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -49,37 +50,44 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
   const loadProjectData = async () => {
     try {
       setLoading(true);
-      
-      // evaluatorToken이 있는 경우 별도 처리 (익명 접근)
-      if (evaluatorToken) {
-        console.log('🔑 평가자 토큰을 사용한 익명 접근:', evaluatorToken);
-        // TODO: 익명 평가자용 API 엔드포인트 구현 필요
-        // 현재는 기본 API를 사용하되 에러 처리 개선
-      }
-      
-      // 프로젝트 기본 정보 로드
-      const projectResponse = await apiService.projectAPI.fetchById(projectId);
+      setNeedsLogin(false);
+
+      const [projectResponse, criteriaResponse, alternativesResponse] = await Promise.all([
+        apiService.projectAPI.fetchById(projectId),
+        apiService.criteriaAPI.fetch(projectId),
+        apiService.alternativesAPI.fetch(projectId),
+      ]);
+
       if (projectResponse.error) {
+        // 401/403 → 로그인 필요 안내
+        const status = (projectResponse as any).status;
+        if (status === 401 || status === 403) {
+          setNeedsLogin(true);
+          return;
+        }
         throw new Error(projectResponse.error);
       }
 
-      // 기준 데이터 로드
-      const criteriaResponse = await apiService.criteriaAPI.fetch(projectId);
-      const alternativesResponse = await apiService.alternativesAPI.fetch(projectId);
+      const criteriaRaw = (criteriaResponse.data as any);
+      const alternativesRaw = (alternativesResponse.data as any);
 
       const projectData: Project = {
         id: projectId,
         title: (projectResponse.data as any)?.title || '평가 프로젝트',
         description: (projectResponse.data as any)?.description || '',
-        criteria: (criteriaResponse.data as any)?.criteria || (criteriaResponse.data as any) || [],
-        alternatives: (alternativesResponse.data as any)?.alternatives || (alternativesResponse.data as any) || []
+        criteria: criteriaRaw?.results ?? criteriaRaw?.criteria ?? (Array.isArray(criteriaRaw) ? criteriaRaw : []),
+        alternatives: alternativesRaw?.results ?? alternativesRaw?.alternatives ?? (Array.isArray(alternativesRaw) ? alternativesRaw : []),
       };
 
       setProject(projectData);
       calculateProgress();
-    } catch (err) {
-      console.error('프로젝트 데이터 로드 실패:', err);
-      setError('프로젝트 데이터를 불러올 수 없습니다.');
+    } catch (err: any) {
+      if (err?.response?.status === 401 || err?.response?.status === 403 ||
+          err?.status === 401 || err?.status === 403) {
+        setNeedsLogin(true);
+      } else {
+        setError('프로젝트 데이터를 불러올 수 없습니다.');
+      }
     } finally {
       setLoading(false);
     }
@@ -124,9 +132,36 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
     );
   }
 
+  if (needsLogin) {
+    const loginUrl = `${window.location.pathname}?tab=home${evaluatorToken ? `&redirectAfterLogin=${encodeURIComponent(window.location.search)}` : ''}`;
+    return (
+      <Card>
+        <div className="text-center py-8 space-y-4">
+          <div className="text-4xl">🔒</div>
+          <h2 className="text-xl font-bold text-gray-800">로그인이 필요합니다</h2>
+          <p className="text-gray-600">
+            이 평가에 참여하려면 로그인이 필요합니다.<br/>
+            평가자로 등록된 이메일로 계정을 만들어 로그인해주세요.
+          </p>
+          {evaluatorToken && (
+            <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded">
+              귀하의 고유 접근 키: <code className="font-mono">{evaluatorToken}</code>
+            </p>
+          )}
+          <Button
+            onClick={() => { window.location.href = loginUrl; }}
+            variant="primary"
+          >
+            로그인 페이지로 이동
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
   if (error) {
     return (
-      <Card title="❌ 오류">
+      <Card title="오류">
         <div className="text-center py-8">
           <p className="text-red-600 mb-4">{error}</p>
           <Button onClick={loadProjectData} variant="primary">

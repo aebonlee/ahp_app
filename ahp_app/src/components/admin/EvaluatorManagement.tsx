@@ -123,7 +123,6 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
         setEvaluators(data.evaluators || []);
       }
     } catch (error) {
-      console.error('평가자 목록 로딩 실패:', error);
       loadDemoData();
     }
   }, [projectId, loadDemoData]);
@@ -141,7 +140,6 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
         setEvaluators(data.evaluators || []);
       }
     } catch (error) {
-      console.error('전체 평가자 목록 로딩 실패:', error);
       loadDemoData();
     }
   }, [loadDemoData]);
@@ -221,7 +219,6 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
         showActionMessage('error', '삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('평가자 삭제 오류:', error);
       showActionMessage('error', '삭제 중 오류가 발생했습니다.');
     }
   };
@@ -257,7 +254,6 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
         showActionMessage('error', '평가자 추가에 실패했습니다.');
       }
     } catch (error) {
-      console.error('평가자 추가 오류:', error);
       showActionMessage('error', '추가 중 오류가 발생했습니다.');
     }
   };

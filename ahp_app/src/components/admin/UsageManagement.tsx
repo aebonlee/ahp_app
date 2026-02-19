@@ -69,7 +69,6 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
         setSubscription(data.subscription);
       }
     } catch (error) {
-      console.error('Failed to load subscription data:', error);
     }
   };
 
@@ -87,7 +86,6 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
         setUsage(data.usage);
       }
     } catch (error) {
-      console.error('Failed to load usage data:', error);
     } finally {
       setLoading(false);
     }
@@ -115,7 +113,6 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
         showActionMessage('error', `연장 실패: ${error.message}`);
       }
     } catch (error) {
-      console.error('Failed to extend trial:', error);
       showActionMessage('error', '연장 중 오류가 발생했습니다.');
     }
   };
@@ -153,7 +150,6 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
         showActionMessage('error', `초기화 실패: ${error.message}`);
       }
     } catch (error) {
-      console.error('Failed to reset data:', error);
       showActionMessage('error', '초기화 중 오류가 발생했습니다.');
     }
   };
