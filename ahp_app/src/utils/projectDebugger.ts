@@ -338,7 +338,7 @@ const projectDebugger = new ProjectCreationDebugger();
 
 // 개발 환경에서만 전역 객체에 등록 (브라우저 콘솔에서 사용 가능)
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-  (window as any).projectDebugger = projectDebugger;
+  window.projectDebugger = projectDebugger;
 }
 
 export default projectDebugger;

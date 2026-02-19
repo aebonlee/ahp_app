@@ -98,7 +98,7 @@ function App() {
           localStorage.setItem('ahp_user', JSON.stringify(parsedUser));
 
           // 전역 변수로도 설정
-          (window as any).__SUPER_ADMIN__ = true;
+          window.__SUPER_ADMIN__ = true;
         }
         return parsedUser;
       } catch {

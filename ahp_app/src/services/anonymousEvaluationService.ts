@@ -565,7 +565,7 @@ function clearLocalSessionData(): void {
 
 function getResponseTime(): number {
   // This would track the time since the comparison was displayed
-  return Date.now() - (window as any).comparisonStartTime || 0;
+  return Date.now() - (window.comparisonStartTime ?? 0);
 }
 
 async function getUserIpAddress(): Promise<string | undefined> {
