@@ -844,98 +844,41 @@ function App() {
   // 기준(Criteria) CRUD 함수들
   const fetchCriteria = async (projectId: string) => {
     try {
-      // Django 백엔드의 실제 경로 사용
-      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.criteria || [];
-      }
+      return await cleanDataService.getCriteria(projectId);
     } catch (error) {
-      console.error('Failed to fetch criteria:', error);
+      return [];
     }
-    return [];
   };
 
   const createCriteria = async (projectId: string, criteriaData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/criteria`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ...criteriaData, project_id: projectId }),
+    return await cleanDataService.createCriteria({
+      ...criteriaData,
+      project_id: projectId
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || '기준 추가에 실패했습니다.');
-    }
-
-    return response.json();
   };
 
   // 대안(Alternatives) CRUD 함수들
   const fetchAlternatives = async (projectId: string) => {
     try {
-      // Django 백엔드의 실제 경로 사용 (대안도 criteria API에서 type=alternative로 조회)
-      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}&type=alternative`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.alternatives || [];
-      }
+      return await cleanDataService.getAlternatives(projectId);
     } catch (error) {
-      console.error('Failed to fetch alternatives:', error);
+      return [];
     }
-    return [];
   };
 
   const createAlternative = async (projectId: string, alternativeData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/alternatives`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ...alternativeData, project_id: projectId }),
+    return await cleanDataService.createAlternative({
+      ...alternativeData,
+      project_id: projectId
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || '대안 추가에 실패했습니다.');
-    }
-
-    return response.json();
   };
 
   // 평가 데이터 저장
   const saveEvaluation = async (projectId: string, evaluationData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/evaluate`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ project_id: projectId, ...evaluationData }),
+    return await cleanDataService.saveEvaluation({
+      project_id: projectId,
+      ...evaluationData
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || '평가 저장에 실패했습니다.');
-    }
-
-    return response.json();
   };
 
   // 프로젝트 삭제 (휴지통으로 이동)
@@ -959,85 +902,35 @@ function App() {
   // 휴지통 프로젝트 조회
   const fetchTrashedProjects = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects/trash/list`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.projects || [];
-      }
+      return await cleanDataService.getTrashedProjects();
     } catch (error) {
-      console.error('Failed to fetch trashed projects:', error);
+      return [];
     }
-    return [];
   };
 
   // 휴지통에서 복원
   const restoreProject = async (projectId: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/restore`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || '프로젝트 복원에 실패했습니다.');
+    const success = await cleanDataService.restoreProject(projectId);
+    if (success) {
+      await fetchProjects();
+      return true;
     }
-
-    await fetchProjects(); // 목록 새로고침
-    return response.json();
+    throw new Error('프로젝트 복원에 실패했습니다.');
   };
 
   // 영구 삭제
-  const permanentDeleteProject = async (projectId: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/permanent`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || '영구 삭제에 실패했습니다.');
+  const permanentDeleteProject = async (projectId: string): Promise<void> => {
+    const success = await cleanDataService.permanentDeleteProject(projectId);
+    if (!success) {
+      throw new Error('영구 삭제에 실패했습니다.');
     }
-
-    return response.json();
   };
 
   // 휴지통 오버플로우 처리
   const handleTrashOverflow = async (projectToDeleteAfterCleanup: string) => {
-    try {
-      // 오버플로우 상태 닫기
-      setTrashOverflowData(null);
-      
-      // 선택된 프로젝트를 영구 삭제한 후 원래 프로젝트를 휴지통으로 이동
-      const response = await fetch(`${API_BASE_URL}/api/projects/${projectToDeleteAfterCleanup}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || '프로젝트 삭제에 실패했습니다.');
-      }
-
-      await fetchProjects(); // 목록 새로고침
-      return response.json();
-    } catch (error) {
-      throw error;
-    }
+    setTrashOverflowData(null);
+    await cleanDataService.permanentDeleteProject(projectToDeleteAfterCleanup);
+    await fetchProjects();
   };
 
   const handleTrashOverflowCancel = () => {
