@@ -2044,7 +2044,7 @@ function App() {
                                   try {
                                     await deleteProject(project.id);
                                   } catch {
-                                    window.alert('프로젝트 삭제에 실패했습니다.');
+                                    showActionMessage('error', '프로젝트 삭제에 실패했습니다.');
                                   }
                                 }
                               }}

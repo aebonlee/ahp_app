@@ -4,6 +4,7 @@ import Button from '../common/Button';
 import EvaluatorAssignment from '../admin/EvaluatorAssignment';
 import CanvasModelBuilder from './CanvasModelBuilder';
 import { DEMO_PROJECTS, DEMO_CRITERIA, DEMO_ALTERNATIVES } from '../../data/demoData';
+import { API_BASE_URL } from '../../config/api';
 import { 
   Squares2X2Icon, 
   ListBulletIcon, 
@@ -64,10 +65,6 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
   const [newAlternativeDescription, setNewAlternativeDescription] = useState('');
   const [activeTab, setActiveTab] = useState<'criteria' | 'alternatives' | 'evaluators' | 'settings'>('criteria');
 
-  const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:8000' 
-    : 'https://ahp-django-backend.onrender.com';
-
   // 캔버스 모델 저장 핸들러
   const handleCanvasModelSave = useCallback((canvasNodes: any[]) => {
     setModelData(canvasNodes);
@@ -77,7 +74,6 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     // 실제 API 저장 로직 (여기서는 시뮬레이션)
     setTimeout(() => {
       setSaving(false);
-      console.log('✅ 캔버스 모델 저장 완료:', canvasNodes);
       onSave?.();
     }, 1000);
   }, [onSave]);
@@ -100,8 +96,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       }
 
       // 프로젝트 정보 조회
-      const projectResponse = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
-        
+      const projectResponse = await fetch(`${API_BASE_URL}/api/service/projects/projects/${projectId}/`, {
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -109,35 +104,34 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       const projectData = await projectResponse.json();
 
       // 기준 조회
-      const criteriaResponse = await fetch(`${API_BASE_URL}/api/v1/criteria/?project=${projectId}`, {
+      const criteriaResponse = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}`, {
         headers: { 'Content-Type': 'application/json' },
       });
 
       let criteria: Criterion[] = [];
       if (criteriaResponse.ok) {
         const criteriaData = await criteriaResponse.json();
-        criteria = criteriaData.criteria || [];
+        criteria = criteriaData.results ?? criteriaData.criteria ?? (Array.isArray(criteriaData) ? criteriaData : []);
       }
 
       // 대안 조회
-      const alternativesResponse = await fetch(`${API_BASE_URL}/api/v1/alternatives/?project=${projectId}`, {
-        
+      const alternativesResponse = await fetch(`${API_BASE_URL}/api/service/projects/criteria/?project=${projectId}&type=alternative`, {
         headers: { 'Content-Type': 'application/json' },
       });
 
       let alternatives: Alternative[] = [];
       if (alternativesResponse.ok) {
         const alternativesData = await alternativesResponse.json();
-        alternatives = alternativesData.alternatives || [];
+        alternatives = alternativesData.results ?? alternativesData.alternatives ?? (Array.isArray(alternativesData) ? alternativesData : []);
       }
 
       setProject({
-        ...projectData.project,
+        ...projectData,
         criteria: buildHierarchy(criteria),
         alternatives
       });
-    } catch (error) {
-      console.error('Failed to fetch project:', error);
+    } catch {
+      // project data unavailable — keep empty state
     } finally {
       setLoading(false);
     }
@@ -180,7 +174,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       setSaving(true);
       const level = parentId ? getLevel(parentId) + 1 : 1;
       
-      const response = await fetch(`${API_BASE_URL}/api/v1/criteria/`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -201,8 +195,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       setNewCriterionDescription('');
       setEditingCriterion(null);
       fetchProject();
-    } catch (error) {
-      console.error('Failed to add criterion:', error);
+    } catch {
+      // save failure — state unchanged
     } finally {
       setSaving(false);
     }
@@ -214,9 +208,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
     try {
       setSaving(true);
       
-      const response = await fetch(`${API_BASE_URL}/api/v1/alternatives/`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/`, {
         method: 'POST',
-        
         headers: {
           'Content-Type': 'application/json',
         },
@@ -224,6 +217,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
           project_id: projectId,
           name: newAlternativeName,
           description: newAlternativeDescription,
+          type: 'alternative',
           order_index: (project?.alternatives.length || 0) + 1
         }),
       });
@@ -234,8 +228,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       setNewAlternativeDescription('');
       setEditingAlternative(null);
       fetchProject();
-    } catch (error) {
-      console.error('Failed to add alternative:', error);
+    } catch {
+      // save failure — state unchanged
     } finally {
       setSaving(false);
     }
@@ -243,31 +237,29 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
   const deleteCriterion = async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/criteria/${id}/`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/${id}/`, {
         method: 'DELETE',
-        
         headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) throw new Error('Failed to delete criterion');
       fetchProject();
-    } catch (error) {
-      console.error('Failed to delete criterion:', error);
+    } catch {
+      // delete failure — state unchanged
     }
   };
 
   const deleteAlternative = async (id: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/alternatives/${id}/`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/projects/criteria/${id}/`, {
         method: 'DELETE',
-        
         headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) throw new Error('Failed to delete alternative');
       fetchProject();
-    } catch (error) {
-      console.error('Failed to delete alternative:', error);
+    } catch {
+      // delete failure — state unchanged
     }
   };
 

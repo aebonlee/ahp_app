@@ -1,9 +1,10 @@
 // Subscription and Payment Service
-import { 
-  SubscriptionPlan, 
-  UserSubscription, 
-  SubscriptionUsage, 
-  PaymentRequest, 
+import { API_BASE_URL } from '../config/api';
+import {
+  SubscriptionPlan,
+  UserSubscription,
+  SubscriptionUsage,
+  PaymentRequest,
   PaymentResponse,
   SubscriptionResponse,
   ExtendedUser,
@@ -12,16 +13,8 @@ import {
 } from '../types/subscription';
 
 class SubscriptionService {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:8000' 
-      : 'https://ahp-django-backend.onrender.com';
-  }
-
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',

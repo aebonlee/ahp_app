@@ -100,7 +100,7 @@ class ProjectCreationDebugger {
     this.log('API_TEST', 'success', 'API 연결 테스트 시작');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/`, {
+      const response = await fetch(`${API_BASE_URL}/api/service/status/`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',

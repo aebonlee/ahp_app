@@ -114,7 +114,7 @@ class SystemHealthChecker {
     } catch (error: any) {
       // 대체 방법: API를 통해 간접 확인
       try {
-        const testResponse = await axios.get(`${API_BASE_URL}/api/v1/`, {
+        const testResponse = await axios.get(`${API_BASE_URL}/api/service/status/`, {
           timeout: 5000
         });
         
@@ -143,9 +143,9 @@ class SystemHealthChecker {
   async checkAPIEndpoints(): Promise<HealthCheckResult> {
     const startTime = Date.now();
     const endpoints = [
-      '/api/service/projects/',
-      '/api/v1/',
-      '/api/auth/token/verify/'
+      '/api/service/projects/projects/',
+      '/api/service/status/',
+      '/api/service/auth/token/verify/'
     ];
 
     const results: any[] = [];
@@ -202,7 +202,7 @@ class SystemHealthChecker {
   async checkCORS(): Promise<HealthCheckResult> {
     const startTime = Date.now();
     try {
-      const response = await axios.options(`${API_BASE_URL}/api/v1/`, {
+      const response = await axios.options(`${API_BASE_URL}/api/service/status/`, {
         timeout: 5000,
         validateStatus: () => true
       });

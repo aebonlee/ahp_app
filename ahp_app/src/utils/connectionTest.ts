@@ -69,7 +69,7 @@ class ConnectionTester {
       console.log('🔍 API 엔드포인트 테스트 시작...');
 
       const endpoints = [
-        '/api/v1/projects/',
+        '/api/service/projects/projects/',
         '/api/service/auth/profile/', 
         '/health/',
         '/api/service/auth/social/naver/',
@@ -134,7 +134,7 @@ class ConnectionTester {
     try {
       console.log('🔍 프로젝트 API 테스트 시작...');
 
-      const response = await fetch(`${this.baseUrl}/api/v1/projects/`, {
+      const response = await fetch(`${this.baseUrl}/api/service/projects/projects/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
