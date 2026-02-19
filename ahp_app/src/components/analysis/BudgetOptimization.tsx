@@ -66,9 +66,9 @@ const BudgetOptimization: React.FC<BudgetOptimizationProps> = ({
   useEffect(() => {
     if (alternativeScores.length > 0) {
       const items: BudgetItem[] = alternativeScores.map(alt => {
-        const cost = Math.random() * 500000 + 100000; // 임시 비용 (10만~60만)
+        const cost = 0; // 사용자가 실제 비용을 입력해야 함
         const utility = alt.totalScore;
-        const efficiency = utility / cost;
+        const efficiency = cost > 0 ? utility / cost : 0;
         
         return {
           alternativeId: alt.alternativeId,
