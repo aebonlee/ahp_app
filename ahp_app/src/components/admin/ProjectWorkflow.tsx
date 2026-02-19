@@ -7,6 +7,7 @@ import AlternativeManagement from './AlternativeManagement';
 import EvaluatorAssignment from './EvaluatorAssignment';
 import ProjectCompletion from './ProjectCompletion';
 import dataService from '../../services/dataService_clean';
+import apiService from '../../services/apiService';
 import { ProjectData } from '../../services/api';
 
 interface ProjectWorkflowProps {
@@ -109,9 +110,11 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
   const handleProjectStatusChange = async (status: 'terminated' | 'completed') => {
     try {
       if (workflowState.projectId) {
-        // TODO: API를 통한 프로젝트 상태 업데이트
-        console.log(`프로젝트 ${workflowState.projectId} 상태 변경: ${status}`);
-        
+        const apiStatus = status === 'completed' ? 'completed' : 'archived';
+        await apiService.patch(
+          `/api/service/projects/projects/${workflowState.projectId}/`,
+          { status: apiStatus, workflow_stage: status === 'completed' ? 'completed' : 'terminated' }
+        );
         if (status === 'completed' && onComplete) {
           onComplete();
         } else if (status === 'terminated' && onCancel) {

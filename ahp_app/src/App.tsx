@@ -1305,7 +1305,6 @@ function App() {
   };
 
   const handleProjectStatusChange = (status: 'terminated' | 'completed') => {
-    console.log(`📊 프로젝트 ${selectedProjectId} 상태 변경: ${status}`);
     changeTab('personal-projects');
     setSelectedProjectId(null);
     setSelectedProjectTitle('');
@@ -1980,7 +1979,6 @@ function App() {
         );
 
       case 'personal-projects':
-        console.log('🔍 프로젝트 관리 렌더링 - 현재 프로젝트:', projects);
         return (
           <Card title="프로젝트 관리">
             {loading ? (
@@ -2024,8 +2022,8 @@ function App() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                // TODO: 편집 기능 구현
-                                console.log('편집:', project.id);
+                                handleProjectSelect(project.id, project.title);
+                                setActiveTab('model-building');
                               }}
                               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               title="편집"
@@ -2060,12 +2058,15 @@ function App() {
                               <UIIcon emoji="📊" preset="button" color="info" hover />
                             </button>
                             <button
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                // TODO: 삭제 기능 구현
                                 if (window.confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
-                                  console.log('삭제:', project.id);
+                                  try {
+                                    await deleteProject(project.id);
+                                  } catch {
+                                    window.alert('프로젝트 삭제에 실패했습니다.');
+                                  }
                                 }
                               }}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
