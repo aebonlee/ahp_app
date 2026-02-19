@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import './index.css';
 import './App.css';
 import sessionService from './services/sessionService';
@@ -7,70 +7,73 @@ import cleanDataService from './services/dataService_clean';
 import { setAPIKeyDirectly } from './utils/aiInitializer';
 import type { User, UserRole } from './types';
 import Layout from './components/layout/Layout';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import LoginForm from './components/auth/LoginForm';
 import UnifiedAuthPage from './components/auth/UnifiedAuthPage';
 import RegisterForm from './components/auth/RegisterForm';
 import HomePage from './components/home/HomePage';
-// import WelcomeDashboard from './components/admin/WelcomeDashboard'; // 더 이상 사용하지 않음
 import Card from './components/common/Card';
 import UIIcon, { EditIcon, DeleteIcon } from './components/common/UIIcon';
 import ApiErrorModal from './components/common/ApiErrorModal';
 import TrashOverflowModal from './components/common/TrashOverflowModal';
-import PairwiseComparison from './components/comparison/PairwiseComparison';
-import ResultsDashboard from './components/results/ResultsDashboard';
-import AHPProjectManager from './components/ahp/AHPProjectManager';
 import LandingPage from './components/admin/LandingPage';
-import EnhancedSuperAdminDashboard from './components/admin/EnhancedSuperAdminDashboard';
-import PersonalServiceDashboard from './components/admin/PersonalServiceDashboard';
-import ModelBuilding from './components/admin/ModelBuilding';
-import EvaluationResults from './components/admin/EvaluationResults';
-import ProjectCompletion from './components/admin/ProjectCompletion';
-import ProjectWorkflow from './components/admin/ProjectWorkflow';
-import UserManagement from './components/admin/UserManagement';
-import RealUserManagement from './components/admin/RealUserManagement';
-import ProjectSelection from './components/evaluator/ProjectSelection';
-import PairwiseEvaluation from './components/evaluator/PairwiseEvaluation';
-import DirectInputEvaluation from './components/evaluator/DirectInputEvaluation';
-import ComprehensiveUserGuide from './components/guide/ComprehensiveUserGuide';
-import ResearcherGuidePage from './components/guide/ResearcherGuidePage';
-import EvaluatorGuidePage from './components/guide/EvaluatorGuidePage';
-import AIResearchGuidePage from './components/guide/AIResearchGuidePage';
-import EvaluatorDashboard from './components/evaluator/EvaluatorDashboard';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import EvaluatorSurveyPage from './components/survey/EvaluatorSurveyPage';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import DemographicSurvey from './components/survey/DemographicSurvey';
-import EvaluationTest from './components/evaluation/EvaluationTest';
 import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import QRCodeEvaluatorAssignment from './components/evaluation/QRCodeEvaluatorAssignment';
 import AnonymousEvaluator from './components/evaluation/AnonymousEvaluator';
-import ConnectionTestPage from './components/demo/ConnectionTestPage';
-import RoleBasedDashboard from './components/common/RoleBasedDashboard';
-import DjangoAdminIntegration from './components/admin/DjangoAdminIntegration';
-import SuperAdminDashboard from './components/superadmin/SuperAdminDashboard';
-import RoleSwitcher from './components/superadmin/RoleSwitcher';
-import SystemReset from './components/superadmin/SystemReset';
-import AllProjectsManagement from './components/superadmin/AllProjectsManagement';
-import SystemInfo from './components/superadmin/SystemInfo';
-import SystemMonitoring from './components/superadmin/SystemMonitoring';
-import SystemSettings from './components/superadmin/SystemSettings';
-import PaymentOptionsPage from './components/superadmin/PaymentOptionsPage';
-import AHPMethodologyPage from './components/methodology/AHPMethodologyPage';
-import FuzzyAHPMethodologyPage from './components/methodology/FuzzyAHPMethodologyPage';
-import AIPaperGenerationPage from './components/ai-paper/AIPaperGenerationPage';
-import AIResultsInterpretationPage from './components/ai-interpretation/AIResultsInterpretationPage';
-import AIQualityValidationPage from './components/ai-quality/AIQualityValidationPage';
-import AIMaterialsGenerationPage from './components/ai-materials/AIMaterialsGenerationPage';
-import AIChatbotAssistantPage from './components/ai-chatbot/AIChatbotAssistantPage';
-import TestPage from './pages/TestPage';
-import SystemHealthPage from './pages/SystemHealthPage';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import projectDebugger from './utils/projectDebugger';
 import { useTheme } from './hooks/useTheme';
-// DEMO 데이터 제거 - 실제 DB만 사용
+
+// ── Lazy-loaded pages (code splitting) ─────────────────────────────────────
+const PairwiseComparison        = lazy(() => import('./components/comparison/PairwiseComparison'));
+const ResultsDashboard          = lazy(() => import('./components/results/ResultsDashboard'));
+const AHPProjectManager         = lazy(() => import('./components/ahp/AHPProjectManager'));
+const EnhancedSuperAdminDashboard = lazy(() => import('./components/admin/EnhancedSuperAdminDashboard'));
+const PersonalServiceDashboard  = lazy(() => import('./components/admin/PersonalServiceDashboard'));
+const ModelBuilding             = lazy(() => import('./components/admin/ModelBuilding'));
+const EvaluationResults         = lazy(() => import('./components/admin/EvaluationResults'));
+const ProjectCompletion         = lazy(() => import('./components/admin/ProjectCompletion'));
+const ProjectWorkflow           = lazy(() => import('./components/admin/ProjectWorkflow'));
+const UserManagement            = lazy(() => import('./components/admin/UserManagement'));
+const RealUserManagement        = lazy(() => import('./components/admin/RealUserManagement'));
+const DjangoAdminIntegration    = lazy(() => import('./components/admin/DjangoAdminIntegration'));
+const ProjectSelection          = lazy(() => import('./components/evaluator/ProjectSelection'));
+const PairwiseEvaluation        = lazy(() => import('./components/evaluator/PairwiseEvaluation'));
+const DirectInputEvaluation     = lazy(() => import('./components/evaluator/DirectInputEvaluation'));
+const EvaluatorDashboard        = lazy(() => import('./components/evaluator/EvaluatorDashboard'));
+const ComprehensiveUserGuide    = lazy(() => import('./components/guide/ComprehensiveUserGuide'));
+const ResearcherGuidePage       = lazy(() => import('./components/guide/ResearcherGuidePage'));
+const EvaluatorGuidePage        = lazy(() => import('./components/guide/EvaluatorGuidePage'));
+const AIResearchGuidePage       = lazy(() => import('./components/guide/AIResearchGuidePage'));
+const EvaluationTest            = lazy(() => import('./components/evaluation/EvaluationTest'));
+const ConnectionTestPage        = lazy(() => import('./components/demo/ConnectionTestPage'));
+const RoleBasedDashboard        = lazy(() => import('./components/common/RoleBasedDashboard'));
+const SuperAdminDashboard       = lazy(() => import('./components/superadmin/SuperAdminDashboard'));
+const RoleSwitcher              = lazy(() => import('./components/superadmin/RoleSwitcher'));
+const SystemReset               = lazy(() => import('./components/superadmin/SystemReset'));
+const AllProjectsManagement     = lazy(() => import('./components/superadmin/AllProjectsManagement'));
+const SystemInfo                = lazy(() => import('./components/superadmin/SystemInfo'));
+const SystemMonitoring          = lazy(() => import('./components/superadmin/SystemMonitoring'));
+const SystemSettings            = lazy(() => import('./components/superadmin/SystemSettings'));
+const PaymentOptionsPage        = lazy(() => import('./components/superadmin/PaymentOptionsPage'));
+const AHPMethodologyPage        = lazy(() => import('./components/methodology/AHPMethodologyPage'));
+const FuzzyAHPMethodologyPage   = lazy(() => import('./components/methodology/FuzzyAHPMethodologyPage'));
+const AIPaperGenerationPage     = lazy(() => import('./components/ai-paper/AIPaperGenerationPage'));
+const AIResultsInterpretationPage = lazy(() => import('./components/ai-interpretation/AIResultsInterpretationPage'));
+const AIQualityValidationPage   = lazy(() => import('./components/ai-quality/AIQualityValidationPage'));
+const AIMaterialsGenerationPage = lazy(() => import('./components/ai-materials/AIMaterialsGenerationPage'));
+const AIChatbotAssistantPage    = lazy(() => import('./components/ai-chatbot/AIChatbotAssistantPage'));
+const TestPage                  = lazy(() => import('./pages/TestPage'));
+const SystemHealthPage          = lazy(() => import('./pages/SystemHealthPage'));
+// ───────────────────────────────────────────────────────────────────────────
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[400px]">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+           style={{ borderColor: 'var(--accent-primary)' }}></div>
+      <p style={{ color: 'var(--text-secondary)' }}>페이지 로딩 중...</p>
+    </div>
+  </div>
+);
 
 function App() {
   // Initialize theme systems
@@ -2237,7 +2240,9 @@ function App() {
           onLogout={handleLogout}
           onModeSwitch={handleModeSwitch}
         >
-          {renderContent()}
+          <Suspense fallback={<PageLoader />}>
+            {renderContent()}
+          </Suspense>
         </Layout>
         <ApiErrorModal
           isVisible={showApiErrorModal}
@@ -2265,7 +2270,9 @@ function App() {
           {actionMessage.text}
         </div>
       )}
-      {renderContent()}
+      <Suspense fallback={<PageLoader />}>
+        {renderContent()}
+      </Suspense>
       <ApiErrorModal
         isVisible={showApiErrorModal}
         onClose={handleCloseApiError}
