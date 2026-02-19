@@ -19,7 +19,6 @@ import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
 import AnonymousEvaluator from './components/evaluation/AnonymousEvaluator';
 import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
-import projectDebugger from './utils/projectDebugger';
 import { useTheme } from './hooks/useTheme';
 
 // ── Lazy-loaded pages (code splitting) ─────────────────────────────────────
@@ -815,10 +814,6 @@ function App() {
   // 프로젝트 생성 함수 (DB 저장 - dataService_clean 사용)
   // 에러는 re-throw하여 호출한 컴포넌트(ProjectCreation.tsx)에서 폼 내 메시지로 표시
   const createProject = async (projectData: any) => {
-    if (process.env.NODE_ENV === 'development') {
-      await projectDebugger.debugProjectCreation(projectData);
-    }
-
     const newProject = await cleanDataService.createProject({
       title: projectData.title,
       description: projectData.description || '',

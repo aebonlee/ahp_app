@@ -336,11 +336,9 @@ class ProjectCreationDebugger {
 // Singleton 인스턴스
 const projectDebugger = new ProjectCreationDebugger();
 
-// 전역 객체에 등록 (브라우저 콘솔에서 사용 가능)
-if (typeof window !== 'undefined') {
+// 개발 환경에서만 전역 객체에 등록 (브라우저 콘솔에서 사용 가능)
+if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   (window as any).projectDebugger = projectDebugger;
-  console.log('💡 프로젝트 디버거가 활성화되었습니다.');
-  console.log('콘솔에서 projectDebugger.quickDiagnose()를 실행하여 문제를 진단하세요.');
 }
 
 export default projectDebugger;
