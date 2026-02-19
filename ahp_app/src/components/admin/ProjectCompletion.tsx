@@ -492,7 +492,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
             {actions.map((action) => (
               <button
                 key={action.id}
-                onClick={() => { setSelectedAction(action.id as any); setIsConfirming(false); }}
+                onClick={() => { setSelectedAction(action.id as 'test' | 'sendEmail' | 'terminate' | 'complete' | 'lock' | 'export'); setIsConfirming(false); }}
                 className={`p-4 border-2 rounded-lg text-left transition-all hover:shadow-md ${
                   selectedAction === action.id
                     ? action.danger
@@ -558,7 +558,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
                     type="radio"
                     value={format.value}
                     checked={exportFormat === format.value}
-                    onChange={(e) => setExportFormat(e.target.value as any)}
+                    onChange={(e) => setExportFormat(e.target.value as 'excel' | 'pdf' | 'both')}
                     className="text-blue-600"
                   />
                   <div>

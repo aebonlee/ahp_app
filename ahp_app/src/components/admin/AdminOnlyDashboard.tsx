@@ -151,7 +151,7 @@ const AdminOnlyDashboard: React.FC<AdminOnlyDashboardProps> = ({ user, onTabChan
         : 0;
 
     const healthData =
-      healthRes.status === 'fulfilled' ? (healthRes.value as any) : {};
+      healthRes.status === 'fulfilled' ? (healthRes.value as { status?: string }) : {};
     const systemHealth: SystemStats['systemHealth'] =
       healthData?.status === 'healthy' ? 'healthy' : 'warning';
 
@@ -225,11 +225,11 @@ const AdminOnlyDashboard: React.FC<AdminOnlyDashboardProps> = ({ user, onTabChan
       evals.forEach(e => {
         const evaluatorName =
           e.evaluator && typeof e.evaluator === 'object'
-            ? (e.evaluator as any).username || (e.evaluator as any).email
+            ? e.evaluator.username || e.evaluator.email
             : '알 수 없음';
         const projectTitle =
           e.project && typeof e.project === 'object'
-            ? (e.project as any).title
+            ? e.project.title
             : String(e.project ?? '');
         activities.push({
           id: `eval-${e.id}`,

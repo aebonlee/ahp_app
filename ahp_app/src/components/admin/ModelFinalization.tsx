@@ -48,9 +48,9 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
         }
 
         const criteriaData = criteriaResponse.data;
-        const alternativesData = (alternativesResponse.data as any)?.results
+        const alternativesData = (alternativesResponse.data as { results?: unknown[] } | null)?.results
           ?? (Array.isArray(alternativesResponse.data) ? alternativesResponse.data : []);
-        const evaluatorsData = (evaluatorsResponse.data as any)?.results
+        const evaluatorsData = (evaluatorsResponse.data as { results?: unknown[] } | null)?.results
           ?? (Array.isArray(evaluatorsResponse.data) ? evaluatorsResponse.data : []);
 
         // 배열인지 확인하고 설정
