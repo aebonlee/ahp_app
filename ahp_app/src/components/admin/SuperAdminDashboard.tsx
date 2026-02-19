@@ -79,7 +79,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   onTabChange: externalOnTabChange 
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>(externalActiveTab || 'dashboard');
-  const [stats, setStats] = useState<OperationalStats>({
+  const [stats] = useState<OperationalStats>({
     totalUsers: 1247,
     activeSubscriptions: 892,
     totalProjects: 3456,
@@ -124,7 +124,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
 
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
-  const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
+  const [_subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
 
   // 외부에서 activeTab이 변경되면 내부 상태도 업데이트
   useEffect(() => {

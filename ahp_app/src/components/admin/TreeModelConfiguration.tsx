@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import Input from '../common/Input';
 import Modal from '../common/Modal';
 import HelpModal from '../common/HelpModal';
-import { ProjectStatus, ProjectFormData } from './ProjectCreationForm';
+import { ProjectFormData } from './ProjectCreationForm';
 
 interface Project extends ProjectFormData {
   id: string;
@@ -51,24 +50,15 @@ const TreeModelConfiguration: React.FC<TreeModelConfigurationProps> = ({
   
   // Form states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showNodeForm, setShowNodeForm] = useState(false);
-  const [showAlternativeForm, setShowAlternativeForm] = useState(false);
-  const [editingNode, setEditingNode] = useState<TreeNode | null>(null);
-  const [editingAlternative, setEditingAlternative] = useState<Alternative | null>(null);
-  const [selectedParentId, setSelectedParentId] = useState<string>('');
+  const [_showNodeForm, setShowNodeForm] = useState(false);
+  const [_editingNode, setEditingNode] = useState<TreeNode | null>(null);
+  const [_selectedParentId, setSelectedParentId] = useState<string>('');
 
-  const [nodeForm, setNodeForm] = useState({
+  const [_nodeForm, setNodeForm] = useState({
     name: '',
     description: '',
     parentId: ''
   });
-
-  const [alternativeForm, setAlternativeForm] = useState({
-    name: '',
-    description: ''
-  });
-
-  const [errors, setErrors] = useState<any>({});
 
   // 초기 트리 모델 및 대안 설정
   useEffect(() => {

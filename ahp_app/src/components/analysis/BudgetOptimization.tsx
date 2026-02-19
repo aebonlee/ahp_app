@@ -287,7 +287,7 @@ const BudgetOptimization: React.FC<BudgetOptimizationProps> = ({
       const originalBudget = totalBudget;
       
       // 임시로 예산 변경하여 최적화 수행
-      const tempTotalBudget = totalBudget;
+      const _tempTotalBudget = totalBudget;
       // setTotalBudget을 직접 호출하지 않고 지역 변수 사용
       
       // 간단한 재계산 (실제로는 다시 최적화 수행)

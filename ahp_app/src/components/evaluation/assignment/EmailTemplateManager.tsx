@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DocumentTextIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, PencilIcon } from '@heroicons/react/24/outline';
 import api from '../../../services/api';
 
 interface EmailTemplate {

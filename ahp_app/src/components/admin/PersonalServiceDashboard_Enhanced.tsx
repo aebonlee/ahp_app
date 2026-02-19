@@ -8,9 +8,7 @@ import MyProjects from './MyProjects';
 import ProjectCreation from './ProjectCreation';
 import EnhancedEvaluatorManagement from './EnhancedEvaluatorManagement';
 import TrashBin from './TrashBin';
-import dataService from '../../services/dataService_clean';
-import type { ProjectData } from '../../services/api';
-import type { User, UserProject } from '../../types';
+import type { User } from '../../types';
 
 interface PersonalServiceProps {
   user: User;
@@ -67,7 +65,7 @@ const PersonalServiceDashboard_Enhanced: React.FC<PersonalServiceProps> = ({
   selectedProjectId: externalSelectedProjectId,
   onSelectProject: externalOnSelectProject
 }) => {
-  const [user, setUser] = useState(initialUser);
+  const [user] = useState(initialUser);
   const [activeMenu, setActiveMenu] = useState<string>('dashboard');
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

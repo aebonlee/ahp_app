@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircleIcon, ExclamationTriangleIcon, ShieldCheckIcon, QrCodeIcon } from '@heroicons/react/24/outline';
-import { PhoneIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/solid';
+import { CheckCircleIcon, ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { DevicePhoneMobileIcon } from '@heroicons/react/24/solid';
 import QRCode from 'qrcode';
 import Modal from '../common/Modal';
 
@@ -41,7 +41,6 @@ const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [useBackupCode, setUseBackupCode] = useState(false);
-  const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [showDisableModal, setShowDisableModal] = useState(false);
 
   // Generate TOTP secret and QR code
@@ -160,7 +159,6 @@ const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
       if (verifyTOTPCode(verificationCode, twoFactorSetup.secret)) {
         setSuccess('인증 코드 확인 완료!');
         if (currentMode === 'setup') {
-          setIsSetupComplete(true);
           setStep(3);
         } else {
           onVerificationSuccess?.(verificationCode);
@@ -185,6 +183,7 @@ const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
     if (currentMode === 'setup' && !twoFactorSetup) {
       generateTwoFactorSetup();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMode]);
 
   // Reset error when input changes

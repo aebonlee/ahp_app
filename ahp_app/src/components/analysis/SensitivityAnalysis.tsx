@@ -107,7 +107,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
   const [rankChanges, setRankChanges] = useState<RankChange[]>([]);
   const [stabilityIndex, setStabilityIndex] = useState<number>(1);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [visualizationData, setVisualizationData] = useState<any[]>([]);
+  const [_visualizationData, setVisualizationData] = useState<any[]>([]);
 
   // 새로운 고급 분석 상태
   const [extendedSensitivityResults, setExtendedSensitivityResults] = useState<ExtendedSensitivityResult[]>([]);
@@ -729,7 +729,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
   // 스냅샷 캡처
   const captureSnapshot = () => {
     const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    const _context = canvas.getContext('2d');
     // 여기에 차트/그래프 캡처 로직 구현
     // 실제로는 Chart.js나 D3.js 등의 차트 라이브러리 사용
     

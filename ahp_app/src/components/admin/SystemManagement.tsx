@@ -47,9 +47,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
 
   // Cleanup all monitor intervals on unmount
   useEffect(() => {
-    return () => {
-      monitorIntervalsRef.current.forEach(clearInterval);
-    };
+    const intervals = monitorIntervalsRef.current;
+    return () => { intervals.forEach(clearInterval); };
   }, []);
 
   const loadSystemData = async () => {

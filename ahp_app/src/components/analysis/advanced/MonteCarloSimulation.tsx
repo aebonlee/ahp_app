@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { BeakerIcon } from '@heroicons/react/24/outline';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../../../services/api';
 
 interface MonteCarloSimulationProps {

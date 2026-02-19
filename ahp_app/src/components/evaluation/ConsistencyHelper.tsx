@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  calculateAHP,
-  buildComparisonMatrix,
-  type ComparisonInput
+import {
+  calculateAHP
 } from '../../utils/ahpCalculator';
 
 interface InconsistencyAdvice {

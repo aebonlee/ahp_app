@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import CRBadge from './CRBadge';
-import { calculateAHP, buildComparisonMatrix } from '../../utils/ahpCalculator';
+import { calculateAHP } from '../../utils/ahpCalculator';
 
 interface PairwiseComparison {
   i: number;
@@ -58,7 +58,7 @@ const PairwiseGrid: React.FC<PairwiseGridProps> = ({
   showProgress = true
 }) => {
   const [comparisons, setComparisons] = useState<PairwiseComparison[]>(initialComparisons);
-  const [matrix, setMatrix] = useState<number[][]>([]);
+  const [_matrix, setMatrix] = useState<number[][]>([]);
   const [consistencyRatio, setConsistencyRatio] = useState<number>(0);
   const [activeCell, setActiveCell] = useState<{i: number, j: number} | null>(null);
   const [completedCount, setCompletedCount] = useState<number>(0);
@@ -231,7 +231,7 @@ const PairwiseGrid: React.FC<PairwiseGridProps> = ({
                 </td>
                 {elements.map((_, j) => {
                   const value = getValue(i, j);
-                  const isActive = i < j; // 상삼각만 활성
+                  const _isActive = i < j; // 상삼각만 활성
                   const isSelected = activeCell?.i === i && activeCell?.j === j;
                   
                   return (

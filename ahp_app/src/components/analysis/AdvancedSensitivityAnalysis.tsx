@@ -3,7 +3,7 @@
  * 다양한 시나리오별 민감도 분석 및 시각화
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 
@@ -287,7 +287,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
           weightChanges: { [criterion.id]: threshold },
           enabled: true
         };
-        const newScore = calculateNewScore(alt, scenario.weightChanges);
+        const _newScore = calculateNewScore(alt, scenario.weightChanges);
         const newRanking = projectData.alternatives.map(a => ({
           ...a,
           newScore: calculateNewScore(a, scenario.weightChanges)
@@ -325,7 +325,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
       };
 
       const hasRankChange = projectData.alternatives.some(alt => {
-        const newScore = calculateNewScore(alt, testScenario.weightChanges);
+        const _newScore = calculateNewScore(alt, testScenario.weightChanges);
         const newRanking = projectData.alternatives.map(a => ({
           ...a,
           newScore: calculateNewScore(a, testScenario.weightChanges)

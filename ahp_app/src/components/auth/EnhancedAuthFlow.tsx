@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import UnifiedAuthPage from './UnifiedAuthPage';
 import TwoFactorAuth from './TwoFactorAuth';
 import AdminSelectPage from './AdminSelectPage';

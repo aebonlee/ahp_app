@@ -28,7 +28,7 @@ const FuzzyMatrixGrid: React.FC<FuzzyMatrixGridProps> = ({
 }) => {
   const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null);
   const [viewMode, setViewMode] = useState<'compact' | 'detailed'>('compact');
-  const n = items.length;
+  const _n = items.length;
 
   // 비교값 조회
   const getComparisonValue = (i: number, j: number): TriangularFuzzyNumber => {

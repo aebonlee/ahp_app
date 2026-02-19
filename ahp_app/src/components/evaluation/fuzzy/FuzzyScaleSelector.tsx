@@ -111,7 +111,7 @@ const FuzzyScaleSelector: React.FC<FuzzyScaleSelectorProps> = ({
   };
 
   // 현재 선택된 척도 찾기
-  const currentScale = FUZZY_SCALES.find(s => s.term === selectedScale) || FUZZY_SCALES[0];
+  const _currentScale = FUZZY_SCALES.find(s => s.term === selectedScale) || FUZZY_SCALES[0];
 
   return (
     <div className={`space-y-4 ${className}`}>

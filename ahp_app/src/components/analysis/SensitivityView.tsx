@@ -52,11 +52,11 @@ const SensitivityView: React.FC<SensitivityViewProps> = ({
   onReset,
   onExport
 }) => {
-  const [selectedCriterion, setSelectedCriterion] = useState<string>(criteria[0]?.id || '');
+  const [selectedCriterion] = useState<string>(criteria[0]?.id || '');
   const [weightSliders, setWeightSliders] = useState<{ [id: string]: number }>({});
   const [sensitivityData, setSensitivityData] = useState<SensitivityData[]>([]);
   const [chartType, setChartType] = useState<'radar' | 'bar' | 'line'>('bar');
-  const [stabilityIndex, setStabilityIndex] = useState<number>(1.0);
+  const [stabilityIndex] = useState<number>(1.0);
   const [criticalThresholds, setCriticalThresholds] = useState<{ [criterionId: string]: number[] }>({});
 
   useEffect(() => {

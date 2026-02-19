@@ -5,7 +5,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import Modal from '../common/Modal';
 import { UIIcon } from '../common/UIIcon';
 import Tooltip from '../common/Tooltip';
 import AIServicePlanManager from './ai-management/AIServicePlanManager';

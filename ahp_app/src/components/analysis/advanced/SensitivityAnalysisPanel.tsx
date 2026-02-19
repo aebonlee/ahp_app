@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   ChartBarIcon,
   ExclamationCircleIcon,
-  CheckCircleIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon
+  CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import {
-  LineChart, Line, BarChart, Bar, RadarChart, Radar, PolarGrid,
+  BarChart, Bar, RadarChart, Radar, PolarGrid,
   PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, Area, AreaChart
+  Tooltip, Legend, ResponsiveContainer, Area, AreaChart, Line
 } from 'recharts';
 import api from '../../../services/api';
 
@@ -32,7 +30,7 @@ const SensitivityAnalysisPanel: React.FC<SensitivityAnalysisPanelProps> = ({ pro
   const [overallStability, setOverallStability] = useState(0);
   const [interpretation, setInterpretation] = useState('');
   const [variationRange, setVariationRange] = useState(0.3);
-  const [selectedCriteria, setSelectedCriteria] = useState<number[]>([0, 1, 2]);
+  const [selectedCriteria] = useState<number[]>([0, 1, 2]);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {

@@ -328,10 +328,10 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
     
     scenarios.forEach(budgetChangePercent => {
       const adjustedBudget = constraint.totalBudget * (1 + budgetChangePercent / 100);
-      const originalConstraint = { ...constraint };
+      const _originalConstraint = { ...constraint };
       
       // 임시로 예산 변경
-      const tempConstraint = { ...constraint, totalBudget: adjustedBudget };
+      const _tempConstraint = { ...constraint, totalBudget: adjustedBudget };
       
       // 새로운 최적화 수행 (간단한 추정)
       let newResult: OptimizationResult;
