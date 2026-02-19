@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Card from '../common/Card';
-import Button from '../common/Button';
 
 interface PaymentPlan {
   id: string;
@@ -85,12 +84,6 @@ const PaymentSystem: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [paymentMethod, setPaymentMethod] = useState<string>('card');
 
-  const handlePayment = (planId: string) => {
-    // 결제 프로세스 시작
-    console.log('결제 시작:', planId);
-    // TODO: PG사 연동
-  };
-
   const getDiscountedPrice = (price: number): number => {
     if (billingCycle === 'yearly') {
       return Math.floor(price * 10); // 2개월 할인
@@ -100,6 +93,31 @@ const PaymentSystem: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      {/* 미구현 안내 배너 */}
+      <div className="mb-8 rounded-xl border-2 border-amber-300 bg-amber-50 p-6 text-center shadow-sm">
+        <div className="text-4xl mb-3">🚧</div>
+        <h2 className="text-xl font-bold text-amber-900 mb-2">결제 시스템 연동 준비 중입니다</h2>
+        <p className="text-amber-800 mb-1">
+          <strong>KG이니시스</strong> 카드 결제 연동 작업이 진행 중입니다.
+          아래 요금제는 <strong>미리보기</strong>이며 현재 실제 결제는 처리되지 않습니다.
+        </p>
+        <p className="text-sm text-amber-700 mb-4">
+          연동 완료 후 신용카드·체크카드 결제가 가능해집니다.
+        </p>
+        <div className="inline-flex flex-col sm:flex-row gap-3 justify-center">
+          <a
+            href="mailto:contact@ahp-platform.com"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-amber-600 text-white font-medium hover:bg-amber-700 transition-colors"
+          >
+            ✉ 요금제 문의하기
+          </a>
+          <span className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white border border-amber-300 text-amber-800 text-sm">
+            🕐 오픈 예정 — 출시 시 이메일로 안내드립니다
+          </span>
+        </div>
+      </div>
+
       {/* 요금제 선택 */}
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -217,17 +235,11 @@ const PaymentSystem: React.FC = () => {
               </ul>
 
               <button
-                className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
-                  selectedPlan === plan.id 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePayment(plan.id);
-                }}
+                className="w-full px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-400 cursor-not-allowed"
+                disabled
+                onClick={(e) => e.stopPropagation()}
               >
-                {plan.id === 'free' ? '무료 시작' : '선택하기'}
+                🚧 준비 중
               </button>
             </div>
           </div>
@@ -242,34 +254,47 @@ const PaymentSystem: React.FC = () => {
             <div>
               <h4 className="font-semibold mb-4">결제 수단</h4>
               <div className="space-y-3">
+                {/* KG이니시스 카드 결제 (오픈 예정) */}
                 {[
-                  { id: 'card', name: '신용/체크카드', icon: '💳' },
-                  { id: 'kakao', name: '카카오페이', icon: '🟡' },
-                  { id: 'naver', name: '네이버페이', icon: '🟢' },
-                  { id: 'toss', name: '토스페이', icon: '🔵' },
-                  { id: 'transfer', name: '계좌이체', icon: '🏦' }
+                  { id: 'card', name: '신용/체크카드', icon: '💳', available: true },
+                  { id: 'kakao', name: '카카오페이', icon: '🟡', available: false },
+                  { id: 'naver', name: '네이버페이', icon: '🟢', available: false },
+                  { id: 'toss', name: '토스페이', icon: '🔵', available: false },
+                  { id: 'transfer', name: '계좌이체', icon: '🏦', available: false }
                 ].map((method) => (
-                  <label
+                  <div
                     key={method.id}
-                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                      paymentMethod === method.id
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                    className={`flex items-center justify-between p-3 border rounded-lg ${
+                      method.available
+                        ? 'border-blue-200 bg-blue-50'
+                        : 'border-gray-100 bg-gray-50 opacity-60'
                     }`}
                   >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value={method.id}
-                      checked={paymentMethod === method.id}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="mr-3"
-                    />
-                    <span className="text-xl mr-3">{method.icon}</span>
-                    <span className="font-medium">{method.name}</span>
-                  </label>
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value={method.id}
+                        checked={paymentMethod === method.id}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        disabled={!method.available}
+                        className="mr-3"
+                      />
+                      <span className="text-xl mr-3">{method.icon}</span>
+                      <span className={`font-medium ${!method.available ? 'text-gray-400' : ''}`}>
+                        {method.name}
+                      </span>
+                    </div>
+                    {method.available
+                      ? <span className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-0.5 rounded">KG이니시스</span>
+                      : <span className="text-xs text-gray-400">준비 중</span>
+                    }
+                  </div>
                 ))}
               </div>
+              <p className="mt-3 text-xs text-gray-500">
+                * KG이니시스 카드 결제는 연동 완료 후 활성화됩니다
+              </p>
             </div>
 
             {/* 결제 요약 */}
@@ -317,11 +342,14 @@ const PaymentSystem: React.FC = () => {
                 </div>
 
                 <div className="mt-6">
-                  <Button variant="primary" size="lg" className="w-full">
-                    결제하기
-                  </Button>
+                  <button
+                    disabled
+                    className="w-full px-4 py-3 rounded-lg font-semibold bg-gray-200 text-gray-400 cursor-not-allowed"
+                  >
+                    🚧 결제 시스템 준비 중
+                  </button>
                   <p className="text-xs text-gray-500 text-center mt-3">
-                    결제 시 이용약관 및 개인정보처리방침에 동의하는 것으로 간주됩니다
+                    결제 기능은 PG사 연동 완료 후 활성화됩니다
                   </p>
                 </div>
               </div>
@@ -331,9 +359,9 @@ const PaymentSystem: React.FC = () => {
                 <div className="flex items-center">
                   <span className="text-green-600 text-xl mr-3">🔒</span>
                   <div>
-                    <h5 className="font-medium text-green-900">안전한 결제</h5>
+                    <h5 className="font-medium text-green-900">KG이니시스 안전 결제</h5>
                     <p className="text-sm text-green-700">
-                      모든 결제는 PG사를 통해 안전하게 처리됩니다
+                      모든 카드 결제는 KG이니시스 PG를 통해 SSL 암호화되어 안전하게 처리됩니다
                     </p>
                   </div>
                 </div>
