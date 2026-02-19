@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../../config/api';
+import api from '../../services/api';
 
 interface SupportPost {
   id: number;
@@ -48,18 +48,15 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const url = `${API_BASE_URL}/api/support/posts?category=${selectedCategory}&limit=50`;
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data.success) {
-        setPosts(data.posts);
+      const response = await api.get(`/api/service/support/posts/?category=${selectedCategory}&limit=50`);
+      if (response.success) {
+        const data = response.data;
+        setPosts(Array.isArray(data) ? data : (data?.posts || data?.results || []));
       } else {
-        setError('게시글을 불러오는데 실패했습니다.');
+        setError(response.error || '게시글을 불러오는데 실패했습니다.');
       }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      setError('서버 연결에 실패했습니다.');
+    } catch (error: any) {
+      setError(error.message || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -73,27 +70,17 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/support/posts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newPost)
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
+      const response = await api.post(`/api/service/support/posts/`, newPost);
+      if (response.success) {
         setNewPost({ title: '', content: '', category: 'general', author_name: '', author_email: '' });
         setShowNewPostForm(false);
         setError('');
-        await fetchPosts(); // 목록 새로고침
+        await fetchPosts();
       } else {
-        setError(data.error || '게시글 작성에 실패했습니다.');
+        setError(response.error || '게시글 작성에 실패했습니다.');
       }
-    } catch (error) {
-      console.error('Error submitting post:', error);
-      setError('서버 연결에 실패했습니다.');
+    } catch (error: any) {
+      setError(error.message || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -103,18 +90,16 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
   const fetchPostDetail = async (postId: number) => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/support/posts/${postId}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setSelectedPost(data.post);
-        setPostReplies(data.replies || []);
+      const response = await api.get(`/api/service/support/posts/${postId}/`);
+      if (response.success) {
+        const data = response.data;
+        setSelectedPost(data?.post || data);
+        setPostReplies(data?.replies || []);
       } else {
-        setError('게시글을 불러오는데 실패했습니다.');
+        setError(response.error || '게시글을 불러오는데 실패했습니다.');
       }
-    } catch (error) {
-      console.error('Error fetching post detail:', error);
-      setError('서버 연결에 실패했습니다.');
+    } catch (error: any) {
+      setError(error.message || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -131,26 +116,16 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/support/posts/${selectedPost.id}/replies`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newReply)
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
+      const response = await api.post(`/api/service/support/posts/${selectedPost.id}/replies/`, newReply);
+      if (response.success) {
         setNewReply({ content: '', author_name: '', author_email: '' });
         setError('');
-        await fetchPostDetail(selectedPost.id); // 답글 목록 새로고침
+        await fetchPostDetail(selectedPost.id);
       } else {
-        setError(data.error || '답글 작성에 실패했습니다.');
+        setError(response.error || '답글 작성에 실패했습니다.');
       }
-    } catch (error) {
-      console.error('Error submitting reply:', error);
-      setError('서버 연결에 실패했습니다.');
+    } catch (error: any) {
+      setError(error.message || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }

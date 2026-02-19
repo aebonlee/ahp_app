@@ -3,7 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import dataService from '../../services/dataService_clean';
-import { AlternativeData } from '../../services/api';
+import { AlternativeData, criteriaApi } from '../../services/api';
 
 interface Alternative extends Omit<AlternativeData, 'project_id' | 'position' | 'id'> {
   id: string; // required
@@ -163,12 +163,25 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
     }
 
     try {
-      // TODO: 대안 편집 기능은 추후 구현
+      const response = await criteriaApi.updateCriteria(editingId, {
+        name: editingAlternative.name,
+        description: editingAlternative.description,
+        project_id: projectId
+      });
+      if (!response.success) {
+        setErrors({ general: response.error || '대안 수정에 실패했습니다.' });
+        return;
+      }
+      setAlternatives(prev => prev.map(alt =>
+        alt.id === editingId
+          ? { ...alt, name: editingAlternative.name, description: editingAlternative.description }
+          : alt
+      ));
       setEditingId(null);
       setEditingAlternative({ name: '', description: '' });
       setErrors({});
-    } catch (error) {
-      setErrors({ general: '대안 수정 중 오류가 발생했습니다.' });
+    } catch (error: any) {
+      setErrors({ general: error.message || '대안 수정 중 오류가 발생했습니다.' });
     }
   };
 
