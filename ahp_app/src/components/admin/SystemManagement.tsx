@@ -1084,7 +1084,7 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
           ].map(section => (
             <button
               key={section.id}
-              onClick={() => setActiveSection(section.id as any)}
+              onClick={() => setActiveSection(section.id as 'config' | 'backup' | 'maintenance' | 'updates')}
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                 activeSection === section.id
                   ? 'border-blue-500 text-blue-600'

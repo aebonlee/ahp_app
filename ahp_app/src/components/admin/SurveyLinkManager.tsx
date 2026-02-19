@@ -298,7 +298,7 @@ ${item.projectName} 프로젝트의 AHP 평가에 참여해 주시기 바랍니�
           <select
             className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
+            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'pending' | 'in_progress' | 'completed' | 'expired')}
           >
             <option value="all">전체 상태</option>
             <option value="pending">대기중</option>

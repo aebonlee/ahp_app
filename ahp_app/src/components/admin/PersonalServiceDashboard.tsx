@@ -37,6 +37,8 @@ import type { ProjectData } from '../../services/api';
 import type { User, UserProject } from '../../types';
 // DEMO 데이터 제거 - 실제 DB만 사용
 
+type ActiveMenuTab = 'dashboard' | 'projects' | 'creation' | 'project-wizard' | 'demographic-setup' | 'evaluator-invitation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash' | 'dev-tools';
+
 interface PersonalServiceProps {
   user: User;
   activeTab?: string;
@@ -245,10 +247,10 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     }
   }, [onCreateProject]);
   
-  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'projects' | 'creation' | 'project-wizard' | 'demographic-setup' | 'evaluator-invitation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash' | 'dev-tools'>(() => {
+  const [activeMenu, setActiveMenu] = useState<ActiveMenuTab>(() => {
     // externalActiveTab이 있으면 그것을 우선 사용
     if (externalActiveTab && ['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(externalActiveTab)) {
-      return externalActiveTab as any;
+      return externalActiveTab as ActiveMenuTab;
     }
 
     // URL 파라미터에서 직접 demographic-survey 확인
@@ -333,7 +335,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   // externalActiveTab이 변경되면 activeMenu도 업데이트
   useEffect(() => {
     if (externalActiveTab && ['project-wizard', 'demographic-setup', 'evaluator-invitation'].includes(externalActiveTab)) {
-      setActiveMenu(externalActiveTab as any);
+      setActiveMenu(externalActiveTab as ActiveMenuTab);
     }
   }, [externalActiveTab]);
   
@@ -381,7 +383,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         'demographic-survey': 'demographic-survey'
       };
       const mappedMenu = menuMap[externalActiveTab] || 'dashboard';
-      setActiveMenu(mappedMenu as any);
+      setActiveMenu(mappedMenu as ActiveMenuTab);
     }
   }, [externalActiveTab]);
 
@@ -1746,7 +1748,7 @@ ${project?.title} - ${type} 프레젠테이션
       const mappedTab = tabMap[tab] || 'personal-service';
       externalOnTabChange(mappedTab);
     } else {
-      setActiveMenu(tab as any);
+      setActiveMenu(tab as ActiveMenuTab);
     }
   };
 
@@ -1965,7 +1967,7 @@ ${project?.title} - ${type} 프레젠테이션
               <label className="text-sm font-medium text-gray-700">상태:</label>
               <select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
+                onChange={(e) => setFilterStatus(e.target.value as 'all' | 'draft' | 'active' | 'completed')}
                 className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">전체</option>
@@ -1979,7 +1981,7 @@ ${project?.title} - ${type} 프레젠테이션
               <label className="text-sm font-medium text-gray-700">정렬:</label>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as 'name' | 'date' | 'progress' | 'status')}
                 className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="date">최신순</option>
@@ -2573,7 +2575,7 @@ ${project?.title} - ${type} 프레젠테이션
           {Object.entries(projectTemplates).map(([key, template]) => (
             <button
               key={key}
-              onClick={() => setProjectTemplate(key as any)}
+              onClick={() => setProjectTemplate(key as 'blank' | 'business' | 'technical' | 'academic')}
               aria-label={`${template.name} 템플릿 선택 - ${template.desc}`}
               aria-pressed={projectTemplate === key}
               className={`p-4 text-center border-2 rounded-lg transition-all ${

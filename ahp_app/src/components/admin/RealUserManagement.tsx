@@ -396,7 +396,7 @@ const RealUserManagement: React.FC = () => {
             
             <select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value as any)}
+              onChange={(e) => setRoleFilter(e.target.value as 'all' | 'superuser' | 'staff' | 'normal')}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">모든 역할</option>

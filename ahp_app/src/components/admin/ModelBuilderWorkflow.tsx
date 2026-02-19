@@ -143,7 +143,7 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
   };
 
   const renderProgressBar = () => {
-    const steps = [
+    const steps: { key: WorkflowProgress['currentStep']; label: string; count: number }[] = [
       { key: 'criteria', label: '기준 설정', count: progress.criteriaCount },
       { key: 'alternatives', label: '대안 설정', count: progress.alternativesCount },
       { key: 'evaluators', label: '평가자 배정', count: progress.evaluatorsCount },
@@ -167,7 +167,7 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
                 )}
                 
                 <button
-                  onClick={() => handleStepChange(step.key as any)}
+                  onClick={() => handleStepChange(step.key)}
                   disabled={step.key === 'finalize' && (!progress.criteriaCount || !progress.alternativesCount)}
                   className={`relative z-10 flex flex-col items-center cursor-pointer ${
                     (step.key === 'finalize' && (!progress.criteriaCount || !progress.alternativesCount)) 

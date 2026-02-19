@@ -543,7 +543,7 @@ ${selectedProject?.title} AHP 분석 연구
                 value={generationSettings.academicLevel}
                 onChange={(e) => setGenerationSettings(prev => ({
                   ...prev,
-                  academicLevel: e.target.value as any
+                  academicLevel: e.target.value as 'undergraduate' | 'graduate' | 'academic' | 'professional'
                 }))}
                 className="w-full p-2 border rounded"
                 style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-light)', color: 'var(--text-primary)' }}
@@ -563,7 +563,7 @@ ${selectedProject?.title} AHP 분석 연구
                 value={generationSettings.language}
                 onChange={(e) => setGenerationSettings(prev => ({
                   ...prev,
-                  language: e.target.value as any
+                  language: e.target.value as 'korean' | 'english' | 'bilingual'
                 }))}
                 className="w-full p-2 border rounded"
                 style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-light)', color: 'var(--text-primary)' }}
@@ -582,7 +582,7 @@ ${selectedProject?.title} AHP 분석 연구
                 value={generationSettings.citationStyle}
                 onChange={(e) => setGenerationSettings(prev => ({
                   ...prev,
-                  citationStyle: e.target.value as any
+                  citationStyle: e.target.value as 'apa' | 'mla' | 'chicago' | 'ieee'
                 }))}
                 className="w-full p-2 border rounded"
                 style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-light)', color: 'var(--text-primary)' }}
