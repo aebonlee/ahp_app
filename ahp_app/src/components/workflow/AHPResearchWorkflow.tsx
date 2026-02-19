@@ -140,14 +140,14 @@ const AHPResearchWorkflow: React.FC<AHPResearchWorkflowProps> = ({
       evaluator_id: evaluator.id || `evaluator_${index}`,
       is_group_result: false,
       node_weights: {
-        'criteria_1': 0.4 + Math.random() * 0.2,
-        'criteria_2': 0.3 + Math.random() * 0.2,
-        'criteria_3': 0.3 + Math.random() * 0.2
+        'criteria_1': 0.4,
+        'criteria_2': 0.3,
+        'criteria_3': 0.3
       },
       alternative_scores: {
-        'alt_1': 0.3 + Math.random() * 0.3,
-        'alt_2': 0.3 + Math.random() * 0.3,
-        'alt_3': 0.4 + Math.random() * 0.3
+        'alt_1': 0.33,
+        'alt_2': 0.33,
+        'alt_3': 0.34
       },
       alternative_rankings: [
         { id: 'alt_1', name: '대안 1', score: 0.35, rank: 2 },
@@ -155,9 +155,9 @@ const AHPResearchWorkflow: React.FC<AHPResearchWorkflowProps> = ({
         { id: 'alt_3', name: '대안 3', score: 0.40, rank: 1 }
       ],
       consistency_ratios: {
-        'root': 0.05 + Math.random() * 0.05
+        'root': 0.05
       },
-      overall_consistency: 0.05 + Math.random() * 0.05,
+      overall_consistency: 0.05,
       calculation_timestamp: new Date().toISOString()
     }));
 

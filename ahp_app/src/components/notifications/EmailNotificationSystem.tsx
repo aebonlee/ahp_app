@@ -334,9 +334,9 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
       facilitator_name: settings?.senderInfo.name || '워크숍 진행자',
       organization: settings?.senderInfo.organization || 'TechCorp',
       contact_info: settings?.senderInfo.email || 'facilitator@company.com',
-      completion_rate: `${Math.floor(Math.random() * 30 + 70)}`,
-      remaining_items: `${Math.floor(Math.random() * 5 + 1)}`,
-      estimated_time: `${Math.floor(Math.random() * 20 + 10)}`,
+      completion_rate: `${participant.completionRate ?? participant.completion_rate ?? 0}`,
+      remaining_items: customData.remaining_items || '0',
+      estimated_time: customData.estimated_time || '30',
       hours_remaining: customData.hours_remaining || '24',
       ...customData
     };

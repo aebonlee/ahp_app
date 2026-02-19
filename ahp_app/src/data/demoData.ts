@@ -1134,11 +1134,15 @@ export const DEMO_WORKFLOW_STATUS = {
 
 // Demo mode check
 export const isBackendAvailable = async (): Promise<boolean> => {
+  const { API_BASE_URL } = await import('../config/api');
   try {
-    const response = await fetch('https://ahp-platform.onrender.com/api/health', {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(`${API_BASE_URL}/api/health`, {
       method: 'GET',
-      timeout: 5000
-    } as any);
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
     return response.ok;
   } catch {
     return false;

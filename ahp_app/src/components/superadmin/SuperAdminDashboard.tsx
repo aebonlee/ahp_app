@@ -172,9 +172,9 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
         systemHealth: parseFloat(sizeInMB) < 5 ? 'healthy' : 'warning',
         databaseSize: `${sizeInMB} MB`,
         serverUptime: `${uptimeDays || 0} days`,
-        cpuUsage: Math.floor(Math.random() * 30 + 20), // 실제 CPU 사용량은 브라우저에서 직접 접근 불가
-        memoryUsage: memoryInfo ? Math.floor((memoryInfo.usedJSHeapSize / memoryInfo.jsHeapSizeLimit) * 100) : 45,
-        requestsPerMinute: Math.floor(Math.random() * 50 + 80),
+        cpuUsage: 0, // 브라우저에서 직접 접근 불가
+        memoryUsage: memoryInfo ? Math.floor((memoryInfo.usedJSHeapSize / memoryInfo.jsHeapSizeLimit) * 100) : 0,
+        requestsPerMinute: 0,
         errorRate: 0.1
       });
     } catch (error) {

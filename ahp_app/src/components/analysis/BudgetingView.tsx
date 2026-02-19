@@ -92,20 +92,20 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
       id: alt.id,
       name: alt.name,
       ahpScore: alt.ahpScore,
-      cost: Math.round(50000 + Math.random() * 200000), // 5만~25만 랜덤 비용
+      cost: 0, // 사용자가 직접 입력
       utility: alt.ahpScore,
-      efficiency: alt.ahpScore / (50000 + Math.random() * 200000),
-      priority: index < alternatives.length * 0.3 ? 'high' : 
+      efficiency: 0,
+      priority: index < alternatives.length * 0.3 ? 'high' :
                 index < alternatives.length * 0.6 ? 'medium' : 'low',
       category: `카테고리 ${Math.ceil((index + 1) / 2)}`,
       description: alt.description,
       isSelected: false,
       allocatedAmount: 0
     }));
-    
-    // 효율성 재계산
+
+    // 효율성 재계산 (비용이 0이면 0으로 설정)
     items.forEach(item => {
-      item.efficiency = item.utility / item.cost;
+      item.efficiency = item.cost > 0 ? item.utility / item.cost : 0;
     });
     
     setBudgetItems(items);

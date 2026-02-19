@@ -77,9 +77,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
       const response = await fileUploadService.getFiles(1, category, projectId);
       if (response.success && response.data) {
         setState(prev => ({ ...prev, files: response.data?.results || [] }));
+      } else if (!response.success) {
+        setError('기존 파일 목록을 불러오지 못했습니다.');
       }
-    } catch (error) {
-      console.error('Failed to load existing files:', error);
+    } catch (err: any) {
+      setError(`파일 목록 로드 실패: ${err.message || '알 수 없는 오류'}`);
     }
   };
 

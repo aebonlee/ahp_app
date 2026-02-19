@@ -353,7 +353,7 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       results.rankingResults.forEach(result => {
         const baseScore = evaluationMode === 'ideal' ? result.idealScore : result.distributiveScore;
         // 가중치 변화가 해당 대안의 점수에 미치는 영향
-        const adjustedScore = baseScore * multiplier + (Math.random() - 0.5) * 0.02; // 약간의 변동성 추가
+        const adjustedScore = baseScore * multiplier;
         row.push(Math.max(0, Math.min(100, adjustedScore * 100)));
       });
       data.addRow(row);
@@ -438,9 +438,8 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
     scenarios.forEach(scenario => {
       const ranks = results.rankingResults.map((_, index) => {
         if (scenario === '현재') return index + 1;
-        // 각 시나리오별로 순위 변화를 시뮬레이션
-        const variation = Math.random() * 2 - 1; // -1 to +1
-        return Math.max(1, Math.min(4, Math.round((index + 1) + variation)));
+        // Each non-current scenario: keep same rank (no random simulation)
+        return index + 1;
       });
       data.addRow([scenario, ...ranks]);
     });
@@ -478,7 +477,7 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
     data.addColumn('number', '일관성 점수');
 
     results.participantProgress.forEach(participant => {
-      const agreement = Math.random() * 0.4 + 0.6; // 60-100% 일치도
+      const agreement = 1 - Math.min(participant.consistencyScore, 0.4);
       const consistency = (1 - participant.consistencyScore) * 100;
       data.addRow([participant.name, agreement * 100, consistency]);
     });
@@ -643,7 +642,7 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
           idealScore: rr.idealScore,
           distributiveScore: rr.distributiveScore,
           criteriaScores: results.criteriaWeights.reduce((acc, cw, cwIndex) => {
-            acc[`criterion_${cwIndex}`] = Math.random() * 0.5 + 0.25; // 임시 데이터
+            acc[`criterion_${cwIndex}`] = cw.weight;
             return acc;
           }, {} as { [key: string]: number })
         })),
@@ -655,18 +654,18 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
           completionDate: pp.status === 'completed' ? results.completionDate : undefined,
           overallConsistencyRatio: pp.consistencyScore,
           completionRate: pp.completionRate,
-          evaluationTime: Math.floor(Math.random() * 60 + 30), // 30-90분 랜덤
+          evaluationTime: 0,
           individualRanking: results.rankingResults.map((rr, rrIndex) => ({
             alternativeId: `alternative_${rrIndex}`,
             alternativeName: rr.alternative,
-            score: rr.idealScore + (Math.random() - 0.5) * 0.1,
+            score: rr.idealScore,
             normalizedScore: rr.idealScore,
             rank: rrIndex + 1
           })),
           criteriaWeights: results.criteriaWeights.map((cw, cwIndex) => ({
             criterionId: `criterion_${cwIndex}`,
             criterionName: cw.criterion,
-            weight: cw.weight + (Math.random() - 0.5) * 0.1,
+            weight: cw.weight,
             normalizedWeight: cw.weight,
             level: 1,
             consistencyRatio: pp.consistencyScore
@@ -711,27 +710,27 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
               rankChange: v.rankChanges[altName] || 0,
               scoreChange: score - (results.rankingResults.find(rr => rr.alternative === altName)?.idealScore || 0)
             })),
-            stabilityMeasure: Math.random() * 0.5 + 0.5
+            stabilityMeasure: 0.75
           })),
           overallSensitivity: Math.abs(sd.variations[0]?.weightChange || 0) > 0.1 ? 'high' as const : 'medium' as const,
-          criticalThreshold: Math.random() * 0.15 + 0.05
+          criticalThreshold: 0.1
         })),
         pairwiseMatrices: [],
         groupAnalysis: {
           consensusLevel: results.groupConsensus,
           agreementMatrix: results.participantProgress.map(() => 
-            results.participantProgress.map(() => Math.random() * 0.4 + 0.6)
+            results.participantProgress.map(() => results.groupConsensus || 0.8)
           ),
           outlierParticipants: results.participantProgress
             .filter(pp => pp.consistencyScore > 0.15)
             .map(pp => pp.participantId),
           convergenceAnalysis: {
-            iterations: Math.floor(Math.random() * 5) + 3,
-            finalDeviation: Math.random() * 0.05 + 0.01,
-            convergenceRate: Math.random() * 0.3 + 0.7
+            iterations: 3,
+            finalDeviation: 0.01,
+            convergenceRate: 0.9
           },
-          kendallTau: Math.random() * 0.4 + 0.5,
-          spearmanRho: Math.random() * 0.4 + 0.5
+          kendallTau: results.groupConsensus || 0.7,
+          spearmanRho: results.groupConsensus || 0.7
         }
       };
 

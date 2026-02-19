@@ -149,9 +149,9 @@ const AdvancedResultsAnalysis: React.FC<AdvancedResultsAnalysisProps> = ({
       const groupAnalysis: GroupAnalysisResult = {
         groupResult: individualAnalysis,
         individualResults: {
-          'e1': individualAnalysis.map(alt => ({ ...alt, score: alt.score * (0.9 + Math.random() * 0.2) })),
-          'e2': individualAnalysis.map(alt => ({ ...alt, score: alt.score * (0.9 + Math.random() * 0.2) })),
-          'e3': individualAnalysis.map(alt => ({ ...alt, score: alt.score * (0.9 + Math.random() * 0.2) }))
+          'e1': individualAnalysis.map(alt => ({ ...alt })),
+          'e2': individualAnalysis.map(alt => ({ ...alt })),
+          'e3': individualAnalysis.map(alt => ({ ...alt }))
         },
         consensusMetrics: {
           overallConsensus: 0.78,
