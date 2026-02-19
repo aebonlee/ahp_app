@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
+import Modal from '../common/Modal';
 import apiService from '../../services/apiService';
 
 interface Project {
@@ -28,6 +29,7 @@ const AllProjectsManagement: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -110,14 +112,19 @@ const AllProjectsManagement: React.FC = () => {
   }, [currentPage, searchTerm, statusFilter]);
 
   // 프로젝트 삭제
-  const handleDeleteProject = async (projectId: string) => {
-    if (!window.confirm('정말 이 프로젝트를 삭제하시겠습니까?')) return;
-    
+  const handleDeleteProject = (projectId: string) => {
+    setPendingDeleteId(projectId);
+  };
+
+  const confirmDeleteProject = async () => {
+    if (!pendingDeleteId) return;
     try {
-      await apiService.delete(`/api/service/projects/projects/${projectId}/`);
+      await apiService.delete(`/api/service/projects/projects/${pendingDeleteId}/`);
       fetchProjects();
     } catch (error) {
       showActionMessage('error', '프로젝트 삭제에 실패했습니다.');
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
@@ -379,6 +386,27 @@ const AllProjectsManagement: React.FC = () => {
           )}
         </div>
       </Card>
+
+      {/* 프로젝트 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="프로젝트 삭제 확인"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <UnifiedButton variant="secondary" onClick={() => setPendingDeleteId(null)}>
+              취소
+            </UnifiedButton>
+            <UnifiedButton variant="danger" onClick={confirmDeleteProject}>
+              삭제
+            </UnifiedButton>
+          </div>
+        }
+      >
+        <p className="text-gray-700">정말 이 프로젝트를 삭제하시겠습니까?</p>
+        <p className="text-sm text-gray-500 mt-1">이 작업은 되돌릴 수 없습니다.</p>
+      </Modal>
 
       {/* 프로젝트 상세 모달 */}
       {showDetails && selectedProject && (

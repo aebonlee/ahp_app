@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import UnifiedButton from './UnifiedButton';
 import LayerPopup from './LayerPopup';
+import Modal from './Modal';
 import sessionService from '../../services/sessionService';
 
 // localStorage 제거됨 - 서버 기반 세션 정보로 대체
@@ -8,6 +9,7 @@ import sessionService from '../../services/sessionService';
 const SessionBar: React.FC = () => {
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<{
     loginTime: string | null;
     lastActivity: string | null;
@@ -214,12 +216,7 @@ const SessionBar: React.FC = () => {
             <UnifiedButton
               variant="danger"
               size="sm"
-              onClick={() => {
-                if (window.confirm('정말 로그아웃하시겠습니까?')) {
-                  sessionService.logout();
-                  window.location.reload();
-                }
-              }}
+              onClick={() => setShowLogoutModal(true)}
               icon="🚪"
             >
               로그아웃
@@ -227,6 +224,35 @@ const SessionBar: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title="로그아웃 확인"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => setShowLogoutModal(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={() => {
+                setShowLogoutModal(false);
+                sessionService.logout();
+                window.location.reload();
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+            >
+              로그아웃
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">정말 로그아웃하시겠습니까?</p>
+      </Modal>
     </>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import Modal from '../common/Modal';
 import HelpModal from '../common/HelpModal';
 import { ProjectStatus, ProjectFormData } from './ProjectCreationForm';
 
@@ -49,6 +50,7 @@ const TreeModelConfiguration: React.FC<TreeModelConfigurationProps> = ({
   const [helpType, setHelpType] = useState<'project-status' | 'model-building'>('model-building');
   
   // Form states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showNodeForm, setShowNodeForm] = useState(false);
   const [showAlternativeForm, setShowAlternativeForm] = useState(false);
   const [editingNode, setEditingNode] = useState<TreeNode | null>(null);
@@ -387,14 +389,36 @@ const TreeModelConfiguration: React.FC<TreeModelConfigurationProps> = ({
     setTreeModel(toggleExpansion(treeModel));
   };
 
-  const handleDeleteNode = (nodeId: string) => {
-    if (window.confirm('기준을 삭제하시겠습니까? 하위 기준과 연관된 평가 데이터도 함께 삭제됩니다.')) {
-      // Implementation for delete node - simplified for this demo
-    }
+  const handleDeleteNode = (_nodeId: string) => {
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDeleteNode = () => {
+    setShowDeleteModal(false);
+    // Implementation for delete node - simplified for this demo
   };
 
   return (
     <div className="space-y-6">
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="기준 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+              취소
+            </Button>
+            <Button variant="error" onClick={handleConfirmDeleteNode}>
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">기준을 삭제하시겠습니까? 하위 기준과 연관된 평가 데이터도 함께 삭제됩니다.</p>
+      </Modal>
+
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center space-x-3">

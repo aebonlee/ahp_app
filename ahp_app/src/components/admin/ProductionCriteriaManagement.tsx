@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import Modal from '../common/Modal';
 import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
 
 interface Criterion {
@@ -29,6 +30,8 @@ const ProductionCriteriaManagement: React.FC<ProductionCriteriaManagementProps> 
   const [evaluationMethod, setEvaluationMethod] = useState<'pairwise' | 'direct'>('pairwise');
   const [newCriterion, setNewCriterion] = useState({ name: '', description: '', parentId: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [showClearModal, setShowClearModal] = useState(false);
 
   // 실제 서비스용 - 빈 상태로 시작
   useEffect(() => {
@@ -104,30 +107,38 @@ const ProductionCriteriaManagement: React.FC<ProductionCriteriaManagementProps> 
   };
 
   const handleDeleteCriterion = (id: string) => {
-    if (window.confirm('이 기준을 삭제하시겠습니까? 하위 기준도 함께 삭제됩니다.')) {
-      setCriteria(prev => {
-        const filter = (items: Criterion[]): Criterion[] => {
-          return items.filter(item => {
-            if (item.id === id) return false;
-            if (item.children) {
-              item.children = filter(item.children);
-            }
-            return true;
-          });
-        };
-        return filter(prev);
-      });
-    }
+    setPendingDeleteId(id);
+  };
+
+  const handleConfirmDeleteCriterion = () => {
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
+    setCriteria(prev => {
+      const filter = (items: Criterion[]): Criterion[] => {
+        return items.filter(item => {
+          if (item.id === id) return false;
+          if (item.children) {
+            item.children = filter(item.children);
+          }
+          return true;
+        });
+      };
+      return filter(prev);
+    });
   };
 
   const getTopLevelCriteria = () => criteria.filter(c => c.level === 1);
 
   const handleClearAllData = () => {
-    if (window.confirm('⚠️ 모든 기준 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
-      setCriteria([]);
-      setNewCriterion({ name: '', description: '', parentId: '' });
-      setErrors({});
-    }
+    setShowClearModal(true);
+  };
+
+  const handleConfirmClearAllData = () => {
+    setShowClearModal(false);
+    setCriteria([]);
+    setNewCriterion({ name: '', description: '', parentId: '' });
+    setErrors({});
   };
 
   const renderEmptyState = () => (
@@ -213,6 +224,47 @@ const ProductionCriteriaManagement: React.FC<ProductionCriteriaManagementProps> 
   return (
     <div className="space-y-6">
       {renderHelpModal()}
+
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="기준 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setPendingDeleteId(null)}>
+              취소
+            </Button>
+            <Button variant="error" onClick={handleConfirmDeleteCriterion}>
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">이 기준을 삭제하시겠습니까? 하위 기준도 함께 삭제됩니다.</p>
+      </Modal>
+
+      <Modal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        title="전체 데이터 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setShowClearModal(false)}>
+              취소
+            </Button>
+            <Button variant="error" onClick={handleConfirmClearAllData}>
+              전체 삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">
+          모든 기준 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+        </p>
+      </Modal>
+
       <Card title="기준 설정">
         <div className="space-y-6">
           {/* 가이드 섹션 */}
@@ -318,9 +370,7 @@ const ProductionCriteriaManagement: React.FC<ProductionCriteriaManagementProps> 
                 layout={layoutMode}
                 onLayoutChange={setLayoutMode}
                 onNodeClick={(node) => {
-                  if (window.confirm(`"${node.name}" 기준을 삭제하시겠습니까?`)) {
-                    handleDeleteCriterion(node.id);
-                  }
+                  handleDeleteCriterion(node.id);
                 }}
               />
             )}

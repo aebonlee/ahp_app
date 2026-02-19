@@ -241,40 +241,38 @@ describe('TwoFactorAuth Component', () => {
       expect(screen.getByRole('button', { name: '2단계 인증 비활성화' })).toBeInTheDocument();
     });
 
-    it('calls disable callback when disable button is clicked', async () => {
-      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
+    it('opens disable confirmation modal when disable button is clicked', async () => {
       const onDisable = jest.fn();
-      
-      // Mock window.confirm
-      const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-      
+
       render(<TwoFactorAuth {...manageProps} onDisable={onDisable} />);
-      
+
       await userEvent.click(screen.getByRole('button', { name: '2단계 인증 비활성화' }));
-      
-      expect(confirmSpy).toHaveBeenCalledWith(
-        '2단계 인증을 비활성화하시겠습니까? 계정 보안이 약해질 수 있습니다.'
-      );
-      expect(onDisable).toHaveBeenCalled();
-      
-      confirmSpy.mockRestore();
+
+      expect(screen.getByText('2단계 인증 비활성화')).toBeInTheDocument();
+      expect(screen.getByText('2단계 인증을 비활성화하시겠습니까? 계정 보안이 약해질 수 있습니다.')).toBeInTheDocument();
+      expect(onDisable).not.toHaveBeenCalled();
     });
 
-    it('does not call disable callback when confirmation is cancelled', async () => {
-      // const user = userEvent.setup(); // 최신 버전에서는 direct call 사용
+    it('calls disable callback when modal confirm button is clicked', async () => {
       const onDisable = jest.fn();
-      
-      // Mock window.confirm to return false
-      const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
-      
+
       render(<TwoFactorAuth {...manageProps} onDisable={onDisable} />);
-      
+
       await userEvent.click(screen.getByRole('button', { name: '2단계 인증 비활성화' }));
-      
-      expect(confirmSpy).toHaveBeenCalled();
+      await userEvent.click(screen.getByRole('button', { name: '비활성화' }));
+
+      expect(onDisable).toHaveBeenCalled();
+    });
+
+    it('does not call disable callback when modal cancel button is clicked', async () => {
+      const onDisable = jest.fn();
+
+      render(<TwoFactorAuth {...manageProps} onDisable={onDisable} />);
+
+      await userEvent.click(screen.getByRole('button', { name: '2단계 인증 비활성화' }));
+      await userEvent.click(screen.getByRole('button', { name: '취소' }));
+
       expect(onDisable).not.toHaveBeenCalled();
-      
-      confirmSpy.mockRestore();
     });
   });
 

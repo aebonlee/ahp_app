@@ -18,6 +18,7 @@ const TrashOverflowModal: React.FC<TrashOverflowModalProps> = ({
 }) => {
   const [selectedForDeletion, setSelectedForDeletion] = useState<string>('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmStep, setConfirmStep] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -31,27 +32,21 @@ const TrashOverflowModal: React.FC<TrashOverflowModalProps> = ({
       return;
     }
 
-    const projectToDeletePermanently = trashedProjects.find(p => p.id === selectedForDeletion);
-    if (!projectToDeletePermanently) return;
-
-    if (!window.confirm(`"${projectToDeletePermanently.title}" 프로젝트를 영구 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다!`)) {
-      return;
-    }
-
-    // 한 번 더 확인
-    if (!window.confirm(`정말로 "${projectToDeletePermanently.title}"를 영구 삭제하시겠습니까?\n\n마지막 확인입니다.`)) {
+    if (!confirmStep) {
+      setConfirmStep(true);
       return;
     }
 
     try {
       setIsDeleting(true);
-      
+      setConfirmStep(false);
+
       // 선택된 프로젝트를 영구 삭제
       await onPermanentDelete(selectedForDeletion);
-      
+
       // 원래 삭제하려던 프로젝트를 휴지통으로 이동
       await onDeleteAfterCleanup(projectToDelete);
-      
+
       showActionMessage('success', '프로젝트가 영구 삭제되고 새 프로젝트가 휴지통으로 이동되었습니다.');
     } catch (error) {
       showActionMessage('error', '영구 삭제 중 오류가 발생했습니다.');
@@ -140,22 +135,43 @@ const TrashOverflowModal: React.FC<TrashOverflowModalProps> = ({
           </div>
         </div>
 
+        {/* 최종 확인 영역 */}
+        {confirmStep && selectedForDeletion && (() => {
+          const project = trashedProjects.find(p => p.id === selectedForDeletion);
+          return (
+            <div className="px-6 py-3 bg-red-50 border-t border-red-200">
+              <p className="text-sm font-medium text-red-800">
+                ⚠️ 정말로 "{project?.title}"를 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+              </p>
+            </div>
+          );
+        })()}
+
         {/* 버튼 영역 */}
         <div className="px-6 py-4 border-t bg-gray-50 flex justify-end space-x-3">
           <Button
             variant="secondary"
-            onClick={onCancel}
+            onClick={() => { setConfirmStep(false); onCancel(); }}
             disabled={isDeleting}
           >
             취소
           </Button>
+          {confirmStep && (
+            <Button
+              variant="secondary"
+              onClick={() => setConfirmStep(false)}
+              disabled={isDeleting}
+            >
+              돌아가기
+            </Button>
+          )}
           <Button
             variant="error"
             onClick={handlePermanentDelete}
             disabled={!selectedForDeletion || isDeleting}
             loading={isDeleting}
           >
-            {isDeleting ? '삭제 중...' : '영구 삭제 후 진행'}
+            {isDeleting ? '삭제 중...' : confirmStep ? '최종 확인 — 영구 삭제' : '영구 삭제 후 진행'}
           </Button>
         </div>
       </div>

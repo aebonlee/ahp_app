@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import Modal from '../common/Modal';
 import dataService from '../../services/dataService';
 import type { EvaluatorData } from '../../services/dataService';
 
@@ -29,6 +30,8 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAddingEvaluator, setIsAddingEvaluator] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [showClearAll, setShowClearAll] = useState(false);
   const [newEvaluator, setNewEvaluator] = useState({
     name: '',
     email: ''
@@ -134,20 +137,24 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
     }
   };
 
-  const handleRemoveEvaluator = async (evaluatorId: string) => {
-    if (!window.confirm('이 평가자를 삭제하시겠습니까?')) {
-      return;
-    }
+  const handleRemoveEvaluator = (evaluatorId: string) => {
+    setPendingDeleteId(evaluatorId);
+  };
+
+  const confirmRemoveEvaluator = async () => {
+    if (!pendingDeleteId) return;
+    const evaluatorId = pendingDeleteId;
+    setPendingDeleteId(null);
 
     try {
       setLoading(true);
       setError(null);
-      
+
       // 샘플 데이터가 아닌 경우에만 삭제
       if (!evaluatorId.startsWith('sample-') && !evaluatorId.startsWith('new-')) {
         await dataService.removeEvaluator(evaluatorId);
       }
-      
+
       setEvaluators(prev => prev.filter(e => e.id !== evaluatorId));
     } catch (error) {
       setError('평가자 삭제 중 오류가 발생했습니다.');
@@ -219,10 +226,12 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
     }
   };
 
-  const clearAllEvaluators = async () => {
-    if (!window.confirm('모든 평가자를 삭제하시겠습니까?')) {
-      return;
-    }
+  const clearAllEvaluators = () => {
+    setShowClearAll(true);
+  };
+
+  const confirmClearAllEvaluators = async () => {
+    setShowClearAll(false);
 
     try {
       setLoading(true);
@@ -233,7 +242,7 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
           await dataService.removeEvaluator(evaluator.id);
         }
       }
-      
+
       setEvaluators([]);
     } catch (error) {
       setEvaluators([]);
@@ -257,6 +266,48 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* 평가자 단건 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="평가자 삭제 확인"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="outline" onClick={() => setPendingDeleteId(null)}>
+              취소
+            </Button>
+            <Button onClick={confirmRemoveEvaluator} className="bg-red-600 text-white hover:bg-red-700">
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-gray-700">이 평가자를 삭제하시겠습니까?</p>
+        <p className="text-sm text-gray-500 mt-1">이 작업은 되돌릴 수 없습니다.</p>
+      </Modal>
+
+      {/* 전체 평가자 삭제 확인 모달 */}
+      <Modal
+        isOpen={showClearAll}
+        onClose={() => setShowClearAll(false)}
+        title="전체 평가자 삭제 확인"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="outline" onClick={() => setShowClearAll(false)}>
+              취소
+            </Button>
+            <Button onClick={confirmClearAllEvaluators} className="bg-red-600 text-white hover:bg-red-700">
+              전체 삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-gray-700">모든 평가자를 삭제하시겠습니까?</p>
+        <p className="text-sm text-gray-500 mt-1">이 작업은 되돌릴 수 없습니다.</p>
+      </Modal>
+
       <Card title="평가자 관리">
         <div className="space-y-6">
           {/* 안내 메시지 */}

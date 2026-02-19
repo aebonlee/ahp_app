@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import Modal from '../common/Modal';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Input from '../common/Input';
 import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
@@ -62,6 +63,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
 
   // UI 상태
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const [pendingAction, setPendingAction] = useState<{type: 'reset' | 'deleteCriterion', criterionId?: string} | null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -217,33 +219,32 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     onCriteriaChange(count);
   }, [savedCriteria, onCriteriaChange]);
 
-  // 초기화
-  const handleReset = async () => {
-    if (window.confirm('모든 기준을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      try {
-        setIsLoading(true);
-        
-        // Django 백엔드에서 모든 기준 삭제
-        const existingCriteria = await cleanDataService.getCriteria(projectId);
-        for (const criterion of existingCriteria) {
-          if (criterion.id) {
-            await cleanDataService.deleteCriteria(projectId, criterion.id);
-          }
+  // 초기화 - trigger
+  const handleReset = () => {
+    setPendingAction({ type: 'reset' });
+  };
+
+  // 초기화 - confirm
+  const confirmReset = async () => {
+    setPendingAction(null);
+    try {
+      setIsLoading(true);
+      const existingCriteria = await cleanDataService.getCriteria(projectId);
+      for (const criterion of existingCriteria) {
+        if (criterion.id) {
+          await cleanDataService.deleteCriteria(projectId, criterion.id);
         }
-        
-        // 로컬 상태 초기화
-        setCriteria([]);
-        setSavedCriteria([]);
-        setTempCriteria([]);
-        setHasTempChanges(false);
-        setEditingIds(new Set());
-        
-        showActionMessage('success', '모든 기준이 초기화되었습니다.');
-      } catch (error) {
-        showActionMessage('error', '기준 초기화 중 오류가 발생했습니다.');
-      } finally {
-        setIsLoading(false);
       }
+      setCriteria([]);
+      setSavedCriteria([]);
+      setTempCriteria([]);
+      setHasTempChanges(false);
+      setEditingIds(new Set());
+      showActionMessage('success', '모든 기준이 초기화되었습니다.');
+    } catch (error) {
+      showActionMessage('error', '기준 초기화 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -462,9 +463,16 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     }
   };
 
-  // 기준 삭제
+  // 기준 삭제 - trigger
   const deleteCriterion = (criterionId: string) => {
-    if (!window.confirm('이 기준을 삭제하시겠습니까?')) return;
+    setPendingAction({ type: 'deleteCriterion', criterionId });
+  };
+
+  // 기준 삭제 - confirm
+  const confirmDeleteCriterion = () => {
+    if (!pendingAction?.criterionId) return;
+    const criterionId = pendingAction.criterionId;
+    setPendingAction(null);
 
     const deleteCriteriaFromList = (criteria: Criterion[]): Criterion[] => {
       return criteria
@@ -1031,6 +1039,40 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
           existingCriteria={criteria}
         />
       )}
+
+      {/* 확인 모달 */}
+      <Modal
+        isOpen={pendingAction !== null}
+        onClose={() => setPendingAction(null)}
+        title={pendingAction?.type === 'reset' ? '전체 초기화' : '기준 삭제'}
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={() => setPendingAction(null)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={pendingAction?.type === 'reset' ? confirmReset : confirmDeleteCriterion}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+            >
+              {pendingAction?.type === 'reset' ? '초기화' : '삭제'}
+            </button>
+          </div>
+        }
+      >
+        {pendingAction?.type === 'reset' && (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-700">모든 기준을 삭제하시겠습니까?</p>
+            <p className="text-sm text-red-600 font-medium">이 작업은 되돌릴 수 없습니다.</p>
+          </div>
+        )}
+        {pendingAction?.type === 'deleteCriterion' && (
+          <p className="text-sm text-gray-700">이 기준을 삭제하시겠습니까?</p>
+        )}
+      </Modal>
     </div>
   );
 };

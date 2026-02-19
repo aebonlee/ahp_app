@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import Modal from '../common/Modal';
 import PairwiseGrid from './PairwiseGrid';
 import DirectInputEvaluation from './DirectInputEvaluation';
 import FuzzyPairwiseEvaluation from './fuzzy/FuzzyPairwiseEvaluation';
@@ -77,6 +78,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
   className = ''
 }) => {
   const [currentMode, setCurrentMode] = useState<EvaluationMode>(initialMode);
+  const [pendingMode, setPendingMode] = useState<EvaluationMode | null>(null);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -173,18 +175,20 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
 
   const handleModeChange = (newMode: EvaluationMode) => {
     if (evaluationData && currentMode !== newMode) {
-      // Note: In production, replace with proper modal confirmation
-      const shouldChange = window.confirm('평가 모드를 변경하면 현재 입력한 데이터가 손실됩니다. 계속하시겠습니까?');
-      if (shouldChange) {
-        setCurrentMode(newMode);
-        setEvaluationData(null);
-        setValidationResults(null);
-        setSettings(prev => ({ ...prev, mode: newMode }));
-      }
+      setPendingMode(newMode);
     } else {
       setCurrentMode(newMode);
       setSettings(prev => ({ ...prev, mode: newMode }));
     }
+  };
+
+  const confirmModeChange = () => {
+    if (!pendingMode) return;
+    setCurrentMode(pendingMode);
+    setEvaluationData(null);
+    setValidationResults(null);
+    setSettings(prev => ({ ...prev, mode: pendingMode! }));
+    setPendingMode(null);
   };
 
   const validateEvaluation = async () => {
@@ -739,6 +743,28 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
           </div>
         </div>
       </Card>
+
+      {/* 평가 모드 변경 확인 모달 */}
+      <Modal
+        isOpen={pendingMode !== null}
+        onClose={() => setPendingMode(null)}
+        title="평가 모드 변경"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <Button size="sm" variant="secondary" onClick={() => setPendingMode(null)}>
+              취소
+            </Button>
+            <Button size="sm" variant="primary" onClick={confirmModeChange}>
+              변경
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-700">
+          평가 모드를 변경하면 현재 입력한 데이터가 손실됩니다. 계속하시겠습니까?
+        </p>
+      </Modal>
     </div>
   );
 };

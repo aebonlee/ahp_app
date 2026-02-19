@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Button from '../common/Button';
+import Modal from '../common/Modal';
 
 interface Criterion {
   id: string;
@@ -36,6 +37,7 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
   const [newNodeDescription, setNewNodeDescription] = useState('');
   const [showAddMenu, setShowAddMenu] = useState<string | null>(null);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Click outside handler to close dropdown menus
@@ -141,10 +143,13 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
 
   // 노드 삭제
   const deleteNode = (id: string) => {
-    if (!window.confirm('이 기준과 모든 하위 기준이 삭제됩니다. 계속하시겠습니까?')) {
-      return;
-    }
+    setPendingDeleteId(id);
+  };
 
+  const confirmDeleteNode = () => {
+    if (!pendingDeleteId) return;
+
+    const id = pendingDeleteId;
     const removeFromHierarchy = (nodes: Criterion[]): Criterion[] => {
       return nodes.filter(node => {
         if (node.id === id) return false;
@@ -159,6 +164,7 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
     setCriteria(updated);
     onUpdate(updated);
     setSelectedNodeId(null);
+    setPendingDeleteId(null);
   };
 
   // 노드 편집 시작
@@ -585,10 +591,30 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
       {/* 안내 메시지 */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <p className="text-sm text-blue-700">
-          💡 <strong>사용 방법:</strong> 
+          💡 <strong>사용 방법:</strong>
           ✏️ 편집, ➕ 하위 추가, 🗑️ 삭제, ⬆️⬇️ 레벨 이동
         </p>
       </div>
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="기준 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <Button size="sm" variant="secondary" onClick={() => setPendingDeleteId(null)}>
+              취소
+            </Button>
+            <Button size="sm" variant="primary" onClick={confirmDeleteNode}>
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-700">이 기준과 모든 하위 기준이 삭제됩니다. 계속하시겠습니까?</p>
+      </Modal>
     </div>
   );
 };

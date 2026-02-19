@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import Modal from '../common/Modal';
 
 interface Reference {
   id: string;
@@ -52,6 +53,7 @@ const PaperManagement: React.FC = () => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -122,9 +124,13 @@ const PaperManagement: React.FC = () => {
   };
 
   const deleteReference = (id: string) => {
-    if (window.confirm('이 참고문헌을 삭제하시겠습니까?')) {
-      setReferences(prev => prev.filter(ref => ref.id !== id));
-    }
+    setPendingDeleteId(id);
+  };
+
+  const confirmDeleteReference = () => {
+    if (!pendingDeleteId) return;
+    setReferences(prev => prev.filter(ref => ref.id !== pendingDeleteId));
+    setPendingDeleteId(null);
   };
 
   const renderReferenceForm = () => (
@@ -497,6 +503,31 @@ const PaperManagement: React.FC = () => {
       {activeTab === 'results' && renderResultsTab()}
       {activeTab === 'surveys' && renderSurveyResultsTab()}
       {activeTab === 'generator' && renderAIGeneratorTab()}
+
+      {/* 참고문헌 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="참고문헌 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <Button size="sm" variant="outline" onClick={() => setPendingDeleteId(null)}>
+              취소
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={confirmDeleteReference}
+              className="text-white bg-red-600 border-red-600 hover:bg-red-700"
+            >
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-700">이 참고문헌을 삭제하시겠습니까?</p>
+      </Modal>
     </div>
   );
 };

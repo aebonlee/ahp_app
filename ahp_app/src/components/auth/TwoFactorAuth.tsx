@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckCircleIcon, ExclamationTriangleIcon, ShieldCheckIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import { PhoneIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/solid';
 import QRCode from 'qrcode';
+import Modal from '../common/Modal';
 
 interface TwoFactorAuthProps {
   userEmail: string;
@@ -41,6 +42,7 @@ const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
   const [success, setSuccess] = useState<string>('');
   const [useBackupCode, setUseBackupCode] = useState(false);
   const [isSetupComplete, setIsSetupComplete] = useState(false);
+  const [showDisableModal, setShowDisableModal] = useState(false);
 
   // Generate TOTP secret and QR code
   const generateTwoFactorSetup = async () => {
@@ -427,47 +429,76 @@ const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
 
   // Manage mode
   const renderManageMode = () => (
-    <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
-      <div className="text-center mb-6">
-        <ShieldCheckIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900">2단계 인증 관리</h2>
-        <p className="text-gray-600 mt-2">현재 2단계 인증이 활성화되어 있습니다</p>
-      </div>
+    <>
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+        <div className="text-center mb-6">
+          <ShieldCheckIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900">2단계 인증 관리</h2>
+          <p className="text-gray-600 mt-2">현재 2단계 인증이 활성화되어 있습니다</p>
+        </div>
 
-      <div className="space-y-4">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex">
-            <CheckCircleIcon className="h-5 w-5 text-green-400" />
-            <div className="ml-2">
-              <h4 className="text-sm font-medium text-green-800">보안 상태: 우수</h4>
-              <p className="text-sm text-green-700 mt-1">
-                2단계 인증이 활성화되어 계정이 안전하게 보호되고 있습니다.
-              </p>
+        <div className="space-y-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex">
+              <CheckCircleIcon className="h-5 w-5 text-green-400" />
+              <div className="ml-2">
+                <h4 className="text-sm font-medium text-green-800">보안 상태: 우수</h4>
+                <p className="text-sm text-green-700 mt-1">
+                  2단계 인증이 활성화되어 계정이 안전하게 보호되고 있습니다.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="space-y-3">
-          <button
-            onClick={() => setCurrentMode('setup')}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            새 기기 설정
-          </button>
-          
-          <button
-            onClick={() => {
-              if (window.confirm('2단계 인증을 비활성화하시겠습니까? 계정 보안이 약해질 수 있습니다.')) {
-                onDisable?.();
-              }
-            }}
-            className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 transition-colors"
-          >
-            2단계 인증 비활성화
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={() => setCurrentMode('setup')}
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              새 기기 설정
+            </button>
+
+            <button
+              onClick={() => setShowDisableModal(true)}
+              className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 transition-colors"
+            >
+              2단계 인증 비활성화
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* 비활성화 확인 모달 */}
+      <Modal
+        isOpen={showDisableModal}
+        onClose={() => setShowDisableModal(false)}
+        title="2단계 인증 비활성화"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={() => setShowDisableModal(false)}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={() => {
+                setShowDisableModal(false);
+                onDisable?.();
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+            >
+              비활성화
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-700">
+          2단계 인증을 비활성화하시겠습니까? 계정 보안이 약해질 수 있습니다.
+        </p>
+      </Modal>
+    </>
   );
 
   // Main render logic

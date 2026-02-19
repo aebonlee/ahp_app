@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import Modal from '../common/Modal';
 import type { UserRole } from '../../types';
 
 interface User {
@@ -35,6 +36,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
 }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [pendingDeleteUser, setPendingDeleteUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
   const [createLoading, setCreateLoading] = useState(false);
@@ -169,13 +171,18 @@ const UserManagement: React.FC<UserManagementProps> = ({
     setErrors({});
   };
 
-  const handleDelete = async (user: User) => {
-    if (window.confirm(`사용자 "${user.first_name} ${user.last_name}"를 정말 삭제하시겠습니까?`)) {
-      try {
-        await onDeleteUser(user.id);
-      } catch (error) {
-        showActionMessage('error', error instanceof Error ? error.message : '사용자 삭제에 실패했습니다.');
-      }
+  const handleDelete = (user: User) => {
+    setPendingDeleteUser(user);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteUser) return;
+    const user = pendingDeleteUser;
+    setPendingDeleteUser(null);
+    try {
+      await onDeleteUser(user.id);
+    } catch (error) {
+      showActionMessage('error', error instanceof Error ? error.message : '사용자 삭제에 실패했습니다.');
     }
   };
 
@@ -207,6 +214,28 @@ const UserManagement: React.FC<UserManagementProps> = ({
           {actionMessage.text}
         </div>
       )}
+
+      <Modal
+        isOpen={pendingDeleteUser !== null}
+        onClose={() => setPendingDeleteUser(null)}
+        title="사용자 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setPendingDeleteUser(null)}>
+              취소
+            </Button>
+            <Button variant="error" onClick={handleConfirmDelete}>
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">
+          사용자 "{pendingDeleteUser?.first_name} {pendingDeleteUser?.last_name}"를 정말 삭제하시겠습니까?
+        </p>
+      </Modal>
+
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           사용자 관리

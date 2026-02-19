@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import UnifiedButton from '../common/UnifiedButton';
 import LayerPopup from '../common/LayerPopup';
 import ColorThemeSelector from '../common/ColorThemeSelector';
+import Modal from '../common/Modal';
 import sessionService from '../../services/sessionService';
 import { useTheme } from '../../hooks/useTheme';
 
@@ -26,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteMenuItem[]>([]);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   
   const { theme, toggleTheme } = useTheme();
 
@@ -478,12 +480,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
               <UnifiedButton
                 variant="danger"
                 size="md"
-                onClick={() => {
-                  if (window.confirm('로그아웃 하시겠습니까?')) {
-                    sessionService.logout();
-                    onLogout();
-                  }
-                }}
+                onClick={() => setShowLogoutModal(true)}
                 icon="🚪"
               >
                 <span className="hidden sm:inline font-medium">로그아웃</span>
@@ -492,6 +489,35 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title="로그아웃 확인"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => setShowLogoutModal(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={() => {
+                setShowLogoutModal(false);
+                sessionService.logout();
+                if (onLogout) onLogout();
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+            >
+              로그아웃
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">로그아웃 하시겠습니까?</p>
+      </Modal>
     </header>
   );
 };

@@ -10,6 +10,7 @@ import { saveAndInitializeAI, clearAISettings, getCurrentAISettings } from '../.
 import Tooltip from '../common/Tooltip';
 import APIKeyGuideModal from './APIKeyGuideModal';
 import UIIcon from '../common/UIIcon';
+import Modal from '../common/Modal';
 
 interface AIConfigurationProps {
   onClose?: () => void;
@@ -31,6 +32,7 @@ const AIConfiguration: React.FC<AIConfigurationProps> = ({ onClose }) => {
   });
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showUsageInfo, setShowUsageInfo] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -111,12 +113,15 @@ const AIConfiguration: React.FC<AIConfigurationProps> = ({ onClose }) => {
 
   // 설정 초기화
   const handleReset = () => {
-    if (window.confirm('AI 설정을 모두 삭제하시겠습니까?')) {
-      clearAISettings();
-      setApiKeys({ openai: '', claude: '' });
-      setValidationStatus({ openai: 'none', claude: 'none' });
-      showActionMessage('info', 'AI 설정이 초기화되었습니다.');
-    }
+    setShowResetModal(true);
+  };
+
+  const confirmReset = () => {
+    clearAISettings();
+    setApiKeys({ openai: '', claude: '' });
+    setValidationStatus({ openai: 'none', claude: 'none' });
+    setShowResetModal(false);
+    showActionMessage('info', 'AI 설정이 초기화되었습니다.');
   };
 
   // 가이드에서 API 키 받기
@@ -477,11 +482,42 @@ const AIConfiguration: React.FC<AIConfigurationProps> = ({ onClose }) => {
       </div>
 
       {/* 설정 가이드 모달 */}
-      <APIKeyGuideModal 
+      <APIKeyGuideModal
         isOpen={showGuideModal}
         onClose={() => setShowGuideModal(false)}
         onApiKeyReceived={handleApiKeyFromGuide}
       />
+
+      {/* 설정 초기화 확인 모달 */}
+      <Modal
+        isOpen={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        title="AI 설정 초기화"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => setShowResetModal(false)}
+              className="px-4 py-2 rounded-lg font-medium transition-colors"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              취소
+            </button>
+            <button
+              onClick={confirmReset}
+              className="px-4 py-2 rounded-lg font-medium text-white transition-colors"
+              style={{ backgroundColor: 'var(--error-primary)' }}
+            >
+              초기화
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-700">AI 설정을 모두 삭제하시겠습니까?</p>
+      </Modal>
     </div>
   );
 };

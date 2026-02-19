@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import Modal from '../common/Modal';
 import cleanDataService from '../../services/dataService_clean';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { evaluatorApi } from '../../services/api';
@@ -47,6 +48,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showBulkQR, setShowBulkQR] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -236,10 +238,14 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
     setEvaluators(updatedEvaluators);
   };
 
-  const handleDeleteEvaluator = async (id: string) => {
-    if (!window.confirm('정말로 이 평가자를 삭제하시겠습니까?')) {
-      return;
-    }
+  const handleDeleteEvaluator = (id: string) => {
+    setPendingDeleteId(id);
+  };
+
+  const handleConfirmDeleteEvaluator = async () => {
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
 
     try {
       await cleanDataService.deleteEvaluator(id, projectId);
@@ -295,6 +301,26 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
           {actionMessage.text}
         </div>
       )}
+
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="평가자 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setPendingDeleteId(null)}>
+              취소
+            </Button>
+            <Button variant="error" onClick={handleConfirmDeleteEvaluator}>
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">정말로 이 평가자를 삭제하시겠습니까?</p>
+      </Modal>
+
       <Card title="평가자 배정">
         <div className="space-y-6">
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">

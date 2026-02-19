@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Modal from '../common/Modal';
 
 interface HierarchyNode {
   id: string;
@@ -47,6 +48,7 @@ const HierarchyBuilder: React.FC<HierarchyBuilderProps> = ({
     parentId: null,
     type: 'criterion'
   });
+  const [pendingDeleteNode, setPendingDeleteNode] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     setHierarchy(initialHierarchy);
@@ -399,9 +401,7 @@ const HierarchyBuilder: React.FC<HierarchyBuilderProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (window.confirm(`"${node.name}"을(를) 삭제하시겠습니까?`)) {
-                      deleteNode(node.id);
-                    }
+                    setPendingDeleteNode({ id: node.id, name: node.name });
                   }}
                   className="p-1 text-red-600 hover:bg-red-100 rounded"
                   title="삭제"
@@ -489,6 +489,39 @@ const HierarchyBuilder: React.FC<HierarchyBuilderProps> = ({
           onCancel={() => setNewNodeDialog({ isOpen: false, parentId: null, type: 'criterion' })}
         />
       )}
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteNode !== null}
+        onClose={() => setPendingDeleteNode(null)}
+        title="항목 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={() => setPendingDeleteNode(null)}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={() => {
+                if (pendingDeleteNode) {
+                  deleteNode(pendingDeleteNode.id);
+                  setPendingDeleteNode(null);
+                }
+              }}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            >
+              삭제
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-700">
+          &ldquo;{pendingDeleteNode?.name}&rdquo;을(를) 삭제하시겠습니까?
+        </p>
+      </Modal>
 
       {/* 범례 */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">

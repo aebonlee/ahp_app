@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import Modal from '../common/Modal';
 import ProjectCreation from './ProjectCreation';
 import CriteriaManagement from './CriteriaManagement';
 import AlternativeManagement from './AlternativeManagement';
@@ -36,6 +37,7 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // 단계별 제목
   const stepTitles = [
@@ -130,19 +132,22 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
   };
 
   // 워크플로우 취소
-  const handleCancel = async () => {
-    if (window.confirm('프로젝트 생성을 취소하시겠습니까? 입력한 모든 데이터가 삭제됩니다.')) {
-      try {
-        if (workflowState.projectId) {
-          // 프로젝트 삭제
-          await dataService.deleteProject(workflowState.projectId);
-        }
-        if (onCancel) {
-          onCancel();
-        }
-      } catch (error: any) {
-        setError(error.message || '프로젝트 취소 중 오류가 발생했습니다.');
+  const handleCancel = () => {
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    setShowCancelModal(false);
+    try {
+      if (workflowState.projectId) {
+        // 프로젝트 삭제
+        await dataService.deleteProject(workflowState.projectId);
       }
+      if (onCancel) {
+        onCancel();
+      }
+    } catch (error: any) {
+      setError(error.message || '프로젝트 취소 중 오류가 발생했습니다.');
     }
   };
 
@@ -272,6 +277,27 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <Modal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        title="프로젝트 생성 취소"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
+              계속 진행
+            </Button>
+            <Button variant="error" onClick={handleConfirmCancel}>
+              취소 확인
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">
+          프로젝트 생성을 취소하시겠습니까? 입력한 모든 데이터가 삭제됩니다.
+        </p>
+      </Modal>
+
       {/* 헤더 */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">

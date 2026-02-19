@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Modal from './Modal';
 
 interface TreeNode {
   id: string;
@@ -33,6 +34,8 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
   onLayoutChange,
   allowDelete = false
 }) => {
+  const [pendingDeleteNode, setPendingDeleteNode] = useState<TreeNode | null>(null);
+
   // 노드를 계층구조로 변환
   const buildHierarchy = (flatNodes: TreeNode[]): TreeNode[] => {
     const nodeMap = new Map<string, TreeNode>();
@@ -135,9 +138,7 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (window.confirm(`"${node.name}" 기준을 삭제하시겠습니까?\n\n⚠️ 하위 기준들도 함께 삭제됩니다.`)) {
-                          onNodeDelete(node);
-                        }
+                        setPendingDeleteNode(node);
                       }}
                       className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-md transition-colors duration-200"
                       title={`${node.name} 삭제`}
@@ -189,9 +190,7 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (window.confirm(`"${node.name}" 기준을 삭제하시겠습니까?\n\n⚠️ 하위 기준들도 함께 삭제됩니다.`)) {
-                  onNodeDelete(node);
-                }
+                setPendingDeleteNode(node);
               }}
               className="absolute top-1 right-1 p-1 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-md transition-colors duration-200"
               title={`${node.name} 삭제`}
@@ -255,13 +254,53 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
     );
   };
 
+  const deleteModal = (
+    <Modal
+      isOpen={pendingDeleteNode !== null}
+      onClose={() => setPendingDeleteNode(null)}
+      title="기준 삭제 확인"
+      size="sm"
+      footer={
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={() => setPendingDeleteNode(null)}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            취소
+          </button>
+          <button
+            onClick={() => {
+              if (pendingDeleteNode && onNodeDelete) {
+                onNodeDelete(pendingDeleteNode);
+              }
+              setPendingDeleteNode(null);
+            }}
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+          >
+            삭제
+          </button>
+        </div>
+      }
+    >
+      <p className="text-sm text-gray-600">
+        "{pendingDeleteNode?.name}" 기준을 삭제하시겠습니까?
+      </p>
+      <p className="text-sm text-red-600 mt-2">
+        ⚠️ 하위 기준들도 함께 삭제됩니다.
+      </p>
+    </Modal>
+  );
+
   if (hierarchy.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <div className="text-4xl mb-4">🌳</div>
-        <p className="text-lg">계층구조가 비어있습니다</p>
-        <p className="text-sm">기준을 추가하여 계층구조를 만들어보세요</p>
-      </div>
+      <>
+        <div className="text-center py-12 text-gray-500">
+          <div className="text-4xl mb-4">🌳</div>
+          <p className="text-lg">계층구조가 비어있습니다</p>
+          <p className="text-sm">기준을 추가하여 계층구조를 만들어보세요</p>
+        </div>
+        {deleteModal}
+      </>
     );
   }
 
@@ -352,6 +391,7 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
           </div>
         </div>
       </div>
+      {deleteModal}
     </div>
   );
 };

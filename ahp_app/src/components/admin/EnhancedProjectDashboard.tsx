@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import Modal from '../common/Modal';
 import ProjectCreationForm, { ProjectFormData, ProjectStatus } from './ProjectCreationForm';
 import ModelConfiguration from './ModelConfiguration';
 import HelpModal from '../common/HelpModal';
@@ -17,6 +18,7 @@ const EnhancedProjectDashboard: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeTab, setActiveTab] = useState<'list' | 'create' | 'manage'>('list');
   const [showModelConfig, setShowModelConfig] = useState(false);
@@ -86,10 +88,15 @@ const EnhancedProjectDashboard: React.FC = () => {
   };
 
   const handleDeleteProject = (projectId: string) => {
-    if (window.confirm('프로젝트를 삭제하시겠습니까? 모든 평가 데이터가 삭제됩니다.')) {
-      setProjects(projects.filter(p => p.id !== projectId));
-      setSelectedProject(null);
-    }
+    setPendingDeleteId(projectId);
+  };
+
+  const handleConfirmDeleteProject = () => {
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
+    setProjects(projects.filter(p => p.id !== id));
+    setSelectedProject(null);
   };
 
   const handleChangeStatus = (projectId: string, newStatus: ProjectStatus) => {
@@ -190,6 +197,25 @@ const EnhancedProjectDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="프로젝트 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setPendingDeleteId(null)}>
+              취소
+            </Button>
+            <Button variant="error" onClick={handleConfirmDeleteProject}>
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">프로젝트를 삭제하시겠습니까? 모든 평가 데이터가 삭제됩니다.</p>
+      </Modal>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

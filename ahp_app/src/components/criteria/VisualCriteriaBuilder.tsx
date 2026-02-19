@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../common/Button';
+import Modal from '../common/Modal';
 
 interface CriteriaNode {
   id: string;
@@ -43,6 +44,7 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
 
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // 노드 찾기
   const findNode = (nodes: CriteriaNode[], id: string): CriteriaNode | null => {
@@ -110,10 +112,13 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
 
   // 노드 삭제
   const deleteNode = (id: string) => {
-    if (!window.confirm('이 기준과 모든 하위 기준이 삭제됩니다. 계속하시겠습니까?')) {
-      return;
-    }
+    setPendingDeleteId(id);
+  };
 
+  const confirmDeleteNode = () => {
+    if (!pendingDeleteId) return;
+
+    const id = pendingDeleteId;
     const removeNode = (nodes: CriteriaNode[]): CriteriaNode[] => {
       return nodes.filter(node => {
         if (node.id === id) return false;
@@ -124,6 +129,7 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
 
     setCriteria(prev => removeNode(prev));
     setSelectedNodeId(null);
+    setPendingDeleteId(null);
   };
 
   // 노드 편집 모드 토글
@@ -396,10 +402,30 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
 
         {/* 도움말 */}
         <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs text-gray-600">
-          <strong>💡 사용 팁:</strong> 
-          ➕ 하위 기준 추가 | ✏️ 이름과 설명 편집 | 🗑️ 삭제 (하위 포함) | 
+          <strong>💡 사용 팁:</strong>
+          ➕ 하위 기준 추가 | ✏️ 이름과 설명 편집 | 🗑️ 삭제 (하위 포함) |
           더블클릭으로 직접 편집 | ▼/▶ 접기/펼치기
         </div>
+
+        {/* 삭제 확인 모달 */}
+        <Modal
+          isOpen={pendingDeleteId !== null}
+          onClose={() => setPendingDeleteId(null)}
+          title="기준 삭제"
+          size="sm"
+          footer={
+            <div className="flex justify-end space-x-2">
+              <Button size="sm" variant="secondary" onClick={() => setPendingDeleteId(null)}>
+                취소
+              </Button>
+              <Button size="sm" variant="primary" onClick={confirmDeleteNode}>
+                삭제
+              </Button>
+            </div>
+          }
+        >
+          <p className="text-sm text-gray-700">이 기준과 모든 하위 기준이 삭제됩니다. 계속하시겠습니까?</p>
+        </Modal>
       </div>
     );
   }
@@ -515,8 +541,8 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
                   취소
                 </Button>
               )}
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={() => onSave(criteria)}
                 disabled={stats.total === 0}
               >
@@ -526,6 +552,26 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="기준 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <Button size="sm" variant="secondary" onClick={() => setPendingDeleteId(null)}>
+              취소
+            </Button>
+            <Button size="sm" variant="primary" onClick={confirmDeleteNode}>
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-700">이 기준과 모든 하위 기준이 삭제됩니다. 계속하시겠습니까?</p>
+      </Modal>
     </div>
   );
 };

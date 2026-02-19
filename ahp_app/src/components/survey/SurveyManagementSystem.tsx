@@ -3,6 +3,7 @@ import { Survey, SurveyResponse, SurveyAnalytics, CreateSurveyRequest } from '..
 import SurveyFormBuilder from './SurveyFormBuilder';
 import Button from '../common/Button';
 import Card from '../common/Card';
+import Modal from '../common/Modal';
 import api from '../../services/api';
 
 interface SurveyManagementSystemProps {
@@ -20,6 +21,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [projects, setProjects] = useState<any[]>([]); // 프로젝트 개수 추적용
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -117,15 +119,14 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
   };
 
   // 설문조사 삭제
-  const deleteSurvey = async (surveyId: string) => {
-    const survey = surveys.find(s => s.id === surveyId);
-    if (!survey) return;
+  const deleteSurvey = (surveyId: string) => {
+    setPendingDeleteId(surveyId);
+  };
 
-    const confirmDelete = window.confirm(
-      `"${survey.title}" 설문조사를 삭제하시겠습니까?\n\n⚠️ 모든 응답 데이터도 함께 삭제되며 복구할 수 없습니다.`
-    );
-    
-    if (!confirmDelete) return;
+  const confirmDeleteSurvey = async () => {
+    if (!pendingDeleteId) return;
+    const surveyId = pendingDeleteId;
+    setPendingDeleteId(null);
 
     try {
       setIsLoading(true);
@@ -627,6 +628,8 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
     </div>
   );
 
+  const pendingDeleteSurvey = surveys.find(s => s.id === pendingDeleteId) ?? null;
+
   // 메인 렌더링
   switch (currentView) {
     case 'create':
@@ -636,7 +639,34 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
     case 'responses':
       return renderResponses();
     default:
-      return renderSurveyList();
+      return (
+        <>
+          {renderSurveyList()}
+          <Modal
+            isOpen={pendingDeleteId !== null}
+            onClose={() => setPendingDeleteId(null)}
+            title="설문조사 삭제 확인"
+            size="sm"
+            footer={
+              <div className="flex justify-end space-x-3">
+                <Button variant="outline" onClick={() => setPendingDeleteId(null)}>
+                  취소
+                </Button>
+                <Button variant="error" onClick={confirmDeleteSurvey}>
+                  삭제
+                </Button>
+              </div>
+            }
+          >
+            <p className="text-gray-700">
+              <span className="font-semibold">"{pendingDeleteSurvey?.title}"</span> 설문조사를 삭제하시겠습니까?
+            </p>
+            <p className="text-sm text-red-600 mt-2">
+              ⚠️ 모든 응답 데이터도 함께 삭제되며 복구할 수 없습니다.
+            </p>
+          </Modal>
+        </>
+      );
   }
 };
 

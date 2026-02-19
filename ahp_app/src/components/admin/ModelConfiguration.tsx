@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import Modal from '../common/Modal';
 import HelpModal from '../common/HelpModal';
 import TreeModelConfiguration from './TreeModelConfiguration';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -46,6 +47,8 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [alternatives, setAlternatives] = useState<Alternative[]>([]);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const [pendingDeleteCriterionId, setPendingDeleteCriterionId] = useState<string | null>(null);
+  const [pendingDeleteAlternativeId, setPendingDeleteAlternativeId] = useState<string | null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -154,9 +157,14 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   };
 
   const handleDeleteCriterion = (criterionId: string) => {
-    if (window.confirm('기준을 삭제하시겠습니까? 연관된 평가 데이터도 함께 삭제됩니다.')) {
-      setCriteria(criteria.filter(c => c.id !== criterionId));
-    }
+    setPendingDeleteCriterionId(criterionId);
+  };
+
+  const handleConfirmDeleteCriterion = () => {
+    if (!pendingDeleteCriterionId) return;
+    const id = pendingDeleteCriterionId;
+    setPendingDeleteCriterionId(null);
+    setCriteria(criteria.filter(c => c.id !== id));
   };
 
   const handleAddAlternative = () => {
@@ -190,9 +198,14 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   };
 
   const handleDeleteAlternative = (alternativeId: string) => {
-    if (window.confirm('대안을 삭제하시겠습니까? 연관된 평가 데이터도 함께 삭제됩니다.')) {
-      setAlternatives(alternatives.filter(a => a.id !== alternativeId));
-    }
+    setPendingDeleteAlternativeId(alternativeId);
+  };
+
+  const handleConfirmDeleteAlternative = () => {
+    if (!pendingDeleteAlternativeId) return;
+    const id = pendingDeleteAlternativeId;
+    setPendingDeleteAlternativeId(null);
+    setAlternatives(alternatives.filter(a => a.id !== id));
   };
 
   const handleSaveModel = () => {
@@ -285,6 +298,45 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
           {actionMessage.text}
         </div>
       )}
+
+      <Modal
+        isOpen={pendingDeleteCriterionId !== null}
+        onClose={() => setPendingDeleteCriterionId(null)}
+        title="기준 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setPendingDeleteCriterionId(null)}>
+              취소
+            </Button>
+            <Button variant="error" onClick={handleConfirmDeleteCriterion}>
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">기준을 삭제하시겠습니까? 연관된 평가 데이터도 함께 삭제됩니다.</p>
+      </Modal>
+
+      <Modal
+        isOpen={pendingDeleteAlternativeId !== null}
+        onClose={() => setPendingDeleteAlternativeId(null)}
+        title="대안 삭제"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setPendingDeleteAlternativeId(null)}>
+              취소
+            </Button>
+            <Button variant="error" onClick={handleConfirmDeleteAlternative}>
+              삭제
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">대안을 삭제하시겠습니까? 연관된 평가 데이터도 함께 삭제됩니다.</p>
+      </Modal>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

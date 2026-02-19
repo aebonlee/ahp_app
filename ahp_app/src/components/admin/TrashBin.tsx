@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import Modal from '../common/Modal';
 
 interface TrashBinProps {
   onFetchTrashedProjects?: () => Promise<any[]>;
@@ -29,6 +30,8 @@ const TrashBin: React.FC<TrashBinProps> = ({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const [pendingAction, setPendingAction] = useState<{type: 'restore' | 'permanentDelete', id: string, title: string} | null>(null);
+  const [permanentDeleteStep, setPermanentDeleteStep] = useState<1 | 2>(1);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -77,20 +80,21 @@ const TrashBin: React.FC<TrashBinProps> = ({
     }
   };
 
-  const handleRestore = async (projectId: string, projectTitle: string) => {
+  // 복원 - trigger
+  const handleRestore = (projectId: string, projectTitle: string) => {
     if (!onRestoreProject) return;
-    
-    if (!window.confirm(`"${projectTitle}" 프로젝트를 복원하시겠습니까?`)) {
-      return;
-    }
+    setPendingAction({ type: 'restore', id: projectId, title: projectTitle });
+  };
 
+  // 복원 - confirm
+  const confirmRestore = async () => {
+    if (!pendingAction || !onRestoreProject) return;
+    const { id } = pendingAction;
+    setPendingAction(null);
     try {
-      setActionLoading(projectId);
-      await onRestoreProject(projectId);
-      
-      // 목록에서 제거
-      setTrashedProjects(prev => prev.filter(p => p.id !== projectId));
-
+      setActionLoading(id);
+      await onRestoreProject(id);
+      setTrashedProjects(prev => prev.filter(p => p.id !== id));
       showActionMessage('success', '프로젝트가 성공적으로 복원되었습니다.');
     } catch (error) {
       showActionMessage('error', '프로젝트 복원에 실패했습니다.');
@@ -99,25 +103,27 @@ const TrashBin: React.FC<TrashBinProps> = ({
     }
   };
 
-  const handlePermanentDelete = async (projectId: string, projectTitle: string) => {
+  // 영구 삭제 - trigger
+  const handlePermanentDelete = (projectId: string, projectTitle: string) => {
     if (!onPermanentDeleteProject) return;
-    
-    if (!window.confirm(`"${projectTitle}" 프로젝트를 영구 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다!\n- 모든 평가 데이터\n- 기준 및 대안\n- 평가자 배정 정보\n\n모든 데이터가 완전히 삭제됩니다.`)) {
+    setPermanentDeleteStep(1);
+    setPendingAction({ type: 'permanentDelete', id: projectId, title: projectTitle });
+  };
+
+  // 영구 삭제 - confirm (two-step)
+  const confirmPermanentDelete = async () => {
+    if (!pendingAction || !onPermanentDeleteProject) return;
+    if (permanentDeleteStep === 1) {
+      setPermanentDeleteStep(2);
       return;
     }
-
-    // 한 번 더 확인
-    if (!window.confirm(`정말로 "${projectTitle}"를 영구 삭제하시겠습니까?\n\n마지막 확인입니다.`)) {
-      return;
-    }
-
+    const { id } = pendingAction;
+    setPendingAction(null);
+    setPermanentDeleteStep(1);
     try {
-      setActionLoading(projectId);
-      await onPermanentDeleteProject(projectId);
-      
-      // 목록에서 제거
-      setTrashedProjects(prev => prev.filter(p => p.id !== projectId));
-
+      setActionLoading(id);
+      await onPermanentDeleteProject(id);
+      setTrashedProjects(prev => prev.filter(p => p.id !== id));
       showActionMessage('success', '프로젝트가 영구 삭제되었습니다.');
     } catch (error) {
       showActionMessage('error', '영구 삭제에 실패했습니다.');
@@ -274,6 +280,62 @@ const TrashBin: React.FC<TrashBinProps> = ({
           </div>
         )}
       </Card>
+      {/* 확인 모달 */}
+      <Modal
+        isOpen={pendingAction !== null}
+        onClose={() => { setPendingAction(null); setPermanentDeleteStep(1); }}
+        title={pendingAction?.type === 'restore' ? '프로젝트 복원' : '프로젝트 영구 삭제'}
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={() => { setPendingAction(null); setPermanentDeleteStep(1); }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={pendingAction?.type === 'restore' ? confirmRestore : confirmPermanentDelete}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+                pendingAction?.type === 'permanentDelete'
+                  ? 'bg-red-600 hover:bg-red-700'
+                  : 'bg-green-600 hover:bg-green-700'
+              }`}
+            >
+              {pendingAction?.type === 'restore' ? '복원' :
+               permanentDeleteStep === 1 ? '계속' : '영구 삭제'}
+            </button>
+          </div>
+        }
+      >
+        {pendingAction?.type === 'restore' && (
+          <p className="text-sm text-gray-700">
+            <strong>"{pendingAction.title}"</strong> 프로젝트를 복원하시겠습니까?
+          </p>
+        )}
+        {pendingAction?.type === 'permanentDelete' && permanentDeleteStep === 1 && (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-700">
+              <strong>"{pendingAction.title}"</strong> 프로젝트를 영구 삭제하시겠습니까?
+            </p>
+            <p className="text-sm text-red-600 font-medium">⚠️ 이 작업은 되돌릴 수 없습니다!</p>
+            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+              <li>모든 평가 데이터</li>
+              <li>기준 및 대안</li>
+              <li>평가자 배정 정보</li>
+            </ul>
+            <p className="text-sm text-gray-600">모든 데이터가 완전히 삭제됩니다.</p>
+          </div>
+        )}
+        {pendingAction?.type === 'permanentDelete' && permanentDeleteStep === 2 && (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-700">
+              정말로 <strong>"{pendingAction.title}"</strong>를 영구 삭제하시겠습니까?
+            </p>
+            <p className="text-sm text-red-600 font-medium">마지막 확인입니다.</p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

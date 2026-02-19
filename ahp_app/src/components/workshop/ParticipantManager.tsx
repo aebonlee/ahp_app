@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import Modal from '../common/Modal';
 
 export interface Participant {
   id: string;
@@ -67,6 +68,7 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
 }) => {
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
   const [newParticipant, setNewParticipant] = useState({
     name: '',
     email: '',
@@ -268,11 +270,14 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
   };
 
   const removeParticipant = (participantId: string) => {
-    // Note: In production, replace with proper modal confirmation
-    const shouldRemove = window.confirm('정말로 이 참가자를 제거하시겠습니까?');
-    if (shouldRemove) {
-      setParticipants(participants.filter(p => p.id !== participantId));
+    setPendingRemoveId(participantId);
+  };
+
+  const confirmRemove = () => {
+    if (pendingRemoveId) {
+      setParticipants(participants.filter(p => p.id !== pendingRemoveId));
     }
+    setPendingRemoveId(null);
   };
 
   const updateParticipantStatus = (participantId: string, status: Participant['status']) => {
@@ -581,6 +586,31 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
           </div>
         )}
       </Card>
+
+      <Modal
+        isOpen={pendingRemoveId !== null}
+        onClose={() => setPendingRemoveId(null)}
+        title="참가자 제거 확인"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => setPendingRemoveId(null)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={confirmRemove}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+            >
+              제거
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">정말로 이 참가자를 제거하시겠습니까?</p>
+      </Modal>
     </div>
   );
 };

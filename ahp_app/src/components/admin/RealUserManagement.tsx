@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
 import Input from '../common/Input';
+import Modal from '../common/Modal';
 import apiService from '../../services/apiService';
 
 interface DjangoUser {
@@ -56,6 +57,7 @@ const RealUserManagement: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [pendingDeleteUser, setPendingDeleteUser] = useState<DjangoUser | null>(null);
 
   const pageSize = 10;
 
@@ -241,21 +243,23 @@ const RealUserManagement: React.FC = () => {
   };
 
   // 사용자 삭제
-  const handleDeleteUser = async (user: DjangoUser) => {
-    if (!window.confirm(`정말 "${user.username}" 사용자를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
-      return;
-    }
+  const handleDeleteUser = (user: DjangoUser) => {
+    setPendingDeleteUser(user);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!pendingDeleteUser) return;
 
     setLoading(true);
     setErrorMessage('');
 
     try {
-      const response = await apiService.delete(`/api/users/${user.id}/`);
-      
+      const response = await apiService.delete(`/api/users/${pendingDeleteUser.id}/`);
+
       if (!response.error) {
         setSuccessMessage('사용자가 성공적으로 삭제되었습니다.');
         fetchUsers();
-        
+
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
         throw new Error(response.error);
@@ -264,6 +268,7 @@ const RealUserManagement: React.FC = () => {
       setErrorMessage('사용자 삭제에 실패했습니다.');
     } finally {
       setLoading(false);
+      setPendingDeleteUser(null);
     }
   };
 
@@ -624,6 +629,29 @@ const RealUserManagement: React.FC = () => {
           </div>
         )}
       </Card>
+
+      {/* 사용자 삭제 확인 모달 */}
+      <Modal
+        isOpen={pendingDeleteUser !== null}
+        onClose={() => setPendingDeleteUser(null)}
+        title="사용자 삭제 확인"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <UnifiedButton variant="secondary" onClick={() => setPendingDeleteUser(null)}>
+              취소
+            </UnifiedButton>
+            <UnifiedButton variant="danger" onClick={confirmDeleteUser}>
+              삭제
+            </UnifiedButton>
+          </div>
+        }
+      >
+        <p className="text-gray-700">
+          정말 <span className="font-semibold">"{pendingDeleteUser?.username}"</span> 사용자를 삭제하시겠습니까?
+        </p>
+        <p className="text-sm text-gray-500 mt-1">이 작업은 되돌릴 수 없습니다.</p>
+      </Modal>
 
       {/* 사용자 생성/수정 폼 */}
       {showCreateForm && (
