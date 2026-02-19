@@ -224,12 +224,12 @@ class AuthService {
     role?: string;
   }): Promise<LoginResponse> {
     // password2를 password_confirm으로 변환 (Django 기대값)
+    const { password2, ...restData } = userData;
     const registerData = {
-      ...userData,
-      password_confirm: userData.password2,
+      ...restData,
+      password_confirm: password2,
       full_name: `${userData.first_name} ${userData.last_name}`.trim()
     };
-    delete (registerData as any).password2;
 
     const result = await this.apiRequest<{ tokens: { access: string; refresh: string }; user: User }>(
       '/api/service/auth/register/',
