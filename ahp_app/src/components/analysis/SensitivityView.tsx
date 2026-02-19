@@ -396,7 +396,7 @@ const SensitivityView: React.FC<SensitivityViewProps> = ({
         ].map(({ type, label, icon }) => (
           <button
             key={type}
-            onClick={() => setChartType(type as any)}
+            onClick={() => setChartType(type as 'radar' | 'bar' | 'line')}
             className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
               chartType === type
                 ? 'border-blue-500 bg-blue-50 text-blue-700'

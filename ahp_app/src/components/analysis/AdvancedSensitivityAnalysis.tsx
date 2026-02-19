@@ -72,7 +72,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
   useEffect(() => {
     const loadGoogleCharts = () => {
       if (typeof google !== 'undefined' && google.charts) {
-        google.charts.load('current', { 
+        google.charts.load('current', {
           packages: ['corechart', 'table', 'sankey'],
           language: 'ko'
         });
@@ -85,7 +85,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
         const script = document.createElement('script');
         script.src = 'https://www.gstatic.com/charts/loader.js';
         script.onload = () => {
-          google.charts.load('current', { 
+          google.charts.load('current', {
             packages: ['corechart', 'table', 'sankey'],
             language: 'ko'
           });
@@ -100,12 +100,14 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
     };
 
     loadGoogleCharts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 기본 시나리오 초기화
   useEffect(() => {
     initializeScenarios();
     initializeCustomWeights();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectData]);
 
   const initializeScenarios = () => {
@@ -570,7 +572,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
                   type="radio"
                   value="single"
                   checked={analysisMode === 'single'}
-                  onChange={(e) => setAnalysisMode(e.target.value as any)}
+                  onChange={(e) => setAnalysisMode(e.target.value as 'single' | 'multi' | 'threshold')}
                   className="mr-2"
                 />
                 <span>단일 시나리오</span>
@@ -580,7 +582,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
                   type="radio"
                   value="multi"
                   checked={analysisMode === 'multi'}
-                  onChange={(e) => setAnalysisMode(e.target.value as any)}
+                  onChange={(e) => setAnalysisMode(e.target.value as 'single' | 'multi' | 'threshold')}
                   className="mr-2"
                 />
                 <span>다중 시나리오</span>
@@ -590,7 +592,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
                   type="radio"
                   value="threshold"
                   checked={analysisMode === 'threshold'}
-                  onChange={(e) => setAnalysisMode(e.target.value as any)}
+                  onChange={(e) => setAnalysisMode(e.target.value as 'single' | 'multi' | 'threshold')}
                   className="mr-2"
                 />
                 <span>임계값 분석</span>
@@ -684,7 +686,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
             {showChart && (
               <select
                 value={chartType}
-                onChange={(e) => setChartType(e.target.value as any)}
+                onChange={(e) => setChartType(e.target.value as 'radar' | 'waterfall' | 'tornado' | 'heatmap')}
                 className="border rounded px-3 py-2"
               >
                 <option value="tornado">토네이도 차트</option>

@@ -545,7 +545,7 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
               </label>
               <select
                 value={optimizationMode}
-                onChange={(e) => setOptimizationMode(e.target.value as any)}
+                onChange={(e) => setOptimizationMode(e.target.value as 'binary' | 'continuous' | 'fractional')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="binary">이진 선택 (0/1 배낭문제)</option>
@@ -636,7 +636,7 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
                   <td className="border border-gray-300 px-4 py-2">
                     <select
                       value={item.priority}
-                      onChange={(e) => updateItemPriority(item.id, e.target.value as any)}
+                      onChange={(e) => updateItemPriority(item.id, e.target.value as 'mandatory' | 'high' | 'medium' | 'low')}
                       className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
                       <option value="low">낮음</option>
@@ -670,7 +670,7 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
         ].map(({ type, label, icon }) => (
           <button
             key={type}
-            onClick={() => setChartType(type as any)}
+            onClick={() => setChartType(type as 'efficiency' | 'allocation' | 'scenario' | 'portfolio')}
             className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
               chartType === type
                 ? 'border-blue-500 bg-blue-50 text-blue-700'

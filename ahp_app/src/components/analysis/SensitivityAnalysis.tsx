@@ -128,10 +128,11 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
       const sorted = [...alternativeScores].sort((a, b) => b.totalScore - a.totalScore);
       setBaselineRanking(sorted);
       setAdjustedRanking(sorted);
-      
+
       // 고급 분석 실행
       performExtendedAnalysis();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alternativeScores]);
 
   // Google Charts 초기화

@@ -30,6 +30,7 @@ const ComprehensiveReport: React.FC<ComprehensiveReportProps> = ({ projectId }) 
 
   useEffect(() => {
     generateReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   const exportPDF = () => {
