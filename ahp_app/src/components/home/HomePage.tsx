@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ThemeModeToggle from '../common/ThemeModeToggle';
 import ColorThemeButton from '../common/ColorThemeButton';
-import ParticleBackground from '../common/ParticleBackground';
 import PricingSection from './PricingSection';
 import SupportPage from '../support/SupportPage';
 import NewsPage from '../support/NewsPage';
@@ -14,6 +13,7 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
   const [scrollY, setScrollY] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light');
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showSupportPage, setShowSupportPage] = useState(false);

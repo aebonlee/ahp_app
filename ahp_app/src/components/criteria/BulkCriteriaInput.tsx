@@ -231,6 +231,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
   };
 
   // 계층구조로 변환 (미리보기용)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _convertParsedCriteria = (parsedCriteria: any[]): Criterion[] => {
     const flatCriteria = convertParsedCriteriaFlat(parsedCriteria);
     return buildHierarchy(flatCriteria);

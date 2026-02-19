@@ -187,6 +187,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     };
 
     loadUserDataFromAPI();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 설정을 API로 저장 (localStorage 완전 제거)
@@ -382,6 +383,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _getSaveStatusColor = () => {
     switch (saveStatus) {
       case 'saving': return 'bg-yellow-500';

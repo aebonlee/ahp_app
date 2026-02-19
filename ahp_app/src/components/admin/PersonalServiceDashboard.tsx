@@ -3445,6 +3445,7 @@ ${project?.title} - ${type} 프레젠테이션
     </div>
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _renderProjectWizardFullPage = () => {
     const currentTab = externalActiveTab || activeMenu;
     

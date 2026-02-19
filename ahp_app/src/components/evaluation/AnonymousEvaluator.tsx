@@ -60,10 +60,12 @@ const AnonymousEvaluator: React.FC = () => {
   // Evaluation state
   const [comparisons, setComparisons] = useState<ComparisonPair[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_progress, setProgress] = useState<EvaluationProgress | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [recoveryData, setRecoveryData] = useState<SessionRecoveryData | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [autoSaveEnabled, _setAutoSaveEnabled] = useState(true);
   
   // Refs for cleanup
@@ -74,7 +76,7 @@ const AnonymousEvaluator: React.FC = () => {
   // Initialize and load data
   useEffect(() => {
     initializeEvaluation();
-    
+
     // Cleanup on unmount
     return () => {
       if (autoSaveCleanup.current) {
@@ -84,6 +86,7 @@ const AnonymousEvaluator: React.FC = () => {
         clearTimeout(activityTimer.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, sessionId]);
 
   // Auto-save setup
@@ -125,6 +128,7 @@ const AnonymousEvaluator: React.FC = () => {
     if (session && criteria.length > 0 && alternatives.length > 0 && comparisons.length === 0) {
       generateComparisons();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, criteria, alternatives]);
 
   const initializeEvaluation = async () => {

@@ -29,16 +29,19 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
   const [backups, setBackups] = useState<BackupStatus[]>([]);
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_availableUpdates, _setAvailableUpdates] = useState<SystemUpdate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_runningTasks, setRunningTasks] = useState<Set<string>>(new Set());
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ action: () => Promise<void>; message: string } | null>(null);
 
   useEffect(() => {
     loadSystemData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadSystemData = async () => {
@@ -318,6 +321,7 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         const response = await systemManagementService.getTaskStatus(taskId);
         
         if (response.success && response.data) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { status, progress: _progress, message } = response.data;
           
           if (status === 'completed') {

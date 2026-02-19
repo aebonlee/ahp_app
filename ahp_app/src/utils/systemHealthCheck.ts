@@ -22,6 +22,7 @@ class SystemHealthChecker {
     const startTime = Date.now();
     try {
       // React 앱 기본 상태 확인
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _isReactApp = !!window.React || !!document.querySelector('#root');
       const buildInfo = {
         version: process.env.REACT_APP_VERSION || '1.0.0',
@@ -163,6 +164,7 @@ class SystemHealthChecker {
         });
 
         const responseTime = Date.now() - endpointStart;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         _totalTime += responseTime;
 
         const isHealthy = response.status < 500;

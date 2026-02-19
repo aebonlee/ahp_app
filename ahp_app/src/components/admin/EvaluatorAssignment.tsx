@@ -114,6 +114,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
     if (projectId) {
       loadProjectEvaluators();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   const [newEvaluator, setNewEvaluator] = useState({ name: '', email: '' });

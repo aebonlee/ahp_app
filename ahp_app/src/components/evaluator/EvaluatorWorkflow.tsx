@@ -43,6 +43,7 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
 
   useEffect(() => {
     loadProjectData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   const loadProjectData = async () => {

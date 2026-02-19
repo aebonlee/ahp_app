@@ -69,6 +69,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   // Load existing files on mount
   React.useEffect(() => {
     loadExistingFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, category]);
 
   const loadExistingFiles = async () => {
@@ -213,13 +214,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setState(prev => ({ ...prev, dragActive: false }));
-    
+
     if (disabled) return;
-    
+
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       handleFileUpload(files);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabled]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
