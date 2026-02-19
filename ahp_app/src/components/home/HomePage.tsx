@@ -71,11 +71,11 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
     // 시스템 테마 변경 감지
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleMediaChange = () => detectTheme();
-    mediaQuery.addListener(handleMediaChange);
+    mediaQuery.addEventListener('change', handleMediaChange);
 
     return () => {
       observer.disconnect();
-      mediaQuery.removeListener(handleMediaChange);
+      mediaQuery.removeEventListener('change', handleMediaChange);
     };
   }, []);
 

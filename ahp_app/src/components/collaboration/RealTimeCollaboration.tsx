@@ -104,6 +104,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
   const lastMousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const mockServerRef = useRef<MockCollaborationServer>(MockCollaborationServer.getInstance());
+  const connectionMonitorCleanupRef = useRef<(() => void) | null>(null);
 
   // 실시간 동기화 초기화
   useEffect(() => {
@@ -196,7 +197,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
       });
 
       // 연결 품질 모니터링 시작
-      startConnectionMonitoring(manager);
+      connectionMonitorCleanupRef.current = startConnectionMonitoring(manager);
 
       showNotification('success', '실시간 협업 시작', '다른 사용자와 실시간으로 협업할 수 있습니다.');
 
@@ -215,9 +216,14 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
       });
       syncManager.stopSync();
     }
-    
+
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    if (connectionMonitorCleanupRef.current) {
+      connectionMonitorCleanupRef.current();
+      connectionMonitorCleanupRef.current = null;
     }
   };
 

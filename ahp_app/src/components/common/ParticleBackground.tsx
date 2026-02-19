@@ -43,6 +43,10 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
     const performanceLevel = getDevicePerformanceLevel();
     setDevicePerformance(performanceLevel);
 
+    // Closure variables to capture battery object and handler for cleanup
+    let batteryObject: any = null;
+    let batteryUpdateHandler: (() => void) | null = null;
+
     // 배터리 API 체크 (지원하는 브라우저에서)
     if ('getBattery' in navigator) {
       (navigator as any).getBattery().then((battery: any) => {
@@ -55,6 +59,8 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
           }
         };
 
+        batteryObject = battery;
+        batteryUpdateHandler = updateBatteryStatus;
         updateBatteryStatus();
         battery.addEventListener('levelchange', updateBatteryStatus);
         battery.addEventListener('chargingchange', updateBatteryStatus);
@@ -76,6 +82,10 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
 
     return () => {
       observer.disconnect();
+      if (batteryObject && batteryUpdateHandler) {
+        batteryObject.removeEventListener('levelchange', batteryUpdateHandler);
+        batteryObject.removeEventListener('chargingchange', batteryUpdateHandler);
+      }
     };
   }, []);
 

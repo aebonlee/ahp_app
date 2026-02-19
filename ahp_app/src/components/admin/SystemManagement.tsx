@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Card from '../common/Card';
 import Button from '../common/Button';
@@ -38,10 +38,18 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
   const [_runningTasks, setRunningTasks] = useState<Set<string>>(new Set());
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ action: () => Promise<void>; message: string } | null>(null);
+  const monitorIntervalsRef = useRef<Set<ReturnType<typeof setInterval>>>(new Set());
 
   useEffect(() => {
     loadSystemData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Cleanup all monitor intervals on unmount
+  useEffect(() => {
+    return () => {
+      monitorIntervalsRef.current.forEach(clearInterval);
+    };
   }, []);
 
   const loadSystemData = async () => {
@@ -304,43 +312,49 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
     const checkInterval = setInterval(async () => {
       try {
         const response = await systemManagementService.getTaskStatus(taskId);
-        
+
         if (response.success && response.data) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { status, progress: _progress, message } = response.data;
-          
+
           if (status === 'completed') {
             clearInterval(checkInterval);
+            monitorIntervalsRef.current.delete(checkInterval);
             setRunningTasks(prev => {
               const newTasks = new Set(prev);
               newTasks.delete(taskId);
               return newTasks;
             });
-            
+
             setSuccess('작업이 완료되었습니다.');
             loadSystemData(); // Refresh data
-            
+
           } else if (status === 'failed') {
             clearInterval(checkInterval);
+            monitorIntervalsRef.current.delete(checkInterval);
             setRunningTasks(prev => {
               const newTasks = new Set(prev);
               newTasks.delete(taskId);
               return newTasks;
             });
-            
+
             setError(message || '작업이 실패했습니다.');
           }
         }
       } catch (err) {
-        setError('작업 상태 모니터링 중 오류가 발생했습니다.');
         clearInterval(checkInterval);
+        monitorIntervalsRef.current.delete(checkInterval);
+        setError('작업 상태 모니터링 중 오류가 발생했습니다.');
       }
 
     }, 2000); // Check every 2 seconds
-    
+
+    monitorIntervalsRef.current.add(checkInterval);
+
     // Stop monitoring after 10 minutes
     setTimeout(() => {
       clearInterval(checkInterval);
+      monitorIntervalsRef.current.delete(checkInterval);
       setRunningTasks(prev => {
         const newTasks = new Set(prev);
         newTasks.delete(taskId);
