@@ -24,7 +24,7 @@ const GroupConsensusPanel: React.FC<GroupConsensusPanelProps> = ({ projectId }) 
   const performAnalysis = async () => {
     try {
       setLoading(true);
-      const response = await api.post(`/analysis/advanced/${projectId}/group_consensus_analysis/`, {
+      const response = await api.post(`/api/service/analysis/advanced/${projectId}/group_consensus_analysis/`, {
         aggregation_method: aggregationMethod
       });
 

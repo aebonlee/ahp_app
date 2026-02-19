@@ -72,7 +72,7 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
 
     try {
       setLoading(true);
-      const response = await api.post('/evaluations/bulk-invitations/send_bulk_invitations/', {
+      const response = await api.post('/api/service/evaluations/bulk-invitations/send_bulk_invitations/', {
         project_id: projectId,
         evaluator_emails: emailList,
         custom_message: message,

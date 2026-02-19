@@ -37,7 +37,7 @@ const SensitivityAnalysisPanel: React.FC<SensitivityAnalysisPanelProps> = ({ pro
   const performAnalysis = async () => {
     try {
       setLoading(true);
-      const response = await api.post(`/analysis/advanced/${projectId}/sensitivity_analysis/`, {
+      const response = await api.post(`/api/service/analysis/advanced/${projectId}/sensitivity_analysis/`, {
         target_criteria: selectedCriteria,
         variation_range: variationRange
       });

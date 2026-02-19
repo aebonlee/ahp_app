@@ -47,20 +47,20 @@ const IntegratedEvaluationFlow: React.FC = () => {
       
       // 단축 코드로 접속한 경우 프로젝트 ID 조회
       if (shortCode && !projectId) {
-        const linkResponse = await api.get(`/evaluation/resolve-link/${shortCode}`);
+        const linkResponse = await api.get(`/api/service/evaluation/resolve-link/${shortCode}`);
         actualProjectId = linkResponse.data.project_id;
       }
 
       // 프로젝트 정보 조회
-      const response = await api.get(`/projects/${actualProjectId}/public-info/`);
+      const response = await api.get(`/api/service/projects/projects/${actualProjectId}/public-info/`);
       setProject(response.data);
 
       // 참여자 수 조회
-      const statsResponse = await api.get(`/projects/${actualProjectId}/participant-stats/`);
+      const statsResponse = await api.get(`/api/service/projects/projects/${actualProjectId}/participant-stats/`);
       setParticipantCount(statsResponse.data.completed_count || 0);
 
       // 세션 시작
-      const sessionResponse = await api.post('/evaluation/start/', {
+      const sessionResponse = await api.post('/api/service/evaluation/start/', {
         project_id: actualProjectId,
         access_method: shortCode ? 'qr' : 'link',
       });
@@ -75,7 +75,7 @@ const IntegratedEvaluationFlow: React.FC = () => {
   const handleDemographicComplete = async (data: any) => {
     try {
       // 인구통계 데이터 제출
-      await api.post('/evaluation/demographic/', {
+      await api.post('/api/service/evaluation/demographic/', {
         session_id: sessionId,
         responses: data,
       });
@@ -96,7 +96,7 @@ const IntegratedEvaluationFlow: React.FC = () => {
   const handleAHPComplete = async () => {
     try {
       // AHP 평가 완료 처리
-      await api.post('/evaluation/complete/', {
+      await api.post('/api/service/evaluation/complete/', {
         session_id: sessionId,
       });
 

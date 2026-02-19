@@ -16,7 +16,7 @@ const MonteCarloSimulation: React.FC<MonteCarloSimulationProps> = ({ projectId }
   const runSimulation = async () => {
     try {
       setLoading(true);
-      const response = await api.post(`/analysis/advanced/${projectId}/monte_carlo_simulation/`, {
+      const response = await api.post(`/api/service/analysis/advanced/${projectId}/monte_carlo_simulation/`, {
         n_simulations: nSimulations,
         uncertainty_level: uncertaintyLevel
       });

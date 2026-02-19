@@ -46,7 +46,7 @@ const AdvancedAnalysisDashboard: React.FC = () => {
   const loadProject = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/projects/${projectId}/`);
+      const response = await api.get(`/api/service/projects/projects/${projectId}/`);
       setProject(response.data);
     } catch (error) {
       console.error('프로젝트 로드 실패:', error);

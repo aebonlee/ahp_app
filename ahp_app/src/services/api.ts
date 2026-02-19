@@ -768,35 +768,35 @@ export const advancedAnalysisApi = {
   
   // 민감도 분석
   runSensitivityAnalysis: (projectId: string, data: any) =>
-    makeRequest<any>(`/analysis/advanced/${projectId}/sensitivity_analysis/`, {
+    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/sensitivity_analysis/`, {
       method: 'POST',
       body: JSON.stringify(data)
     }),
 
   // 그룹 합의 분석
   runGroupConsensusAnalysis: (projectId: string, data: any) =>
-    makeRequest<any>(`/analysis/advanced/${projectId}/group_consensus_analysis/`, {
+    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/group_consensus_analysis/`, {
       method: 'POST',
       body: JSON.stringify(data)
     }),
 
   // 통계적 검증
   runStatisticalTest: (projectId: string, data: any) =>
-    makeRequest<any>(`/analysis/advanced/${projectId}/statistical_test/`, {
+    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/statistical_test/`, {
       method: 'POST',
       body: JSON.stringify(data)
     }),
 
   // 몬테카를로 시뮬레이션
   runMonteCarloSimulation: (projectId: string, data: any) =>
-    makeRequest<any>(`/analysis/advanced/${projectId}/monte_carlo_simulation/`, {
+    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/monte_carlo_simulation/`, {
       method: 'POST',
       body: JSON.stringify(data)
     }),
 
   // 종합 보고서 조회
   getComprehensiveReport: (projectId: string) =>
-    makeRequest<any>(`/analysis/advanced/${projectId}/comprehensive_report/`)
+    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/comprehensive_report/`)
 };
 
 const apiExports = {
