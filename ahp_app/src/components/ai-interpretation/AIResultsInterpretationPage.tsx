@@ -3,9 +3,9 @@
  * AHP 평가 결과를 AI가 분석하고 해석하여 의사결정 인사이트를 제공하는 시스템
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PageHeader from '../common/PageHeader';
-import cleanDataService from '../../services/dataService_clean';
+import apiService from '../../services/apiService';
 import { getAIService } from '../../services/aiService';
 import type { User } from '../../types';
 
@@ -78,14 +78,6 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [interpretationSettings, setInterpretationSettings] = useState({
-    analysisDepth: 'comprehensive',
-    language: 'korean',
-    includeVisualizations: true,
-    includeSensitivity: true,
-    includeRecommendations: true,
-    comparisonMode: false
-  });
 
   const tabs = [
     { id: 'project-selection', title: '프로젝트 선택', icon: '📊' },
@@ -96,17 +88,13 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
   ];
 
   // 프로젝트 목록 로드
-  useEffect(() => {
-    loadProjects();
-  }, []);
-
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     setLoading(true);
     try {
-      const projectsData = await cleanDataService.getProjects();
-      // 완료된 프로젝트만 필터링
-      const completedProjects = (projectsData || []).filter(
-        (p: any) => p.status === 'completed' || p.completion_rate === 100
+      const res = await apiService.get<any>('/api/service/projects/projects/?page_size=100');
+      const all: any[] = res?.data?.results ?? res?.data ?? [];
+      const completedProjects = all.filter(
+        (p: any) => p.status === 'completed' || p.status === 'evaluation'
       );
       setProjects(completedProjects);
     } catch (error) {
@@ -114,7 +102,11 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
 
   // 프로젝트 선택 및 결과 로드
   const selectProjectAndLoadResults = async (project: Project) => {
@@ -127,46 +119,55 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
     setLoading(true);
     
     try {
-      // 프로젝트의 평가 결과 데이터 로드
-      const [criteria, alternatives, evaluations] = await Promise.all([
-        cleanDataService.getCriteria(project.id),
-        cleanDataService.getAlternatives(project.id),
-        cleanDataService.getEvaluators(project.id)
+      // 평가 결과 데이터 로드
+      const [criteriaRes, groupRes, evalsRes] = await Promise.allSettled([
+        apiService.get<any>(`/api/service/projects/criteria/?project=${project.id}&page_size=100`),
+        apiService.post<any>('/api/service/analysis/calculate/group/', { project_id: project.id }),
+        apiService.get<any>(`/api/service/evaluations/evaluations/?project=${project.id}&page_size=100`),
       ]);
 
-      // 임시 결과 데이터 생성 (실제로는 백엔드에서 계산된 결과를 받아옴)
-      const mockResult: AnalysisResult = {
+      const criteriaList: any[] = criteriaRes.status === 'fulfilled'
+        ? (criteriaRes.value?.data?.results ?? criteriaRes.value?.data ?? []) : [];
+      const groupWeights: any[] = groupRes.status === 'fulfilled'
+        ? (groupRes.value?.data?.weights ?? []) : [];
+      const evalList: any[] = evalsRes.status === 'fulfilled'
+        ? (evalsRes.value?.data?.results ?? evalsRes.value?.data ?? []) : [];
+
+      const avgCR = evalList.reduce((s: number, e: any) => s + (e.consistency_ratio ?? 0), 0)
+        / (evalList.filter((e: any) => e.consistency_ratio != null).length || 1);
+
+      const weights: Criterion[] = groupWeights.length > 0
+        ? groupWeights.map((w: any) => ({
+            id: w.criteria_id,
+            name: w.criteria_name,
+            weight: w.normalized_weight,
+            localWeight: w.weight,
+            globalWeight: w.normalized_weight,
+          }))
+        : criteriaList.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            weight: 0,
+            localWeight: 0,
+            globalWeight: 0,
+          }));
+
+      const result: AnalysisResult = {
         projectId: project.id,
         projectTitle: project.title,
         timestamp: new Date().toISOString(),
-        rankings: (alternatives || []).map((alt: any, index: number) => ({
-          id: alt.id || `alt-${index}`,
-          name: alt.name,
-          score: Math.random() * 100,
-          rank: index + 1,
-          description: alt.description
-        })).sort((a: Alternative, b: Alternative) => b.score - a.score),
-        weights: (criteria || []).map((crit: any) => ({
-          id: crit.id || '',
-          name: crit.name,
-          weight: Math.random(),
-          localWeight: Math.random(),
-          globalWeight: Math.random()
-        })),
-        consistencyRatio: 0.08,
-        sensitivity: {
-          critical: ['가격', '품질'],
-          stable: ['브랜드', '서비스'],
-          threshold: 0.15
-        },
+        rankings: [],
+        weights,
+        consistencyRatio: avgCR,
+        sensitivity: { critical: [], stable: [], threshold: 0.1 },
         insights: []
       };
 
-      setAnalysisResult(mockResult);
+      setAnalysisResult(result);
       setActiveTab('results-overview');
-      
+
       // AI 분석 자동 시작
-      startAIAnalysis(mockResult);
+      startAIAnalysis(result);
     } catch (error) {
       console.error('결과 데이터 로드 실패:', error);
     } finally {
@@ -181,11 +182,9 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
     try {
       // 실제 AI 분석 호출
       const aiService = getAIService();
-      let aiInterpretation = '';
-      
       if (aiService) {
         try {
-          aiInterpretation = await aiService.interpretAHPResults(selectedProject, result);
+          await aiService.interpretAHPResults(selectedProject, result);
         } catch (error) {
           console.error('AI 분석 실패:', error);
         }
@@ -234,27 +233,6 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
     } finally {
       setAnalyzing(false);
     }
-  };
-
-  // 차트 데이터 생성
-  const generateChartData = (result: AnalysisResult) => {
-    return {
-      barChart: {
-        labels: result.rankings.map(r => r.name),
-        data: result.rankings.map(r => r.score)
-      },
-      pieChart: {
-        labels: result.weights.map(w => w.name),
-        data: result.weights.map(w => w.weight * 100)
-      },
-      radarChart: {
-        labels: result.weights.map(w => w.name),
-        datasets: result.rankings.slice(0, 3).map(alt => ({
-          label: alt.name,
-          data: result.weights.map(() => Math.random() * 100)
-        }))
-      }
-    };
   };
 
   // 결과 내보내기

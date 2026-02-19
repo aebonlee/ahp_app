@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircleIcon, ExclamationTriangleIcon, CogIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
@@ -29,11 +29,11 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
   const [backups, setBackups] = useState<BackupStatus[]>([]);
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([]);
-  const [availableUpdates, setAvailableUpdates] = useState<SystemUpdate[]>([]);
+  const [_availableUpdates, _setAvailableUpdates] = useState<SystemUpdate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
-  const [runningTasks, setRunningTasks] = useState<Set<string>>(new Set());
+  const [_runningTasks, setRunningTasks] = useState<Set<string>>(new Set());
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ action: () => Promise<void>; message: string } | null>(null);
 
@@ -318,7 +318,7 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         const response = await systemManagementService.getTaskStatus(taskId);
         
         if (response.success && response.data) {
-          const { status, progress, message } = response.data;
+          const { status, progress: _progress, message } = response.data;
           
           if (status === 'completed') {
             clearInterval(checkInterval);

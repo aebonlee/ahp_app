@@ -3445,7 +3445,7 @@ ${project?.title} - ${type} 프레젠테이션
     </div>
   );
 
-  const renderProjectWizardFullPage = () => {
+  const _renderProjectWizardFullPage = () => {
     const currentTab = externalActiveTab || activeMenu;
     
     switch(currentTab) {

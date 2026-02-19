@@ -3,7 +3,7 @@
  * AHP 플랫폼용 Django REST Framework API 연동
  */
 
-import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import { API_BASE_URL } from '../config/api';
 import authService from './authService';
 
 // API 응답 타입 정의

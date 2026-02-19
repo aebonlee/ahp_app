@@ -26,6 +26,7 @@ const PersonalUserDashboard: React.FC<PersonalUserDashboardProps> = ({ user, onT
   useEffect(() => {
     loadUserStats();
     loadRecentProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadUserStats = async () => {

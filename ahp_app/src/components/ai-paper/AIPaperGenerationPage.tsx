@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import UIIcon from '../common/UIIcon';
 import PageHeader from '../common/PageHeader';
-import { PrimaryButton, SecondaryButton, SuccessButton, DangerButton } from '../common/UIButton';
+import { PrimaryButton, SuccessButton, DangerButton } from '../common/UIButton';
 import cleanDataService from '../../services/dataService_clean';
 import type { User } from '../../types';
 

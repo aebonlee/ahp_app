@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import apiService from '../../services/apiService';
 
 interface EvaluationProgress {
   evaluatorId: string;
   evaluatorName: string;
   completionRate: number;
-  status: 'not_started' | 'in_progress' | 'completed';
+  status: 'not_started' | 'in_progress' | 'completed' | 'expired';
   lastActivity: string;
 }
 
@@ -30,7 +31,7 @@ interface ResultsAnalysisProps {
   evaluationMode: 'practical' | 'theoretical' | 'direct_input';
 }
 
-const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluationMode }) => {
+const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId }) => {
   const [activeView, setActiveView] = useState<'progress' | 'ranking' | 'consistency' | 'detailed'>('progress');
   const [viewMode, setViewMode] = useState<'distributive' | 'ideal'>('distributive');
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
@@ -41,57 +42,75 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
   };
   const [evaluationProgress, setEvaluationProgress] = useState<EvaluationProgress[]>([]);
   const [criteriaRanking, setCriteriaRanking] = useState<ResultRanking[]>([]);
-  const [alternativeRanking, setAlternativeRanking] = useState<ResultRanking[]>([]);
   const [consistencyData, setConsistencyData] = useState<ConsistencyData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [summaryReady, setSummaryReady] = useState(false);
 
-  // 가상 데이터 생성 (실제로는 API에서 가져올 데이터)
-  useEffect(() => {
-    generateMockData();
+  const loadData = useCallback(async () => {
+    if (!projectId) return;
+    setLoading(true);
+    try {
+      const [evalsRes, summaryRes] = await Promise.allSettled([
+        apiService.get<any>(`/api/service/evaluations/evaluations/?project=${projectId}&page_size=100`),
+        apiService.get<any>(`/api/service/analysis/project-summary/?project_id=${projectId}`),
+      ]);
+
+      // 평가자 목록
+      if (evalsRes.status === 'fulfilled' && evalsRes.value?.data) {
+        const evals: any[] = evalsRes.value.data.results ?? evalsRes.value.data;
+        const progress: EvaluationProgress[] = evals.map((ev: any) => ({
+          evaluatorId: ev.id,
+          evaluatorName: ev.evaluator_name || ev.evaluator_username || '평가자',
+          completionRate: Math.round(ev.progress ?? 0),
+          status: ev.status === 'in_progress' ? 'in_progress'
+                : ev.status === 'completed' ? 'completed'
+                : ev.status === 'expired' ? 'expired'
+                : 'not_started',
+          lastActivity: ev.updated_at ? new Date(ev.updated_at).toLocaleDateString('ko-KR') : '-',
+        }));
+        setEvaluationProgress(progress);
+
+        // 일관성 데이터
+        const crData: ConsistencyData[] = evals
+          .filter((ev: any) => ev.consistency_ratio != null)
+          .map((ev: any) => ({
+            evaluatorId: ev.id,
+            evaluatorName: ev.evaluator_name || ev.evaluator_username || '평가자',
+            consistencyRatio: ev.consistency_ratio ?? 0,
+            isConsistent: ev.is_consistent ?? false,
+          }));
+        setConsistencyData(crData);
+      }
+
+      // 완료 평가 있으면 기준 가중치 계산
+      if (summaryRes.status === 'fulfilled' && summaryRes.value?.data?.is_ready_for_analysis) {
+        setSummaryReady(true);
+        const groupRes = await apiService.post<any>('/api/service/analysis/calculate/group/', { project_id: projectId });
+        if (groupRes?.data?.weights) {
+          const weights: any[] = groupRes.data.weights;
+          const sorted = [...weights].sort((a, b) => b.normalized_weight - a.normalized_weight);
+          const criteria: ResultRanking[] = sorted.map((w, idx) => ({
+            id: w.criteria_id,
+            name: w.criteria_name,
+            priority: w.normalized_weight,
+            rank: idx + 1,
+            type: 'criterion',
+          }));
+          setCriteriaRanking(criteria);
+        }
+      } else {
+        setSummaryReady(false);
+      }
+    } catch (_err) {
+      showActionMessage('error', '분석 데이터를 불러오지 못했습니다.');
+    } finally {
+      setLoading(false);
+    }
   }, [projectId]);
 
-  const generateMockData = () => {
-    // 평가 진행 상황 가상 데이터
-    const mockProgress: EvaluationProgress[] = [
-      { evaluatorId: '1', evaluatorName: '관리자', completionRate: 100, status: 'completed', lastActivity: '2024-02-15' },
-      { evaluatorId: '2', evaluatorName: 'p001', completionRate: 100, status: 'completed', lastActivity: '2024-02-14' },
-      { evaluatorId: '3', evaluatorName: 'p002', completionRate: 85, status: 'in_progress', lastActivity: '2024-02-13' },
-      { evaluatorId: '4', evaluatorName: 'p003', completionRate: 100, status: 'completed', lastActivity: '2024-02-12' },
-      { evaluatorId: '5', evaluatorName: 'p004', completionRate: 60, status: 'in_progress', lastActivity: '2024-02-11' },
-    ];
-
-    // 기준 순위 가상 데이터
-    const mockCriteria: ResultRanking[] = [
-      { id: '1', name: '코딩 작성 속도 향상', priority: 0.285, rank: 1, type: 'criterion' },
-      { id: '2', name: '코드 품질 개선 및 최적화', priority: 0.245, rank: 2, type: 'criterion' },
-      { id: '3', name: '디버깅 시간 단축', priority: 0.185, rank: 3, type: 'criterion' },
-      { id: '4', name: '반복 작업 최소화', priority: 0.165, rank: 4, type: 'criterion' },
-      { id: '5', name: 'AI생성 코딩의 신뢰성', priority: 0.120, rank: 5, type: 'criterion' },
-    ];
-
-    // 대안 순위 가상 데이터
-    const mockAlternatives: ResultRanking[] = [
-      { id: '1', name: 'Claude Code', priority: 0.325, rank: 1, type: 'alternative' },
-      { id: '2', name: 'GitHub Copilot', priority: 0.285, rank: 2, type: 'alternative' },
-      { id: '3', name: 'Cursor AI', priority: 0.185, rank: 3, type: 'alternative' },
-      { id: '4', name: 'Tabnine', priority: 0.125, rank: 4, type: 'alternative' },
-      { id: '5', name: 'Amazon CodeWhisperer', priority: 0.080, rank: 5, type: 'alternative' },
-    ];
-
-    // 일관성 데이터 가상 데이터
-    const mockConsistency: ConsistencyData[] = [
-      { evaluatorId: '1', evaluatorName: '관리자', consistencyRatio: 0.05, isConsistent: true },
-      { evaluatorId: '2', evaluatorName: 'p001', consistencyRatio: 0.08, isConsistent: true },
-      { evaluatorId: '3', evaluatorName: 'p002', consistencyRatio: 0.12, isConsistent: false },
-      { evaluatorId: '4', evaluatorName: 'p003', consistencyRatio: 0.03, isConsistent: true },
-      { evaluatorId: '5', evaluatorName: 'p004', consistencyRatio: 0.09, isConsistent: true },
-    ];
-
-    setEvaluationProgress(mockProgress);
-    setCriteriaRanking(mockCriteria);
-    setAlternativeRanking(mockAlternatives);
-    setConsistencyData(mockConsistency);
-  };
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -111,17 +130,26 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
     }
   };
 
-  const exportToExcel = () => {
-    // Excel 내보내기 로직
-    const data = {
-      progress: evaluationProgress,
-      criteriaRanking,
-      alternativeRanking,
-      consistencyData
-    };
-    
-    console.log('Exporting to Excel:', data);
-    showActionMessage('success', 'Excel 파일로 내보내기 기능이 실행됩니다.');
+  const exportToCSV = () => {
+    const rows = [
+      ['평가자', '진행률', '상태', '마지막활동', 'CR', '일관성'],
+      ...evaluationProgress.map(ep => {
+        const cr = consistencyData.find(c => c.evaluatorId === ep.evaluatorId);
+        return [
+          ep.evaluatorName, `${ep.completionRate}%`, ep.status,
+          ep.lastActivity,
+          cr ? cr.consistencyRatio.toFixed(3) : '-',
+          cr ? (cr.isConsistent ? '일관성있음' : '재검토필요') : '-',
+        ];
+      }),
+    ];
+    const csv = '\uFEFF' + rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ahp_results_${projectId}.csv`;
+    a.click();
+    showActionMessage('success', 'CSV 파일로 저장되었습니다.');
   };
 
   return (
@@ -185,11 +213,19 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
           )}
 
           <Button
-            onClick={exportToExcel}
+            onClick={exportToCSV}
             variant="secondary"
             size="sm"
           >
-            Excel 저장
+            CSV 저장
+          </Button>
+          <Button
+            onClick={loadData}
+            variant="secondary"
+            size="sm"
+            disabled={loading}
+          >
+            {loading ? '로딩...' : '새로고침'}
           </Button>
         </div>
       </Card>
@@ -197,6 +233,14 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
       {/* 평가 진행 상황 */}
       {activeView === 'progress' && (
         <Card title="평가 진행 상황">
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">데이터 로딩 중...</div>
+          ) : evaluationProgress.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>배정된 평가자가 없습니다.</p>
+              <p className="text-sm mt-2">평가자를 배정하면 진행 현황이 표시됩니다.</p>
+            </div>
+          ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto">
               <thead>
@@ -230,62 +274,49 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
               </tbody>
             </table>
           </div>
+          )}
         </Card>
       )}
 
       {/* 통합 결과 순위 */}
       {activeView === 'ranking' && (
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* 기준 순위 */}
-          <Card title={`최하위기준 통합결과 순위 (${viewMode === 'distributive' ? '분배적' : '이상적'} 모드)`}>
-            <div className="space-y-2">
-              {criteriaRanking.map((criterion, index) => (
-                <div key={criterion.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                  <div className="flex items-center">
-                    <span className="text-sm font-medium text-gray-500 w-8">#{criterion.rank}</span>
-                    <span className="font-medium">{criterion.name}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-24 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-purple-600 h-2 rounded-full" 
-                        style={{ width: `${(criterion.priority / 0.3) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-600 w-16 text-right">
-                      {(criterion.priority * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              ))}
+        <Card title={`기준 통합결과 순위 (${viewMode === 'distributive' ? '분배적' : '이상적'} 모드)`}>
+          {!summaryReady ? (
+            <div className="text-center py-8 text-gray-500">
+              <p className="font-medium">완료된 평가가 없습니다.</p>
+              <p className="text-sm mt-2">평가자가 평가를 완료하면 기준 가중치가 표시됩니다.</p>
             </div>
-          </Card>
-
-          {/* 대안 순위 */}
-          <Card title={`대안 통합결과 순위 (${viewMode === 'distributive' ? '분배적' : '이상적'} 모드)`}>
-            <div className="space-y-2">
-              {alternativeRanking.map((alternative, index) => (
-                <div key={alternative.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                  <div className="flex items-center">
-                    <span className="text-sm font-medium text-gray-500 w-8">#{alternative.rank}</span>
-                    <span className="font-medium">{alternative.name}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-24 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-green-600 h-2 rounded-full" 
-                        style={{ width: `${(alternative.priority / 0.35) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-600 w-16 text-right">
-                      {(alternative.priority * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              ))}
+          ) : criteriaRanking.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>기준 가중치를 계산 중입니다...</p>
             </div>
-          </Card>
-        </div>
+          ) : (
+            <div className="space-y-2">
+              {criteriaRanking.map((criterion) => {
+                const maxPriority = criteriaRanking[0]?.priority ?? 1;
+                return (
+                  <div key={criterion.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-gray-500 w-8">#{criterion.rank}</span>
+                      <span className="font-medium">{criterion.name}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-24 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-purple-600 h-2 rounded-full"
+                          style={{ width: `${(criterion.priority / maxPriority) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-gray-600 w-16 text-right">
+                        {(criterion.priority * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
       )}
 
       {/* 일관성 분석 */}
@@ -296,6 +327,11 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
               <strong>일관성 비율(CR) 기준:</strong> 0.1 이하는 일관성 있음, 0.1 초과는 재검토 필요
             </p>
           </div>
+          {consistencyData.length === 0 ? (
+            <div className="text-center py-6 text-gray-500">
+              <p>완료된 평가가 없어 일관성 데이터가 없습니다.</p>
+            </div>
+          ) : (
           <div className="space-y-3">
             {consistencyData.map((data) => (
               <div key={data.evaluatorId} className="flex items-center justify-between p-3 bg-gray-50 rounded">
@@ -303,8 +339,8 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
                 <div className="flex items-center space-x-3">
                   <span className="text-sm font-mono">{data.consistencyRatio.toFixed(3)}</span>
                   <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    data.isConsistent 
-                      ? 'bg-green-100 text-green-800' 
+                    data.isConsistent
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
                     {data.isConsistent ? '일관성 있음' : '재검토 필요'}
@@ -313,6 +349,7 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId, evaluation
               </div>
             ))}
           </div>
+          )}
         </Card>
       )}
 

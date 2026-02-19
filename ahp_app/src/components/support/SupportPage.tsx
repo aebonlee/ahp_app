@@ -162,6 +162,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
 
   useEffect(() => {
     fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
 
   const filteredPosts = selectedCategory === 'all' 

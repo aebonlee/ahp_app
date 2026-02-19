@@ -231,7 +231,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
   };
 
   // 계층구조로 변환 (미리보기용)
-  const convertParsedCriteria = (parsedCriteria: any[]): Criterion[] => {
+  const _convertParsedCriteria = (parsedCriteria: any[]): Criterion[] => {
     const flatCriteria = convertParsedCriteriaFlat(parsedCriteria);
     return buildHierarchy(flatCriteria);
   };

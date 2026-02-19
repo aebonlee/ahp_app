@@ -75,6 +75,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
   useEffect(() => {
     fetchPosts();
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
 
   const filteredPosts = selectedCategory === 'all' 

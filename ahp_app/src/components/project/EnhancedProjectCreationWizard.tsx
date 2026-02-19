@@ -3,10 +3,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
-import DemographicSurveyConfig, { DemographicConfig } from './DemographicSurveyConfig';
-import DemographicSurvey from '../survey/DemographicSurvey';
-import Card from '../common/Card';
-import Button from '../common/Button';
+import { DemographicConfig } from './DemographicSurveyConfig';
 import Input from '../common/Input';
 import EvaluationModeSelector, {
   EvaluationMode,

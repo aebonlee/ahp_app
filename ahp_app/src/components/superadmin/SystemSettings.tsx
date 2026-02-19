@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
-import Input from '../common/Input';
 
 interface SystemSettingsData {
   general: {

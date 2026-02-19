@@ -7,8 +7,6 @@ import {
   runMonteCarloSimulation,
   assessRisk,
   generateWhatIfScenarios,
-  calculateAHPScores,
-  calculateRanking,
   type ScenarioInput,
   type ScenarioResult,
   type SensitivityAnalysisResult,

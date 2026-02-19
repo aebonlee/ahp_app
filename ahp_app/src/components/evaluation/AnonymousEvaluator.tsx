@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  CheckCircleIcon, 
-  ExclamationTriangleIcon, 
-  ClockIcon, 
-  PlayIcon, 
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  PlayIcon,
   PauseIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -61,11 +60,11 @@ const AnonymousEvaluator: React.FC = () => {
   // Evaluation state
   const [comparisons, setComparisons] = useState<ComparisonPair[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [progress, setProgress] = useState<EvaluationProgress | null>(null);
+  const [_progress, setProgress] = useState<EvaluationProgress | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [recoveryData, setRecoveryData] = useState<SessionRecoveryData | null>(null);
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [autoSaveEnabled, _setAutoSaveEnabled] = useState(true);
   
   // Refs for cleanup
   const autoSaveCleanup = useRef<(() => void) | null>(null);

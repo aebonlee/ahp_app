@@ -162,6 +162,7 @@ const TestPage: React.FC = () => {
   // 페이지 로드 시 프로젝트 목록 조회
   useEffect(() => {
     testGetProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

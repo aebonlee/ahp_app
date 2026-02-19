@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
@@ -40,9 +40,9 @@ interface AHPResultContent {
 const PaperManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'references' | 'results' | 'surveys' | 'writing' | 'generator'>('references');
   const [references, setReferences] = useState<Reference[]>([]);
-  const [ahpResults, setAhpResults] = useState<AHPResultContent[]>([]);
-  const [surveyData, setSurveyData] = useState<any[]>([]);
-  const [surveyAnalytics, setSurveyAnalytics] = useState<any>({});
+  const [ahpResults, _setAhpResults] = useState<AHPResultContent[]>([]);
+  const [_surveyData, setSurveyData] = useState<any[]>([]);
+  const [_surveyAnalytics, _setSurveyAnalytics] = useState<any>({});
   const [showAddReference, setShowAddReference] = useState(false);
   const [newReference, setNewReference] = useState<Partial<Reference>>({
     type: 'journal',
@@ -382,7 +382,7 @@ const PaperManagement: React.FC = () => {
     </div>
   );
 
-  const loadSurveyResults = (surveyType: string) => {
+  const _loadSurveyResults = (surveyType: string) => {
     // TODO: 실제 API에서 설문조사 응답 데이터 로드
     const mockData = Array.from({ length: 42 }, (_, i) => ({
       id: i + 1,
@@ -394,11 +394,11 @@ const PaperManagement: React.FC = () => {
     setSurveyData(mockData);
   };
 
-  const exportSurveyData = (format: string) => {
+  const _exportSurveyData = (format: string) => {
     showActionMessage('info', `${format.toUpperCase()} 형식 다운로드 기능은 준비 중입니다.`);
   };
 
-  const generateReportPDF = () => {
+  const _generateReportPDF = () => {
     showActionMessage('info', '분석 보고서 PDF 생성 기능은 준비 중입니다.');
   };
 

@@ -1,4 +1,4 @@
-import { projectApi, criteriaApi, alternativeApi, evaluatorApi, evaluationApi } from './api';
+import { projectApi, criteriaApi, evaluationApi } from './api';
 import { ProjectData, CriteriaData, AlternativeData, EvaluatorData, PairwiseComparisonData } from './api';
 import { generateUUID } from '../utils/uuid';
 

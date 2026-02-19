@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../../types';
-import dataService from '../../services/dataService_clean';
 import { projectApi } from '../../services/api';
 
 interface SuperAdminDashboardProps {
@@ -16,7 +15,7 @@ interface Activity {
 }
 
 const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabChange }) => {
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [_activities, _setActivities] = useState<Activity[]>([]);
   
   const [systemStats, setSystemStats] = useState({
     totalUsers: 0,
@@ -161,7 +160,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
       const uptimeDays = Math.floor((new Date().getTime() - new Date(sessionStart).getTime()) / (1000 * 60 * 60 * 24));
 
       // 실시간 성능 메트릭 (시뮬레이션)
-      const performanceData = performance.getEntriesByType('navigation')[0] as any;
+      const _performanceData = performance.getEntriesByType('navigation')[0] as any;
       const memoryInfo = (performance as any).memory;
       
       setSystemStats({

@@ -1,8 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { 
-  CloudArrowUpIcon, 
-  DocumentIcon, 
-  TrashIcon, 
+  CloudArrowUpIcon,
+  TrashIcon,
   EyeIcon,
   ArrowDownTrayIcon,
   ExclamationTriangleIcon,

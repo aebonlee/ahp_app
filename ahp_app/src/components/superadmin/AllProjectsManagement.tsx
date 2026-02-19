@@ -106,6 +106,7 @@ const AllProjectsManagement: React.FC = () => {
 
   useEffect(() => {
     fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, searchTerm, statusFilter]);
 
   // 프로젝트 삭제

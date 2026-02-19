@@ -37,6 +37,7 @@ const TrashBin: React.FC<TrashBinProps> = ({
 
   useEffect(() => {
     loadTrashedProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadTrashedProjects = async () => {

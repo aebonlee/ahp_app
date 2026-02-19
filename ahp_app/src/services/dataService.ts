@@ -5,7 +5,7 @@ import { ProjectData, CriteriaData, AlternativeData, EvaluatorData, PairwiseComp
 // 모든 데이터는 Django 백엔드 API를 통해 처리
 
 // 로컬 스토리지 키 상수 (제거됨)
-const STORAGE_KEYS = {
+const _STORAGE_KEYS = {
   PROJECTS: 'ahp_projects',
   CRITERIA: 'ahp_criteria',
   ALTERNATIVES: 'ahp_alternatives',
@@ -16,12 +16,12 @@ const STORAGE_KEYS = {
 } as const;
 
 // 오프라인 모드 완전 제거 - 항상 온라인 API 사용
-const isOfflineMode = (): boolean => {
+const _isOfflineMode = (): boolean => {
   return false; // 항상 false
 };
 
 // UUID 생성 함수 (API에서 ID 생성하므로 사용하지 않음)
-const generateUUID = (): string => {
+const _generateUUID = (): string => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
     const v = c === 'x' ? r : ((r & 0x3) | 0x8);

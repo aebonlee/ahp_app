@@ -382,7 +382,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     }
   };
 
-  const getSaveStatusColor = () => {
+  const _getSaveStatusColor = () => {
     switch (saveStatus) {
       case 'saving': return 'bg-yellow-500';
       case 'saved': return 'bg-green-500';

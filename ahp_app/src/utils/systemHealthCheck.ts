@@ -22,7 +22,7 @@ class SystemHealthChecker {
     const startTime = Date.now();
     try {
       // React 앱 기본 상태 확인
-      const isReactApp = !!window.React || !!document.querySelector('#root');
+      const _isReactApp = !!window.React || !!document.querySelector('#root');
       const buildInfo = {
         version: process.env.REACT_APP_VERSION || '1.0.0',
         buildTime: process.env.REACT_APP_BUILD_TIME || new Date().toISOString(),
@@ -149,7 +149,7 @@ class SystemHealthChecker {
 
     const results: any[] = [];
     let healthyCount = 0;
-    let totalTime = 0;
+    let _totalTime = 0;
 
     for (const endpoint of endpoints) {
       try {
@@ -163,7 +163,7 @@ class SystemHealthChecker {
         });
 
         const responseTime = Date.now() - endpointStart;
-        totalTime += responseTime;
+        _totalTime += responseTime;
 
         const isHealthy = response.status < 500;
         if (isHealthy) healthyCount++;
