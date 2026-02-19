@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import AHPApiService from '../../services/ahpApiService';
 
 interface TestResult {
@@ -49,13 +50,21 @@ const ApiTestPage: React.FC = () => {
       // 1. Health Check
       const startTime = Date.now();
       try {
-        const response = await fetch('http://localhost:5000/api/health');
-        const healthData = await response.json();
-        updateTestResult(0, {
-          status: 'success',
-          data: healthData,
-          duration: Date.now() - startTime
-        });
+        const response = await api.get('/api/health');
+        if (response.success) {
+          updateTestResult(0, {
+            status: 'success',
+            data: response.data,
+            duration: Date.now() - startTime
+          });
+        } else {
+          updateTestResult(0, {
+            status: 'error',
+            error: response.error || 'Health check failed',
+            duration: Date.now() - startTime
+          });
+          return;
+        }
       } catch (error) {
         updateTestResult(0, {
           status: 'error',
@@ -165,7 +174,11 @@ const ApiTestPage: React.FC = () => {
       }
 
     } catch (error) {
-      console.error('Test sequence failed:', error);
+      addTestResult({
+        step: 'Test Sequence',
+        status: 'error',
+        error: error instanceof Error ? error.message : '테스트 시퀀스 실행 중 오류가 발생했습니다.'
+      });
     } finally {
       setIsRunning(false);
     }

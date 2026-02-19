@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import api from '../../services/api';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { HierarchyNode } from '../modeling/HierarchyTreeEditor';
@@ -769,22 +770,18 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
 
     try {
       // 실제 환경에서는 서버 API 호출
-      const response = await fetch(`/api/collaboration/${modelId}/invite`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: inviteEmail, role: 'viewer' })
-      });
-      
-      if (response.ok) {
+      const response = await api.post(`/api/collaboration/${modelId}/invite`, { email: inviteEmail, role: 'viewer' });
+
+      if (response.success) {
         addSystemMessage(`${inviteEmail}에게 초대장을 보냈습니다.`);
         showNotification('success', '초대 완료', `${inviteEmail}에게 초대장을 보냈습니다.`);
       } else {
-        throw new Error('초대 실패');
+        // 데모용 성공 처리 (서버 미연결 시)
+        addSystemMessage(`${inviteEmail}에게 초대장을 보냈습니다.`);
+        showNotification('success', '초대 완료', `${inviteEmail}에게 초대장을 보냈습니다.`);
       }
     } catch (error) {
-      // 데모용 성공 처리
-      addSystemMessage(`${inviteEmail}에게 초대장을 보냈습니다.`);
-      showNotification('success', '초대 완료', `${inviteEmail}에게 초대장을 보냈습니다.`);
+      showNotification('error', '초대 실패', '초대 전송 중 오류가 발생했습니다.');
     }
     
     setInviteEmail('');
@@ -829,13 +826,9 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
     
     try {
       // 서버에 권한 변경 요청
-      const response = await fetch(`/api/collaboration/${modelId}/users/${userId}/role`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole })
-      });
-      
-      if (response.ok || true) { // 데모용 항상 성공
+      const response = await api.put(`/api/collaboration/${modelId}/users/${userId}/role`, { role: newRole });
+
+      if (response.success || true) { // 데모용 항상 성공
         setUsers(prev => prev.map(user => {
           if (user.id === userId) {
             const permissions = {
@@ -844,20 +837,19 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
               canInvite: newRole !== 'viewer',
               canManage: newRole === 'owner'
             };
-            
+
             const updatedUser = { ...user, role: newRole, permissions };
-            
+
             // 권한 변경 알림
             addSystemMessage(`${user.name}님의 권한이 ${newRole}로 변경되었습니다.`);
             showNotification('success', '권한 변경', `${user.name}님의 권한을 변경했습니다.`);
-            
+
             return updatedUser;
           }
           return user;
         }));
       }
     } catch (error) {
-      console.error('권한 변경 실패:', error);
       showNotification('error', '권한 변경 실패', '권한 변경 중 오류가 발생했습니다.');
     }
   };
