@@ -4,6 +4,7 @@ import { Survey, SurveyResponse, SurveyAnalytics, CreateSurveyRequest } from '..
 import SurveyFormBuilder from './SurveyFormBuilder';
 import Button from '../common/Button';
 import Card from '../common/Card';
+import { API_BASE_URL } from '../../config/api';
 
 interface SurveyManagementSystemProps {
   projectId: string;
@@ -34,7 +35,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
     setIsLoading(true);
     try {
       const token = authService.getAccessToken();
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/projects/${projectId}/surveys`, {
+      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/surveys`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -78,7 +79,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
     setIsLoading(true);
     try {
       const token = authService.getAccessToken();
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/projects/${projectId}/surveys`, {
+      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/surveys`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -110,7 +111,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
   const toggleSurveyStatus = async (surveyId: string, newStatus: Survey['status']) => {
     try {
       const token = authService.getAccessToken();
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/surveys/${surveyId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/surveys/${surveyId}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -159,7 +160,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
     try {
       setIsLoading(true);
       const token = authService.getAccessToken();
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/surveys/${surveyId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/surveys/${surveyId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -640,7 +641,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
             try {
               setIsLoading(true);
               const token = authService.getAccessToken();
-              const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/surveys/${selectedSurvey.id}`, {
+              const response = await fetch(`${API_BASE_URL}/api/surveys/${selectedSurvey.id}`, {
                 method: 'PUT',
                 headers: {
                   'Authorization': `Bearer ${token}`,

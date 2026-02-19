@@ -50,21 +50,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     
     try {
       const result = TextParser.parseText(inputText);
-      
-      // 파싱 결과 디버깅
-      console.log('📝 파싱 결과:', {
-        total: result.criteria.length,
-        byLevel: result.criteria.reduce((acc, c) => {
-          acc[c.level] = (acc[c.level] || 0) + 1;
-          return acc;
-        }, {} as Record<number, number>),
-        details: result.criteria.map(c => ({
-          name: c.name,
-          level: c.level,
-          description: c.description
-        }))
-      });
-      
+
       // 기존 기준과의 중복 검사 (기존 기준이 있을 때만)
       if (existingCriteria && existingCriteria.length > 0) {
         const existingNames = getAllCriteria(existingCriteria).map(c => c.name.toLowerCase());
@@ -97,31 +83,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 
     // 파싱된 기준을 실제 Criterion 객체로 변환 (평면 구조로)
     const convertedCriteria = convertParsedCriteriaFlat(parseResult.criteria);
-    
-    console.log('✅ BulkCriteriaInput: 변환된 기준 onImport 전달 준비:', {
-      total: convertedCriteria.length,
-      flatList: convertedCriteria.map(c => ({
-        id: c.id,
-        name: c.name,
-        level: c.level,
-        parent_id: c.parent_id,
-        order: c.order
-      })),
-      데이터검증: {
-        모든아이디존재: convertedCriteria.every(c => c.id),
-        모든이름존재: convertedCriteria.every(c => c.name),
-        레벨범위: {
-          최소: Math.min(...convertedCriteria.map(c => c.level)),
-          최대: Math.max(...convertedCriteria.map(c => c.level))
-        },
-        parent_id설정상태: convertedCriteria.reduce((acc, c) => {
-          const key = c.parent_id ? 'parent_id있음' : 'parent_id없음';
-          acc[key] = (acc[key] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>)
-      }
-    });
-    
+
     // 데이터 무결성 검증
     const validationErrors: string[] = [];
     
@@ -136,33 +98,23 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     const idSet = new Set(convertedCriteria.map(c => c.id));
     convertedCriteria.forEach((criterion, index) => {
       if (criterion.parent_id && !idSet.has(criterion.parent_id)) {
-        console.warn(`⚠️ parent_id 참조 오류: ${criterion.name} (parent_id: ${criterion.parent_id})가 존재하지 않는 부모를 참조`);
         validationErrors.push(`${index + 1}번째 기준 '${criterion.name}': 존재하지 않는 부모 ID (${criterion.parent_id})`);
       }
     });
-    
+
     if (validationErrors.length > 0) {
-      console.error('❌ 데이터 검증 실패:', validationErrors);
       showActionMessage('error', `데이터 검증 오류: ${validationErrors.join(', ')}`);
       return;
     }
-    
-    console.log('🚀 BulkCriteriaInput: onImport 호출 시작');
-    
+
     // 평면 구조의 전체 기준 리스트를 import
     onImport(convertedCriteria);
-    
-    console.log('🚀 BulkCriteriaInput: onImport 호출 완료');
   };
 
   // 평면 구조로 변환 (CriteriaManagement에서 기대하는 형식)
   const convertParsedCriteriaFlat = (parsedCriteria: any[]): Criterion[] => {
     const allCriteria: Criterion[] = [];
     const levelParentMap: Map<number, Criterion> = new Map();
-    
-    console.log('🔄 BulkCriteriaInput: convertParsedCriteriaFlat 시작', {
-      입력데이터: parsedCriteria.map(p => ({ name: p.name, level: p.level, description: p.description }))
-    });
     
     // 원본 순서대로 처리
     parsedCriteria.forEach((parsed, index) => {
@@ -175,13 +127,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
         const parentNode = levelParentMap.get(parentLevel);
         if (parentNode) {
           parent_id = parentNode.id;
-          console.log(`🔗 부모 연결: ${parsed.name} (L${parsed.level}) → ${parentNode.name} (L${parentLevel})`);
-        } else {
-          console.warn(`⚠️ 부모 노드 누락: ${parsed.name} (L${parsed.level})의 부모 L${parentLevel}을 찾을 수 없음`);
-          console.log('현재 levelParentMap:', Array.from(levelParentMap.entries()).map(([k, v]) => `L${k}: ${v.name}`));
         }
-      } else {
-        console.log(`🌳 루트 노드: ${parsed.name} (L${parsed.level})`);
       }
       
       const criterion: Criterion = {
@@ -196,36 +142,16 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
       };
       
       allCriteria.push(criterion);
-      
+
       // 현재 레벨의 마지막 노드로 업데이트 (다음 같은/낮은 레벨의 부모가 될 수 있음)
       levelParentMap.set(parsed.level, criterion);
-      
+
       // 더 높은 레벨들은 제거 (더 이상 부모가 될 수 없음)
       for (let level = parsed.level + 1; level <= 10; level++) {
         levelParentMap.delete(level);
       }
-      
-      console.log(`📝 추가된 기준: ${criterion.name}`, {
-        id: criterion.id,
-        level: criterion.level,
-        parent_id: criterion.parent_id,
-        order: criterion.order,
-        현잮levelParentMap: Array.from(levelParentMap.keys())
-      });
     });
-    
-    console.log('🔄 BulkCriteriaInput: convertParsedCriteriaFlat 완료', {
-      총개수: allCriteria.length,
-      레벨별개수: allCriteria.reduce((acc, c) => {
-        acc[c.level] = (acc[c.level] || 0) + 1;
-        return acc;
-      }, {} as Record<number, number>),
-      parent_id설정상태: {
-        루트: allCriteria.filter(c => !c.parent_id).length,
-        자식: allCriteria.filter(c => c.parent_id).length
-      }
-    });
-    
+
     // 평면 구조 그대로 반환
     return allCriteria;
   };

@@ -162,7 +162,6 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
     if (!draggedNodeId || draggedNodeId === targetId) return;
 
     // TODO: 노드 이동 로직 구현
-    console.log(`Moving ${draggedNodeId} to ${targetId}`);
     setDraggedNodeId(null);
   };
 

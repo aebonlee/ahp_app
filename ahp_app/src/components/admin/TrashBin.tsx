@@ -45,7 +45,6 @@ const TrashBin: React.FC<TrashBinProps> = ({
     
     if (!onFetchTrashedProjects) {
       const msg = '❌ onFetchTrashedProjects 함수가 전달되지 않았습니다';
-      console.log(msg);
       debugLog.push(msg);
       setDebugInfo(debugLog.join('\n'));
       setLoading(false);
@@ -55,12 +54,10 @@ const TrashBin: React.FC<TrashBinProps> = ({
     try {
       setLoading(true);
       const startMsg = '🔄 휴지통 프로젝트 로드 시작...';
-      console.log(startMsg);
       debugLog.push(startMsg);
-      
+
       const projects = await onFetchTrashedProjects();
       const resultMsg = `📊 휴지통 프로젝트 로드 결과: ${projects?.length || 0}개`;
-      console.log(resultMsg, projects);
       debugLog.push(resultMsg);
       
       if (projects && projects.length > 0) {
@@ -73,7 +70,6 @@ const TrashBin: React.FC<TrashBinProps> = ({
       setDebugInfo(debugLog.join('\n'));
     } catch (error) {
       const errorMsg = `❌ 휴지통 프로젝트 로드 실패: ${error}`;
-      console.error(errorMsg);
       debugLog.push(errorMsg);
       setDebugInfo(debugLog.join('\n'));
     } finally {
@@ -97,7 +93,6 @@ const TrashBin: React.FC<TrashBinProps> = ({
 
       showActionMessage('success', '프로젝트가 성공적으로 복원되었습니다.');
     } catch (error) {
-      console.error('Failed to restore project:', error);
       showActionMessage('error', '프로젝트 복원에 실패했습니다.');
     } finally {
       setActionLoading(null);
@@ -125,7 +120,6 @@ const TrashBin: React.FC<TrashBinProps> = ({
 
       showActionMessage('success', '프로젝트가 영구 삭제되었습니다.');
     } catch (error) {
-      console.error('Failed to permanently delete project:', error);
       showActionMessage('error', '영구 삭제에 실패했습니다.');
     } finally {
       setActionLoading(null);

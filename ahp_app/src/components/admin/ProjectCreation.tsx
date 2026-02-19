@@ -105,8 +105,7 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
 
         onProjectCreated();
       } else {
-        // Fallback: 시뮬레이션
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // TODO: real API call — createProject prop not provided
         onProjectCreated();
       }
     } catch (error) {

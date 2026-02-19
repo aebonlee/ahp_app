@@ -161,9 +161,7 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
     setActiveTab('generation');
 
     try {
-      // AI 생성 시뮬레이션 (실제로는 API 호출)
-      await new Promise(resolve => setTimeout(resolve, 8000));
-
+      // TODO: real API call for AI material generation
       const mockMaterial: GeneratedMaterial = {
         id: `material_${Date.now()}`,
         type: selectedTemplate.type,

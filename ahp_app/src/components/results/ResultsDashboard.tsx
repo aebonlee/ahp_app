@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 // Legend - 현재 미사용
 import Card from '../common/Card';
+import { API_BASE_URL } from '../../config/api';
 import { 
   calculateAHP, 
   buildComparisonMatrix, 
@@ -50,10 +51,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ projectId, projectT
   const [alternativeResults, setAlternativeResults] = useState<{ [key: string]: AHPResult }>({});
   const [finalResults, setFinalResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
-
-  const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:5000' 
-    : 'https://ahp-platform.onrender.com';
 
   const fetchData = useCallback(async () => {
     try {

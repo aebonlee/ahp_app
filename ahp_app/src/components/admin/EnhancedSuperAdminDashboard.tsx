@@ -148,14 +148,14 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
         monthlyGrowth: subscriptionStats.monthlyGrowth || 12.5
       });
 
-      // 시스템 메트릭 (실제로는 모니터링 API에서 가져옴)
+      // TODO: replace with real monitoring API call for system metrics
       setSystemMetrics({
-        cpu: Math.random() * 60 + 20,
-        memory: Math.random() * 40 + 40,
-        responseTime: Math.random() * 200 + 100,
-        activeConnections: Math.floor(Math.random() * 500 + 200),
-        errors24h: Math.floor(Math.random() * 10),
-        successRate: 99.2 + Math.random() * 0.7
+        cpu: 0,
+        memory: 0,
+        responseTime: 0,
+        activeConnections: 0,
+        errors24h: 0,
+        successRate: 0
       });
 
       // 최근 활동 (샘플 데이터)
@@ -221,19 +221,9 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
         }
       ]);
 
-      // 성능 데이터 (24시간)
-      const hours = 24;
-      const performanceMetrics: PerformanceMetric[] = [];
-      for (let i = hours; i >= 0; i--) {
-        performanceMetrics.push({
-          timestamp: new Date(Date.now() - i * 3600000).toISOString(),
-          responseTime: Math.random() * 200 + 100,
-          throughput: Math.random() * 1000 + 500,
-          errorRate: Math.random() * 2,
-          activeUsers: Math.floor(Math.random() * 200 + 100)
-        });
-      }
-      setPerformanceData(performanceMetrics);
+      // TODO: replace with real monitoring API call for performance history
+      // Performance data placeholder — real API should return time-series metrics
+      setPerformanceData([]);
 
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -250,20 +240,8 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
     return () => clearInterval(interval);
   }, [loadDashboardData, refreshInterval]);
 
-  // 실시간 메트릭 업데이트
-  useEffect(() => {
-    const metricsInterval = setInterval(() => {
-      setSystemMetrics(prev => ({
-        ...prev,
-        cpu: Math.max(0, Math.min(100, prev.cpu + (Math.random() - 0.5) * 10)),
-        memory: Math.max(0, Math.min(100, prev.memory + (Math.random() - 0.5) * 5)),
-        responseTime: Math.max(50, prev.responseTime + (Math.random() - 0.5) * 50),
-        activeConnections: Math.max(0, prev.activeConnections + Math.floor((Math.random() - 0.5) * 20))
-      }));
-    }, 5000);
-
-    return () => clearInterval(metricsInterval);
-  }, []);
+  // TODO: real-time metric updates should be driven by a real monitoring API/WebSocket,
+  // not by Math.random() simulation. Removed fake real-time fluctuation.
 
   const renderOverview = () => (
     <div className="space-y-6">

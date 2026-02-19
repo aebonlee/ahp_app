@@ -59,10 +59,8 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, on
     }
 
     setIsAnalyzing(true);
-    
-    // Simulate analysis
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
+    // TODO: real API call for sensitivity analysis
     setResults({
       original: {
         alternatives: [

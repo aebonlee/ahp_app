@@ -39,10 +39,6 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
     setTimeout(() => setActionMessage(null), 3000);
   };
 
-  const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:5000' 
-    : 'https://ahp-platform.onrender.com';
-
   useEffect(() => {
     // 초기값 설정
     setValues(

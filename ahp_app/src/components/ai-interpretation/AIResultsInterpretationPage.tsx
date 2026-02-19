@@ -190,9 +190,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
         }
       }
       
-      // AI 분석 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // TODO: real API call for AI insights generation
       const insights: Insight[] = [
         {
           type: 'strength',

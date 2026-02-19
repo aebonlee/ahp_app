@@ -67,22 +67,31 @@ const ValidityCheck: React.FC = () => {
     ));
   };
 
-  // AHP 타당도 계산 (시뮬레이션)
+  // AHP 타당도 계산
   const calculateValidity = async () => {
     setIsLoading(true);
-    
-    // 시뮬레이션 지연
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // 간단한 일관성 비율 계산 시뮬레이션
+
+    // TODO: real API call for AHP validity calculation
     const matrix = createComparisonMatrix();
     const cr = calculateConsistencyRatio(matrix);
     const eigenValues = calculateEigenVector(matrix);
-    
+
+    // Compute max eigenvalue from the matrix and eigenvector (Ax / x approximation)
+    const n = matrix.length;
+    let lambdaMax = 0;
+    for (let i = 0; i < n; i++) {
+      let rowSum = 0;
+      for (let j = 0; j < n; j++) {
+        rowSum += matrix[i][j] * eigenValues[j];
+      }
+      lambdaMax += rowSum / (eigenValues[i] || 1);
+    }
+    lambdaMax = lambdaMax / n;
+
     const result: ValidityTestResult = {
       consistencyRatio: cr,
       eigenVector: eigenValues,
-      maxEigenValue: criteria.length + Math.random() * 0.3,
+      maxEigenValue: lambdaMax,
       isValid: cr < 0.1,
       recommendations: generateRecommendations(cr, eigenValues)
     };

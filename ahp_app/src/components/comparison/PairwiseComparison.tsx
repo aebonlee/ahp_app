@@ -6,6 +6,7 @@ import ConsistencyPanel from '../evaluation/ConsistencyPanel';
 import { MESSAGES } from '../../constants/messages';
 import { SCREEN_IDS } from '../../constants/screenIds';
 import { buildComparisonMatrix } from '../../utils/ahpCalculator';
+import { API_BASE_URL } from '../../config/api';
 
 interface Criterion {
   id: string;
@@ -78,10 +79,6 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
   const [saving, setSaving] = useState(false);
   const [currentPairIndex, setCurrentPairIndex] = useState(0);
   const [recentChange, setRecentChange] = useState<{ i: number; j: number; oldValue: number; newValue: number } | undefined>();
-
-  const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:5000' 
-    : 'https://ahp-platform.onrender.com';
 
   // Generate all possible pairs
   const pairs = React.useMemo(() => {

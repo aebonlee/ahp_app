@@ -265,7 +265,6 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
     setShowAddForm(false);
 
     // 초대 이메일 전송 시뮬레이션
-    console.log(`초대 이메일이 ${participant.email}로 전송되었습니다.`);
   };
 
   const removeParticipant = (participantId: string) => {
@@ -293,9 +292,8 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
     }, 1000);
   };
 
-  const bulkInvite = async (emails: string[]) => {
+  const bulkInvite = async (_emails: string[]) => {
     // 대량 초대 기능
-    console.log('대량 초대:', emails);
   };
 
   const exportParticipantData = () => {

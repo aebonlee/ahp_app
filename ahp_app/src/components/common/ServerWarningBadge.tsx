@@ -23,16 +23,12 @@ const ServerWarningBadge: React.FC<ServerWarningBadgeProps> = ({
   const handleExcelSave = () => {
     if (onExcelSave) {
       onExcelSave();
-    } else {
-      console.log('Excel 파일로 내보내기 기능 (구현 예정)');
     }
   };
 
   const handleCapture = () => {
     if (onCapture) {
       onCapture();
-    } else {
-      console.log('화면 캡처 기능 (구현 예정) - 서버에 저장되지 않으니 캡처하여 보관하세요.');
     }
   };
 

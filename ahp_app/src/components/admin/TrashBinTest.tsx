@@ -25,9 +25,8 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
       try {
         const projects = await onFetchTrashedProjects();
         setTrashedProjects(projects);
-        console.log('✅ 휴지통 프로젝트 로드됨:', projects);
       } catch (error) {
-        console.error('❌ 휴지통 프로젝트 로드 실패:', error);
+        console.error('휴지통 프로젝트 로드 실패:', error);
       }
     }
   };
@@ -39,16 +38,11 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
   const handleTestDelete = async (projectId: string, title: string) => {
     try {
       if (onDeleteProject) {
-        console.log('🗑️ 테스트 삭제 시작:', projectId);
         await onDeleteProject(projectId);
-        console.log('✅ 테스트 삭제 완료:', projectId);
         await loadTrashedProjects(); // 휴지통 새로고침
-      } else {
-        console.warn('삭제 함수가 전달되지 않았습니다.');
       }
     } catch (error) {
-      console.error('❌ 삭제 실패:', error);
-      console.error('삭제 실패: ' + (error as Error).message);
+      console.error('삭제 실패:', error);
     }
   };
 
@@ -57,12 +51,10 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
       try {
         if (onRestoreProject) {
           await onRestoreProject(projectId);
-          console.warn('복원 완료!');
           await loadTrashedProjects();
         }
       } catch (error) {
         console.error('복원 실패:', error);
-        console.error('복원 실패: ' + (error as Error).message);
       }
     }
   };
@@ -73,12 +65,10 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
         try {
           if (onPermanentDeleteProject) {
             await onPermanentDeleteProject(projectId);
-            console.warn('영구 삭제 완료!');
             await loadTrashedProjects();
           }
         } catch (error) {
           console.error('영구 삭제 실패:', error);
-          console.error('영구 삭제 실패: ' + (error as Error).message);
         }
       }
     }

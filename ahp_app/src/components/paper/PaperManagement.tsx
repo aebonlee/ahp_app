@@ -86,9 +86,7 @@ const PaperManagement: React.FC = () => {
     
     setIsGenerating(true);
     try {
-      // OpenAI API 호출 시뮬레이션 (실제 구현 시 backend 필요)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // TODO: real API call for AI content generation (backend required)
       setAiResponse('AI 문서 생성 기능은 준비 중입니다. 백엔드 API 연동을 완료한 후 사용 가능합니다.');
     } catch (error) {
       console.error('AI 생성 오류:', error);

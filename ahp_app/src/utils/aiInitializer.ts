@@ -33,12 +33,10 @@ export const initializeAIWithProvidedKey = () => {
     // 환경변수 키가 있으면 로컬 스토리지에 저장
     localStorage.setItem('ahp_openai_key', OPENAI_API_KEY);
     localStorage.setItem('ahp_ai_provider', 'openai');
-    console.log('🔑 환경변수에서 API 키 발견, 로컬 스토리지에 저장 및 AI 서비스 초기화');
     return initializeAIService(OPENAI_API_KEY, 'openai');
   }
-  
+
   // 환경변수 키가 없으면 저장된 키 사용
-  console.log('🔍 환경변수에 API 키 없음, 로컬 스토리지에서 확인');
   return initializeAIFromStorage();
 };
 
@@ -75,11 +73,10 @@ export const getCurrentAISettings = () => {
  */
 export const setAPIKeyDirectly = (apiKey: string, provider: 'openai' | 'claude' = 'openai') => {
   if (!apiKey || apiKey.trim() === '') {
-    console.error('❌ API 키가 비어있습니다');
+    console.error('API 키가 비어있습니다');
     return null;
   }
-  
-  console.log('🔑 API 키 직접 설정 및 AI 서비스 초기화');
+
   localStorage.setItem('ahp_openai_key', apiKey);
   localStorage.setItem('ahp_ai_provider', provider);
   return initializeAIService(apiKey, provider);

@@ -134,7 +134,6 @@ const ComponentShowcase: React.FC = () => {
       const result = calculateAHP(matrix);
       setConsistencyRatio(result.consistencyRatio || 0);
     } catch (error) {
-      console.error('CR calculation error:', error);
       setConsistencyRatio(999);
     }
   };
@@ -211,7 +210,7 @@ const ComponentShowcase: React.FC = () => {
                 consistencyRatio={consistencyRatio}
                 isComplete={true}
                 onShowHelper={() => setShowHelper(true)}
-                onShowDetails={() => console.log('상세 정보 표시')}
+                onShowDetails={() => {}}
                 showTooltip={true}
               />
             </div>
@@ -352,12 +351,8 @@ const ComponentShowcase: React.FC = () => {
                   scoresByCategory: { 'C1': 0.2, 'C2': 0.3, 'C3': 0.3 }
                 }
               ]}
-              onWeightChange={(criterionId, newWeight) => {
-                console.log(`가중치 변경: ${criterionId} = ${newWeight}`);
-              }}
-              onReset={() => {
-                console.log('가중치 초기화');
-              }}
+              onWeightChange={(_criterionId, _newWeight) => {}}
+              onReset={() => {}}
             />
           </div>
         );
@@ -371,12 +366,8 @@ const ComponentShowcase: React.FC = () => {
             <BudgetingView
               alternatives={DEMO_ALTERNATIVES}
               initialBudget={1000000}
-              onOptimize={(result) => {
-                console.log('최적화 결과:', result);
-              }}
-              onExport={(data) => {
-                console.log('분석 내보내기:', data);
-              }}
+              onOptimize={(_result) => {}}
+              onExport={(_data) => {}}
             />
           </div>
         );

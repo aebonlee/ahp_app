@@ -164,17 +164,17 @@ const CaptureVerificationDashboard: React.FC = () => {
 
   const renderEventSequenceSection = () => (
     <div className="space-y-4">
-      <EventSequenceDemo 
+      <EventSequenceDemo
         scenario="sensitivity"
-        onComplete={() => console.log('민감도 분석 시나리오 완료')}
+        onComplete={() => {}}
       />
-      <EventSequenceDemo 
+      <EventSequenceDemo
         scenario="pairwise"
-        onComplete={() => console.log('쌍대비교 시나리오 완료')}
+        onComplete={() => {}}
       />
-      <EventSequenceDemo 
+      <EventSequenceDemo
         scenario="directInput"
-        onComplete={() => console.log('직접입력 시나리오 완료')}
+        onComplete={() => {}}
       />
       <Button 
         onClick={() => updateSectionStatus('eventSequence', true)}
@@ -248,9 +248,9 @@ const CaptureVerificationDashboard: React.FC = () => {
         />
       </div>
 
-      <EventSequenceDemo 
+      <EventSequenceDemo
         scenario="workshop"
-        onComplete={() => console.log('워크숍 시나리오 완료')}
+        onComplete={() => {}}
       />
 
       <Button 

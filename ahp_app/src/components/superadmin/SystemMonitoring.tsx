@@ -25,59 +25,34 @@ const SystemMonitoring: React.FC = () => {
   const [refreshInterval, setRefreshInterval] = useState(5000);
   const [selectedMetric, setSelectedMetric] = useState<'cpu' | 'memory' | 'requests' | 'errors'>('cpu');
 
-  // 실시간 모니터링 데이터 생성 (시뮬레이션)
+  // TODO: replace with real monitoring API/WebSocket calls.
+  // All Math.random() mock data removed — metrics should come from a real backend.
   const generateMetrics = () => {
     const now = new Date();
-    
-    // CPU 사용률
+
+    // CPU 사용률 — placeholder 0 until real API is connected
     setCpuHistory(prev => {
-      const newValue = 20 + Math.random() * 40; // 20-60%
-      const newData = [...prev, { timestamp: now, value: newValue }];
-      return newData.slice(-20); // 최근 20개 데이터만 유지
+      const newData = [...prev, { timestamp: now, value: 0 }];
+      return newData.slice(-20);
     });
 
-    // 메모리 사용률
+    // 메모리 사용률 — placeholder 0 until real API is connected
     setMemoryHistory(prev => {
-      const newValue = 50 + Math.random() * 30; // 50-80%
-      const newData = [...prev, { timestamp: now, value: newValue }];
+      const newData = [...prev, { timestamp: now, value: 0 }];
       return newData.slice(-20);
     });
 
-    // 요청 수
+    // 요청 수 — placeholder 0 until real API is connected
     setRequestHistory(prev => {
-      const newValue = 80 + Math.random() * 100; // 80-180 req/min
-      const newData = [...prev, { timestamp: now, value: newValue }];
+      const newData = [...prev, { timestamp: now, value: 0 }];
       return newData.slice(-20);
     });
 
-    // 에러율
+    // 에러율 — placeholder 0 until real API is connected
     setErrorHistory(prev => {
-      const newValue = Math.random() * 5; // 0-5%
-      const newData = [...prev, { timestamp: now, value: newValue }];
+      const newData = [...prev, { timestamp: now, value: 0 }];
       return newData.slice(-20);
     });
-
-    // 알림 생성 (랜덤하게)
-    if (Math.random() > 0.9) {
-      const alertTypes: Alert['type'][] = ['error', 'warning', 'info'];
-      const alertMessages = {
-        error: ['데이터베이스 연결 오류', 'API 응답 시간 초과', '메모리 사용률 임계치 도달'],
-        warning: ['CPU 사용률 증가', '디스크 공간 부족 경고', '비정상적인 요청 패턴 감지'],
-        info: ['백업 완료', '시스템 업데이트 가능', '새로운 사용자 등록']
-      };
-      
-      const type = alertTypes[Math.floor(Math.random() * 3)];
-      const messages = alertMessages[type];
-      const message = messages[Math.floor(Math.random() * messages.length)];
-      
-      setAlerts(prev => [{
-        id: Date.now().toString(),
-        type,
-        message,
-        timestamp: now,
-        resolved: false
-      }, ...prev].slice(0, 10)); // 최대 10개 알림 유지
-    }
   };
 
   useEffect(() => {

@@ -146,9 +146,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
           index === i ? { ...s, status: 'generating' } : s
         ));
 
-        // 실제로는 AI API 호출, 여기서는 시뮬레이션
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
+        // TODO: real API call for AI section content generation
         const generatedContent = await generateSectionContent(section.id, projectData);
         
         // 생성 완료로 표시

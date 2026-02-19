@@ -185,10 +185,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
       }
 
       addToHistory('create', '모델 저장', null, savedModel);
-      console.log('모델이 성공적으로 저장되었습니다.');
-      
+
     } catch (error) {
-      console.error('모델 저장 중 오류 발생:', error);
       showActionMessage('error', '모델 저장에 실패했습니다.');
     }
   };
@@ -203,7 +201,6 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
       };
 
       setModelState(autoSavedModel);
-      console.log('모델이 자동 저장되었습니다.');
     }
   };
 
@@ -891,8 +888,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
               hierarchy={modelState.hierarchy}
               mode={currentView}
               interactive={!readOnly}
-              onNodeClick={(node) => console.log('Node clicked:', node)}
-              onNodeHover={(node) => console.log('Node hovered:', node)}
+              onNodeClick={(_node) => {}}
+              onNodeHover={(_node) => {}}
             />
           </div>
         )}

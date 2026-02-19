@@ -385,8 +385,9 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     const randomIndex = [0, 0, 0.52, 0.89, 1.11, 1.25, 1.35, 1.40, 1.45, 1.49];
     const ri = randomIndex[n] || 1.49;
 
-    // 간단한 CI 계산 (실제로는 고유값을 계산해야 함)
-    let ci = Math.random() * 0.2; // 시뮬레이션
+    // TODO: calculate CI properly using eigenvalue method (λmax - n) / (n - 1)
+    // Returning 0 as placeholder until real calculation is implemented
+    const ci = 0;
 
     return ci / ri;
   };

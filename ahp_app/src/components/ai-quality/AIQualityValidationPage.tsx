@@ -146,9 +146,7 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
         }
       }
       
-      // AI 검증 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
+      // TODO: real API call for AI quality validation
       // AI 결과와 기본 결과 병합
       const result: ValidationResult = {
         ...aiValidationResult,

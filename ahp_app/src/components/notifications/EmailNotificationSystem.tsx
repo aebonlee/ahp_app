@@ -314,7 +314,6 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
       showActionMessage('success', `${recipients.length}명에게 이메일을 성공적으로 전송했습니다.`);
 
     } catch (error) {
-      console.error('이메일 전송 실패:', error);
       showActionMessage('error', '이메일 전송에 실패했습니다.');
     } finally {
       setIsSending(false);
@@ -371,16 +370,9 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
         hours_remaining: '24'
       });
 
-      console.log('테스트 이메일 전송:', {
-        to: testEmail,
-        subject: personalizeContent(selectedTemplate.subject, testParticipant, {}),
-        content: personalizedContent
-      });
-
       showActionMessage('success', '테스트 이메일을 전송했습니다. (실제로는 SMTP 서버를 통해 전송됩니다)');
 
     } catch (error) {
-      console.error('테스트 이메일 전송 실패:', error);
       showActionMessage('error', '테스트 이메일 전송에 실패했습니다.');
     } finally {
       setIsSending(false);
