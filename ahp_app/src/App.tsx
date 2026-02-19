@@ -935,19 +935,21 @@ function App() {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users`, {
+      const token = authService.getAccessToken();
+      const response = await fetch(`${API_BASE_URL}/api/service/accounts/`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
       });
 
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.users || []);
+        setUsers(Array.isArray(data) ? data : data.results || data.users || []);
       }
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      // 사용자 목록 조회 실패는 조용히 처리
     } finally {
       setLoading(false);
     }
@@ -955,11 +957,13 @@ function App() {
 
   // 사용자 관리 함수들
   const createUser = async (userData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/users`, {
+    const token = authService.getAccessToken();
+    const response = await fetch(`${API_BASE_URL}/api/service/accounts/`, {
       method: 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
       body: JSON.stringify(userData),
     });
@@ -969,15 +973,17 @@ function App() {
       throw new Error(error.message || '사용자 생성에 실패했습니다.');
     }
 
-    await fetchUsers(); // 목록 새로고침
+    await fetchUsers();
   };
 
   const updateUser = async (userId: string, userData: any) => {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/${userId}`, {
-      method: 'PUT',
+    const token = authService.getAccessToken();
+    const response = await fetch(`${API_BASE_URL}/api/service/accounts/${userId}/`, {
+      method: 'PATCH',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
       body: JSON.stringify(userData),
     });
@@ -987,15 +993,17 @@ function App() {
       throw new Error(error.message || '사용자 수정에 실패했습니다.');
     }
 
-    await fetchUsers(); // 목록 새로고침
+    await fetchUsers();
   };
 
   const deleteUser = async (userId: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/accounts/${userId}`, {
+    const token = authService.getAccessToken();
+    const response = await fetch(`${API_BASE_URL}/api/service/accounts/${userId}/`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
     });
 
@@ -1004,29 +1012,22 @@ function App() {
       throw new Error(error.message || '사용자 삭제에 실패했습니다.');
     }
 
-    await fetchUsers(); // 목록 새로고침
+    await fetchUsers();
   };
 
   const createSampleProject = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: '샘플 AHP 프로젝트',
-          description: 'AHP 의사결정 분석을 위한 샘플 프로젝트입니다.',
-          objective: '최적의 대안을 선택하기 위한 다기준 의사결정'
-        }),
+      await cleanDataService.createProject({
+        title: '샘플 AHP 프로젝트',
+        description: 'AHP 의사결정 분석을 위한 샘플 프로젝트입니다.',
+        objective: '최적의 대안을 선택하기 위한 다기준 의사결정',
+        status: 'draft',
+        evaluation_mode: 'practical',
+        workflow_stage: 'creating'
       });
-
-      if (response.ok) {
-        fetchProjects();
-      }
+      fetchProjects();
     } catch (error) {
-      console.error('Failed to create sample project:', error);
+      // 샘플 프로젝트 생성 실패 무시
     }
   };
 
