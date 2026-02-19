@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 
@@ -29,7 +29,7 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
     setTimeout(() => setActionMessage(null), 3000);
   };
 
-  const loadTrashedProjects = async () => {
+  const loadTrashedProjects = useCallback(async () => {
     if (onFetchTrashedProjects) {
       try {
         const projects = await onFetchTrashedProjects();
@@ -38,11 +38,11 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
         showActionMessage('error', '휴지통 프로젝트 로드 중 오류가 발생했습니다.');
       }
     }
-  };
+  }, [onFetchTrashedProjects]);
 
   useEffect(() => {
     loadTrashedProjects();
-  }, []);
+  }, [loadTrashedProjects]);
 
   const handleTestDelete = async (projectId: string, title: string) => {
     try {
