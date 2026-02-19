@@ -193,14 +193,9 @@ const makeRequest = async <T>(
         throw new Error('인증이 필요합니다. 다시 로그인해 주세요.');
       }
 
-      // 권한 오류 특별 처리
+      // 권한 오류 처리
       if (response.status === 403) {
-        // 403 오류는 무시하고 빈 데이터 반환 (일부 API는 인증 없이도 작동해야 함)
-        return {
-          success: true,
-          data: data.data || data,
-          message: '권한 제한됨'
-        };
+        throw new Error('이 작업을 수행할 권한이 없습니다. 로그인 상태를 확인해주세요.');
       }
 
       // 400 에러 상세 분석
@@ -225,9 +220,14 @@ const makeRequest = async <T>(
     };
   } catch (error: any) {
     console.error(`API Error [${endpoint}]:`, error);
+    // 네트워크 오류 (서버 다운, CORS, 오프라인 등) 사용자 친화적 메시지로 변환
+    let errorMessage = error.message || '알 수 없는 오류가 발생했습니다.';
+    if (errorMessage === 'Failed to fetch' || errorMessage.includes('NetworkError') || errorMessage.includes('net::ERR')) {
+      errorMessage = '서버에 연결할 수 없습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.';
+    }
     return {
       success: false,
-      error: error.message || 'Unknown error occurred'
+      error: errorMessage
     };
   }
 };
