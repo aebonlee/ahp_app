@@ -7,6 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../../types';
 import { API_BASE_URL } from '../../config/api';
 import apiService from '../../services/apiService';
+import api from '../../services/api';
 
 interface AdminOnlyDashboardProps {
   user: User;
@@ -131,9 +132,7 @@ const AdminOnlyDashboard: React.FC<AdminOnlyDashboardProps> = ({ user, onTabChan
       apiService.get<PaginatedResponse<any>>(
         '/api/service/evaluations/evaluations/?status=in_progress&page_size=1'
       ),
-      fetch(`${API_BASE_URL}/health/`)
-        .then(r => r.json())
-        .catch(() => ({ status: 'unknown' })),
+      api.get('/health/').then(r => r.success ? r.data : { status: 'unknown' }).catch(() => ({ status: 'unknown' })),
     ]);
 
     const totalUsers =

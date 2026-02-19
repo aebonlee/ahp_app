@@ -4,6 +4,7 @@ import './App.css';
 import sessionService from './services/sessionService';
 import authService from './services/authService';
 import cleanDataService from './services/dataService_clean';
+import api from './services/api';
 import { setAPIKeyDirectly } from './utils/aiInitializer';
 import type { User, UserRole } from './types';
 import Layout from './components/layout/Layout';
@@ -11,6 +12,7 @@ import UnifiedAuthPage from './components/auth/UnifiedAuthPage';
 import RegisterForm from './components/auth/RegisterForm';
 import HomePage from './components/home/HomePage';
 import Card from './components/common/Card';
+import Modal from './components/common/Modal';
 import UIIcon, { EditIcon, DeleteIcon } from './components/common/UIIcon';
 import ApiErrorModal from './components/common/ApiErrorModal';
 import TrashOverflowModal from './components/common/TrashOverflowModal';
@@ -170,6 +172,9 @@ function App() {
   // const [isEvaluatorSurvey, setIsEvaluatorSurvey] = useState(false);
   // const [surveyId, setSurveyId] = useState<string>('');
   // const [surveyToken, setSurveyToken] = useState<string>('');
+
+  // 프로젝트 삭제 확인 모달 상태
+  const [pendingDeleteProjectId, setPendingDeleteProjectId] = useState<string | null>(null);
 
   // 휴지통 오버플로우 관리 상태
   const [trashOverflowData, setTrashOverflowData] = useState<{
@@ -378,16 +383,10 @@ function App() {
   const checkBackendAndInitialize = async () => {
     try {
       setBackendStatus('checking');
-      
-      const response = await fetch(`${API_BASE_URL}/api/`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-        }
-      });
-      
-      if (response.ok) {
+
+      const response = await api.get('/api/');
+
+      if (response.success) {
         setBackendStatus('available');
         validateSession(); // 비동기로 세션 검증
 
@@ -431,21 +430,8 @@ function App() {
   // API 연결 상태 체크 (백그라운드에서 실행)
   const checkApiConnection = async () => {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5초 타임아웃
-      
-      const response = await fetch(`${API_BASE_URL}/api/`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-        },
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
+      const response = await api.get('/api/');
+      if (!response.success) {
         setBackendStatus('unavailable');
         setShowApiErrorModal(true);
       }
@@ -478,18 +464,11 @@ function App() {
       }
 
       // 올바른 엔드포인트로 세션 검증
-      const response = await fetch(`${API_BASE_URL}/api/service/accounts/me/`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-      });
+      const response = await api.get('/api/service/accounts/me/');
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.success && response.data) {
         const restoredUser = {
-          ...data,
+          ...response.data,
           admin_type: undefined
         };
         // admin@ahp.com 슈퍼 관리자 처리
@@ -499,20 +478,16 @@ function App() {
         setUser(restoredUser);
         localStorage.setItem('ahp_user', JSON.stringify(restoredUser));
         sessionService.startSession();
-      } else if (response.status === 401) {
+      } else if (response.error?.includes('인증이 필요')) {
         // access token 만료 → refresh 시도
         const refreshResult = await authService.refreshAccessToken();
         if (refreshResult.success) {
           const newToken = authService.getAccessToken();
           if (newToken) {
             // 새 토큰으로 한 번만 재검증 (재귀 방지)
-            const retryRes = await fetch(`${API_BASE_URL}/api/service/accounts/me/`, {
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${newToken}` },
-            });
-            if (retryRes.ok) {
-              const retryData = await retryRes.json();
-              const retryUser = { ...retryData, admin_type: undefined };
+            const retryRes = await api.get('/api/service/accounts/me/');
+            if (retryRes.success && retryRes.data) {
+              const retryUser = { ...retryRes.data, admin_type: undefined };
               if (retryUser.email === 'admin@ahp.com') retryUser.role = 'super_admin';
               setUser(retryUser);
               localStorage.setItem('ahp_user', JSON.stringify(retryUser));
@@ -935,21 +910,15 @@ function App() {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const token = authService.getAccessToken();
-      const response = await fetch(`${API_BASE_URL}/api/service/accounts/`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
+      const response = await api.get('/api/service/accounts/');
+      if (response.success && response.data) {
+        const data = response.data;
         setUsers(Array.isArray(data) ? data : data.results || data.users || []);
+      } else if (!response.success) {
+        showActionMessage('error', response.error || '사용자 목록을 불러오지 못했습니다.');
       }
     } catch (error) {
-      // 사용자 목록 조회 실패는 조용히 처리
+      showActionMessage('error', '사용자 목록 조회 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -957,61 +926,26 @@ function App() {
 
   // 사용자 관리 함수들
   const createUser = async (userData: any) => {
-    const token = authService.getAccessToken();
-    const response = await fetch(`${API_BASE_URL}/api/service/accounts/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(userData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || '사용자 생성에 실패했습니다.');
+    const response = await api.post('/api/service/accounts/', userData);
+    if (!response.success) {
+      throw new Error(response.error || '사용자 생성에 실패했습니다.');
     }
-
     await fetchUsers();
   };
 
   const updateUser = async (userId: string, userData: any) => {
-    const token = authService.getAccessToken();
-    const response = await fetch(`${API_BASE_URL}/api/service/accounts/${userId}/`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(userData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || '사용자 수정에 실패했습니다.');
+    const response = await api.patch(`/api/service/accounts/${userId}/`, userData);
+    if (!response.success) {
+      throw new Error(response.error || '사용자 수정에 실패했습니다.');
     }
-
     await fetchUsers();
   };
 
   const deleteUser = async (userId: string) => {
-    const token = authService.getAccessToken();
-    const response = await fetch(`${API_BASE_URL}/api/service/accounts/${userId}/`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || '사용자 삭제에 실패했습니다.');
+    const response = await api.delete(`/api/service/accounts/${userId}/`);
+    if (!response.success) {
+      throw new Error(response.error || '사용자 삭제에 실패했습니다.');
     }
-
     await fetchUsers();
   };
 
@@ -1807,16 +1741,10 @@ function App() {
                               <UIIcon emoji="📊" preset="button" color="info" hover />
                             </button>
                             <button
-                              onClick={async (e) => {
+                              onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                if (window.confirm('정말로 이 프로젝트를 삭제하시겠습니까?')) {
-                                  try {
-                                    await deleteProject(project.id);
-                                  } catch {
-                                    showActionMessage('error', '프로젝트 삭제에 실패했습니다.');
-                                  }
-                                }
+                                setPendingDeleteProjectId(project.id);
                               }}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="삭제"
@@ -2057,6 +1985,39 @@ function App() {
             onDeleteAfterCleanup={handleTrashOverflow}
           />
         )}
+        <Modal
+          isOpen={!!pendingDeleteProjectId}
+          onClose={() => setPendingDeleteProjectId(null)}
+          title="프로젝트 삭제 확인"
+          size="sm"
+          footer={
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setPendingDeleteProjectId(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={async () => {
+                  if (!pendingDeleteProjectId) return;
+                  const idToDelete = pendingDeleteProjectId;
+                  setPendingDeleteProjectId(null);
+                  try {
+                    await deleteProject(idToDelete);
+                  } catch {
+                    showActionMessage('error', '프로젝트 삭제에 실패했습니다.');
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+              >
+                삭제
+              </button>
+            </div>
+          }
+        >
+          <p className="text-sm text-gray-600">정말로 이 프로젝트를 삭제하시겠습니까? 삭제된 프로젝트는 휴지통으로 이동합니다.</p>
+        </Modal>
       </div>
     );
   }

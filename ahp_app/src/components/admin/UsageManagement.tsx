@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import api from '../../services/api';
 
 interface UsageManagementProps {
   user: {
@@ -43,6 +44,7 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
   const [resetConfirm, setResetConfirm] = useState('');
   const [keepArchives, setKeepArchives] = useState(true);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const [showResetModal, setShowResetModal] = useState(false);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -56,64 +58,36 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
   }, []);
 
   const loadSubscriptionData = async () => {
-    try {
-      const response = await fetch('/api/subscription/status', {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSubscription(data.subscription);
-      }
-    } catch (error) {
+    const response = await api.get('/api/subscription/status');
+    if (response.success && response.data) {
+      setSubscription(response.data.subscription);
     }
   };
 
   const loadUsageData = async () => {
     try {
-      const response = await fetch('/api/subscription/usage', {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setUsage(data.usage);
+      const response = await api.get('/api/subscription/usage');
+      if (response.success && response.data) {
+        setUsage(response.data.usage);
+      } else if (!response.success) {
+        showActionMessage('error', response.error || '사용량 정보를 불러오지 못했습니다.');
       }
-    } catch (error) {
     } finally {
       setLoading(false);
     }
   };
 
   const handleExtendTrial = async (days: number) => {
-    try {
-      const response = await fetch('/api/subscription/extend', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          days, 
-          reason: 'manual_extension' 
-        })
-      });
+    const response = await api.post('/api/subscription/extend', {
+      days,
+      reason: 'manual_extension'
+    });
 
-      if (response.ok) {
-        showActionMessage('success', `사용기간이 ${days}일 연장되었습니다.`);
-        loadSubscriptionData();
-      } else {
-        const error = await response.json();
-        showActionMessage('error', `연장 실패: ${error.message}`);
-      }
-    } catch (error) {
-      showActionMessage('error', '연장 중 오류가 발생했습니다.');
+    if (response.success) {
+      showActionMessage('success', `사용기간이 ${days}일 연장되었습니다.`);
+      loadSubscriptionData();
+    } else {
+      showActionMessage('error', `연장 실패: ${response.error || '알 수 없는 오류'}`);
     }
   };
 
@@ -123,34 +97,23 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
       return;
     }
 
-    if (!window.confirm('모든 프로젝트 데이터가 삭제됩니다. 계속하시겠습니까?')) {
-      return;
-    }
+    setShowResetModal(true);
+  };
 
-    try {
-      const response = await fetch('/api/subscription/reset-data', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          confirmPassword: resetConfirm,
-          keepArchives 
-        })
-      });
+  const confirmResetData = async () => {
+    setShowResetModal(false);
 
-      if (response.ok) {
-        const result = await response.json();
-        showActionMessage('success', `데이터 초기화 완료: ${result.deleted_projects}개 프로젝트 삭제`);
-        setResetConfirm('');
-        loadUsageData();
-      } else {
-        const error = await response.json();
-        showActionMessage('error', `초기화 실패: ${error.message}`);
-      }
-    } catch (error) {
-      showActionMessage('error', '초기화 중 오류가 발생했습니다.');
+    const response = await api.post('/api/subscription/reset-data', {
+      confirmPassword: resetConfirm,
+      keepArchives
+    });
+
+    if (response.success) {
+      showActionMessage('success', `데이터 초기화 완료: ${response.data?.deleted_projects}개 프로젝트 삭제`);
+      setResetConfirm('');
+      loadUsageData();
+    } else {
+      showActionMessage('error', `초기화 실패: ${response.error || '알 수 없는 오류'}`);
     }
   };
 
@@ -186,7 +149,35 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
           {actionMessage.text}
         </div>
       )}
-      <div className="border-b sticky top-0 z-10" style={{ 
+
+      {/* 데이터 초기화 확인 모달 */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowResetModal(false)} />
+          <div className="relative bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">데이터 초기화 확인</h3>
+            <p className="text-gray-600 text-sm mb-6">
+              모든 프로젝트 데이터가 삭제됩니다. 계속하시겠습니까?
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowResetModal(false)}
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={confirmResetData}
+                className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors"
+              >
+                삭제 확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="border-b sticky top-0 z-10" style={{
         backgroundColor: 'var(--bg-primary)',
         borderBottomColor: 'var(--border-subtle)'
       }}>
@@ -195,7 +186,7 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 {onBack && (
-                  <button 
+                  <button
                     onClick={onBack}
                     className="mr-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl"
                   >
@@ -217,7 +208,7 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
+
           {/* 구독 정보 */}
           <Card title="구독 현황">
             {subscription ? (
@@ -274,15 +265,15 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
                       체험 기간 연장
                     </h4>
                     <div className="flex space-x-2">
-                      <Button 
-                        variant="secondary" 
+                      <Button
+                        variant="secondary"
                         size="sm"
                         onClick={() => handleExtendTrial(7)}
                       >
                         +7일
                       </Button>
-                      <Button 
-                        variant="secondary" 
+                      <Button
+                        variant="secondary"
                         size="sm"
                         onClick={() => handleExtendTrial(30)}
                       >
@@ -312,9 +303,9 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="h-2 rounded-full transition-all duration-300"
-                      style={{ 
+                      style={{
                         width: `${Math.min((usage.projects / (usage.quota.max_projects || usage.projects || 1)) * 100, 100)}%`,
                         backgroundColor: getProgressColor(usage.projects, usage.quota.max_projects)
                       }}
@@ -331,9 +322,9 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="h-2 rounded-full transition-all duration-300"
-                      style={{ 
+                      style={{
                         width: `${Math.min((usage.evaluators / (usage.quota.max_evaluators_per_project || usage.evaluators || 1)) * 100, 100)}%`,
                         backgroundColor: getProgressColor(usage.evaluators, usage.quota.max_evaluators_per_project)
                       }}
@@ -350,9 +341,9 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="h-2 rounded-full transition-all duration-300"
-                      style={{ 
+                      style={{
                         width: `${Math.min((usage.storage_mb / (usage.quota.max_storage_mb || usage.storage_mb || 1)) * 100, 100)}%`,
                         backgroundColor: getProgressColor(usage.storage_mb, usage.quota.max_storage_mb)
                       }}
@@ -469,7 +460,7 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
                   value={resetConfirm}
                   onChange={(e) => setResetConfirm(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg border transition-colors"
-                  style={{ 
+                  style={{
                     borderColor: 'var(--border-subtle)',
                     backgroundColor: 'var(--bg-elevated)'
                   }}
@@ -477,11 +468,11 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
                 />
               </div>
 
-              <Button 
+              <Button
                 variant="primary"
                 onClick={handleResetData}
                 disabled={!resetConfirm}
-                style={{ 
+                style={{
                   backgroundColor: '#ef4444',
                   borderColor: '#dc2626'
                 }}

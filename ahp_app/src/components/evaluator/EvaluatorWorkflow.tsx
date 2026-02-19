@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import PairwiseComparison from '../comparison/PairwiseComparison';
-import apiService from '../../services/apiService';
+import api from '../../services/api';
 
 interface Project {
   id: string;
@@ -53,40 +53,40 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
       setNeedsLogin(false);
 
       const [projectResponse, criteriaResponse, alternativesResponse] = await Promise.all([
-        apiService.projectAPI.fetchById(projectId),
-        apiService.criteriaAPI.fetch(projectId),
-        apiService.alternativesAPI.fetch(projectId),
+        api.project.getProject(projectId),
+        api.criteria.getCriteria(projectId),
+        api.alternative.getAlternatives(projectId),
       ]);
 
-      if (projectResponse.error) {
-        // 401/403 → 로그인 필요 안내
-        const status = (projectResponse as any).status;
-        if (status === 401 || status === 403) {
+      if (!projectResponse.success) {
+        // 인증 오류 메시지로 로그인 필요 판단
+        const errMsg = projectResponse.error || '';
+        if (errMsg.includes('인증') || errMsg.includes('권한') || errMsg.includes('로그인')) {
           setNeedsLogin(true);
           return;
         }
-        throw new Error(projectResponse.error);
+        throw new Error(errMsg || '프로젝트를 불러오지 못했습니다.');
       }
 
-      const criteriaRaw = (criteriaResponse.data as any);
+      const criteriaRaw = criteriaResponse.data;
       const alternativesRaw = (alternativesResponse.data as any);
 
       const projectData: Project = {
         id: projectId,
         title: (projectResponse.data as any)?.title || '평가 프로젝트',
         description: (projectResponse.data as any)?.description || '',
-        criteria: criteriaRaw?.results ?? criteriaRaw?.criteria ?? (Array.isArray(criteriaRaw) ? criteriaRaw : []),
-        alternatives: alternativesRaw?.results ?? alternativesRaw?.alternatives ?? (Array.isArray(alternativesRaw) ? alternativesRaw : []),
+        criteria: Array.isArray(criteriaRaw) ? criteriaRaw : [],
+        alternatives: alternativesRaw?.results ?? (Array.isArray(alternativesRaw) ? alternativesRaw : []),
       };
 
       setProject(projectData);
       calculateProgress();
     } catch (err: any) {
-      if (err?.response?.status === 401 || err?.response?.status === 403 ||
-          err?.status === 401 || err?.status === 403) {
+      const errMsg: string = err?.message || '';
+      if (errMsg.includes('인증') || errMsg.includes('권한') || errMsg.includes('로그인')) {
         setNeedsLogin(true);
       } else {
-        setError('프로젝트 데이터를 불러올 수 없습니다.');
+        setError('프로젝트 데이터를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
       }
     } finally {
       setLoading(false);

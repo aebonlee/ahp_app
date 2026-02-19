@@ -3,7 +3,7 @@ import UIIcon from '../common/UIIcon';
 import PageHeader from '../common/PageHeader';
 import { PrimaryButton, SecondaryButton, SuccessButton, DangerButton } from '../common/UIButton';
 import { useColorTheme, ColorTheme } from '../../hooks/useColorTheme';
-import { API_BASE_URL } from '../../config/api';
+import api from '../../services/api';
 import type { User } from '../../types';
 
 interface PersonalSettingsProps {
@@ -61,7 +61,7 @@ interface UserSettings {
 const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUserUpdate }) => {
   const { currentTheme, changeColorTheme } = useColorTheme();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'workflow' | 'notifications' | 'display' | 'privacy' | 'data'>('profile');
-  
+
   // 서버 기반 사용자 설정 초기화 (localStorage 완전 제거)
   const getInitialSettings = (): UserSettings => {
     return {
@@ -110,7 +110,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       }
     };
   };
-  
+
   const [settings, setSettings] = useState<UserSettings>(getInitialSettings());
 
   const [passwordForm, setPasswordForm] = useState({
@@ -121,6 +121,9 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [pendingImportData, setPendingImportData] = useState<UserSettings | null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -130,56 +133,46 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
   // 서버에서 사용자 설정 로드 (localStorage 제거됨)
   useEffect(() => {
     const loadUserDataFromAPI = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/service/auth/profile/`, {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+      const response = await api.get('/api/service/auth/profile/');
 
-        if (response.ok) {
-          const data = await response.json();
-          
-          if (data.user) {
-            const apiSettings = {
-              profile: {
-                firstName: data.user.first_name || settings.profile.firstName,
-                lastName: data.user.last_name || settings.profile.lastName,
-                email: data.user.email || settings.profile.email,
-                phone: data.user.phone || settings.profile.phone,
-                organization: data.user.organization || settings.profile.organization,
-                department: data.user.department || settings.profile.department,
-                profileImage: data.user.profile_image || settings.profile.profileImage
-              },
-              security: settings.security,
-              workflow: settings.workflow,
-              notifications: data.user.notifications || settings.notifications,
-              display: {
-                ...settings.display,
-                theme: data.user.theme || settings.display.theme,
-                language: data.user.language || settings.display.language
-              },
-              privacy: settings.privacy
-            };
-            
-            setSettings(apiSettings);
-            
-            // 사용자 정보 업데이트 콜백 호출
-            if (onUserUpdate && (data.user.first_name !== user.first_name || data.user.last_name !== user.last_name)) {
-              onUserUpdate({
-                ...user,
-                first_name: data.user.first_name,
-                last_name: data.user.last_name
-              });
-            }
+      if (response.success && response.data) {
+        const data = response.data;
+        if (data.user) {
+          const apiSettings = {
+            profile: {
+              firstName: data.user.first_name || settings.profile.firstName,
+              lastName: data.user.last_name || settings.profile.lastName,
+              email: data.user.email || settings.profile.email,
+              phone: data.user.phone || settings.profile.phone,
+              organization: data.user.organization || settings.profile.organization,
+              department: data.user.department || settings.profile.department,
+              profileImage: data.user.profile_image || settings.profile.profileImage
+            },
+            security: settings.security,
+            workflow: settings.workflow,
+            notifications: data.user.notifications || settings.notifications,
+            display: {
+              ...settings.display,
+              theme: data.user.theme || settings.display.theme,
+              language: data.user.language || settings.display.language
+            },
+            privacy: settings.privacy
+          };
+
+          setSettings(apiSettings);
+
+          // 사용자 정보 업데이트 콜백 호출
+          if (onUserUpdate && (data.user.first_name !== user.first_name || data.user.last_name !== user.last_name)) {
+            onUserUpdate({
+              ...user,
+              first_name: data.user.first_name,
+              last_name: data.user.last_name
+            });
           }
-        } else if (response.status === 404) {
-          // DB에 프로필이 없으면 현재 설정을 저장
-          saveSettingsToAPI();
         }
-      } catch (error) {
-        // API 실패 시 기본 설정 유지
+      } else if (response.error?.includes('찾을 수 없습니다')) {
+        // DB에 프로필이 없으면 현재 설정을 저장
+        saveSettingsToAPI();
       }
     };
 
@@ -190,7 +183,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
   // 설정을 API로 저장 (localStorage 완전 제거)
   const saveSettingsToAPI = async () => {
     setSaveStatus('saving');
-    
+
     try {
       // 테마 설정 적용 (즉시)
       if (settings.display.theme !== 'auto' && settings.display.theme !== currentTheme) {
@@ -224,20 +217,13 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
         language: settings.display.language
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/service/auth/profile/`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
+      const response = await api.put('/api/service/auth/profile/', requestData);
 
-      if (response.ok) {
+      if (response.success) {
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
       } else {
-        throw new Error('API 저장 실패');
+        throw new Error(response.error || 'API 저장 실패');
       }
     } catch (error) {
       setSaveStatus('error');
@@ -253,14 +239,20 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     try {
       const text = await file.text();
       const importData = JSON.parse(text);
-      
-      if (window.confirm('가져온 데이터로 현재 설정을 덮어쓰시겠습니까?')) {
-        setSettings(importData.settings || importData);
-        await saveSettingsToAPI();
-        showActionMessage('success', '설정을 성공적으로 가져왔습니다.');
-      }
+      setPendingImportData(importData.settings || importData);
+      setShowImportModal(true);
     } catch (error) {
       showActionMessage('error', '파일을 읽는 중 오류가 발생했습니다.');
+    }
+  };
+
+  const confirmDataImport = async () => {
+    setShowImportModal(false);
+    if (pendingImportData) {
+      setSettings(pendingImportData);
+      await saveSettingsToAPI();
+      showActionMessage('success', '설정을 성공적으로 가져왔습니다.');
+      setPendingImportData(null);
     }
   };
 
@@ -293,60 +285,35 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       return;
     }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/service/auth/change-password/`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          current_password: passwordForm.currentPassword,
-          new_password: passwordForm.newPassword,
-        }),
-      });
+    const response = await api.put('/api/service/auth/change-password/', {
+      current_password: passwordForm.currentPassword,
+      new_password: passwordForm.newPassword,
+    });
 
-      if (response.ok) {
-        showActionMessage('success', '비밀번호가 성공적으로 변경되었습니다.');
-        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      } else {
-        const error = await response.json();
-        showActionMessage('error', error.message || '비밀번호 변경에 실패했습니다.');
-      }
-    } catch (error) {
-      showActionMessage('error', '비밀번호 변경 중 오류가 발생했습니다.');
+    if (response.success) {
+      showActionMessage('success', '비밀번호가 성공적으로 변경되었습니다.');
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } else {
+      showActionMessage('error', response.error || '비밀번호 변경에 실패했습니다.');
     }
   };
 
   // 계정 삭제 함수
-  const handleDeleteAccount = async () => {
-    if (!window.confirm('정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      return;
-    }
+  const handleDeleteAccount = () => {
+    setShowDeleteModal(true);
+  };
 
-    if (!window.confirm('모든 데이터가 영구적으로 삭제됩니다. 계속하시겠습니까?')) {
-      return;
-    }
+  const confirmDeleteAccount = async () => {
+    setShowDeleteModal(false);
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/service/auth/delete-account/`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    const response = await api.delete('/api/service/auth/delete-account/');
 
-      if (response.ok) {
-        showActionMessage('success', '계정이 삭제되었습니다.');
-        // 로그아웃 처리
-        window.location.href = '/';
-      } else {
-        const error = await response.json();
-        showActionMessage('error', error.message || '계정 삭제에 실패했습니다.');
-      }
-    } catch (error) {
-      showActionMessage('error', '계정 삭제 중 오류가 발생했습니다.');
+    if (response.success) {
+      showActionMessage('success', '계정이 삭제되었습니다.');
+      // 로그아웃 처리
+      window.location.href = '/';
+    } else {
+      showActionMessage('error', response.error || '계정 삭제에 실패했습니다.');
     }
   };
 
@@ -396,6 +363,61 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
           {actionMessage.text}
         </div>
       )}
+
+      {/* 계정 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowDeleteModal(false)} />
+          <div className="relative bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">계정 삭제 확인</h3>
+            <p className="text-gray-600 text-sm mb-6">
+              정말로 계정을 삭제하시겠습니까? 모든 데이터가 영구적으로 삭제되며 이 작업은 되돌릴 수 없습니다.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={confirmDeleteAccount}
+                className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors"
+              >
+                삭제 확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 설정 가져오기 확인 모달 */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowImportModal(false)} />
+          <div className="relative bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">설정 가져오기 확인</h3>
+            <p className="text-gray-600 text-sm mb-6">
+              가져온 데이터로 현재 설정을 덮어쓰시겠습니까?
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => { setShowImportModal(false); setPendingImportData(null); }}
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={confirmDataImport}
+                className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                가져오기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <PageHeader
         title="개인 설정"
         description="계정 정보와 개인 환경설정을 관리합니다"
@@ -446,7 +468,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                   <UIIcon emoji="👤" size="xl" color="primary" />
                   <h2 className="text-2xl font-bold text-gray-900">프로필 정보</h2>
                 </div>
-                
+
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -544,7 +566,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                   <UIIcon emoji="🔒" size="xl" color="primary" />
                   <h2 className="text-2xl font-bold text-gray-900">보안 설정</h2>
                 </div>
-                
+
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-medium mb-4 flex items-center space-x-2" style={{ color: 'var(--text-primary)' }}>
@@ -830,7 +852,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                   <UIIcon emoji="💾" size="xl" color="primary" />
                   <h2 className="text-2xl font-bold text-gray-900">데이터 관리</h2>
                 </div>
-                
+
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-medium mb-4 flex items-center space-x-2" style={{ color: 'var(--text-primary)' }}>
@@ -862,9 +884,9 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                       <UIIcon emoji="⚠️" size="lg" color="error" />
                       <span>위험 구역</span>
                     </h3>
-                    <div className="p-4 rounded-lg border" style={{ 
-                      backgroundColor: 'var(--error-pastel)', 
-                      borderColor: 'var(--error-light)' 
+                    <div className="p-4 rounded-lg border" style={{
+                      backgroundColor: 'var(--error-pastel)',
+                      borderColor: 'var(--error-light)'
                     }}>
                       <p className="mb-4" style={{ color: 'var(--error-dark)' }}>
                         계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.

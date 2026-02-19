@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
-import apiService from '../../services/apiService';
+import api from '../../services/api';
 
 interface ModelFinalizationProps {
   projectId: string;
@@ -31,22 +31,35 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
         
         // 실제 프로젝트 데이터 로드
         const [criteriaResponse, alternativesResponse, evaluatorsResponse] = await Promise.all([
-          apiService.criteriaAPI.fetch(projectId),
-          apiService.alternativesAPI.fetch(projectId),
-          apiService.evaluatorAPI.fetchByProject(projectId)
+          api.criteria.getCriteria(projectId),
+          api.alternative.getAlternatives(projectId),
+          api.evaluator.getEvaluators(projectId)
         ]);
-        
-        const criteriaData = (criteriaResponse.data as any)?.criteria || (criteriaResponse.data as any) || [];
-        const alternativesData = (alternativesResponse.data as any)?.alternatives || (alternativesResponse.data as any) || [];
-        const evaluatorsData = (evaluatorsResponse.data as any)?.evaluators || (evaluatorsResponse.data as any) || [];
-        
+
+        if (!criteriaResponse.success) {
+          throw new Error(criteriaResponse.error || '기준 데이터를 불러오지 못했습니다.');
+        }
+        if (!alternativesResponse.success) {
+          throw new Error(alternativesResponse.error || '대안 데이터를 불러오지 못했습니다.');
+        }
+        if (!evaluatorsResponse.success) {
+          throw new Error(evaluatorsResponse.error || '평가자 데이터를 불러오지 못했습니다.');
+        }
+
+        const criteriaData = criteriaResponse.data;
+        const alternativesData = (alternativesResponse.data as any)?.results
+          ?? (Array.isArray(alternativesResponse.data) ? alternativesResponse.data : []);
+        const evaluatorsData = (evaluatorsResponse.data as any)?.results
+          ?? (Array.isArray(evaluatorsResponse.data) ? evaluatorsResponse.data : []);
+
         // 배열인지 확인하고 설정
         setCriteria(Array.isArray(criteriaData) ? criteriaData : []);
         setAlternatives(Array.isArray(alternativesData) ? alternativesData : []);
         setEvaluators(Array.isArray(evaluatorsData) ? evaluatorsData : []);
-        
-      } catch (error) {
+
+      } catch (error: any) {
         console.error('Failed to load project data:', error);
+        alert(error?.message || '프로젝트 데이터를 불러오는 중 오류가 발생했습니다.');
         // 에러 시 빈 배열로 초기화
         setCriteria([]);
         setAlternatives([]);
