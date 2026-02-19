@@ -97,7 +97,7 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
       const list = Array.isArray(data) ? data : (data.results ?? []);
       setProjects(list.map((p: any) => ({ id: p.id, title: p.title })));
     } catch (err) {
-      console.error('프로젝트 목록 로딩 실패:', err);
+      showActionMessage('error', '프로젝트 목록을 불러오는데 실패했습니다.');
     }
   }, []);
 

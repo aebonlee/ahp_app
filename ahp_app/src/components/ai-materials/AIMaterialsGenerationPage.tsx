@@ -146,7 +146,7 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
       const projects = await cleanDataService.getProjects();
       setProjects(projects || []);
     } catch (error) {
-      console.error('프로젝트 로드 실패:', error);
+      showActionMessage('error', '프로젝트를 불러오는 데 실패했습니다.');
     }
   };
 

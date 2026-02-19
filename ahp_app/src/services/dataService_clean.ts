@@ -53,7 +53,6 @@ class CleanDataService {
       if (response.success && response.data) {
         // ID가 응답에 없으면 목록을 다시 조회해서 새 프로젝트 찾기
         if (!response.data.id) {
-          // TODO: real API call — re-query immediately instead of polling with a fake delay
           const afterResponse = await this.getProjects();
 
           // 새로 생성된 프로젝트 찾기 (제목으로 매칭)

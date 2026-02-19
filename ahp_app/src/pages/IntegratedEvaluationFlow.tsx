@@ -34,6 +34,12 @@ const IntegratedEvaluationFlow: React.FC = () => {
   const [sessionId, setSessionId] = useState<string>('');
   const [demographicData, setDemographicData] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState(0);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     loadProjectInfo();
@@ -89,7 +95,7 @@ const IntegratedEvaluationFlow: React.FC = () => {
         setCurrentStep('completion');
       }
     } catch (error) {
-      console.error('인구통계 제출 실패:', error);
+      showActionMessage('error', '설문 제출에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -102,7 +108,7 @@ const IntegratedEvaluationFlow: React.FC = () => {
 
       setCurrentStep('completion');
     } catch (error) {
-      console.error('AHP 평가 완료 처리 실패:', error);
+      showActionMessage('error', 'AHP 평가 완료 처리에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -239,11 +245,18 @@ const IntegratedEvaluationFlow: React.FC = () => {
   // 인구통계 설문
   if (currentStep === 'demographic') {
     return (
-      <DemographicSurveyForm
-        projectId={project.id}
-        surveyConfig={project.demographic_survey_config}
-        onComplete={handleDemographicComplete}
-      />
+      <>
+        {actionMessage && (
+          <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+            {actionMessage.text}
+          </div>
+        )}
+        <DemographicSurveyForm
+          projectId={project.id}
+          surveyConfig={project.demographic_survey_config}
+          onComplete={handleDemographicComplete}
+        />
+      </>
     );
   }
 
@@ -251,6 +264,11 @@ const IntegratedEvaluationFlow: React.FC = () => {
   if (currentStep === 'ahp') {
     return (
       <div className="min-h-screen bg-gradient-subtle">
+        {actionMessage && (
+          <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+            {actionMessage.text}
+          </div>
+        )}
         <div className="max-w-6xl mx-auto px-4 py-8">
           <AnonymousEvaluator />
         </div>

@@ -15,6 +15,12 @@ const SystemHealthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [healthReport, setHealthReport] = useState<any>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     // 초기 점검 실행
@@ -37,7 +43,7 @@ const SystemHealthPage: React.FC = () => {
       const report = await healthChecker.runFullHealthCheck();
       setHealthReport(report);
     } catch (error) {
-      console.error('시스템 점검 실패:', error);
+      showActionMessage('error', '시스템 점검에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setLoading(false);
     }
@@ -63,6 +69,11 @@ const SystemHealthPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">

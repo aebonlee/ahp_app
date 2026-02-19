@@ -88,7 +88,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
       const projectsData = await cleanDataService.getProjects();
       setProjects(projectsData || []);
     } catch (error) {
-      console.error('프로젝트 로드 실패:', error);
+      showActionMessage('error', '프로젝트를 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -97,7 +97,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
   // 선택된 프로젝트의 상세 데이터 로드
   const loadProjectData = async (project: Project) => {
     if (!project.id) {
-      console.error('프로젝트 ID가 없습니다.');
+      showActionMessage('error', '프로젝트 ID가 없습니다.');
       return;
     }
     
@@ -119,7 +119,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
       setSelectedProject(project);
       setActiveTab('paper-settings');
     } catch (error) {
-      console.error('프로젝트 데이터 로드 실패:', error);
+      showActionMessage('error', '프로젝트 데이터를 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -157,7 +157,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
       
       setActiveTab('review-edit');
     } catch (error) {
-      console.error('논문 생성 실패:', error);
+      showActionMessage('error', '논문 생성 중 오류가 발생했습니다.');
     } finally {
       setGenerating(false);
     }

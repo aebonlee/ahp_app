@@ -98,7 +98,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
       );
       setProjects(completedProjects);
     } catch (error) {
-      console.error('프로젝트 로드 실패:', error);
+      showActionMessage('error', '프로젝트 목록을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }

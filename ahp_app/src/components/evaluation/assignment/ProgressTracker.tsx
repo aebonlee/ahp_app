@@ -38,6 +38,12 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ projectId, refreshKey
   const [progressData, setProgressData] = useState<ProgressData | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'completed' | 'in_progress' | 'pending'>('all');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     loadProgressData();
@@ -49,7 +55,7 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ projectId, refreshKey
       const response = await api.get(`/api/service/evaluations/progress/${projectId}/project_progress/`);
       setProgressData(response.data);
     } catch (error) {
-      console.error('진행률 데이터 로드 실패:', error);
+      showActionMessage('error', '진행률 데이터를 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -121,6 +127,11 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ projectId, refreshKey
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* Overall Progress */}
       <div className="bg-white rounded-2xl shadow-card p-6">
         <h2 className="text-xl font-bold mb-6">전체 진행 현황</h2>

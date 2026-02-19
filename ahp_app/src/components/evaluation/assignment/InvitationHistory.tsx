@@ -50,7 +50,7 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, refres
       );
       setInvitations(projectInvitations);
     } catch (error) {
-      console.error('초대 기록 로드 실패:', error);
+      showActionMessage('error', '초대 기록을 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }

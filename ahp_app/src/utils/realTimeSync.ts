@@ -101,6 +101,7 @@ export class RealTimeSyncManager {
   private eventSource?: EventSource;
   private syncInterval?: NodeJS.Timeout;
   private heartbeatInterval?: NodeJS.Timeout;
+  private pollingInterval?: NodeJS.Timeout;
   private eventListeners: { [eventType: string]: ((event: CollaborationEvent) => void)[] } = {};
   private isOnline: boolean = true;
   private lastHeartbeat: number = Date.now();
@@ -165,6 +166,10 @@ export class RealTimeSyncManager {
       this.heartbeatInterval = undefined;
     }
 
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = undefined;
+    }
   }
 
   /**
@@ -218,7 +223,7 @@ export class RealTimeSyncManager {
       }
     };
 
-    setInterval(pollEvents, 2000); // 2초마다 폴링
+    this.pollingInterval = setInterval(pollEvents, 2000); // 2초마다 폴링
   }
 
   /**

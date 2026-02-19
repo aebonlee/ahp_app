@@ -59,6 +59,7 @@ const RealTimeMonitor: React.FC<RealTimeMonitorProps> = ({
   
   const wsRef = useRef<WebSocket | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const simIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // WebSocket 연결 초기화
   useEffect(() => {
@@ -71,6 +72,9 @@ const RealTimeMonitor: React.FC<RealTimeMonitorProps> = ({
       }
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+      }
+      if (simIntervalRef.current) {
+        clearInterval(simIntervalRef.current);
       }
     };
   }, [sessionId]);
@@ -100,7 +104,7 @@ const RealTimeMonitor: React.FC<RealTimeMonitorProps> = ({
     
     // 시뮬레이션을 위한 가짜 WebSocket
     const simulateRealTimeUpdates = () => {
-      setInterval(() => {
+      simIntervalRef.current = setInterval(() => {
         const mockUpdate: RealTimeUpdate = {
           type: 'participant_progress',
           participantId: `p${Math.floor(Math.random() * 26) + 1}`,
@@ -111,9 +115,9 @@ const RealTimeMonitor: React.FC<RealTimeMonitorProps> = ({
             currentCriterion: `기준-${Math.floor(Math.random() * 3) + 1}`
           }
         };
-        
+
         setUpdates(prev => [mockUpdate, ...prev.slice(0, 49)]); // 최근 50개만 유지
-      }, 3000 + Math.random() * 5000); // 3-8초 간격
+      }, 5000); // 5초 간격
     };
 
     setIsConnected(true);

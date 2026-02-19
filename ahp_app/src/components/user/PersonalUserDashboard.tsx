@@ -22,6 +22,12 @@ const PersonalUserDashboard: React.FC<PersonalUserDashboardProps> = ({ user, onT
   });
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     loadUserStats();
@@ -42,7 +48,7 @@ const PersonalUserDashboard: React.FC<PersonalUserDashboardProps> = ({ user, onT
         recentActivity: []
       });
     } catch (error) {
-      console.error('사용자 통계 로딩 실패:', error);
+      showActionMessage('error', '사용자 통계를 불러오는 데 실패했습니다.');
     }
   };
 
@@ -57,7 +63,7 @@ const PersonalUserDashboard: React.FC<PersonalUserDashboardProps> = ({ user, onT
       
       setRecentProjects(userProjects);
     } catch (error) {
-      console.error('최근 프로젝트 로딩 실패:', error);
+      showActionMessage('error', '최근 프로젝트를 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -111,6 +117,11 @@ const PersonalUserDashboard: React.FC<PersonalUserDashboardProps> = ({ user, onT
 
   return (
     <div className="space-y-8">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 환영 메시지 */}
       <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
         <div className="flex items-center space-x-4">

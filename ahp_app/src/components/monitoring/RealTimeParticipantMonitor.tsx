@@ -53,6 +53,12 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
   const [projectProgress, setProjectProgress] = useState<ProjectProgress | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selectedParticipant, setSelectedParticipant] = useState<string>('');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   const [filterStatus, setFilterStatus] = useState<'all' | 'in_progress' | 'completed' | 'overdue'>('all');
   const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(5000); // 5초 간격
@@ -91,7 +97,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
         setParticipants(mapped);
       }
     } catch (error) {
-      console.error('Failed to fetch participant data:', error);
+      showActionMessage('error', '참가자 데이터를 불러오는 데 실패했습니다.');
     }
   }, [projectId]);
 
@@ -118,7 +124,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
         }));
       }
     } catch (error) {
-      console.error('Failed to fetch project progress:', error);
+      showActionMessage('error', '프로젝트 진행 상태를 불러오는 데 실패했습니다.');
     }
   }, [projectId]);
 
@@ -270,6 +276,11 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 및 컨트롤 */}
       <div className="flex justify-between items-center">
         <div>

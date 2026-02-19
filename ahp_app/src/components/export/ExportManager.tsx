@@ -27,6 +27,13 @@ interface ExportManagerProps {
 
 const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, onClose }) => {
   const [isExporting, setIsExporting] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
+
   const [options, setOptions] = useState<ExportOptions>({
     format: 'csv',
     includeCharts: true,
@@ -56,7 +63,7 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
 
       if (onClose) onClose();
     } catch (error) {
-      console.error('Export failed:', error);
+      showActionMessage('error', '내보내기에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsExporting(false);
     }
@@ -64,6 +71,11 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="p-6">
         <h2 className="text-xl font-semibold mb-4">프로젝트 내보내기</h2>
         
