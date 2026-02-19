@@ -491,38 +491,88 @@ function App() {
 
   const validateSession = async () => {
     try {
-      // authService가 이미 localStorage + sessionStorage에서 토큰을 자동 로드함
-      const token = authService.getAccessToken();
+      let token = authService.getAccessToken();
+
+      // access token이 없으면 refresh token으로 갱신 시도
       if (!token) {
-        console.log('⚠️ 토큰이 없어 세션 검증 건너뜀');
+        console.log('🔄 access token 없음 - refresh token으로 갱신 시도...');
+        const refreshResult = await authService.refreshAccessToken();
+        if (refreshResult.success) {
+          token = authService.getAccessToken();
+          console.log('✅ access token 갱신 성공');
+        } else {
+          console.log('⚠️ 토큰 갱신 실패 - 로그아웃 처리');
+          authService.clearTokens();
+          setUser(null);
+          localStorage.removeItem('ahp_user');
+          return;
+        }
+      }
+
+      if (!token) {
+        console.log('⚠️ 유효한 토큰 없음 - 로그아웃 처리');
+        setUser(null);
+        localStorage.removeItem('ahp_user');
         return;
       }
 
       console.log('🔄 세션 검증 중... (강력한 새로고침 대응)');
-      
-      const response = await fetch(`${API_BASE_URL}/api/service/auth/profile/`, {
+
+      // 올바른 엔드포인트로 세션 검증
+      const response = await fetch(`${API_BASE_URL}/api/service/accounts/me/`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
-        // admin 역할일 때 admin_type을 'personal'로 설정
-        const userWithAdminType = {
-          ...data.user,
-          admin_type: undefined // admin_type은 더 이상 사용하지 않음
+        const restoredUser = {
+          ...data,
+          admin_type: undefined
         };
-        setUser(userWithAdminType);
-        console.log('✅ 세션 복구 성공 (localStorage에서 복원):', data.user.email);
-        
-        // 세션 타이머 시작
+        // admin@ahp.com 슈퍼 관리자 처리
+        if (restoredUser.email === 'admin@ahp.com') {
+          restoredUser.role = 'super_admin';
+        }
+        setUser(restoredUser);
+        localStorage.setItem('ahp_user', JSON.stringify(restoredUser));
+        console.log('✅ 세션 복구 성공:', restoredUser.email);
         sessionService.startSession();
       } else if (response.status === 401) {
-        console.log('⚠️ 토큰 만료 - 자동 로그아웃');
-        authService.clearTokens();
+        // access token 만료 → refresh 시도
+        console.log('⚠️ 401 - refresh token으로 재시도...');
+        const refreshResult = await authService.refreshAccessToken();
+        if (refreshResult.success) {
+          const newToken = authService.getAccessToken();
+          if (newToken) {
+            // 새 토큰으로 한 번만 재검증 (재귀 방지)
+            const retryRes = await fetch(`${API_BASE_URL}/api/service/accounts/me/`, {
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${newToken}` },
+            });
+            if (retryRes.ok) {
+              const retryData = await retryRes.json();
+              const retryUser = { ...retryData, admin_type: undefined };
+              if (retryUser.email === 'admin@ahp.com') retryUser.role = 'super_admin';
+              setUser(retryUser);
+              localStorage.setItem('ahp_user', JSON.stringify(retryUser));
+              console.log('✅ 토큰 갱신 후 세션 복구 성공:', retryUser.email);
+              sessionService.startSession();
+            } else {
+              authService.clearTokens();
+              setUser(null);
+              localStorage.removeItem('ahp_user');
+            }
+          }
+        } else {
+          console.log('⚠️ refresh 실패 - 로그아웃');
+          authService.clearTokens();
+          setUser(null);
+          localStorage.removeItem('ahp_user');
+        }
       }
     } catch (error) {
       console.error('Session validation failed:', error);

@@ -38,14 +38,19 @@ class AuthService {
         }
       }
       
-      // 3. 토큰 만료 확인 및 정리
+      // 3. 토큰 만료 확인 - access token만 정리 (refresh token은 유지)
       if (this.accessToken && this.isTokenExpired(this.accessToken)) {
-        console.log('🔄 만료된 토큰 감지 - 자동 정리');
-        this.clearTokens();
+        console.log('🔄 만료된 access token 감지 - access token만 정리 (refresh token 유지)');
+        this.accessToken = null;
+        sessionStorage.removeItem('ahp_access_token');
+        localStorage.removeItem('ahp_access_token');
+        // refresh token은 유지 → validateSession에서 갱신 시도
       }
-      
+
       if (this.accessToken) {
         console.log('✅ 세션 복원 성공 - 로그인 상태 유지');
+      } else if (this.refreshToken) {
+        console.log('🔄 access token 없음, refresh token 존재 - 갱신 필요');
       }
     } catch (error) {
       console.warn('❌ 토큰 로딩 실패:', error);
