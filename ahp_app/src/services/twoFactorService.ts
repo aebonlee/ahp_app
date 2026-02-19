@@ -155,11 +155,10 @@ export class TOTPGenerator {
 
   // Generate secure random secret
   static generateSecret(length: number = 32): string {
-    let secret = '';
-    for (let i = 0; i < length; i++) {
-      secret += this.base32Chars.charAt(Math.floor(Math.random() * this.base32Chars.length));
-    }
-    return secret;
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    // base32Chars.length === 32, so byte % 32 is perfectly uniform (256 % 32 === 0)
+    return Array.from(array, byte => this.base32Chars[byte % this.base32Chars.length]).join('');
   }
 
   // Format secret for manual entry
@@ -178,12 +177,17 @@ export class TOTPGenerator {
 
   // Generate backup codes
   static generateBackupCodes(count: number = 10): string[] {
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const codes: string[] = [];
     for (let i = 0; i < count; i++) {
-      // Generate 8-character alphanumeric code
-      const code = Array.from({ length: 8 }, () => 
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 36)]
-      ).join('');
+      const array = new Uint8Array(8);
+      crypto.getRandomValues(array);
+      // Use rejection sampling to avoid modulo bias (256 % 36 !== 0)
+      const code = Array.from(array, byte => {
+        // Accept only bytes in [0, 252) to ensure uniform distribution (252 = 36 * 7)
+        const limit = 252;
+        return byte < limit ? charset[byte % 36] : charset[Math.floor(byte / 256 * 36)];
+      }).join('');
       codes.push(code);
     }
     return codes;

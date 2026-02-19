@@ -75,8 +75,8 @@ class SessionService {
 
   // 세션 연장 (30분 추가)
   public extendSession(): void {
-    // JWT 토큰 연장은 서버에서 처리
-    // TODO: API 호출로 서버 세션 연장 처리
+    // JWT 토큰 자동 갱신은 api.ts makeRequest()의 refreshToken() 로직이 처리
+    // 여기서는 클라이언트 측 세션 타이머만 재시작
 
     // 30분(1800초) 연장을 위한 타이머 재시작
     this.clearTimers();
