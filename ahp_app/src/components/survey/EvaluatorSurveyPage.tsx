@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import apiService from '../../services/apiService';
 
 interface EvaluatorSurveyPageProps {
   surveyId: string;
@@ -35,6 +36,8 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -42,66 +45,48 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
     setTimeout(() => setActionMessage(null), 3000);
   };
 
-  useEffect(() => {
-    // 설문조사 데이터 로드
-    loadSurveyData();
-  }, [surveyId, token]);
+  const loadSurveyData = useCallback(async () => {
+    if (!surveyId) return;
+    setIsLoading(true);
+    setLoadError(false);
+    try {
+      const res = await apiService.get<any>(
+        `/api/service/workshops/survey-templates/${surveyId}/`
+      );
+      if (res?.data) {
+        const d = res.data;
+        setSurveyData({
+          projectTitle: d.title || d.project_title || '설문조사',
+          researcherName: d.facilitator_name || d.created_by_name || '',
+          description: d.description || '',
+          deadline: d.deadline ? new Date(d.deadline) : undefined,
+          questions: (d.questions || []).map((q: any, idx: number) => ({
+            id: String(q.id ?? idx),
+            type: q.type || 'text',
+            question: q.question || q.text || '',
+            required: q.required ?? false,
+            options: q.options,
+            scaleMin: q.scale_min ?? q.scaleMin,
+            scaleMax: q.scale_max ?? q.scaleMax,
+            scaleLabels: q.scale_labels
+              ? { min: q.scale_labels.min, max: q.scale_labels.max }
+              : q.scaleLabels,
+            matrixRows: q.matrix_rows ?? q.matrixRows,
+            matrixColumns: q.matrix_columns ?? q.matrixColumns,
+          })),
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load survey data:', error);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [surveyId]);
 
-  const loadSurveyData = async () => {
-    // TODO: 실제 API 호출로 교체
-    const mockData: SurveyData = {
-      projectTitle: "AI 도입 효과성 평가 연구",
-      researcherName: "김연구 교수",
-      description: "본 설문조사는 AI 도입의 효과성을 평가하기 위한 전문가 의견 수집을 목적으로 합니다. 약 10-15분 정도 소요됩니다.",
-      deadline: new Date('2025-09-30'),
-      questions: [
-        {
-          id: 'q1',
-          type: 'text',
-          question: '귀하의 소속 기관을 입력해주세요.',
-          required: true
-        },
-        {
-          id: 'q2',
-          type: 'radio',
-          question: '귀하의 전문 분야는 무엇입니까?',
-          required: true,
-          options: ['AI/머신러닝', '데이터 사이언스', '소프트웨어 엔지니어링', '비즈니스 전략', '기타']
-        },
-        {
-          id: 'q3',
-          type: 'scale',
-          question: 'AI 기술에 대한 귀하의 전문성 수준을 평가해주세요.',
-          required: true,
-          scaleMin: 1,
-          scaleMax: 10,
-          scaleLabels: { min: '초급', max: '전문가' }
-        },
-        {
-          id: 'q4',
-          type: 'checkbox',
-          question: '귀하가 경험한 AI 활용 분야를 모두 선택해주세요.',
-          required: false,
-          options: ['자연어처리', '컴퓨터 비전', '추천시스템', '예측분석', '자동화', '의사결정지원']
-        },
-        {
-          id: 'q5',
-          type: 'matrix',
-          question: '다음 AI 도입 요소들의 중요도를 평가해주세요.',
-          required: true,
-          matrixRows: ['기술적 성숙도', '비용 효율성', '구현 용이성', '확장 가능성'],
-          matrixColumns: ['매우 낮음', '낮음', '보통', '높음', '매우 높음']
-        },
-        {
-          id: 'q6',
-          type: 'text',
-          question: 'AI 도입 시 가장 중요하게 고려해야 할 사항은 무엇이라고 생각하십니까?',
-          required: false
-        }
-      ]
-    };
-    setSurveyData(mockData);
-  };
+  useEffect(() => {
+    loadSurveyData();
+  }, [loadSurveyData]);
 
   const validateCurrentPage = () => {
     const newErrors: Record<string, string> = {};
@@ -133,11 +118,15 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
 
   const handleSubmit = async () => {
     if (!validateCurrentPage()) return;
-    
+
     setIsSubmitting(true);
     try {
-      // TODO: 실제 API 호출
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await apiService.post('/api/service/workshops/survey-responses/', {
+        template: surveyId,
+        token,
+        responses,
+        submitted_at: new Date().toISOString(),
+      });
       setIsCompleted(true);
     } catch (error) {
       console.error('설문 제출 실패:', error);
@@ -334,13 +323,32 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
     );
   }
 
-  if (!surveyData) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-base)' }}>
         <div className="text-center">
           <div className="text-4xl mb-4">⏳</div>
           <h2 className="text-xl font-semibold mb-2">설문조사를 불러오는 중...</h2>
         </div>
+      </div>
+    );
+  }
+
+  if (loadError || !surveyData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-base)' }}>
+        <Card variant="elevated" className="max-w-md w-full mx-4 p-8 text-center">
+          <div className="text-5xl mb-4">📋</div>
+          <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+            설문을 불러올 수 없습니다
+          </h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+            설문 링크가 유효하지 않거나 만료되었을 수 있습니다.
+          </p>
+          <Button variant="secondary" onClick={loadSurveyData}>
+            다시 시도
+          </Button>
+        </Card>
       </div>
     );
   }
