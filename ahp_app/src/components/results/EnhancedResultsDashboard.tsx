@@ -263,7 +263,9 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       selectedNodeClass: 'hierarchy-selected'
     };
 
-    const chart = new google.visualization.OrgChart(document.getElementById('hierarchy-chart'));
+    const container = document.getElementById('hierarchy-chart');
+    if (!container) return;
+    const chart = new google.visualization.OrgChart(container);
     chart.draw(data, options);
   };
 
@@ -290,7 +292,9 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       animation: { startup: true, duration: 1000, easing: 'out' }
     };
 
-    const chart = new google.visualization.BarChart(document.getElementById('ranking-chart'));
+    const container = document.getElementById('ranking-chart');
+    if (!container) return;
+    const chart = new google.visualization.BarChart(container);
     chart.draw(data, options);
   };
 
@@ -324,7 +328,9 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       }
     };
 
-    const chart = new google.visualization.ComboChart(document.getElementById('consensus-chart'));
+    const container = document.getElementById('consensus-chart');
+    if (!container) return;
+    const chart = new google.visualization.ComboChart(container);
     chart.draw(data, options);
   };
 
@@ -378,7 +384,9 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       pointSize: 5
     };
 
-    const chart = new google.visualization.LineChart(document.getElementById('sensitivity-chart'));
+    const container = document.getElementById('sensitivity-chart');
+    if (!container) return;
+    const chart = new google.visualization.LineChart(container);
     chart.draw(data, options);
   };
 
@@ -409,7 +417,9 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       pieSliceTextStyle: { fontSize: 14, bold: true }
     };
 
-    const chart = new google.visualization.PieChart(document.getElementById('weight-distribution-chart'));
+    const container = document.getElementById('weight-distribution-chart');
+    if (!container) return;
+    const chart = new google.visualization.PieChart(container);
     chart.draw(data, options);
   };
 
@@ -453,7 +463,9 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       pointSize: 6
     };
 
-    const chart = new google.visualization.LineChart(document.getElementById('ranking-stability-chart'));
+    const container = document.getElementById('ranking-stability-chart');
+    if (!container) return;
+    const chart = new google.visualization.LineChart(container);
     chart.draw(data, options);
   };
 
@@ -508,7 +520,9 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       chartArea: { left: 80, top: 80, width: '75%', height: '70%' }
     };
 
-    const chart = new google.visualization.ComboChart(document.getElementById('participant-agreement-chart'));
+    const container = document.getElementById('participant-agreement-chart');
+    if (!container) return;
+    const chart = new google.visualization.ComboChart(container);
     chart.draw(data, options);
   };
 
@@ -545,8 +559,10 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       chartArea: { left: 120, top: 80, width: '70%', height: '70%' }
     };
 
-    const chart = new google.visualization.Table(document.getElementById('criteria-matrix-chart'));
-    
+    const container = document.getElementById('criteria-matrix-chart');
+    if (!container) return;
+    const chart = new google.visualization.Table(container);
+
     // 테이블 형태로 매트릭스 표시
     const tableData = new google.visualization.DataTable();
     tableData.addColumn('string', '기준');

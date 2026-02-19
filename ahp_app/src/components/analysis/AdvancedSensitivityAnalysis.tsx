@@ -412,7 +412,9 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
       legend: { position: 'top' }
     };
 
-    const chart = new google.visualization.BarChart(document.getElementById('sensitivity-tornado-chart'));
+    const container = document.getElementById('sensitivity-tornado-chart');
+    if (!container) return;
+    const chart = new google.visualization.BarChart(container);
     chart.draw(data, options);
   };
 
@@ -446,7 +448,9 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
       pointSize: 5
     };
 
-    const chart = new google.visualization.LineChart(document.getElementById('sensitivity-radar-chart'));
+    const container = document.getElementById('sensitivity-radar-chart');
+    if (!container) return;
+    const chart = new google.visualization.LineChart(container);
     chart.draw(data, options);
   };
 
@@ -474,7 +478,9 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
       legend: { position: 'top' }
     };
 
-    const chart = new google.visualization.ColumnChart(document.getElementById('sensitivity-waterfall-chart'));
+    const container = document.getElementById('sensitivity-waterfall-chart');
+    if (!container) return;
+    const chart = new google.visualization.ColumnChart(container);
     chart.draw(data, options);
   };
 
@@ -500,7 +506,9 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
       }
     };
 
-    const chart = new google.visualization.Table(document.getElementById('sensitivity-heatmap-chart'));
+    const container = document.getElementById('sensitivity-heatmap-chart');
+    if (!container) return;
+    const chart = new google.visualization.Table(container);
     chart.draw(data, options);
   };
 

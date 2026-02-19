@@ -626,7 +626,9 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
       animation: { startup: true, duration: 1000, easing: 'out' }
     };
 
-    const chart = new google.visualization.ColumnChart(document.getElementById('advanced-sensitivity-chart'));
+    const container = document.getElementById('advanced-sensitivity-chart');
+    if (!container) return;
+    const chart = new google.visualization.ColumnChart(container);
     chart.draw(data, options);
   };
 
@@ -677,7 +679,9 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
       }
     };
 
-    const chart = new google.visualization.ScatterChart(document.getElementById('pareto-chart'));
+    const container = document.getElementById('pareto-chart');
+    if (!container) return;
+    const chart = new google.visualization.ScatterChart(container);
     chart.draw(data, options);
   };
 
@@ -710,7 +714,9 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
       colors: ['#1f77b4']
     };
 
-    const chart = new google.visualization.CandlestickChart(document.getElementById('tornado-chart'));
+    const container = document.getElementById('tornado-chart');
+    if (!container) return;
+    const chart = new google.visualization.CandlestickChart(container);
     chart.draw(data, options);
   };
 
