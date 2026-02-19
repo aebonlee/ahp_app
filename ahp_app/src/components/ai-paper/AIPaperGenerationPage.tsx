@@ -200,11 +200,6 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
 
   // 논문 내보내기
   const exportPaper = (format: 'word' | 'pdf' | 'latex') => {
-    const paperContent = paperSections.map(section => ({
-      title: section.title,
-      content: section.content
-    }));
-
     // 실제 구현에서는 서버로 내보내기 요청
     showActionMessage('success', `${format.toUpperCase()} 형식으로 논문이 생성되었습니다. (구현 예정)`);
   };

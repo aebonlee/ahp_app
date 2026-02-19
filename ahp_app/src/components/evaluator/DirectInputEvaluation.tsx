@@ -148,16 +148,8 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
 
     // 현재 그룹 결과를 DB에 저장
     try {
-      const groupData = {
-        projectId: Number(projectId),
-        groupName: currentGroup.name,
-        groupType: currentGroup.id,
-        items: currentGroup.items,
-        evaluationMethod: 'direct_input'
-      };
-      
-      // 실제 API 호출로 그룹 결과 저장
-      // const response = await apiService.evaluationAPI.saveDirectInput(groupData);
+      // TODO: 실제 API 호출로 그룹 결과 저장
+      // await apiService.evaluationAPI.saveDirectInput({ projectId, groupName: currentGroup.name, ... });
 
     } catch (error) {
       console.error('Failed to save group to database:', error);
@@ -168,16 +160,8 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
     } else {
       // 모든 그룹 완료 - 최종 결과 저장
       try {
-        const evaluationResults = {
-          projectId: Number(projectId),
-          evaluatorId: 'current_user', // 실제 사용자 ID로 교체 필요
-          groups: updatedGroups,
-          evaluationMethod: 'direct_input',
-          completedAt: new Date().toISOString()
-        };
-        
-        // 실제 API 호출로 최종 결과 저장
-        // const response = await apiService.evaluationAPI.saveFinalDirectInput(evaluationResults);
+        // TODO: 실제 API 호출로 최종 결과 저장
+        // await apiService.evaluationAPI.saveFinalDirectInput({ projectId, groups: updatedGroups, ... });
 
       } catch (error) {
         console.error('Failed to save final direct input results to database:', error);
