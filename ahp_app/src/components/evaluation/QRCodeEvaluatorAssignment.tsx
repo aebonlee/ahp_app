@@ -32,6 +32,7 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
   const [projectTitle, setProjectTitle] = useState<string>('');
   const [showQRCodes, setShowQRCodes] = useState<boolean>(true);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [initError, setInitError] = useState<string | null>(null);
 
   // Generate base URL for evaluation
   const getBaseUrl = () => {
@@ -78,8 +79,8 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
           });
         }
         setSessions(newSessions);
-      } catch (error) {
-        console.error('Failed to initialize sessions:', error);
+      } catch (error: any) {
+        setInitError(error.message || '세션 초기화에 실패했습니다.');
       }
     };
 
@@ -206,6 +207,12 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
     <div className="space-y-6">
       <Card title="5️⃣ QR코드 기반 평가자 배정">
         <div className="space-y-6">
+          {initError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{initError}</p>
+            </div>
+          )}
+
           {/* Instructions */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-2">📱 QR코드 평가 시스템</h4>

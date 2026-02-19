@@ -25,6 +25,7 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
   const [testMode, setTestMode] = useState<'preview' | 'simulate'>('preview');
   const [realProjects, setRealProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectError, setSelectError] = useState<string | null>(null);
 
   // 실제 프로젝트 데이터 로드
   useEffect(() => {
@@ -86,11 +87,12 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
   // 실제 프로젝트 선택
   const handleProjectSelect = async (project: ProjectData) => {
     try {
+      setSelectError(null);
       const projectDetails = await loadProjectDetails(project);
       setSelectedProject(projectDetails);
       setCurrentStep('demographic');
-    } catch (error) {
-      // project load failed — selectedProject remains null
+    } catch (error: any) {
+      setSelectError(error.message || '프로젝트 데이터를 불러오지 못했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -122,7 +124,13 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
           <p className="text-sm text-gray-600">
             평가 테스트를 진행할 실제 프로젝트를 선택하세요.
           </p>
-          
+
+          {selectError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{selectError}</p>
+            </div>
+          )}
+
           {realProjects.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
               <UIIcon emoji="📋" size="4xl" color="muted" className="mb-4" />

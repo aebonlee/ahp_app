@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 // Legend - 현재 미사용
 import Card from '../common/Card';
-import { API_BASE_URL } from '../../config/api';
+import api from '../../services/api';
 import { 
   calculateAHP, 
   buildComparisonMatrix, 
@@ -66,34 +66,19 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ projectId, projectT
       }
 
       // Fetch criteria
-      const criteriaResponse = await fetch(`${API_BASE_URL}/api/criteria/${projectId}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (!criteriaResponse.ok) throw new Error('Failed to fetch criteria');
-      const criteriaData = await criteriaResponse.json();
-      const criteriaList = criteriaData.criteria || [];
+      const criteriaResponse = await api.get(`/api/service/projects/criteria/?project=${projectId}`);
+      if (!criteriaResponse.success) throw new Error('기준 데이터를 불러오지 못했습니다.');
+      const criteriaList = criteriaResponse.data?.criteria || criteriaResponse.data?.results || criteriaResponse.data || [];
 
       // Fetch alternatives
-      const alternativesResponse = await fetch(`${API_BASE_URL}/api/alternatives/${projectId}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (!alternativesResponse.ok) throw new Error('Failed to fetch alternatives');
-      const alternativesData = await alternativesResponse.json();
-      const alternativesList = alternativesData.alternatives || [];
+      const alternativesResponse = await api.get(`/api/service/projects/alternatives/?project=${projectId}`);
+      if (!alternativesResponse.success) throw new Error('대안 데이터를 불러오지 못했습니다.');
+      const alternativesList = alternativesResponse.data?.alternatives || alternativesResponse.data?.results || alternativesResponse.data || [];
 
       // Fetch all comparisons
-      const comparisonsResponse = await fetch(`${API_BASE_URL}/api/comparisons/${projectId}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (!comparisonsResponse.ok) throw new Error('Failed to fetch comparisons');
-      const comparisonsData = await comparisonsResponse.json();
-      const comparisonsList = comparisonsData.comparisons || [];
+      const comparisonsResponse = await api.get(`/api/service/evaluations/comparisons/?project=${projectId}`);
+      if (!comparisonsResponse.success) throw new Error('비교 데이터를 불러오지 못했습니다.');
+      const comparisonsList = comparisonsResponse.data?.comparisons || comparisonsResponse.data?.results || comparisonsResponse.data || [];
 
       setCriteria(criteriaList);
       setAlternatives(alternativesList);

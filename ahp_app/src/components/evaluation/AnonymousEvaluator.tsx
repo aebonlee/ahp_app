@@ -233,8 +233,8 @@ const AnonymousEvaluator: React.FC = () => {
           completed: completedIds.has(`${comp.left.id}_${comp.right.id}_${comp.parent?.id || 'root'}`)
         })));
       }
-    } catch (error) {
-      console.error('세션 진행상황 로딩 실패:', error);
+    } catch {
+      // 세션 진행상황 로딩 실패는 평가 진행에 영향 없음
     }
   };
 
