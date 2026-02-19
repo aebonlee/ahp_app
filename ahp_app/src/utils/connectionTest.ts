@@ -5,6 +5,15 @@
 
 import { API_BASE_URL } from '../config/api';
 
+const getAuthHeaders = (): HeadersInit => {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  const token = localStorage.getItem('ahp_access_token') || sessionStorage.getItem('ahp_access_token');
+  if (token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+};
+
 interface ConnectionTestResult {
   success: boolean;
   message: string;
@@ -29,9 +38,7 @@ class ConnectionTester {
 
       const response = await fetch(`${this.baseUrl}/health/`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
 
@@ -85,9 +92,7 @@ class ConnectionTester {
         try {
           const response = await fetch(`${this.baseUrl}${endpoint}`, {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: getAuthHeaders(),
             credentials: 'include'
           });
 
@@ -136,9 +141,7 @@ class ConnectionTester {
 
       const response = await fetch(`${this.baseUrl}/api/service/projects/projects/`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
 
@@ -192,9 +195,7 @@ class ConnectionTester {
         try {
           const response = await fetch(`${this.baseUrl}${endpoint}`, {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: getAuthHeaders(),
             credentials: 'include'
           });
 
@@ -246,9 +247,7 @@ class ConnectionTester {
 
       const response = await fetch(`${this.baseUrl}/db-status/`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
 

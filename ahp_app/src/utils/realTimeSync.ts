@@ -4,6 +4,16 @@
  */
 
 import { HierarchyNode } from '../components/modeling/HierarchyTreeEditor';
+import { API_BASE_URL } from '../config/api';
+
+const getAuthHeaders = (): HeadersInit => {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  const token = localStorage.getItem('ahp_access_token') || sessionStorage.getItem('ahp_access_token');
+  if (token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+};
 
 export interface CollaborationUser {
   id: string;
@@ -196,7 +206,9 @@ export class RealTimeSyncManager {
   private startPollingMode(): void {
     const pollEvents = async () => {
       try {
-        const response = await fetch(`/api/collaboration/${this.modelId}/events?since=${this.syncState.lastSync}&userId=${this.userId}`);
+        const response = await fetch(`${API_BASE_URL}/api/collaboration/${this.modelId}/events?since=${this.syncState.lastSync}&userId=${this.userId}`, {
+          headers: getAuthHeaders()
+        });
         if (response.ok) {
           const events: CollaborationEvent[] = await response.json();
           events.forEach(event => this.handleRemoteEvent(event));
@@ -243,11 +255,9 @@ export class RealTimeSyncManager {
     }
 
     try {
-      const response = await fetch(`/api/collaboration/${this.modelId}/events`, {
+      const response = await fetch(`${API_BASE_URL}/api/collaboration/${this.modelId}/events`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(event)
       });
 
@@ -398,11 +408,9 @@ export class RealTimeSyncManager {
    */
   private async sendHeartbeat(): Promise<void> {
     try {
-      const response = await fetch(`/api/collaboration/${this.modelId}/heartbeat`, {
+      const response = await fetch(`${API_BASE_URL}/api/collaboration/${this.modelId}/heartbeat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           userId: this.userId,
           timestamp: new Date().toISOString()
