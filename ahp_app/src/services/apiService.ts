@@ -262,35 +262,32 @@ export const evaluatorAPI = {
     apiClient.get(`/api/v1/evaluations/evaluations/?project=${projectId}&status=in_progress`),
 
   validateAccessKey: (token: string) =>
-    apiClient.post('/api/v1/evaluations/invitations/accept/', { token }),
+    apiClient.get(`/api/service/evaluations/invitations/by_token/?token=${token}`),
 };
 
 // 결과 API
 export const resultsAPI = {
   save: (data: {
-    project_id: number;
-    criteria_weights: any;
-    alternative_scores: any;
-    final_ranking: any[];
-    consistency_ratio?: number;
-  }) => apiClient.post('/api/results/save', data),
+    project_id: string;
+    evaluation_id: string;
+  }) => apiClient.post('/api/service/analysis/calculate/individual/', data),
 
-  fetchIndividual: (projectId: number) =>
-    apiClient.get(`/api/results/individual/${projectId}`),
+  fetchIndividual: (projectId: string) =>
+    apiClient.get(`/api/service/analysis/project-summary/?project_id=${projectId}`),
 
   calculateGroup: (data: {
-    project_id: number;
+    project_id: string;
     aggregation_method?: 'weighted_average' | 'geometric_mean';
-  }) => apiClient.post('/api/results/group', data),
+  }) => apiClient.post('/api/service/analysis/calculate/group/', data),
 
-  fetchProject: (projectId: number, includeIndividual = false) =>
-    apiClient.get(`/api/results/project/${projectId}?include_individual=${includeIndividual}`),
+  fetchProject: (projectId: string) =>
+    apiClient.get(`/api/service/analysis/project-summary/?project_id=${projectId}`),
 
   sensitivityAnalysis: (data: {
-    project_id: number;
-    criterion_id: string;
+    project_id: string;
+    criterion_id?: string;
     variation_range?: number;
-  }) => apiClient.post('/api/results/sensitivity-analysis', data),
+  }) => apiClient.post('/api/service/analysis/sensitivity/', data),
 };
 
 // 기존 API들 (호환성 유지)
