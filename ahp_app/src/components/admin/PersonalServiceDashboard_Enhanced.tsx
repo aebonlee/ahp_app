@@ -4,34 +4,9 @@
  */
 import React, { useState } from 'react';
 import Card from '../common/Card';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import Button from '../common/Button';
 import MyProjects from './MyProjects';
 import ProjectCreation from './ProjectCreation';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import CriteriaManagement from './CriteriaManagement';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import AlternativeManagement from './AlternativeManagement';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import EvaluatorAssignment from './EvaluatorAssignment';
 import EnhancedEvaluatorManagement from './EnhancedEvaluatorManagement';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import SurveyLinkManager from './SurveyLinkManager';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import ModelFinalization from './ModelFinalization';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import WorkflowStageIndicator from '../workflow/WorkflowStageIndicator';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { WorkflowStage } from '../workflow/WorkflowStageIndicator';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { EvaluationMode } from '../evaluation/EvaluationModeSelector';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PaymentSystem from '../payment/PaymentSystem';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import WorkshopManagement from '../workshop/WorkshopManagement';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import DecisionSupportSystem from '../decision/DecisionSupportSystem';
-// Removed unused imports to fix linting errors
 import TrashBin from './TrashBin';
 import dataService from '../../services/dataService_clean';
 import type { ProjectData } from '../../services/api';

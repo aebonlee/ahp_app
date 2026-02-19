@@ -5,8 +5,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import exportService from '../../services/exportService';
 import MyProjects from './MyProjects';
 import ProjectCreation from './ProjectCreation';
 import EnhancedProjectCreationWizard from '../project/EnhancedProjectCreationWizard';

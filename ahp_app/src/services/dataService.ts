@@ -293,21 +293,6 @@ class DataService {
     return [];
   }
 
-  // === 오프라인 모드 설정 (제거됨) ===
-  setOfflineMode(enabled: boolean): void {
-    console.warn('Offline mode is deprecated - always using API');
-  }
-
-  getOfflineMode(): boolean {
-    return false; // 항상 온라인 모드
-  }
-
-  // === 데이터 동기화 (제거됨) ===
-  async syncWithBackend(): Promise<boolean> {
-    console.warn('Sync functionality deprecated - always using real-time API');
-    return true;
-  }
-
   // === 휴지통 관리 ===
   async getTrashedProjects(): Promise<ProjectData[]> {
     try {
@@ -341,10 +326,6 @@ class DataService {
     }
   }
 
-  // === 데이터 초기화 (제거됨) ===
-  clearAllData(): void {
-    console.warn('clearAllData deprecated - use API-based data management');
-  }
 }
 
 // 싱글톤 인스턴스 생성

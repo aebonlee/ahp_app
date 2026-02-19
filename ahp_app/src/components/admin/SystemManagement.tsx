@@ -332,7 +332,7 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
           }
         }
       } catch (err) {
-        console.error('Task monitoring error:', err);
+        setError('작업 상태 모니터링 중 오류가 발생했습니다.');
         clearInterval(checkInterval);
       }
 

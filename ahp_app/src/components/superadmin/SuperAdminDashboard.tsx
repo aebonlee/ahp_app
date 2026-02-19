@@ -17,6 +17,12 @@ interface Activity {
 const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabChange }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_activities, _setActivities] = useState<Activity[]>([]);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
   
   const [systemStats, setSystemStats] = useState({
     totalUsers: 0,
@@ -98,7 +104,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
       });
 
     } catch (error) {
-      console.error('활동 로그 로딩 실패:', error);
+      showActionMessage('error', '활동 로그를 불러오는 중 오류가 발생했습니다.');
     }
 
     // 기본 활동 추가 (활동이 없는 경우)
@@ -178,7 +184,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
         errorRate: 0.1
       });
     } catch (error) {
-      console.error('시스템 통계 로딩 실패:', error);
+      showActionMessage('error', '시스템 통계를 불러오는 중 오류가 발생했습니다.');
       // 에러 시 기본값 사용
       setSystemStats(prev => ({
         ...prev,
@@ -215,7 +221,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
 
       setUsersByRole(roleCount);
     } catch (error) {
-      console.error('사용자 통계 로딩 실패:', error);
+      showActionMessage('error', '사용자 통계를 불러오는 중 오류가 발생했습니다.');
       // 에러 시 최소값 표시
       setUsersByRole({
         super_admin: 1, // 현재 사용자
@@ -292,6 +298,11 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
 
   return (
     <div className="space-y-8">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 환영 메시지 */}
       <div className="p-6 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white">
         <div className="flex items-center justify-between">

@@ -71,7 +71,7 @@ const SecureLoginFormContent: React.FC<SecureLoginFormProps> = ({
       const role = mode === 'service' ? 'evaluator' : 'admin';
       await onLogin(email, password, role, csrfToken);
     } catch (err) {
-      console.error('Login failed:', err);
+      showActionMessage('error', '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
     }
   };
 

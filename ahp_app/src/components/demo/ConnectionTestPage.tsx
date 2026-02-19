@@ -7,6 +7,12 @@ const ConnectionTestPage: React.FC = () => {
   const [testResults, setTestResults] = useState<ConnectionTestResult[]>([]);
   const [overallStatus, setOverallStatus] = useState<boolean | null>(null);
   const [summary, setSummary] = useState<string>('');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     runQuickTest();
@@ -20,7 +26,7 @@ const ConnectionTestPage: React.FC = () => {
       setOverallStatus(basicResult.success);
       setSummary(basicResult.message);
     } catch (error) {
-      console.error('연결 테스트 실패:', error);
+      showActionMessage('error', '연결 테스트 실패. 네트워크 상태를 확인해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -34,7 +40,7 @@ const ConnectionTestPage: React.FC = () => {
       setOverallStatus(overall);
       setSummary(testSummary);
     } catch (error) {
-      console.error('전체 테스트 실패:', error);
+      showActionMessage('error', '전체 테스트 실패. 네트워크 상태를 확인해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -50,6 +56,11 @@ const ConnectionTestPage: React.FC = () => {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
           🔌 Frontend ↔ Backend 연동 테스트

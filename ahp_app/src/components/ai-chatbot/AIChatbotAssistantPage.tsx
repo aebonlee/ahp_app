@@ -46,8 +46,14 @@ const AIChatbotAssistantPage: React.FC<AIChatbotAssistantPageProps> = ({ user })
   const [isAssistantTyping, setIsAssistantTyping] = useState<boolean>(false);
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
   const [showAIConfig, setShowAIConfig] = useState<boolean>(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const quickPrompts: QuickPrompt[] = [
     {
@@ -230,7 +236,7 @@ const AIChatbotAssistantPage: React.FC<AIChatbotAssistantPageProps> = ({ user })
         const aiResponse = await aiService.getChatbotResponse(userMessage, conversationHistory);
         return aiResponse;
       } catch (error) {
-        console.error('AI 응답 생성 실패:', error);
+        showActionMessage('error', 'AI 응답 생성에 실패했습니다. 기본 응답을 사용합니다.');
       }
     }
 
@@ -452,6 +458,11 @@ AHP 연구에서는 이론적 이해와 실무 적용이 모두 중요합니다.
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <PageHeader
         title="AI 챗봇 도우미"
         description="AHP 연구와 분석에 대한 실시간 질의응답과 전문적 상담을 제공합니다"

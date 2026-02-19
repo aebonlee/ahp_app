@@ -10,16 +10,22 @@ interface ServiceLoginPageProps {
   error?: string;
 }
 
-const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({ 
-  onLogin, 
+const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
+  onLogin,
   onBackToSelection,
   onSwitchToRegister,
-  loading = false, 
-  error 
+  loading = false,
+  error
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -51,7 +57,7 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
       const role = 'evaluator';
       await onLogin(email, password, role);
     } catch (err) {
-      console.error('Login failed:', err);
+      showActionMessage('error', '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
     }
   };
 
@@ -59,6 +65,11 @@ const ServiceLoginPage: React.FC<ServiceLoginPageProps> = ({
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{
       backgroundColor: 'var(--bg-primary)'
     }}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 고급스러운 그라디언트 배경 */}
       <div className="absolute inset-0" style={{
         background: 'linear-gradient(to bottom right, var(--bg-elevated), var(--accent-primary), var(--accent-secondary))'

@@ -33,6 +33,12 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
   const [showQRCodes, setShowQRCodes] = useState<boolean>(true);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // Generate base URL for evaluation
   const getBaseUrl = () => {
@@ -104,7 +110,7 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      showActionMessage('error', '링크 복사에 실패했습니다. 수동으로 복사해주세요.');
     }
   };
 
@@ -205,6 +211,11 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <Card title="5️⃣ QR코드 기반 평가자 배정">
         <div className="space-y-6">
           {initError && (

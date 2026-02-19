@@ -75,7 +75,6 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
         // await saveUserFavoritesToAPI(user.id, newFavorites);
         setFavorites(newFavorites);
       } catch (error) {
-        console.error('즐겨찾기 저장 실패:', error);
         // 에러 시에도 UI 업데이트
         setFavorites(newFavorites);
       }

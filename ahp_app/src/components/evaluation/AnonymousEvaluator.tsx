@@ -165,20 +165,20 @@ const AnonymousEvaluator: React.FC = () => {
         await loadSessionProgress(response.data.id);
       }
     } catch (error) {
-      console.warn('세션 복구 실패, 새 세션으로 진행');
+      // 세션 복구 실패 시 새 세션으로 진행
     }
   };
 
   const attemptAutoRecovery = async () => {
     try {
       const recoveredData = await anonymousEvaluationUtils.attemptRecovery();
-      
+
       if (recoveredData) {
         setRecoveryData(recoveredData);
         setShowRecoveryModal(true);
       }
     } catch (error) {
-      console.warn('자동 복구 실패');
+      // 자동 복구 실패 시 계속 진행
     }
   };
 

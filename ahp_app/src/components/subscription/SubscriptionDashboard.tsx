@@ -120,7 +120,7 @@ const SubscriptionDashboard: React.FC<SubscriptionDashboardProps> = ({
         }
       }
     } catch (err) {
-      console.error('Subscription data loading error:', err);
+      showActionMessage('error', '구독 정보를 불러오는 중 오류가 발생했습니다. 기본 정보를 표시합니다.');
       // 에러 발생 시에도 데모 데이터로 폴백
       setError(null);
       const demoPlans = subscriptionService.getDefaultPlans();

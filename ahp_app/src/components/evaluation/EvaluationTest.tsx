@@ -41,7 +41,7 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
       const activeProjects = projects.filter(p => p.status === 'active' || p.status === 'completed');
       setRealProjects(activeProjects);
     } catch (error) {
-      console.error('평가 테스트: 프로젝트 로드 실패:', error);
+      setSelectError('프로젝트 목록을 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }

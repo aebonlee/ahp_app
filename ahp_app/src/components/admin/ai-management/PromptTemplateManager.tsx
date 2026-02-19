@@ -8,7 +8,7 @@ import Button from '../../common/Button';
 import Modal from '../../common/Modal';
 import { UIIcon } from '../../common/UIIcon';
 import Tooltip from '../../common/Tooltip';
-import api from '../../services/api';
+import api from '../../../services/api';
 
 interface PromptTemplate {
   id: number;

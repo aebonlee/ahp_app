@@ -58,6 +58,12 @@ const FuzzyPairwiseEvaluation: React.FC<FuzzyPairwiseEvaluationProps> = ({
   const [inputMode, setInputMode] = useState<'linguistic' | 'numeric'>('linguistic');
   const [progress, setProgress] = useState<number>(0);
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 진행률 계산
   useEffect(() => {
@@ -138,7 +144,7 @@ const FuzzyPairwiseEvaluation: React.FC<FuzzyPairwiseEvaluationProps> = ({
       const ci = await checkFuzzyConsistency(comparisons, items.length);
       setConsistencyIndex(ci);
     } catch (error) {
-      console.error('가중치 계산 오류:', error);
+      showActionMessage('error', '가중치 계산 중 오류가 발생했습니다. 입력값을 확인해주세요.');
     }
   };
 
@@ -164,6 +170,11 @@ const FuzzyPairwiseEvaluation: React.FC<FuzzyPairwiseEvaluationProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
         <div className="flex items-center justify-between">

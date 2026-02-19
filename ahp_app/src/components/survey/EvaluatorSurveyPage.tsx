@@ -77,7 +77,6 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
         });
       }
     } catch (error) {
-      console.error('Failed to load survey data:', error);
       setLoadError(true);
     } finally {
       setIsLoading(false);
@@ -129,7 +128,6 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
       });
       setIsCompleted(true);
     } catch (error) {
-      console.error('설문 제출 실패:', error);
       showActionMessage('error', '설문 제출에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);

@@ -89,7 +89,6 @@ const PaymentOptionsPage: React.FC<PaymentOptionsPageProps> = ({ user, onTabChan
       setUsers(storedUsers.filter((u: any) => u.role !== 'super_admin'));
       
     } catch (error) {
-      console.error('초기 데이터 로딩 실패:', error);
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -182,7 +181,6 @@ const PaymentOptionsPage: React.FC<PaymentOptionsPageProps> = ({ user, onTabChan
         setError(response.error || '결제 처리 중 오류가 발생했습니다.');
       }
     } catch (error) {
-      console.error('결제 처리 실패:', error);
       setError('결제 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);

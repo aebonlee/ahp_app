@@ -35,15 +35,21 @@ interface ProjectInvitation {
   surveyCompleted: boolean;
 }
 
-const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({ 
-  user, 
+const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({
+  user,
   onSwitchToAdmin,
-  onLogout 
+  onLogout
 }) => {
   const [activeView, setActiveView] = useState<'dashboard' | 'projects' | 'evaluation' | 'survey' | 'profile'>('dashboard');
   const [invitations, setInvitations] = useState<ProjectInvitation[]>([]);
   const [selectedProject, setSelectedProject] = useState<ProjectInvitation | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 배정된 평가 목록 조회
   const fetchInvitations = useCallback(async () => {
@@ -72,7 +78,7 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({
         setInvitations(mapped);
       }
     } catch (error) {
-      console.error('평가 목록 조회 실패:', error);
+      showActionMessage('error', '평가 목록을 불러오는 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +90,11 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({
 
   const renderDashboard = () => (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 환영 메시지 */}
       <div className="text-center py-8">
         <h1 className="text-3xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>

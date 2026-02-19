@@ -62,6 +62,12 @@ const PairwiseGrid: React.FC<PairwiseGridProps> = ({
   const [consistencyRatio, setConsistencyRatio] = useState<number>(0);
   const [activeCell, setActiveCell] = useState<{i: number, j: number} | null>(null);
   const [completedCount, setCompletedCount] = useState<number>(0);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const n = elements.length;
   const totalComparisons = (n * (n - 1)) / 2; // 상삼각 비교 개수
@@ -107,7 +113,7 @@ const PairwiseGrid: React.FC<PairwiseGridProps> = ({
           onConsistencyChange(cr, cr <= 0.1);
         }
       } catch (error) {
-        console.error('AHP calculation error:', error);
+        showActionMessage('error', 'AHP 일관성 계산 중 오류가 발생했습니다.');
         setConsistencyRatio(999);
       }
     }
@@ -161,6 +167,11 @@ const PairwiseGrid: React.FC<PairwiseGridProps> = ({
 
   return (
     <div className="space-y-4">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 정보 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">

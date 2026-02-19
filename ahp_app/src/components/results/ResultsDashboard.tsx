@@ -174,7 +174,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ projectId, projectT
       setAlternativeResults(newAlternativeResults);
 
     } catch (error) {
-      console.error('Failed to calculate results:', error);
       setError('계산 중 오류가 발생했습니다.');
     }
   }, [criteria, alternatives, comparisons]);

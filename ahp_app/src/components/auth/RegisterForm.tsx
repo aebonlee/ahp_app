@@ -21,12 +21,12 @@ interface RegisterFormProps {
   mode: 'service' | 'admin';
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ 
-  onRegister, 
-  onBackToLogin, 
-  loading = false, 
+const RegisterForm: React.FC<RegisterFormProps> = ({
+  onRegister,
+  onBackToLogin,
+  loading = false,
   error,
-  mode 
+  mode
 }) => {
   const [formData, setFormData] = useState({
     username: '',
@@ -37,6 +37,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     lastName: '',
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -94,7 +100,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         role
       });
     } catch (err) {
-      console.error('Registration failed:', err);
+      showActionMessage('error', '회원가입에 실패했습니다. 입력 정보를 확인해주세요.');
     }
   };
 
@@ -115,6 +121,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="max-w-md w-full space-y-8">
         {/* 헤더 */}
         <div className="text-center">

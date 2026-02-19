@@ -39,6 +39,12 @@ const JudgmentHelperPanel: React.FC<JudgmentHelperPanelProps> = ({
   const [loading, setLoading] = useState(false);
   const [appliedSuggestions, setAppliedSuggestions] = useState<Set<string>>(new Set());
   const [estimatedCR, setEstimatedCR] = useState<number>(0);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     if (isVisible && matrix.length > 0) {
@@ -197,7 +203,7 @@ const JudgmentHelperPanel: React.FC<JudgmentHelperPanelProps> = ({
       setEstimatedCR(testResult.consistencyRatio || 0);
       
     } catch (error) {
-      console.error('Error applying suggestion:', error);
+      showActionMessage('error', '제안 적용 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -221,6 +227,11 @@ const JudgmentHelperPanel: React.FC<JudgmentHelperPanelProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-[60] px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* 헤더 */}
         <div className="bg-blue-50 border-b border-blue-200 p-6">

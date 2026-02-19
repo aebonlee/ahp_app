@@ -12,19 +12,25 @@ interface UnifiedAuthPageProps {
   error?: string;
 }
 
-const UnifiedAuthPage: React.FC<UnifiedAuthPageProps> = ({ 
-  onLogin, 
+const UnifiedAuthPage: React.FC<UnifiedAuthPageProps> = ({
+  onLogin,
   onRegister,
   onGoogleAuth,
   onKakaoAuth,
   onNaverAuth,
-  loading = false, 
-  error 
+  loading = false,
+  error
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false); // 기본적으로 로그인 모드
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -59,12 +65,17 @@ const UnifiedAuthPage: React.FC<UnifiedAuthPageProps> = ({
         await onLogin(email, password, 'evaluator');
       }
     } catch (err) {
-      console.error('Auth failed:', err);
+      showActionMessage('error', '인증에 실패했습니다. 입력 정보를 확인해주세요.');
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
 
       <div className="max-w-xl w-full space-y-6 relative z-10">
         {/* 간소화된 헤더 */}

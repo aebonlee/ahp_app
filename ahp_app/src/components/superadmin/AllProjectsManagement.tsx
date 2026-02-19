@@ -59,7 +59,7 @@ const AllProjectsManagement: React.FC = () => {
         setTotalPages(Math.ceil((data.count || projectsData.length) / pageSize));
       }
     } catch (error) {
-      console.error('프로젝트 목록 로드 실패:', error);
+      showActionMessage('error', '프로젝트 목록을 불러오는 중 오류가 발생했습니다.');
       // 대체 데이터
       setProjects(getMockProjects());
     } finally {
@@ -134,7 +134,7 @@ const AllProjectsManagement: React.FC = () => {
       await apiService.patch(`/api/service/projects/projects/${projectId}/`, { status: newStatus });
       fetchProjects();
     } catch (error) {
-      console.error('상태 변경 실패:', error);
+      showActionMessage('error', '프로젝트 상태 변경에 실패했습니다.');
     }
   };
 

@@ -82,6 +82,12 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
   const [optimizationMode, setOptimizationMode] = useState<'binary' | 'continuous' | 'fractional'>('binary');
   const [chartType, setChartType] = useState<'efficiency' | 'allocation' | 'scenario' | 'portfolio'>('efficiency');
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   useEffect(() => {
     initializeBudgetItems();
@@ -169,7 +175,7 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
       }
       
     } catch (error) {
-      console.error('Optimization failed:', error);
+      showActionMessage('error', '최적화 계산 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsOptimizing(false);
     }
@@ -456,6 +462,11 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>

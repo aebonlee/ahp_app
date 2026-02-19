@@ -143,7 +143,7 @@ const SystemSettings: React.FC = () => {
         setSettings(JSON.parse(savedSettings));
       }
     } catch (error) {
-      console.error('설정 로드 실패:', error);
+      showActionMessage('error', '설정을 불러오는 중 오류가 발생했습니다.');
     }
   };
 
@@ -159,7 +159,6 @@ const SystemSettings: React.FC = () => {
       setHasChanges(false);
       showActionMessage('success', '설정이 저장되었습니다.');
     } catch (error) {
-      console.error('설정 저장 실패:', error);
       showActionMessage('error', '설정 저장에 실패했습니다.');
     } finally {
       setSaving(false);

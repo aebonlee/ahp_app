@@ -206,8 +206,7 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
           return;
         }
       } catch {
-        // CR 계산 실패 시 경고만 출력하고 완료 진행
-        console.warn('CR calculation failed, proceeding without CR check.');
+        // CR 계산 실패 시 완료 진행
       }
 
       showActionMessage('success', '평가가 저장되었습니다.');

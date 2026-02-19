@@ -123,8 +123,7 @@ export const SecureForm: React.FC<SecureFormProps> = ({
     e.preventDefault();
     
     if (!token) {
-      console.error('CSRF token not available');
-      return;
+      return; // CSRF token not yet generated; block submission silently
     }
     
     onSubmit(e, token);

@@ -91,7 +91,6 @@ const PaperManagement: React.FC = () => {
       // TODO: real API call for AI content generation (backend required)
       setAiResponse('AI 문서 생성 기능은 준비 중입니다. 백엔드 API 연동을 완료한 후 사용 가능합니다.');
     } catch (error) {
-      console.error('AI 생성 오류:', error);
       setAiResponse('AI 컨텐츠 생성 중 오류가 발생했습니다.');
     } finally {
       setIsGenerating(false);

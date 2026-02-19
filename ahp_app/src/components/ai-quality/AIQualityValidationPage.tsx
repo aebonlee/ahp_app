@@ -110,7 +110,7 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
           reader.readAsText(file);
         }
       } catch (error) {
-        console.error('파일 업로드 서비스 오류:', error);
+        showActionMessage('error', '파일 업로드 중 오류가 발생했습니다. 다시 시도해주세요.');
         // 오류 발생 시 기존 방식으로 임시 저장
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -142,7 +142,7 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
           const contentToValidate = validationText || uploadedFile?.name || '';
           aiValidationResult = await aiService.validatePaperQuality(contentToValidate, validationSettings);
         } catch (error) {
-          console.error('AI 검증 실패:', error);
+          showActionMessage('error', 'AI 품질 검증 중 오류가 발생했습니다.');
         }
       }
       

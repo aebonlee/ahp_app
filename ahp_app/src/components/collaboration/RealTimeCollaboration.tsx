@@ -363,7 +363,6 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
   // 이벤트 전송 (개선된 버전)
   const sendEvent = async (event: Omit<CollaborationEvent, 'id' | 'userId' | 'timestamp'>) => {
     if (!syncManager) {
-      console.warn('동기화 관리자가 초기화되지 않음');
       return;
     }
 
