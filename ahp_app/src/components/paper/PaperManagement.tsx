@@ -42,10 +42,6 @@ const PaperManagement: React.FC = () => {
   const [references, setReferences] = useState<Reference[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [ahpResults, _setAhpResults] = useState<AHPResultContent[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_surveyData, setSurveyData] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_surveyAnalytics, _setSurveyAnalytics] = useState<any>({});
   const [showAddReference, setShowAddReference] = useState(false);
   const [newReference, setNewReference] = useState<Partial<Reference>>({
     type: 'journal',
@@ -384,29 +380,6 @@ const PaperManagement: React.FC = () => {
       </Card>
     </div>
   );
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _loadSurveyResults = (surveyType: string) => {
-    // TODO: 실제 API에서 설문조사 응답 데이터 로드
-    const mockData = Array.from({ length: 42 }, (_, i) => ({
-      id: i + 1,
-      age: ['20-29', '30-39', '40-49', '50+'][Math.floor(Math.random() * 4)],
-      gender: Math.random() > 0.5 ? '남성' : '여성',
-      education: ['고졸', '대졸', '대학원졸'][Math.floor(Math.random() * 3)],
-      experience: ['5년미만', '5-10년', '10년이상'][Math.floor(Math.random() * 3)]
-    }));
-    setSurveyData(mockData);
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _exportSurveyData = (format: string) => {
-    showActionMessage('info', `${format.toUpperCase()} 형식 다운로드 기능은 준비 중입니다.`);
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _generateReportPDF = () => {
-    showActionMessage('info', '분석 보고서 PDF 생성 기능은 준비 중입니다.');
-  };
 
   const renderAIGeneratorTab = () => (
     <div className="space-y-6">
