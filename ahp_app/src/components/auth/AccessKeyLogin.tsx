@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Card from '../common/Card';
-import { API_BASE_URL } from '../../config/api';
+import api from '../../services/api';
 
 interface AccessKeyLoginProps {
   onLogin: (evaluatorId: string, projectId: string, evaluatorName: string) => void;
@@ -40,27 +40,19 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
 
     try {
       // API 호출로 접속키 검증
-      const response = await fetch(`${API_BASE_URL}/api/service/auth/validate-access-key/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ accessKey: key }),
-      });
+      const response = await api.post(`/api/service/auth/validate-access-key/`, { accessKey: key });
 
-      if (!response.ok) {
-        throw new Error('Invalid access key');
+      if (response.success && response.data) {
+        return {
+          evaluatorCode: parsed.evaluatorCode,
+          projectCode: parsed.projectCode,
+          isValid: true,
+          evaluatorName: response.data.evaluatorName,
+          projectTitle: response.data.projectTitle
+        };
       }
-
-      const data = await response.json();
-      return {
-        evaluatorCode: parsed.evaluatorCode,
-        projectCode: parsed.projectCode,
-        isValid: true,
-        evaluatorName: data.evaluatorName,
-        projectTitle: data.projectTitle
-      };
-    } catch (error) {
+      throw new Error('Invalid access key');
+    } catch {
       // 데모 모드 또는 API 오류 시 기본 검증
       return {
         evaluatorCode: parsed.evaluatorCode,

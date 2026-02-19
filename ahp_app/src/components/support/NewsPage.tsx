@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../../config/api';
+import api from '../../services/api';
 
 interface NewsPost {
   id: number;
@@ -39,18 +39,15 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const url = `${API_BASE_URL}/api/news/posts?category=${selectedCategory}&limit=50`;
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data.success) {
-        setPosts(data.posts);
+      const response = await api.get(`/api/service/news/posts/?category=${selectedCategory}&limit=50`);
+      if (response.success) {
+        const data = response.data;
+        setPosts(Array.isArray(data) ? data : (data?.posts || data?.results || []));
       } else {
-        setError('소식을 불러오는데 실패했습니다.');
+        setError(response.error || '소식을 불러오는데 실패했습니다.');
       }
-    } catch (error) {
-      console.error('Error fetching news posts:', error);
-      setError('서버 연결에 실패했습니다.');
+    } catch (error: any) {
+      setError(error.message || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -58,14 +55,12 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/news/stats`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setStats(data);
+      const response = await api.get(`/api/service/news/stats/`);
+      if (response.success) {
+        setStats(response.data);
       }
-    } catch (error) {
-      console.error('Error fetching news stats:', error);
+    } catch {
+      // stats are optional; silently ignore failures
     }
   };
 

@@ -6,7 +6,7 @@ import ConsistencyPanel from '../evaluation/ConsistencyPanel';
 import { MESSAGES } from '../../constants/messages';
 import { SCREEN_IDS } from '../../constants/screenIds';
 import { buildComparisonMatrix } from '../../utils/ahpCalculator';
-import { API_BASE_URL } from '../../config/api';
+import api from '../../services/api';
 
 interface Criterion {
   id: string;
@@ -77,6 +77,7 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
   const [comparisons, setComparisons] = useState<Map<string, Comparison>>(new Map());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [currentPairIndex, setCurrentPairIndex] = useState(0);
   const [recentChange, setRecentChange] = useState<{ i: number; j: number; oldValue: number; newValue: number } | undefined>();
 
@@ -95,34 +96,30 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
   const fetchComparisons = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${API_BASE_URL}/api/comparisons/${projectId}/matrix/${criterionId}`,
-        {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        }
+      const response = await api.get(
+        `/api/service/evaluations/comparisons/?project=${projectId}&criterion=${criterionId}`
       );
 
-      if (!response.ok) throw new Error('Failed to fetch comparisons');
-      
-      const data = await response.json();
-      const comparisonMap = new Map<string, Comparison>();
-      
-      data.comparisons.forEach((comp: Comparison) => {
-        let key = '';
-        if (elementType === 'criteria' && comp.criterion1_id && comp.criterion2_id) {
-          key = `${comp.criterion1_id}-${comp.criterion2_id}`;
-        } else if (elementType === 'alternatives' && comp.alternative1_id && comp.alternative2_id) {
-          key = `${comp.alternative1_id}-${comp.alternative2_id}`;
-        }
-        if (key) {
-          comparisonMap.set(key, comp);
-        }
-      });
-      
-      setComparisons(comparisonMap);
-    } catch (error) {
-      console.error('Failed to fetch comparisons:', error);
+      if (response.success) {
+        const dataArray: Comparison[] = Array.isArray(response.data)
+          ? response.data
+          : (response.data?.results || response.data?.comparisons || []);
+        const comparisonMap = new Map<string, Comparison>();
+        dataArray.forEach((comp: Comparison) => {
+          let key = '';
+          if (elementType === 'criteria' && comp.criterion1_id && comp.criterion2_id) {
+            key = `${comp.criterion1_id}-${comp.criterion2_id}`;
+          } else if (elementType === 'alternatives' && comp.alternative1_id && comp.alternative2_id) {
+            key = `${comp.alternative1_id}-${comp.alternative2_id}`;
+          }
+          if (key) {
+            comparisonMap.set(key, comp);
+          }
+        });
+        setComparisons(comparisonMap);
+      }
+    } catch {
+      // comparisons will default to empty map; user can still enter values
     } finally {
       setLoading(false);
     }
@@ -168,32 +165,24 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
         requestBody.alternative2_id = element2.id;
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/comparisons`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await api.post(`/api/service/evaluations/comparisons/`, requestBody);
 
-      if (!response.ok) throw new Error('Failed to save comparison');
+      if (!response.success) {
+        setSaveError(response.error || '비교값 저장에 실패했습니다.');
+      } else {
+        setSaveError(null);
+        // Update local state
+        const key = `${element1.id}-${element2.id}`;
+        const newComparison: Comparison = { ...requestBody, value };
+        setComparisons(prev => new Map(prev.set(key, newComparison)));
 
-      // Update local state
-      const key = `${element1.id}-${element2.id}`;
-      const newComparison: Comparison = {
-        ...requestBody,
-        value
-      };
-      
-      setComparisons(prev => new Map(prev.set(key, newComparison)));
-      
-      // Move to next pair if not at the end
-      if (currentPairIndex < pairs.length - 1) {
-        setCurrentPairIndex(currentPairIndex + 1);
+        // Move to next pair if not at the end
+        if (currentPairIndex < pairs.length - 1) {
+          setCurrentPairIndex(currentPairIndex + 1);
+        }
       }
-    } catch (error) {
-      console.error('Failed to save comparison:', error);
+    } catch (error: any) {
+      setSaveError(error.message || '비교값 저장에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -384,6 +373,12 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
               </div>
             </div>
           </div>
+
+          {saveError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+              {saveError}
+            </div>
+          )}
 
           {!isComplete && currentPair && (
             <Card title="현재 비교">
