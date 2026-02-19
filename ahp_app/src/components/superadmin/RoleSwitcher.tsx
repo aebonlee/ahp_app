@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../../types';
+import apiService from '../../services/apiService';
 
 interface RoleSwitcherProps {
   currentUser: User;
@@ -16,6 +17,7 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
 }) => {
   const [isConfirming, setIsConfirming] = useState(false);
   const [password, setPassword] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -79,15 +81,27 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
 
   const info = roleInfo[targetRole];
 
-  const handleConfirmSwitch = () => {
-    if (password === 'admin123') { // TODO: 실제 비밀번호 확인
-      onRoleSwitch(targetRole);
-      showActionMessage('success', `${info.title} 모드로 전환되었습니다.`);
-    } else {
-      showActionMessage('error', '비밀번호가 틀렸습니다.');
+  const handleConfirmSwitch = async () => {
+    if (!password) {
+      showActionMessage('error', '비밀번호를 입력해주세요.');
+      return;
     }
-    setPassword('');
-    setIsConfirming(false);
+    setIsVerifying(true);
+    try {
+      const result = await apiService.post('/api/service/accounts/verify-password/', { password });
+      if (result.data && (result.data as any).valid) {
+        onRoleSwitch(targetRole);
+        showActionMessage('success', `${info.title} 모드로 전환되었습니다.`);
+        setIsConfirming(false);
+      } else {
+        showActionMessage('error', '비밀번호가 올바르지 않습니다.');
+      }
+    } catch {
+      showActionMessage('error', '비밀번호 확인 중 오류가 발생했습니다.');
+    } finally {
+      setIsVerifying(false);
+      setPassword('');
+    }
   };
 
   return (
@@ -234,9 +248,10 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
             />
             <button
               onClick={handleConfirmSwitch}
-              className="px-6 py-2 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700"
+              disabled={isVerifying}
+              className="px-6 py-2 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              확인
+              {isVerifying ? '확인 중...' : '확인'}
             </button>
             <button
               onClick={() => {

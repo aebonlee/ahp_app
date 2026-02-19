@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import apiService from '../../services/apiService';
 
 interface SystemResetProps {
   onBack: () => void;
@@ -27,6 +28,7 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
   const [confirmStep, setConfirmStep] = useState(0);
   const [confirmText, setConfirmText] = useState('');
   const [password, setPassword] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -106,20 +108,28 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
     setConfirmStep(2);
   };
 
-  const handleFinalReset = () => {
-    // 개발 환경에서는 임시로 모든 비밀번호 허용
-    // TODO: 실제 배포 시 백엔드 API로 비밀번호 검증
+  const handleFinalReset = async () => {
     if (!password) {
       showActionMessage('error', '비밀번호를 입력해주세요.');
       return;
     }
-
-    // 초기화 실행
-    onReset(resetOptions);
-    showActionMessage('success', '시스템 초기화가 시작되었습니다.');
-    setConfirmStep(0);
-    setConfirmText('');
-    setPassword('');
+    setIsVerifying(true);
+    try {
+      const result = await apiService.post('/api/service/accounts/verify-password/', { password });
+      if (result.data && (result.data as any).valid) {
+        onReset(resetOptions);
+        showActionMessage('success', '시스템 초기화가 시작되었습니다.');
+        setConfirmStep(0);
+        setConfirmText('');
+        setPassword('');
+      } else {
+        showActionMessage('error', '비밀번호가 올바르지 않습니다.');
+      }
+    } catch {
+      showActionMessage('error', '비밀번호 확인 중 오류가 발생했습니다.');
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -338,9 +348,10 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
             <div className="flex space-x-3">
               <button
                 onClick={handleFinalReset}
-                className="flex-1 py-3 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700"
+                disabled={isVerifying}
+                className="flex-1 py-3 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                🔄 시스템 초기화 실행
+                {isVerifying ? '비밀번호 확인 중...' : '🔄 시스템 초기화 실행'}
               </button>
               <button
                 onClick={() => {
