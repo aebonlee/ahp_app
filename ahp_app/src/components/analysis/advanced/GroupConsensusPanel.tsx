@@ -20,6 +20,12 @@ const GroupConsensusPanel: React.FC<GroupConsensusPanelProps> = ({ projectId }) 
   const [result, setResult] = useState<GroupConsensusResult | null>(null);
   const [aggregationMethod, setAggregationMethod] = useState('geometric_mean');
   const [evaluators, setEvaluators] = useState<any[]>([]);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const performAnalysis = async () => {
     try {
@@ -37,7 +43,7 @@ const GroupConsensusPanel: React.FC<GroupConsensusPanelProps> = ({ projectId }) 
       });
       setEvaluators(response.data.evaluators || []);
     } catch (error) {
-      console.error('그룹 합의 분석 실패:', error);
+      showActionMessage('error', '그룹 합의 분석 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -56,6 +62,11 @@ const GroupConsensusPanel: React.FC<GroupConsensusPanelProps> = ({ projectId }) 
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* Control Panel */}
       <div className="bg-white rounded-2xl shadow-card p-6">
         <h2 className="text-xl font-bold mb-4">그룹 합의 분석 설정</h2>

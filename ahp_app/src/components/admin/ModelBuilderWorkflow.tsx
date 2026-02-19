@@ -86,7 +86,7 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
       }
       
     } catch (error) {
-      console.error('프로젝트 데이터 로드 실패:', error);
+      showActionMessage('error', '프로젝트 데이터 로드 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }

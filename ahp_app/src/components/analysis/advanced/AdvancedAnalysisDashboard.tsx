@@ -31,6 +31,12 @@ const AdvancedAnalysisDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState(0);
   const [analysisData, setAnalysisData] = useState<any>(null);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const tabs = [
     { name: '민감도 분석', icon: ChartBarIcon, description: '가중치 변화에 대한 결과 안정성 분석' },
@@ -49,7 +55,7 @@ const AdvancedAnalysisDashboard: React.FC = () => {
       const response = await api.get(`/api/service/projects/projects/${projectId}/`);
       setProject(response.data);
     } catch (error) {
-      console.error('프로젝트 로드 실패:', error);
+      showActionMessage('error', '프로젝트 로드 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -76,6 +82,11 @@ const AdvancedAnalysisDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-card p-6 mb-6">

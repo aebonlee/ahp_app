@@ -209,7 +209,7 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
         onAlternativesChange(convertedUpdatedAlternatives.length);
       }
     } catch (error) {
-      console.error('대안 삭제 실패:', error);
+      showActionMessage('error', '대안 삭제 중 오류가 발생했습니다.');
     }
   };
 

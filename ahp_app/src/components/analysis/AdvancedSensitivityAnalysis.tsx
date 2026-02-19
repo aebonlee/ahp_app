@@ -61,6 +61,12 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showChart, setShowChart] = useState(true);
   const [chartType, setChartType] = useState<'radar' | 'waterfall' | 'tornado' | 'heatmap'>('tornado');
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // Google Charts 초기화
   useEffect(() => {
@@ -205,7 +211,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
       }
 
     } catch (error) {
-      console.error('민감도 분석 중 오류 발생:', error);
+      showActionMessage('error', '민감도 분석 중 오류가 발생했습니다.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -547,6 +553,11 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 분석 설정 */}
       <Card title="민감도 분석 설정">
         <div className="space-y-4">

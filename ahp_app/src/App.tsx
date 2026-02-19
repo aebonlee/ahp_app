@@ -101,8 +101,7 @@ function App() {
           (window as any).__SUPER_ADMIN__ = true;
         }
         return parsedUser;
-      } catch (error) {
-        console.error('초기 사용자 정보 복원 실패:', error);
+      } catch {
         localStorage.removeItem('ahp_user');
       }
     }
@@ -348,8 +347,7 @@ function App() {
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
           sessionService.startSession();
-        } catch (error) {
-          console.error('자동 로그인 실패:', error);
+        } catch {
           authService.clearTokens();
         }
       }
@@ -402,12 +400,12 @@ function App() {
             // API 키 유효성 검증
             try {
               await aiService.validateAPIKey();
-            } catch (validationError) {
-              console.error('API 키 검증 중 오류:', validationError);
+            } catch {
+              // API key validation is non-critical; continue
             }
           }
-        } catch (error) {
-          console.error('AI 서비스 초기화 중 예외 발생:', error);
+        } catch {
+          // AI service init is non-critical; backend status handles unavailability
         }
       } else {
         setBackendStatus('unavailable');
@@ -504,8 +502,8 @@ function App() {
           localStorage.removeItem('ahp_user');
         }
       }
-    } catch (error) {
-      console.error('Session validation failed:', error);
+    } catch {
+      // Session validation failure is handled by the outer logic
     }
   };
 
@@ -587,8 +585,8 @@ function App() {
     
     try {
       await authService.logout();
-    } catch (error) {
-      console.error('Logout API call failed:', error);
+    } catch {
+      // Logout API failure is non-critical; local state is cleared regardless
     }
     
     // localStorage 정리
@@ -1189,8 +1187,8 @@ function App() {
           try {
             const storedUser = JSON.parse(storedUserStr);
             isAdminEmail = storedUser.email === 'admin@ahp.com';
-          } catch (e) {
-            console.error('Failed to parse user:', e);
+          } catch {
+            // corrupted localStorage data, skip
           }
         }
         

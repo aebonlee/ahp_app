@@ -61,6 +61,12 @@ const BudgetOptimization: React.FC<BudgetOptimizationProps> = ({
   const [scenarioResults, setScenarioResults] = useState<ScenarioResult[]>([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [insights, setInsights] = useState<string[]>([]);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 초기 데이터 설정
   useEffect(() => {
@@ -138,7 +144,7 @@ const BudgetOptimization: React.FC<BudgetOptimizationProps> = ({
       setInsights(generatedInsights);
       
     } catch (error) {
-      console.error('Optimization failed:', error);
+      showActionMessage('error', '최적화 수행 중 오류가 발생했습니다.');
     } finally {
       setIsOptimizing(false);
     }
@@ -365,6 +371,11 @@ const BudgetOptimization: React.FC<BudgetOptimizationProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       <Card title="예산배분 최적화">
         <div className="space-y-6">
           {/* 기본 설정 */}

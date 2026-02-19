@@ -98,7 +98,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
 }) => {
   // 탭 상태
   const [activeTab, setActiveTab] = useState<'sensitivity' | 'pareto' | 'tornado' | 'robustness'>('sensitivity');
-  
+
   // 기존 민감도 분석 상태
   const [selectedCriterion, setSelectedCriterion] = useState<string>('');
   const [weightAdjustments, setWeightAdjustments] = useState<WeightAdjustment[]>([]);
@@ -108,11 +108,17 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
   const [stabilityIndex, setStabilityIndex] = useState<number>(1);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [visualizationData, setVisualizationData] = useState<any[]>([]);
-  
+
   // 새로운 고급 분석 상태
   const [extendedSensitivityResults, setExtendedSensitivityResults] = useState<ExtendedSensitivityResult[]>([]);
   const [paretoAnalysis, setParetoAnalysis] = useState<ParetoAnalysis | null>(null);
   const [sensitivityRange, setSensitivityRange] = useState(20); // ±20%
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   // 최상위 기준들만 필터링 (레벨 1)
   const topLevelCriteria = criteriaHierarchy.filter(c => c.level === 1);
@@ -227,7 +233,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
       generateVisualizationData(targetCriterionId);
       
     } catch (error) {
-      console.error('Sensitivity analysis failed:', error);
+      showActionMessage('error', '민감도 분석 중 오류가 발생했습니다.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -321,7 +327,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
       setParetoAnalysis(paretoResults);
       
     } catch (error) {
-      console.error('Extended analysis failed:', error);
+      showActionMessage('error', '고급 분석 중 오류가 발생했습니다.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -1144,6 +1150,11 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
 
   return (
     <div className="space-y-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">고급 민감도 및 파레토 분석</h2>

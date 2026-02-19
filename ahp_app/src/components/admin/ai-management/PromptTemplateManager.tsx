@@ -162,8 +162,7 @@ const PromptTemplateManager: React.FC = () => {
       if (response.success) {
         await fetchTemplates();
       }
-    } catch (error) {
-      console.error('Failed to use template:', error);
+    } catch {
       showActionMessage('error', '템플릿 사용 처리 중 오류가 발생했습니다.');
     }
   };

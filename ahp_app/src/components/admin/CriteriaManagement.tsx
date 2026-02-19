@@ -118,7 +118,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       setTempCriteria([]);
       setHasTempChanges(false);
     } catch (error) {
-      console.error('기준 로드 실패:', error);
+      showActionMessage('error', '기준 로드 중 오류가 발생했습니다.');
       setCriteria([]);
       setSavedCriteria([]);
     } finally {
@@ -410,9 +410,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     try {
       await handleSaveCriteria();
     } catch (error) {
-      console.error('자동 저장 실패:', error);
-      // 저장 실패 시 사용자에게 알림 (선택적)
-      // alert('자동 저장에 실패했습니다. 수동으로 저장해주세요.');
+      showActionMessage('error', '자동 저장에 실패했습니다. 수동으로 저장해주세요.');
     }
   };
 

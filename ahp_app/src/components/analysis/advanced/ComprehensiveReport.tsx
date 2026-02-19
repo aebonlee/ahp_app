@@ -22,7 +22,7 @@ const ComprehensiveReport: React.FC<ComprehensiveReportProps> = ({ projectId }) 
       const response = await api.get(`/api/service/analysis/advanced/${projectId}/comprehensive_report/`);
       setReport(response.data);
     } catch (error) {
-      console.error('종합 보고서 생성 실패:', error);
+      showActionMessage('error', '종합 보고서 생성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }

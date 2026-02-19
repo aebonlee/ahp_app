@@ -46,6 +46,9 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
   const [success, setSuccess] = useState<string>('');
   const [showBackupCodes, setShowBackupCodes] = useState(false);
   const [newBackupCodes, setNewBackupCodes] = useState<string[]>([]);
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [promptPassword, setPromptPassword] = useState('');
+  const [promptAction, setPromptAction] = useState<'disable_2fa' | 'new_backup_codes' | null>(null);
 
   // Load security settings on component mount
   useEffect(() => {
@@ -111,10 +114,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
   };
 
   // Handle 2FA disable
-  const handle2FADisable = async () => {
-    const password = window.prompt('계정 비밀번호를 입력하여 2단계 인증 비활성화를 확인하세요:');
-    if (!password) return;
-
+  const handle2FADisable = async (password: string) => {
     setLoading(true);
     setError('');
 
@@ -149,10 +149,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
   };
 
   // Generate new backup codes
-  const generateNewBackupCodes = async () => {
-    const password = window.prompt('새 백업 코드 생성을 위해 계정 비밀번호를 입력하세요:');
-    if (!password) return;
-
+  const generateNewBackupCodes = async (password: string) => {
     setLoading(true);
     setError('');
 
@@ -275,7 +272,11 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={generateNewBackupCodes}
+                      onClick={() => {
+                        setPromptAction('new_backup_codes');
+                        setPromptPassword('');
+                        setShowPasswordPrompt(true);
+                      }}
                       disabled={loading}
                     >
                       백업 코드 재생성
@@ -400,7 +401,9 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
           onSetupComplete={handle2FASetup}
           onDisable={() => {
             setShowTwoFactorModal(false);
-            handle2FADisable();
+            setPromptAction('disable_2fa');
+            setPromptPassword('');
+            setShowPasswordPrompt(true);
           }}
           loading={loading}
         />
@@ -456,6 +459,63 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
               확인
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Password Prompt Modal */}
+      <Modal
+        isOpen={showPasswordPrompt}
+        onClose={() => { setShowPasswordPrompt(false); setPromptPassword(''); }}
+        title={promptAction === 'disable_2fa' ? '2단계 인증 비활성화 확인' : '백업 코드 재생성 확인'}
+        size="sm"
+        footer={
+          <div className="flex space-x-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => { setShowPasswordPrompt(false); setPromptPassword(''); }}
+            >
+              취소
+            </Button>
+            <Button
+              variant="primary"
+              disabled={!promptPassword || loading}
+              onClick={async () => {
+                setShowPasswordPrompt(false);
+                if (promptAction === 'disable_2fa') {
+                  await handle2FADisable(promptPassword);
+                } else if (promptAction === 'new_backup_codes') {
+                  await generateNewBackupCodes(promptPassword);
+                }
+                setPromptPassword('');
+              }}
+            >
+              확인
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-gray-600">
+            {promptAction === 'disable_2fa'
+              ? '2단계 인증을 비활성화하려면 계정 비밀번호를 입력하세요.'
+              : '새 백업 코드를 생성하려면 계정 비밀번호를 입력하세요.'}
+          </p>
+          <input
+            type="password"
+            value={promptPassword}
+            onChange={e => setPromptPassword(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && promptPassword) {
+                setShowPasswordPrompt(false);
+                if (promptAction === 'disable_2fa') handle2FADisable(promptPassword);
+                else if (promptAction === 'new_backup_codes') generateNewBackupCodes(promptPassword);
+                setPromptPassword('');
+              }
+            }}
+            placeholder="비밀번호"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            autoFocus
+          />
         </div>
       </Modal>
     </div>

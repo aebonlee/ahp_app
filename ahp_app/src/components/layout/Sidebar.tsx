@@ -324,8 +324,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         try {
           const storedUser = JSON.parse(storedUserStr);
           isAdminEmail = storedUser.email === 'admin@ahp.com';
-        } catch (e) {
-          console.error('Failed to parse user:', e);
+        } catch {
+          // corrupted localStorage data, skip
         }
       }
       
@@ -554,8 +554,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               try {
                 const storedUserData = JSON.parse(storedUserStr);
                 isAdminEmail = storedUserData.email === 'admin@ahp.com' || storedUserData.email?.toLowerCase() === 'admin@ahp.com';
-              } catch (e) {
-                console.error('Failed to parse user data:', e);
+              } catch {
+                // corrupted localStorage data, skip
               }
             }
             

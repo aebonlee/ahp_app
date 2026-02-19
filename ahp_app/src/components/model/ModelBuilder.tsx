@@ -810,7 +810,6 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
           projectId={projectId}
           onComplete={() => {
             // 평가자 배정 완료 후 처리
-            console.log('Evaluator assignment completed');
           }}
         />
       )}

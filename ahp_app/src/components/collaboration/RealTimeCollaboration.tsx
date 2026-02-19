@@ -201,8 +201,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
       showNotification('success', '실시간 협업 시작', '다른 사용자와 실시간으로 협업할 수 있습니다.');
 
     } catch (error) {
-      console.error('실시간 동기화 초기화 실패:', error);
-      // 오프라인 모드로 전환
+      // 오프라인 모드로 전환 (initializeOfflineMode에서 사용자에게 알림)
       await initializeOfflineMode();
     }
   }, [modelId, currentUser]);
@@ -377,8 +376,6 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
       }
       
     } catch (error) {
-      console.error('이벤트 전송 실패:', error);
-      
       // 오프라인 상태인 경우 큐에 저장
       if (offlineState.isOffline) {
         setOfflineState(prev => ({
@@ -672,7 +669,6 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
       
       showNotification('success', '동기화 완료', '오프라인 변경사항이 동기화되었습니다.');
     } catch (error) {
-      console.error('오프라인 동기화 실패:', error);
       showNotification('error', '동기화 실패', '일부 변경사항 동기화에 실패했습니다.');
     }
   };
@@ -714,7 +710,6 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
       setNewMessage('');
       
     } catch (error) {
-      console.error('메시지 전송 실패:', error);
       showNotification('error', '전송 실패', '메시지 전송에 실패했습니다.');
     }
   };

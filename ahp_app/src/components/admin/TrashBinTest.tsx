@@ -22,6 +22,12 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
   ]);
   const [pendingAction, setPendingAction] = useState<{type: 'restore' | 'permanentDelete', id: string, title: string} | null>(null);
   const [permanentDeleteStep, setPermanentDeleteStep] = useState<1 | 2>(1);
+  const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
+
+  const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
+    setActionMessage({type, text});
+    setTimeout(() => setActionMessage(null), 3000);
+  };
 
   const loadTrashedProjects = async () => {
     if (onFetchTrashedProjects) {
@@ -29,7 +35,7 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
         const projects = await onFetchTrashedProjects();
         setTrashedProjects(projects);
       } catch (error) {
-        console.error('휴지통 프로젝트 로드 실패:', error);
+        showActionMessage('error', '휴지통 프로젝트 로드 중 오류가 발생했습니다.');
       }
     }
   };
@@ -45,7 +51,7 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
         await loadTrashedProjects(); // 휴지통 새로고침
       }
     } catch (error) {
-      console.error('삭제 실패:', error);
+      showActionMessage('error', '삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -65,7 +71,7 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
         await loadTrashedProjects();
       }
     } catch (error) {
-      console.error('복원 실패:', error);
+      showActionMessage('error', '복원 중 오류가 발생했습니다.');
     }
   };
 
@@ -91,12 +97,17 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
         await loadTrashedProjects();
       }
     } catch (error) {
-      console.error('영구 삭제 실패:', error);
+      showActionMessage('error', '영구 삭제 중 오류가 발생했습니다.');
     }
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 p-6">
+      {actionMessage && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${actionMessage.type === 'success' ? 'bg-green-100 text-green-800' : actionMessage.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMessage.text}
+        </div>
+      )}
       {/* 헤더 */}
       <div className="bg-white rounded-lg p-6 shadow-sm border">
         <h1 className="text-3xl font-bold text-gray-900 mb-4 flex items-center">

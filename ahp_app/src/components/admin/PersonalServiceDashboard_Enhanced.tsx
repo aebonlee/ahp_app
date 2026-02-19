@@ -242,8 +242,8 @@ const PersonalServiceDashboard_Enhanced: React.FC<PersonalServiceProps> = ({
     <MyProjects
       refreshTrigger={0}
       onCreateNew={() => handleMenuClick('creation')}
-      onProjectSelect={(project) => console.log('프로젝트 선택:', project)}
-      onEditProject={(project) => console.log('프로젝트 편집:', project)}
+      onProjectSelect={() => {}}
+      onEditProject={() => {}}
       onDeleteProject={onDeleteProject}
       onModelBuilder={(project) => handleMenuClick('model-builder')}
       onAnalysis={(project) => handleMenuClick('analysis')}

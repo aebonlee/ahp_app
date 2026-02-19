@@ -40,8 +40,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
         try {
           const remaining = await sessionService.getRemainingTime();
           setRemainingTime(remaining);
-        } catch (error) {
-          console.error('세션 시간 조회 실패:', error);
+        } catch {
           setRemainingTime(30); // 기본값
         }
       } else {
@@ -227,8 +226,8 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                       try {
                         const storedUser = JSON.parse(storedUserStr);
                         isAdminEmail = storedUser.email === 'admin@ahp.com';
-                      } catch (e) {
-                        console.error('Failed to parse user:', e);
+                      } catch {
+                        // corrupted localStorage data, skip
                       }
                     }
                     
