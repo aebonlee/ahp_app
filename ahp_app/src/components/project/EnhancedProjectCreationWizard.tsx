@@ -61,6 +61,7 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [shortLink, setShortLink] = useState<string>('');
@@ -122,10 +123,11 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
   };
 
   const createProject = async () => {
+    setCreateError(null);
     try {
       setLoading(true);
-      
-      // 1. 프로젝트 생성 - ProjectWorkflow 방식 사용
+
+      // 1. 프로젝트 생성
       const createdProject = await dataService.createProject({
         title: projectData.title,
         description: projectData.description,
@@ -135,27 +137,29 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
         evaluation_mode: projectData.evaluation_mode,
         workflow_stage: 'creating'
       });
-      
+
       if (createdProject && createdProject.id) {
         const createdProjectId = createdProject.id;
         setProjectId(createdProjectId);
-        
-        // 2. QR코드 및 링크 생성
+
+        // 2. QR코드 및 링크 생성 (실패해도 프로젝트는 생성됨)
         try {
-          const linkResponse = await api.post(`/projects/${createdProjectId}/generate_links/`);
+          const linkResponse = await api.post(`/api/service/projects/${createdProjectId}/generate_links/`);
           if (linkResponse.data) {
             setQrCodeUrl(linkResponse.data.qr_code);
             setShortLink(linkResponse.data.short_link);
           }
-        } catch (linkError) {
-          console.warn('링크 생성 실패, 프로젝트는 생성됨:', linkError);
+        } catch {
+          // 링크 생성 실패는 무시 (프로젝트는 이미 생성됨)
         }
-        
+
         // 다음 단계로 이동 (완료 화면)
         setCurrentStep(currentStep + 1);
+      } else {
+        setCreateError('프로젝트 생성에 실패했습니다. 다시 시도해주세요.');
       }
-    } catch (error) {
-      console.error('프로젝트 생성 실패:', error);
+    } catch (error: any) {
+      setCreateError(error.message || '프로젝트 생성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -390,6 +394,12 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
               <ChevronLeftIcon className="h-5 w-5" />
               이전
             </button>
+
+            {createError && (
+              <div className="flex-1 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{createError}</p>
+              </div>
+            )}
 
             <button
               onClick={handleNext}

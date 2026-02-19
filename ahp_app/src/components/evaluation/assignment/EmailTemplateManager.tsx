@@ -21,6 +21,7 @@ const EmailTemplateManager: React.FC<EmailTemplateManagerProps> = ({ projectId }
   const [loading, setLoading] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadTemplates();
@@ -29,10 +30,15 @@ const EmailTemplateManager: React.FC<EmailTemplateManagerProps> = ({ projectId }
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/evaluations/templates/');
-      setTemplates(response.data.results || response.data);
-    } catch (error) {
-      console.error('템플릿 로드 실패:', error);
+      setError(null);
+      const response = await api.get('/api/service/evaluations/templates/');
+      if (response.success && response.data) {
+        setTemplates(response.data.results || response.data);
+      } else {
+        setError('이메일 템플릿을 불러올 수 없습니다.');
+      }
+    } catch (error: any) {
+      setError(error.message || '템플릿 로드에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -59,7 +65,12 @@ const EmailTemplateManager: React.FC<EmailTemplateManagerProps> = ({ projectId }
       <div className="lg:col-span-1">
         <div className="bg-white rounded-2xl shadow-card p-6">
           <h2 className="text-xl font-bold mb-4">이메일 템플릿</h2>
-          
+
+          {error && (
+            <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
           <div className="space-y-2">
             {templates.length > 0 ? (
               templates.map((template) => (

@@ -7,7 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { API_BASE_URL } from '../../config/api';
+import api from '../../services/api';
 import QRCode from 'qrcode';
 
 interface Evaluator {
@@ -54,6 +54,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
   const [projectInfo, setProjectInfo] = useState<ProjectInfo | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [evaluationLink, setEvaluationLink] = useState<string>('');
   const [invitationForm, setInvitationForm] = useState({
@@ -75,11 +76,9 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
 
   const loadProjectInfo = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/`, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        const data = await response.json();
+      const response = await api.get(`/api/service/projects/projects/${projectId}/`);
+      if (response.success && response.data) {
+        const data = response.data;
         setProjectInfo({
           id: data.id,
           title: data.title,
@@ -89,25 +88,25 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
           evaluationMethod: data.evaluation_method || 'pairwise',
           expectedTime: calculateExpectedTime(data.criteria_count, data.alternatives_count, data.evaluation_method)
         });
+      } else {
+        setError('프로젝트 정보를 불러올 수 없습니다.');
       }
-    } catch (error) {
-      console.error('프로젝트 정보 로드 실패:', error);
+    } catch (error: any) {
+      setError(error.message || '프로젝트 정보 로드에 실패했습니다.');
     }
   };
 
   const loadEvaluators = async () => {
     setLoading(true);
     try {
-      // Django 백엔드의 실제 경로 사용
-      const response = await fetch(`${API_BASE_URL}/api/service/projects/evaluators/?project=${projectId}`, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setEvaluators(data.evaluators || []);
+      const response = await api.get(`/api/service/projects/evaluators/?project=${projectId}`);
+      if (response.success && response.data) {
+        setEvaluators(response.data.evaluators || response.data || []);
+      } else {
+        setError('평가자 데이터를 불러올 수 없습니다.');
       }
-    } catch (error) {
-      console.error('평가자 데이터 로드 실패:', error);
+    } catch (error: any) {
+      setError(error.message || '평가자 데이터 로드에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -131,8 +130,8 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
         }
       });
       setQrCodeDataUrl(qrDataUrl);
-    } catch (error) {
-      console.error('QR 코드 생성 실패:', error);
+    } catch {
+      // QR 코드 생성 실패는 무시 (선택적 기능)
     }
   }, [projectId]);
 
@@ -596,6 +595,11 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
 
       {/* 메인 콘텐츠 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
         {loading ? (
           <div className="text-center py-12">
             <div className="text-4xl mb-4">⏳</div>
