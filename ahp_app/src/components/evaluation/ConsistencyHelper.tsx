@@ -94,7 +94,6 @@ const ConsistencyHelper: React.FC<ConsistencyHelperProps> = ({
 
       setSuggestions(newSuggestions);
     } catch (error) {
-      console.error('Failed to generate suggestions:', error);
       setSuggestions([]);
     } finally {
       setLoading(false);

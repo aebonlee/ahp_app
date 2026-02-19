@@ -36,13 +36,6 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
           apiService.evaluatorAPI.fetchByProject(projectId)
         ]);
         
-        // 데이터 타입 확인 및 안전한 배열 변환
-        console.log('🔍 ModelFinalization - API 응답:', {
-          criteriaResponse: criteriaResponse.data,
-          alternativesResponse: alternativesResponse.data,
-          evaluatorsResponse: evaluatorsResponse.data
-        });
-        
         const criteriaData = (criteriaResponse.data as any)?.criteria || (criteriaResponse.data as any) || [];
         const alternativesData = (alternativesResponse.data as any)?.alternatives || (alternativesResponse.data as any) || [];
         const evaluatorsData = (evaluatorsResponse.data as any)?.evaluators || (evaluatorsResponse.data as any) || [];

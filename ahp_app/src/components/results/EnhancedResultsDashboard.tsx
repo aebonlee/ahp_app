@@ -722,12 +722,8 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
       // Excel 리포트 생성
       const exporter = new AHPExcelExporter(ahpData);
       await exporter.generateCompleteReport();
-      
-      console.log('포괄적인 Excel 리포트가 성공적으로 생성되었습니다.');
-      
+
     } catch (error) {
-      console.error('Excel 내보내기 중 오류 발생:', error);
-      
       // 오류 발생 시 기본 CSV 내보내기로 폴백
       const csvContent = "data:text/csv;charset=utf-8," 
         + "프로젝트명," + results.projectTitle + "\n"

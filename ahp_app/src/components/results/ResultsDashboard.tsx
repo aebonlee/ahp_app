@@ -103,7 +103,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ projectId, projectT
       setComparisons(comparisonsList);
 
     } catch (error: any) {
-      console.error('Failed to fetch data:', error);
       setError(error.message || 'Failed to fetch data');
     } finally {
       setLoading(false);

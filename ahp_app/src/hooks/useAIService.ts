@@ -25,7 +25,6 @@ export const useAIService = () => {
           setIsAIConfigured(false);
         }
       } catch (error) {
-        console.error('AI 서비스 초기화 실패:', error);
         setIsAIConfigured(false);
       } finally {
         setIsLoading(false);

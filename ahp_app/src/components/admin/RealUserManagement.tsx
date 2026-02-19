@@ -83,7 +83,6 @@ const RealUserManagement: React.FC = () => {
         throw new Error('데이터를 불러올 수 없습니다.');
       }
     } catch (error) {
-      console.error('사용자 목록 로드 실패:', error);
       setErrorMessage('사용자 목록을 불러오는데 실패했습니다.');
       setUsers([]);
     } finally {
@@ -162,7 +161,6 @@ const RealUserManagement: React.FC = () => {
         throw new Error(response.error || '사용자 생성에 실패했습니다.');
       }
     } catch (error: any) {
-      console.error('사용자 생성 실패:', error);
       if (error.response?.data) {
         const errorData = error.response.data;
         if (typeof errorData === 'object') {
@@ -221,7 +219,6 @@ const RealUserManagement: React.FC = () => {
         throw new Error(response.error || '사용자 수정에 실패했습니다.');
       }
     } catch (error: any) {
-      console.error('사용자 수정 실패:', error);
       if (error.response?.data) {
         const errorData = error.response.data;
         if (typeof errorData === 'object') {
@@ -264,7 +261,6 @@ const RealUserManagement: React.FC = () => {
         throw new Error(response.error);
       }
     } catch (error) {
-      console.error('사용자 삭제 실패:', error);
       setErrorMessage('사용자 삭제에 실패했습니다.');
     } finally {
       setLoading(false);
@@ -290,7 +286,6 @@ const RealUserManagement: React.FC = () => {
         throw new Error(response.error || '상태 변경에 실패했습니다.');
       }
     } catch (error) {
-      console.error('사용자 상태 변경 실패:', error);
       setErrorMessage('사용자 상태 변경에 실패했습니다.');
     } finally {
       setLoading(false);

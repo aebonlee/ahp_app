@@ -74,26 +74,24 @@ const getAnonymousEvalHeaders = (): HeadersInit => {
     'Content-Type': 'application/json',
     'X-Anonymous-Evaluation': 'true',
   };
-  
+
   // Include session key if available
   const sessionKey = localStorage.getItem('anonymous_session_key') || sessionStorage.getItem('anonymous_session_key');
   if (sessionKey) {
     headers['X-Session-Key'] = sessionKey;
   }
-  
+
   return headers;
 };
 
 // Make anonymous evaluation API request
 const makeAnonymousEvalRequest = async <T>(
-  endpoint: string, 
+  endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
-    
-    console.log(`🔍 Anonymous Eval API: ${options.method || 'GET'} ${endpoint}`);
-    
+
     const response = await fetch(url, {
       credentials: 'include',
       ...options,
@@ -102,10 +100,10 @@ const makeAnonymousEvalRequest = async <T>(
         ...options.headers
       }
     });
-    
+
     const contentType = response.headers.get('content-type');
     let data: any = null;
-    
+
     if (contentType && contentType.includes('application/json')) {
       data = await response.json();
     } else if (response.ok && options.method === 'DELETE') {
@@ -116,12 +114,6 @@ const makeAnonymousEvalRequest = async <T>(
     }
 
     if (!response.ok) {
-      console.error(`Anonymous Eval API Error [${endpoint}]:`, {
-        status: response.status,
-        statusText: response.statusText,
-        data
-      });
-      
       throw new Error(data?.message || data?.error || `HTTP ${response.status}: Anonymous evaluation API 요청 실패`);
     }
 
@@ -131,7 +123,6 @@ const makeAnonymousEvalRequest = async <T>(
       message: data?.message
     };
   } catch (error: any) {
-    console.error(`Anonymous Eval API Error [${endpoint}]:`, error);
     return {
       success: false,
       error: error.message || 'Unknown anonymous evaluation error occurred'
@@ -158,22 +149,22 @@ export const anonymousEvaluationService = {
       // Include browser fingerprint for session validation
       browser_fingerprint: generateBrowserFingerprint()
     };
-    
+
     const response = await makeAnonymousEvalRequest<AnonymousEvaluationSession>('/api/evaluation/anonymous/sessions/', {
       method: 'POST',
       body: JSON.stringify(sessionData)
     });
-    
+
     // Store session key locally for future requests
     if (response.success && response.data) {
       localStorage.setItem('anonymous_session_key', response.data.session_key);
       localStorage.setItem('anonymous_session_id', response.data.id);
-      
+
       // Also store in sessionStorage as backup
       sessionStorage.setItem('anonymous_session_key', response.data.session_key);
       sessionStorage.setItem('anonymous_session_id', response.data.id);
     }
-    
+
     return response;
   },
 
@@ -209,17 +200,17 @@ export const anonymousEvaluationService = {
       response_time_ms: getResponseTime(),
       ip_address: await getUserIpAddress()
     };
-    
+
     const response = await makeAnonymousEvalRequest<PairwiseComparisonResult>('/api/evaluation/anonymous/comparisons/', {
       method: 'POST',
       body: JSON.stringify(enhancedData)
     });
-    
+
     // Store comparison locally as backup
     if (response.success && response.data) {
       storeComparisonLocally(response.data);
     }
-    
+
     return response;
   },
 
@@ -257,17 +248,17 @@ export const anonymousEvaluationService = {
       status: 'completed',
       ...completionData
     };
-    
+
     const response = await makeAnonymousEvalRequest<{ session: AnonymousEvaluationSession; results_summary: any }>(`/api/evaluation/anonymous/sessions/${sessionId}/complete/`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
-    
+
     // Clear local session data on completion
     if (response.success) {
       clearLocalSessionData();
     }
-    
+
     return response;
   },
 
@@ -288,7 +279,7 @@ export const anonymousEvaluationService = {
   }>> => {
     const localData = getLocalSessionData();
     const localComparisons = getLocalComparisons();
-    
+
     return makeAnonymousEvalRequest(`/api/evaluation/anonymous/sessions/${sessionId}/sync/`, {
       method: 'POST',
       body: JSON.stringify({
@@ -348,9 +339,8 @@ export const anonymousEvaluationUtils = {
         stored_at: new Date().toISOString()
       };
       localStorage.setItem(`session_${session.id}`, JSON.stringify(sessionData));
-      console.log('✅ Session stored locally:', session.id);
     } catch (error) {
-      console.error('❌ Failed to store session locally:', error);
+      console.error('Failed to store session locally:', error);
     }
   },
 
@@ -359,11 +349,10 @@ export const anonymousEvaluationUtils = {
       const stored = localStorage.getItem(`session_${sessionId}`);
       if (stored) {
         const data = JSON.parse(stored);
-        console.log('📂 Session retrieved from local storage:', sessionId);
         return data;
       }
     } catch (error) {
-      console.error('❌ Failed to retrieve session from local storage:', error);
+      console.error('Failed to retrieve session from local storage:', error);
     }
     return null;
   },
@@ -371,37 +360,37 @@ export const anonymousEvaluationUtils = {
   // Comparison validation
   validateComparison: (comparison: Partial<PairwiseComparisonResult>): { valid: boolean; errors: string[] } => {
     const errors: string[] = [];
-    
+
     if (!comparison.session_id) {
       errors.push('Session ID is required');
     }
-    
+
     if (!comparison.project_id) {
       errors.push('Project ID is required');
     }
-    
+
     if (!comparison.comparison_type || !['criteria', 'alternative'].includes(comparison.comparison_type)) {
       errors.push('Valid comparison type is required');
     }
-    
+
     if (!comparison.left_element_id || !comparison.right_element_id) {
       errors.push('Both comparison elements are required');
     }
-    
+
     if (comparison.left_element_id === comparison.right_element_id) {
       errors.push('Cannot compare element with itself');
     }
-    
+
     if (typeof comparison.comparison_value !== 'number' || comparison.comparison_value <= 0) {
       errors.push('Comparison value must be a positive number');
     }
-    
+
     // Validate AHP scale values
     const validAHPValues = [1/9, 1/7, 1/5, 1/3, 1, 3, 5, 7, 9];
     if (!validAHPValues.includes(comparison.comparison_value!)) {
       errors.push('Comparison value must be a valid AHP scale value');
     }
-    
+
     return {
       valid: errors.length === 0,
       errors
@@ -418,7 +407,7 @@ export const anonymousEvaluationUtils = {
     const issues: string[] = [];
     const duplicates: PairwiseComparisonResult[] = [];
     const missing: string[] = [];
-    
+
     // Check for duplicates
     const seen = new Set<string>();
     comparisons.forEach(comp => {
@@ -429,26 +418,26 @@ export const anonymousEvaluationUtils = {
       }
       seen.add(key);
     });
-    
+
     // Check for reciprocal consistency
     const reciprocalMap = new Map<string, PairwiseComparisonResult>();
     comparisons.forEach(comp => {
       const key = `${comp.comparison_type}_${comp.left_element_id}_${comp.right_element_id}_${comp.parent_criteria_id || 'root'}`;
       const reciprocalKey = `${comp.comparison_type}_${comp.right_element_id}_${comp.left_element_id}_${comp.parent_criteria_id || 'root'}`;
-      
+
       reciprocalMap.set(key, comp);
-      
+
       const reciprocal = reciprocalMap.get(reciprocalKey);
       if (reciprocal) {
         const expectedReciprocalValue = 1 / comp.comparison_value;
         const tolerance = 0.001;
-        
+
         if (Math.abs(reciprocal.comparison_value - expectedReciprocalValue) > tolerance) {
           issues.push(`Reciprocal inconsistency: ${comp.left_element_name} vs ${comp.right_element_name}`);
         }
       }
     });
-    
+
     return {
       consistent: issues.length === 0,
       issues,
@@ -463,12 +452,11 @@ export const anonymousEvaluationUtils = {
       try {
         await anonymousEvaluationService.updateSessionActivity(sessionId);
         await anonymousEvaluationService.syncLocalData(sessionId);
-        console.log('🔄 Auto-save completed for session:', sessionId);
       } catch (error) {
-        console.error('❌ Auto-save failed:', error);
+        console.error('Auto-save failed:', error);
       }
     }, interval);
-    
+
     // Return cleanup function
     return () => {
       clearInterval(autoSaveInterval);
@@ -493,27 +481,25 @@ export const anonymousEvaluationUtils = {
     try {
       // Try to recover from various sources
       const sessionKey = localStorage.getItem('anonymous_session_key') || sessionStorage.getItem('anonymous_session_key');
-      
+
       if (sessionKey) {
         const response = await anonymousEvaluationService.recoverSession(sessionKey);
         if (response.success && response.data) {
-          console.log('🔄 Session recovered successfully');
           return response.data;
         }
       }
-      
+
       // Try to recover from local backup
       const localBackup = localStorage.getItem('anonymous_session_backup');
       if (localBackup) {
         const backupData = JSON.parse(localBackup);
-        console.log('📂 Session recovered from local backup');
         return backupData;
       }
-      
+
     } catch (error) {
-      console.error('❌ Session recovery failed:', error);
+      console.error('Session recovery failed:', error);
     }
-    
+
     return null;
   }
 };
@@ -525,7 +511,7 @@ function generateBrowserFingerprint(): string {
   ctx!.textBaseline = 'top';
   ctx!.font = '14px Arial';
   ctx!.fillText('Browser fingerprint', 2, 2);
-  
+
   return btoa(JSON.stringify({
     userAgent: navigator.userAgent,
     language: navigator.language,

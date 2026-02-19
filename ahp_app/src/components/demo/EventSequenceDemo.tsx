@@ -35,42 +35,42 @@ const EventSequenceDemo: React.FC<EventSequenceDemoProps> = ({
             id: 'sens-1',
             title: '민감도 분석 진입',
             description: '단계 3 → 민감도 분석 탭 클릭',
-            action: () => console.log('민감도 분석 화면으로 이동'),
+            action: () => {},
             verification: '화면 ID: ADMIN-STEP3-SENS 표시 확인'
           },
           {
             id: 'sens-2',
             title: '상위기준 선택',
             description: '변경하려는 기준의 상위기준 선택 (예: 디자인)',
-            action: () => console.log('상위기준 선택됨'),
+            action: () => {},
             verification: '선택된 기준이 파란색으로 하이라이트'
           },
           {
             id: 'sens-3',
             title: '세부기준 선택',
             description: '변경할 세부 기준 클릭 (예: 실내디자인)',
-            action: () => console.log('세부기준 선택됨'),
+            action: () => {},
             verification: '세부기준이 녹색으로 하이라이트, 입력값 칸 표시'
           },
           {
             id: 'sens-4',
             title: '변경값 입력',
             description: '새로운 가중치 값 입력 (0.0 ~ 1.0)',
-            action: () => console.log('값 입력됨'),
+            action: () => {},
             verification: '입력값과 백분율 실시간 표시'
           },
           {
             id: 'sens-5',
             title: '분석 시작',
             description: '"④ 분석 시작" 버튼 클릭',
-            action: () => console.log('분석 시작됨'),
+            action: () => {},
             verification: '로딩 표시 후 결과 차트 표시'
           },
           {
             id: 'sens-6',
             title: '결과 확인',
             description: '대안 최종 중요도 변화 확인',
-            action: () => console.log('결과 표시됨'),
+            action: () => {},
             verification: '기존/변경후 비교 차트, 저장 안내 표시'
           }
         ];
@@ -81,28 +81,28 @@ const EventSequenceDemo: React.FC<EventSequenceDemoProps> = ({
             id: 'pair-1',
             title: '쌍대비교 시작',
             description: '기준별 쌍대비교 화면 진입',
-            action: () => console.log('쌍대비교 화면 진입'),
+            action: () => {},
             verification: '화면 ID: RATER-PAIRWISE 표시'
           },
           {
             id: 'pair-2',
             title: '비교값 선택',
             description: 'Saaty 1-9 척도에서 값 선택',
-            action: () => console.log('비교값 선택됨'),
+            action: () => {},
             verification: '매트릭스에 값 반영, 다음 쌍으로 이동'
           },
           {
             id: 'pair-3',
             title: '일관성 검증',
             description: '모든 비교 완료 후 CR 계산',
-            action: () => console.log('일관성 계산됨'),
+            action: () => {},
             verification: 'CR > 0.1시 경고 메시지 표시'
           },
           {
             id: 'pair-4',
             title: '판단 도우미',
             description: 'CR 경고 시 "판단 도우미 보기" 클릭',
-            action: () => console.log('판단 도우미 표시'),
+            action: () => {},
             verification: '일관성 개선 가이드 표시'
           }
         ];
@@ -113,28 +113,28 @@ const EventSequenceDemo: React.FC<EventSequenceDemoProps> = ({
             id: 'direct-1',
             title: '직접입력 시작',
             description: '직접입력 평가 화면 진입',
-            action: () => console.log('직접입력 화면 진입'),
+            action: () => {},
             verification: '화면 ID: RATER-DIRECT 표시'
           },
           {
             id: 'direct-2',
             title: '평가 유형 선택',
             description: '편익형/비용형 중 선택',
-            action: () => console.log('비용형 선택됨'),
+            action: () => {},
             verification: '비용형 선택 시 경고 메시지 표시'
           },
           {
             id: 'direct-3',
             title: '역수 적용',
             description: '"여기를" 클릭하여 역수 값 적용',
-            action: () => console.log('역수 변환됨'),
+            action: () => {},
             verification: '편익형으로 변경, 경고 메시지 사라짐'
           },
           {
             id: 'direct-4',
             title: '값 입력',
             description: '각 대안별 정량 값 입력',
-            action: () => console.log('값 입력됨'),
+            action: () => {},
             verification: '실시간 가중치 계산 및 표시'
           }
         ];
@@ -145,28 +145,28 @@ const EventSequenceDemo: React.FC<EventSequenceDemoProps> = ({
             id: 'ws-1',
             title: '워크숍 활성화',
             description: '관리자가 워크숍 모드 활성화',
-            action: () => console.log('워크숍 활성화됨'),
+            action: () => {},
             verification: '관리자 화면: WS-ADMIN, 평가자 접근 가능'
           },
           {
             id: 'ws-2',
             title: '실시간 동기화',
             description: '관리자 화면 변경사항 평가자에 반영',
-            action: () => console.log('동기화됨'),
+            action: () => {},
             verification: '양쪽 화면 동시 업데이트'
           },
           {
             id: 'ws-3',
             title: '진행 제어',
             description: '관리자의 이전/다음 제어',
-            action: () => console.log('진행 제어됨'),
+            action: () => {},
             verification: '평가자 화면도 동일하게 이동'
           },
           {
             id: 'ws-4',
             title: '워크숍 종료',
             description: '관리자가 워크숍 모드 비활성화',
-            action: () => console.log('워크숍 종료됨'),
+            action: () => {},
             verification: '평가자 접근 차단, 대기 메시지 표시'
           }
         ];

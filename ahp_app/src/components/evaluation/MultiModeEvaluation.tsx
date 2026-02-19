@@ -221,7 +221,6 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
       return validation.isValid;
       
     } catch (error) {
-      console.error('검증 중 오류:', error);
       return false;
     } finally {
       setIsValidating(false);
@@ -457,7 +456,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
           <PairwiseGrid
             elements={alternatives}
             onComparisonChange={(comparisons) => setEvaluationData({ matrix: comparisons })}
-            onConsistencyChange={(cr, isConsistent) => console.log('Consistency:', cr, isConsistent)}
+            onConsistencyChange={() => {}}
           />
         );
 
@@ -613,9 +612,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
           });
         }
       }}
-      onSave={(comparisons) => {
-        console.log('퍼지 평가 임시 저장:', comparisons);
-      }}
+      onSave={() => {}}
     />
   );
 

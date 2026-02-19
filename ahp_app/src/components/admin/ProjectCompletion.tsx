@@ -153,7 +153,6 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
         lastModified,
       });
     } catch (error) {
-      console.error('프로젝트 요약 로드 실패:', error);
       setProjectSummary({
         totalCriteria: criteriaCount,
         totalEvaluators: evaluatorsCount,

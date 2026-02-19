@@ -486,7 +486,7 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
                         {MESSAGES.CR_WARNING}
                       </p>
                       <button
-                        onClick={() => console.log('판단 도우미 기능 (구현 예정)')}
+                        onClick={() => {}}
                         className="mt-2 text-red-600 underline text-sm hover:text-red-800"
                       >
                         판단 도우미 보기

@@ -23,12 +23,12 @@ class AuthService {
       // 1. sessionStorage에서 먼저 시도 (일반 새로고침 대응)
       this.accessToken = sessionStorage.getItem('ahp_access_token');
       this.refreshToken = sessionStorage.getItem('ahp_refresh_token');
-      
+
       // 2. sessionStorage에 없으면 localStorage에서 시도 (강력한 새로고침 대응)
       if (!this.accessToken) {
         this.accessToken = localStorage.getItem('ahp_access_token');
         this.refreshToken = localStorage.getItem('ahp_refresh_token');
-        
+
         // localStorage에서 복원했으면 sessionStorage에도 복사
         if (this.accessToken) {
           sessionStorage.setItem('ahp_access_token', this.accessToken);
@@ -37,23 +37,16 @@ class AuthService {
           }
         }
       }
-      
+
       // 3. 토큰 만료 확인 - access token만 정리 (refresh token은 유지)
       if (this.accessToken && this.isTokenExpired(this.accessToken)) {
-        console.log('🔄 만료된 access token 감지 - access token만 정리 (refresh token 유지)');
         this.accessToken = null;
         sessionStorage.removeItem('ahp_access_token');
         localStorage.removeItem('ahp_access_token');
         // refresh token은 유지 → validateSession에서 갱신 시도
       }
-
-      if (this.accessToken) {
-        console.log('✅ 세션 복원 성공 - 로그인 상태 유지');
-      } else if (this.refreshToken) {
-        console.log('🔄 access token 없음, refresh token 존재 - 갱신 필요');
-      }
     } catch (error) {
-      console.warn('❌ 토큰 로딩 실패:', error);
+      console.warn('토큰 로딩 실패:', error);
       this.clearTokens();
     }
   }
@@ -64,16 +57,14 @@ class AuthService {
   private saveTokens(tokens: AuthTokens): void {
     this.accessToken = tokens.access;
     this.refreshToken = tokens.refresh;
-    
+
     // sessionStorage에 저장 (일반 새로고침 대응)
     sessionStorage.setItem('ahp_access_token', tokens.access);
     sessionStorage.setItem('ahp_refresh_token', tokens.refresh);
-    
+
     // localStorage에도 저장 (강력한 새로고침 대응)
     localStorage.setItem('ahp_access_token', tokens.access);
     localStorage.setItem('ahp_refresh_token', tokens.refresh);
-    
-    console.log('💾 토큰 저장 완료 - 세션 유지 강화');
   }
 
   /**
@@ -82,21 +73,19 @@ class AuthService {
   clearTokens(): void {
     this.accessToken = null;
     this.refreshToken = null;
-    
+
     // sessionStorage 정리
     sessionStorage.removeItem('ahp_access_token');
     sessionStorage.removeItem('ahp_refresh_token');
-    
+
     // localStorage 정리
     localStorage.removeItem('ahp_access_token');
     localStorage.removeItem('ahp_refresh_token');
-    
+
     if (this.tokenRefreshTimer) {
       clearTimeout(this.tokenRefreshTimer);
       this.tokenRefreshTimer = null;
     }
-    
-    console.log('🧹 토큰 정리 완료 - 완전 로그아웃');
   }
 
   /**
@@ -128,7 +117,7 @@ class AuthService {
    * API 요청 헬퍼
    */
   private async apiRequest<T>(
-    endpoint: string, 
+    endpoint: string,
     options: RequestInit = {}
   ): Promise<{ success: boolean; data?: T; error?: string }> {
     try {
@@ -161,7 +150,7 @@ class AuthService {
               ...options,
               headers,
             });
-            
+
             if (retryResponse.ok) {
               const retryData = await retryResponse.json();
               return { success: true, data: retryData };
@@ -169,17 +158,17 @@ class AuthService {
           }
         }
 
-        return { 
-          success: false, 
-          error: data.detail || data.error || `HTTP ${response.status}` 
+        return {
+          success: false,
+          error: data.detail || data.error || `HTTP ${response.status}`
         };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Network error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error'
       };
     }
   }
@@ -190,7 +179,7 @@ class AuthService {
   async login(usernameOrEmail: string, password: string): Promise<LoginResponse> {
     // 이메일 형식인지 확인
     const isEmail = usernameOrEmail.includes('@');
-    const loginData = isEmail 
+    const loginData = isEmail
       ? { email: usernameOrEmail, password }
       : { username: usernameOrEmail, password };
 
@@ -205,13 +194,12 @@ class AuthService {
 
     if (result.success && result.data) {
       const { access, refresh, user } = result.data;
-      
+
       // admin@ahp.com은 슈퍼 관리자로 처리
       if (user.email === 'admin@ahp.com') {
         user.role = 'super_admin';
-        console.log('🔑 슈퍼 관리자 권한 부여:', user.email);
       }
-      
+
       const tokens = { access, refresh };
       this.saveTokens(tokens);
       this.initTokenRefresh();
@@ -285,12 +273,11 @@ class AuthService {
     }
 
     const result = await this.apiRequest<User>(API_ENDPOINTS.AUTH.ME);
-    
+
     if (result.success && result.data) {
       // admin@ahp.com은 슈퍼 관리자로 처리
       if (result.data.email === 'admin@ahp.com') {
         result.data.role = 'super_admin';
-        console.log('🔑 getCurrentUser - 슈퍼 관리자 권한 부여:', result.data.email);
       }
       return result.data;
     }
@@ -320,11 +307,11 @@ class AuthService {
 
       if (response.ok && data.access) {
         this.accessToken = data.access;
-        
+
         // sessionStorage와 localStorage 모두 업데이트
         sessionStorage.setItem('ahp_access_token', data.access);
         localStorage.setItem('ahp_access_token', data.access);
-        
+
         // 새 refresh 토큰이 있으면 업데이트
         if (data.refresh) {
           this.refreshToken = data.refresh;
@@ -333,7 +320,6 @@ class AuthService {
         }
 
         this.initTokenRefresh();
-        console.log('🔄 토큰 갱신 완료 - 세션 연장');
         return { success: true };
       }
 
@@ -342,9 +328,9 @@ class AuthService {
       return { success: false, error: 'Refresh token expired' };
     } catch (error) {
       this.clearTokens();
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Token refresh failed' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Token refresh failed'
       };
     }
   }
@@ -362,7 +348,7 @@ class AuthService {
     const expirationTime = this.getTokenExpirationTime(this.accessToken);
     const currentTime = Date.now();
     const timeUntilExpiry = expirationTime - currentTime;
-    
+
     // 만료 5분 전에 토큰 새로고침
     const refreshTime = Math.max(timeUntilExpiry - (5 * 60 * 1000), 30000); // 최소 30초
 
@@ -443,7 +429,7 @@ class AuthService {
    * 인증된 API 요청을 위한 헬퍼
    */
   async authenticatedRequest<T>(
-    endpoint: string, 
+    endpoint: string,
     options: RequestInit = {}
   ): Promise<{ success: boolean; data?: T; error?: string }> {
     if (!this.isAuthenticated()) {

@@ -78,7 +78,6 @@ const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
       setError('');
     } catch (err) {
       setError('2단계 인증 설정을 생성하는 중 오류가 발생했습니다.');
-      console.error('2FA setup generation error:', err);
     }
   };
 

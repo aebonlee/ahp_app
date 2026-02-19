@@ -46,8 +46,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
     setError('');
 
     try {
-      console.log('🔐 로그인 시도:', { email, role });
-      
       // First, attempt login
       const loginResponse = await authApi.login(email, password);
       
@@ -62,7 +60,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
       
       if (twoFactorStatus.success && twoFactorStatus.data?.is_enabled) {
         // 2FA is enabled, require verification
-        console.log('🔒 2FA 인증 필요');
         setAuthState({
           user,
           tempTokens: { access_token: token },
@@ -73,8 +70,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
         setCurrentStep('2fa-verify');
       } else {
         // No 2FA, proceed with login
-        console.log('✅2FA 없이 로그인 완료');
-        
         // Check if admin and needs service selection
         if (user.is_superuser || user.is_staff) {
           setAuthState({
@@ -91,7 +86,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
         }
       }
     } catch (err: any) {
-      console.error('로그인 오류:', err);
       setError(err.message || '로그인 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -109,8 +103,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
     setError('');
 
     try {
-      console.log('📝 회원가입 시도:', { email, role });
-      
       // 실제 회원가입 API 호출 (현재는 로그인으로 대체)
       // TODO: 백엔드에 register API 구현 후 수정 필요
       const registerResponse = await authApi.login(email, password);
@@ -119,19 +111,15 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
         throw new Error(registerResponse.error || '회원가입에 실패했습니다.');
       }
 
-      console.log('✅ 회원가입 성공:', registerResponse.data || {});
-      
       // 회원가입 성공 후 자동 로그인 시도
       try {
         await handleLogin(email, password, role);
       } catch (loginErr) {
         // 자동 로그인 실패 시 수동 로그인 안내
         setError('회원가입이 완료되었습니다. 로그인해주세요.');
-        console.warn('자동 로그인 실패, 수동 로그인 필요:', loginErr);
       }
       
     } catch (err: any) {
-      console.error('회원가입 오류:', err);
       setError(err.message || '회원가입 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -154,8 +142,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
     setError('');
 
     try {
-      console.log('🔐 2FA 코드 검증:', { codeLength: code.length });
-      
       const codeType = twoFactorSecurity.validateTOTPFormat(code) ? 'totp' : 'backup';
       const verifyResponse = await twoFactorService.verifyCode(code, codeType);
       
@@ -163,8 +149,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
         throw new Error(verifyResponse.error || '인증 코드가 올바르지 않습니다.');
       }
 
-      console.log('✅ 2FA 인증 성공');
-      
       // Clear rate limit on success
       twoFactorSecurity.clearRateLimit(`2fa_${authState.user.email}`);
       
@@ -178,7 +162,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
       }
       
     } catch (err: any) {
-      console.error('2FA 인증 오류:', err);
       setError(err.message || '2FA 인증 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -191,8 +174,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
     setError('');
 
     try {
-      console.log('🔧 2FA 설정 완료');
-      
       // In a real implementation, save the secret and backup codes to backend
       // For now, just proceed with authentication
       
@@ -203,7 +184,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
       }
       
     } catch (err: any) {
-      console.error('2FA 설정 오류:', err);
       setError(err.message || '2FA 설정 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -212,8 +192,6 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
 
   // Handle admin service selection
   const handleAdminServiceSelect = (serviceType: 'admin' | 'personal') => {
-    console.log('🎯 관리자 서비스 선택:', serviceType);
-    
     // Update user role based on selection
     const updatedUser = {
       ...authState.user,
@@ -229,14 +207,11 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
     setError('');
 
     try {
-      console.log(`🌐 ${provider} 소셜 로그인`);
-      
       // Social authentication would be implemented here
       // For now, show placeholder message
       setError(`${provider} 로그인은 곧 지원될 예정입니다.`);
       
     } catch (err: any) {
-      console.error(`${provider} 로그인 오류:`, err);
       setError(`${provider} 로그인 중 오류가 발생했습니다.`);
     } finally {
       setLoading(false);

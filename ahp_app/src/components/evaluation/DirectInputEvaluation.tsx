@@ -148,7 +148,6 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
         onComplete(values);
       }
     } catch (error) {
-      console.error('Failed to save direct input values:', error);
       showActionMessage('error', '저장에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setSaving(false);

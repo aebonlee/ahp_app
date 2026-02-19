@@ -239,7 +239,6 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
   const exportAnalysis = (format: 'pdf' | 'word' | 'ppt') => {
     if (!analysisResult) return;
     
-    console.log(`분석 결과를 ${format} 형식으로 내보내기:`, analysisResult);
     showActionMessage('success', `${format.toUpperCase()} 형식으로 분석 보고서가 생성되었습니다. (구현 예정)`);
   };
 

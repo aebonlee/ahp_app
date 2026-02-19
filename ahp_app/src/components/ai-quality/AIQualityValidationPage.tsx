@@ -92,8 +92,6 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
         );
         
         if (response.success && response.data) {
-          console.log('✅ 파일이 영구 저장소에 업로드되었습니다:', response.data);
-          
           // 파일 내용 읽기 (로컬에서만 미리보기용)
           const reader = new FileReader();
           reader.onload = (e) => {
@@ -103,8 +101,6 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
           };
           reader.readAsText(file);
         } else {
-          console.warn('⚠️ 파일 업로드 실패, 임시 저장 모드로 진행:', response.error);
-          
           // 실패 시 기존 방식으로 임시 저장
           const reader = new FileReader();
           reader.onload = (e) => {
@@ -114,8 +110,7 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
           reader.readAsText(file);
         }
       } catch (error) {
-        console.error('❌ 파일 업로드 서비스 오류:', error);
-        
+        console.error('파일 업로드 서비스 오류:', error);
         // 오류 발생 시 기존 방식으로 임시 저장
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -289,7 +284,6 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
       setValidationResult(result);
       setActiveTab('results');
     } catch (error) {
-      console.error('검증 실패:', error);
       showActionMessage('error', '검증 중 오류가 발생했습니다.');
     } finally {
       setValidating(false);
@@ -347,14 +341,12 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
           {/* FileUpload 컴포넌트로 교체 */}
           <FileUpload
             onFileUploaded={(fileInfo: FileUploadInfo) => {
-              console.log('✅ 파일이 영구 저장되었습니다:', fileInfo);
               setUploadedFile(new File([], fileInfo.original_name, { type: fileInfo.mime_type }));
               
               // 업로드된 파일의 내용을 시뮬레이션 (실제로는 파일 다운로드 필요)
               setValidationText(`논문 내용이 업로드되었습니다: ${fileInfo.original_name}\n\n이곳에 실제 논문 내용이 표시됩니다...`);
             }}
             onFileDeleted={(fileId: string) => {
-              console.log('🗑️ 파일이 삭제되었습니다:', fileId);
               setUploadedFile(null);
               setValidationText('');
             }}
@@ -818,7 +810,6 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
           <button
             onClick={() => {
               // 개선된 문서 다운로드 (구현 예정)
-              console.log('개선된 문서 생성');
               showActionMessage('info', '개선된 문서가 생성되었습니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
@@ -830,7 +821,6 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
           <button
             onClick={() => {
               // 검증 보고서 다운로드 (구현 예정)
-              console.log('검증 보고서 다운로드');
               showActionMessage('info', '검증 보고서가 다운로드됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"

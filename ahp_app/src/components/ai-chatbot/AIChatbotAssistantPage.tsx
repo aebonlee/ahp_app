@@ -233,7 +233,7 @@ const AIChatbotAssistantPage: React.FC<AIChatbotAssistantPageProps> = ({ user })
         console.error('AI 응답 생성 실패:', error);
       }
     }
-    
+
     // AI 서비스가 없거나 실패한 경우 기본 응답 사용
     const message = userMessage.toLowerCase();
 

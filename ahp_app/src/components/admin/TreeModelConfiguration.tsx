@@ -390,7 +390,6 @@ const TreeModelConfiguration: React.FC<TreeModelConfigurationProps> = ({
   const handleDeleteNode = (nodeId: string) => {
     if (window.confirm('기준을 삭제하시겠습니까? 하위 기준과 연관된 평가 데이터도 함께 삭제됩니다.')) {
       // Implementation for delete node - simplified for this demo
-      console.log('Deleting node:', nodeId);
     }
   };
 

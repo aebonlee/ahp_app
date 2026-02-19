@@ -140,16 +140,6 @@ const makeRequest = async <T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    // PUT 요청에 대한 상세 로그
-    if (options.method === 'PUT' && endpoint.includes('/projects/')) {
-      console.log('🌐 HTTP PUT 요청 상세:', {
-        url,
-        method: options.method,
-        bodyContent: options.body ? JSON.parse(options.body as string) : 'no body',
-        headers: { ...getAuthHeaders(), ...options.headers }
-      });
-    }
-    
     const response = await fetch(url, {
       credentials: 'include',
       ...options,
@@ -159,16 +149,6 @@ const makeRequest = async <T>(
       }
     });
     
-    // PUT 응답에 대한 상세 로그
-    if (options.method === 'PUT' && endpoint.includes('/projects/')) {
-      console.log('📤 HTTP PUT 응답 상세:', {
-        status: response.status,
-        statusText: response.statusText,
-        contentType: response.headers.get('content-type'),
-        ok: response.ok
-      });
-    }
-
     // DELETE 요청의 경우 응답 본문이 없을 수 있음
     const isDeleteRequest = options.method?.toUpperCase() === 'DELETE';
     
@@ -179,15 +159,12 @@ const makeRequest = async <T>(
     if (!contentType || !contentType.includes('application/json')) {
       if (isDeleteRequest && response.ok) {
         // DELETE 요청이 성공했고 JSON이 아닌 경우 (예: 204 No Content)
-        console.log(`DELETE 성공 [${endpoint}]: ${response.status}`);
         return {
           success: true,
           data: undefined,
           message: '삭제 완료'
         };
       } else {
-        const text = await response.text();
-        console.error(`API Error [${endpoint}]: Expected JSON, got ${contentType}`, text.substring(0, 200));
         throw new Error(`서버가 올바른 응답을 반환하지 않았습니다. (${response.status})`);
       }
     } else {
@@ -197,10 +174,6 @@ const makeRequest = async <T>(
     if (!response.ok) {
       // 405 Method Not Allowed 특별 처리
       if (response.status === 405) {
-        console.error(`❌ 405 Method Not Allowed - ${endpoint}`);
-        console.error(`해당 엔드포인트가 ${options.method} 메서드를 지원하지 않습니다.`);
-        console.error('Django URL 패턴을 확인하세요.');
-        
         // 405 에러인 경우 더 구체적인 메시지 반환
         return {
           success: false,
@@ -208,48 +181,20 @@ const makeRequest = async <T>(
           message: 'Method Not Allowed'
         };
       }
-      
-      // 상세 에러 로깅 추가
-      console.error(`🚨 HTTP ${response.status} 에러 [${endpoint}]:`, {
-        status: response.status,
-        statusText: response.statusText,
-        url: url,
-        method: options.method || 'GET',
-        requestBody: options.body ? JSON.parse(options.body as string) : null,
-        responseData: data
-      });
-      
-      // 405 Method Not Allowed 특별 처리
-      if (response.status === 405) {
-        const allowedMethods = response.headers.get('allow') || 'Unknown';
-        console.error(`❌ 405 Method Not Allowed - 허용된 메서드: ${allowedMethods}`);
-        console.error(`현재 엔드포인트: ${endpoint}`);
-        console.error(`시도한 메서드: ${options.method || 'GET'}`);
-        
-        // GET 메서드가 허용되는 경우 목록 조회 엔드포인트일 가능성
-        if (allowedMethods.includes('GET') && options.method === 'POST') {
-          console.error('💡 힌트: 이 엔드포인트는 목록 조회용입니다. 생성 API는 다른 경로일 수 있습니다.');
-        }
-        
-        throw new Error(`405 Method Not Allowed: ${options.method} 메서드는 이 엔드포인트에서 허용되지 않습니다. 허용된 메서드: ${allowedMethods}`);
-      }
-      
+
       // 500 에러 특별 처리 - 백엔드 상세 에러 메시지 추출
       if (response.status === 500) {
         const errorDetail = data?.detail || data?.error || data?.message || '서버 내부 오류';
-        console.error('🔥 서버 500 에러 상세:', errorDetail);
         throw new Error(`서버 오류: ${errorDetail}`);
       }
-      
+
       // 401 Unauthorized 처리
       if (response.status === 401) {
-        console.error(`❌ 401 Unauthorized [${endpoint}]: 인증이 필요합니다.`);
         throw new Error('인증이 필요합니다. 다시 로그인해 주세요.');
       }
-      
+
       // 권한 오류 특별 처리
       if (response.status === 403) {
-        console.warn(`권한 오류 [${endpoint}]: 이 API는 인증이 필요하거나 권한이 없습니다.`);
         // 403 오류는 무시하고 빈 데이터 반환 (일부 API는 인증 없이도 작동해야 함)
         return {
           success: true,
@@ -257,25 +202,19 @@ const makeRequest = async <T>(
           message: '권한 제한됨'
         };
       }
-      
+
       // 400 에러 상세 분석
       if (response.status === 400) {
-        console.error('🔍 400 Bad Request 상세 분석:', {
-          errorData: data,
-          errorType: typeof data,
-          errorKeys: data && typeof data === 'object' ? Object.keys(data) : 'N/A'
-        });
-        const errorMessage = data.message || data.error || 
+        const errorMessage = data.message || data.error ||
                            (typeof data === 'object' ? JSON.stringify(data) : 'Bad Request');
         throw new Error(`잘못된 요청: ${errorMessage}`);
       }
-      
+
       // 404 Not Found 처리
       if (response.status === 404) {
-        console.error(`❌ 404 Not Found [${endpoint}]: 엔드포인트를 찾을 수 없습니다.`);
         throw new Error(`엔드포인트를 찾을 수 없습니다: ${endpoint}`);
       }
-      
+
       throw new Error(data.message || data.error || `HTTP ${response.status}: API 요청 실패`);
     }
 
@@ -297,14 +236,11 @@ const makeRequest = async <T>(
 export const projectApi = {
   // 프로젝트 목록 조회 (정규화 적용)
   getProjects: async () => {
-    console.log('🔍 projectApi.getProjects 호출');
     const response = await makeRequest<any>(API_ENDPOINTS.PROJECTS.LIST);
-    console.log('📡 프로젝트 목록 응답:', response);
-    
+
     if (response.success) {
       // response.data가 undefined인 경우 빈 배열 반환
       if (!response.data) {
-        console.log('📦 프로젝트 목록이 비어있습니다');
         return {
           success: true,
           data: [],
@@ -340,8 +276,6 @@ export const projectApi = {
 
   // 프로젝트 생성 (정규화 적용)
   createProject: async (data: Omit<ProjectData, 'id'>) => {
-    console.log('🔍 projectApi.createProject 호출:', data);
-    
     // 프론트엔드 데이터를 Django 형식으로 변환
     // Django 백엔드의 실제 필수 필드만 포함
     const djangoData = {
@@ -352,16 +286,12 @@ export const projectApi = {
       evaluation_mode: data.evaluation_mode || 'practical',
       workflow_stage: 'creating', // Django 모델: creating, waiting, evaluating, completed
     };
-    
-    console.log('📤 Django로 전송할 데이터:', djangoData);
-    
+
     const response = await makeRequest<any>(API_ENDPOINTS.PROJECTS.CREATE, {
       method: 'POST',
       body: JSON.stringify(djangoData)
     });
-    
-    console.log('📡 프로젝트 생성 응답:', response);
-    
+
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProject = normalizeProjectData(response.data);
@@ -386,40 +316,12 @@ export const projectApi = {
     if (data.workflow_stage !== undefined) djangoData.workflow_stage = data.workflow_stage;
     if (data.dueDate !== undefined) djangoData.deadline = data.dueDate; // dueDate → deadline 매핑
     if (data.settings !== undefined) djangoData.settings = data.settings; // settings 필드 추가
-    
-    console.log('🔍 projectApi.updateProject 호출:', {
-      projectId: id,
-      inputData: data,
-      djangoDataToSend: djangoData,
-      hasSettings: !!data.settings,
-      settingsStructure: data.settings ? Object.keys(data.settings) : 'none',
-      settingsStringified: data.settings ? JSON.stringify(data.settings) : 'none'
-    });
-    
-    // 실제 전송되는 JSON 문자열 확인
-    const requestBody = JSON.stringify(djangoData);
-    console.log('📤 실제 전송 JSON:', requestBody);
-    console.log('📊 JSON 길이:', requestBody.length);
-    
-    // 각 필드 개별 확인
-    console.log('🔍 각 필드 상세 분석:');
-    console.log('  - title:', typeof djangoData.title, djangoData.title);
-    console.log('  - description:', typeof djangoData.description, djangoData.description);
-    console.log('  - objective:', typeof djangoData.objective, djangoData.objective);
-    console.log('  - settings:', typeof djangoData.settings, djangoData.settings ? 'exists' : 'null');
-    
+
     const response = await makeRequest<DjangoProjectResponse>(`/api/service/projects/projects/${id}/`, {
       method: 'PATCH',
       body: JSON.stringify(djangoData)
     });
-    
-    console.log('📡 projectApi.updateProject 응답:', {
-      success: response.success,
-      error: response.error,
-      message: response.message,
-      statusInfo: response.data ? 'has data' : 'no data'
-    });
-    
+
     if (response.success && response.data) {
       // Django 응답을 정규화하여 반환
       const normalizedProject = normalizeProjectData(response.data);
@@ -471,15 +373,10 @@ export const projectApi = {
 export const criteriaApi = {
   // 프로젝트의 기준 목록 조회
   getCriteria: async (projectId: string) => {
-    // Django CriteriaViewSet의 filter 사용
-    console.log('📤 Django Criteria API 조회:', projectId);
-    
     // CriteriaViewSet은 project 필드로 필터링 지원
     const response = await makeRequest<any>(`/api/service/projects/criteria/?project=${projectId}`);
-    
+
     if (response.success && response.data) {
-      console.log('✅ PostgreSQL DB에서 기준 조회 성공');
-      
       // Django REST Framework 페이지네이션 처리
       let criteriaList: CriteriaData[] = [];
       if (Array.isArray(response.data)) {
@@ -500,7 +397,6 @@ export const criteriaApi = {
       };
     }
     
-    console.error('❌ Criteria API 조회 실패:', response.error);
     return {
       success: false,
       data: [],
@@ -513,7 +409,6 @@ export const criteriaApi = {
     const projectId = data.project_id; // UUID 문자열
     
     if (!projectId || typeof projectId !== 'string') {
-      console.error('❌ 잘못된 프로젝트 ID:', projectId);
       return {
         success: false,
         error: '프로젝트 ID가 유효하지 않습니다.'
@@ -545,15 +440,11 @@ export const criteriaApi = {
       const parentIdString = String(parentId);
       
       if (isTempId(parentIdString)) {
-        console.warn('⚠️ 임시 ID가 parent_id로 전달됨:', parentIdString);
-        console.warn('⚠️ 부모 관계를 null로 설정합니다.');
         validParentId = null;
       } else if (isValidUUID(parentIdString) || isNumericId(parentIdString)) {
         // UUID이거나 숫자 ID인 경우 모두 허용
         validParentId = parentIdString;
-        console.log('✅ 유효한 parent_id:', parentIdString, '(타입:', isValidUUID(parentIdString) ? 'UUID' : '숫자 ID', ')');
       } else {
-        console.warn('⚠️ 유효하지 않은 ID 형식:', parentIdString);
         validParentId = null;
       }
     }
@@ -574,42 +465,16 @@ export const criteriaApi = {
       is_active: true
     };
     
-    console.log('📤 Django Criteria API 요청:', {
-      endpoint: '/api/service/projects/criteria/',
-      data: requestData,
-      projectId: projectId,
-      projectIdType: typeof projectId,
-      name: data.name,
-      level: data.level,
-      parent_id: data.parent_id,
-      resolvedParent: validParentId,
-      requestDataJSON: JSON.stringify(requestData, null, 2)
-    });
-    
     // CriteriaViewSet의 create endpoint 사용
     const response = await makeRequest<CriteriaData>('/api/service/projects/criteria/', {
       method: 'POST',
       body: JSON.stringify(requestData)
     });
     
-    console.log('📥 Django Criteria API 응답:', {
-      success: response.success,
-      error: response.error,
-      message: response.message,
-      hasData: !!response.data,
-      dataId: response.data?.id
-    });
-    
     if (response.success) {
-      console.log('✅ PostgreSQL DB에 기준 저장 성공:', response.data);
       return response;
     }
-    
-    console.error('❌ Criteria API 실패 상세:', {
-      error: response.error,
-      message: response.message,
-      requestData: requestData
-    });
+
     return response;
   },
 
@@ -621,20 +486,10 @@ export const criteriaApi = {
     }),
 
   // 기준 삭제
-  deleteCriteria: async (criteriaId: string, projectId?: string) => {
-    // Django CriteriaViewSet의 delete endpoint 사용
-    console.log('📤 Django Criteria API 삭제:', criteriaId);
-    
+  deleteCriteria: async (criteriaId: string, _projectId?: string) => {
     const response = await makeRequest<void>(`/api/service/projects/criteria/${criteriaId}/`, {
       method: 'DELETE'
     });
-    
-    if (response.success) {
-      console.log('✅ PostgreSQL DB에서 기준 삭제 성공');
-      return response;
-    }
-    
-    console.error('❌ Criteria API 삭제 실패:', response.error);
     return response;
   },
 
@@ -883,22 +738,20 @@ export const normalizeProjectListResponse = (
 ): ProjectData[] => {
   // null 또는 undefined인 경우
   if (!response) {
-    console.log('📦 응답이 비어있습니다');
     return [];
   }
-  
+
   // 응답이 배열인 경우 직접 처리
   if (Array.isArray(response)) {
     return response.map(normalizeProjectData);
   }
-  
+
   // 응답이 객체이고 results 필드가 있는 경우
   if (typeof response === 'object' && response.results && Array.isArray(response.results)) {
     return response.results.map(normalizeProjectData);
   }
-  
+
   // 빈 배열 반환 (오류 방지)
-  console.warn('⚠️ 예상치 못한 프로젝트 목록 응답 형식:', response);
   return [];
 };
 

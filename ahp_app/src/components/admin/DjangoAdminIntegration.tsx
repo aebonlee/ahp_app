@@ -55,47 +55,37 @@ const DjangoAdminIntegration: React.FC<DjangoAdminIntegrationProps> = ({
     setError('');
 
     try {
-      console.log('🔧 Django Admin 데이터 로딩 시작');
-
       // Load admin status
       const statusResponse = await djangoAdminService.getAdminStatus();
       if (statusResponse.success && statusResponse.data) {
         setAdminStatus(statusResponse.data);
-        console.log('✅ Django Admin 상태 로딩 완료');
-      } else {
-        console.warn('⚠️ Django Admin 상태 로딩 실패, 접근 권한 확인');
       }
 
       // Load available models
       const modelsResponse = await djangoAdminService.getAvailableModels();
       if (modelsResponse.success && modelsResponse.data) {
         setAvailableModels(modelsResponse.data);
-        console.log('✅ Django 모델 목록 로딩 완료:', modelsResponse.data.length, '개');
       }
 
       // Load model statistics
       const statsResponse = await djangoAdminService.getModelStatistics();
       if (statsResponse.success && statsResponse.data) {
         setModelStatistics(statsResponse.data);
-        console.log('✅ Django 모델 통계 로딩 완료');
       }
 
       // Load recent logs
       const logsResponse = await djangoAdminService.getAdminLogs(1);
       if (logsResponse.success && logsResponse.data) {
         setRecentLogs(logsResponse.data.results.slice(0, 10));
-        console.log('✅ Django Admin 로그 로딩 완료');
       }
 
       // Load Django users
       const usersResponse = await djangoAdminService.getDjangoUsers(1);
       if (usersResponse.success && usersResponse.data) {
         setDjangoUsers(usersResponse.data.results.slice(0, 10));
-        console.log('✅ Django 사용자 목록 로딩 완료');
       }
 
     } catch (err: any) {
-      console.error('❌ Django Admin 데이터 로딩 오류:', err);
       const errorMessage = err.message || 'Django Admin 데이터를 불러오는 중 오류가 발생했습니다.';
       setError(errorMessage);
       onError?.(errorMessage);

@@ -54,7 +54,6 @@ const TrashOverflowModal: React.FC<TrashOverflowModalProps> = ({
       
       showActionMessage('success', '프로젝트가 영구 삭제되고 새 프로젝트가 휴지통으로 이동되었습니다.');
     } catch (error) {
-      console.error('영구 삭제 처리 실패:', error);
       showActionMessage('error', '영구 삭제 중 오류가 발생했습니다.');
     } finally {
       setIsDeleting(false);

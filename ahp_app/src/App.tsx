@@ -95,14 +95,10 @@ function App() {
           parsedUser.role = 'super_admin';
           // 강제로 localStorage 업데이트
           localStorage.setItem('ahp_user', JSON.stringify(parsedUser));
-          console.log('🔑🔑🔑 초기 복원 - 슈퍼 관리자 권한 강제 부여!');
-          console.log('🔑 이메일:', parsedUser.email);
-          console.log('🔑 역할:', parsedUser.role);
-          
+
           // 전역 변수로도 설정
           (window as any).__SUPER_ADMIN__ = true;
         }
-        console.log('🚀 초기 사용자 정보 복원:', parsedUser);
         return parsedUser;
       } catch (error) {
         console.error('초기 사용자 정보 복원 실패:', error);
@@ -123,7 +119,6 @@ function App() {
     
     // /evaluator 경로 또는 project 파라미터가 있으면 평가자 워크플로우로 이동
     if (evalParam || projectParam || window.location.pathname.includes('/evaluator')) {
-      console.log('🎯 평가자 워크플로우 탭 활성화:', { evalParam, projectParam, pathname: window.location.pathname });
       return 'evaluator-workflow';
     }
     
@@ -160,10 +155,6 @@ function App() {
     return 'home';
   });
 
-  // activeTab 변경 추적을 위한 useEffect 추가
-  useEffect(() => {
-    console.log('🎯 App.tsx activeTab 변경됨:', activeTab);
-  }, [activeTab]);
 
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
@@ -205,8 +196,6 @@ function App() {
     
     // 이미 초기 상태에서 사용자 정보를 복원했으므로 여기서는 탭 설정만 처리
     if (user) {
-      console.log('📌 사용자 역할 확인:', user.role);
-      
       // 역할에 따른 초기 탭 설정
       if (user.role === 'super_admin' || user.role === 'service_admin') {
         setActiveTab('personal-service');
@@ -232,7 +221,6 @@ function App() {
       
       // /evaluator 경로 또는 project/eval 파라미터가 있으면 평가자 워크플로우로
       if (window.location.pathname.includes('/evaluator') || projectParam || evalParam) {
-        console.log('🔄 URL 변경으로 평가자 워크플로우 활성화:', { pathname: window.location.pathname, projectParam, evalParam });
         setActiveTab('evaluator-workflow');
         return;
       }
@@ -282,7 +270,6 @@ function App() {
 
   // 초기 로딩 및 백엔드 연결 체크 (한 번만 실행)
   useEffect(() => {
-    console.log('🚀 앱 초기화 - 백엔드 연결 확인');
     checkBackendAndInitialize();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -305,7 +292,6 @@ function App() {
     const handlePopState = (event: PopStateEvent) => {
       const state = event.state;
       if (state && state.tab) {
-        console.log(`🔙 브라우저 내비게이션: ${state.tab}`);
         setActiveTab(state.tab);
         if (state.projectId) {
           setSelectedProjectId(state.projectId);
@@ -355,11 +341,9 @@ function App() {
       
       if (authService.isAuthenticated()) {
         try {
-          console.log('🎯 토큰 기반 자동 로그인 시도...');
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
           sessionService.startSession();
-          console.log('✅ 자동 로그인 완료:', currentUser.email);
         } catch (error) {
           console.error('자동 로그인 실패:', error);
           authService.clearTokens();
@@ -383,12 +367,10 @@ function App() {
     
     if (tabFromUrl && protectedTabs.includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
-      console.log(`🔄 URL에서 탭 복원: ${tabFromUrl}`);
     }
-    
+
     if (projectFromUrl) {
       setSelectedProjectId(projectFromUrl);
-      console.log(`🔄 URL에서 프로젝트 복원: ${projectFromUrl}`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isNavigationReady]);
@@ -396,7 +378,6 @@ function App() {
 
   const checkBackendAndInitialize = async () => {
     try {
-      console.log('🔍 백엔드 연결 확인 중...');
       setBackendStatus('checking');
       
       const response = await fetch(`${API_BASE_URL}/api/`, {
@@ -408,45 +389,32 @@ function App() {
       });
       
       if (response.ok) {
-        console.log('✅ 백엔드 연결 성공');
         setBackendStatus('available');
         validateSession(); // 비동기로 세션 검증
-        
+
         // AI 서비스 초기화 (고정 API 키 사용)
         try {
-          console.log('🤖 AI 서비스 초기화 중... (고정 API 키 사용)');
-          
           // 환경변수에서 ChatGPT API 키 로드
           const FIXED_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
-          
+
           // API 키를 로컬 스토리지에 저장하고 AI 서비스 초기화
           const aiService = FIXED_API_KEY ? setAPIKeyDirectly(FIXED_API_KEY, 'openai') : null;
-          
+
           if (aiService) {
-            console.log('✅ AI 서비스 초기화 성공 (고정 API 키)');
             // API 키 유효성 검증
             try {
-              const isValid = await aiService.validateAPIKey();
-              if (isValid) {
-                console.log('✅ ChatGPT API 키 유효성 검증 완료');
-              } else {
-                console.warn('⚠️ ChatGPT API 키 유효성 검증 실패');
-              }
+              await aiService.validateAPIKey();
             } catch (validationError) {
-              console.error('❌ API 키 검증 중 오류:', validationError);
+              console.error('API 키 검증 중 오류:', validationError);
             }
-          } else {
-            console.warn('⚠️ 환경변수에 REACT_APP_OPENAI_API_KEY가 설정되지 않음');
           }
         } catch (error) {
-          console.error('❌ AI 서비스 초기화 중 예외 발생:', error);
+          console.error('AI 서비스 초기화 중 예외 발생:', error);
         }
       } else {
-        console.log('⚠️ 백엔드 응답 오류');
         setBackendStatus('unavailable');
       }
     } catch (error) {
-      console.log('⚠️ 백엔드 연결 실패:', error);
       setBackendStatus('unavailable');
     } finally {
       // 백엔드 연결 상태와 관계없이 앱 UI는 표시
@@ -479,13 +447,11 @@ function App() {
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        console.log('⚠️ API 연결 끊김');
         setBackendStatus('unavailable');
         setShowApiErrorModal(true);
       }
     } catch (error) {
       // 백그라운드 체크에서는 조용히 실패 처리
-      console.log('❌ API 연결 체크 실패 (무시):', error instanceof Error ? error.message : error);
     }
   };
 
@@ -495,13 +461,10 @@ function App() {
 
       // access token이 없으면 refresh token으로 갱신 시도
       if (!token) {
-        console.log('🔄 access token 없음 - refresh token으로 갱신 시도...');
         const refreshResult = await authService.refreshAccessToken();
         if (refreshResult.success) {
           token = authService.getAccessToken();
-          console.log('✅ access token 갱신 성공');
         } else {
-          console.log('⚠️ 토큰 갱신 실패 - 로그아웃 처리');
           authService.clearTokens();
           setUser(null);
           localStorage.removeItem('ahp_user');
@@ -510,13 +473,10 @@ function App() {
       }
 
       if (!token) {
-        console.log('⚠️ 유효한 토큰 없음 - 로그아웃 처리');
         setUser(null);
         localStorage.removeItem('ahp_user');
         return;
       }
-
-      console.log('🔄 세션 검증 중... (강력한 새로고침 대응)');
 
       // 올바른 엔드포인트로 세션 검증
       const response = await fetch(`${API_BASE_URL}/api/service/accounts/me/`, {
@@ -539,11 +499,9 @@ function App() {
         }
         setUser(restoredUser);
         localStorage.setItem('ahp_user', JSON.stringify(restoredUser));
-        console.log('✅ 세션 복구 성공:', restoredUser.email);
         sessionService.startSession();
       } else if (response.status === 401) {
         // access token 만료 → refresh 시도
-        console.log('⚠️ 401 - refresh token으로 재시도...');
         const refreshResult = await authService.refreshAccessToken();
         if (refreshResult.success) {
           const newToken = authService.getAccessToken();
@@ -559,7 +517,6 @@ function App() {
               if (retryUser.email === 'admin@ahp.com') retryUser.role = 'super_admin';
               setUser(retryUser);
               localStorage.setItem('ahp_user', JSON.stringify(retryUser));
-              console.log('✅ 토큰 갱신 후 세션 복구 성공:', retryUser.email);
               sessionService.startSession();
             } else {
               authService.clearTokens();
@@ -568,7 +525,6 @@ function App() {
             }
           }
         } else {
-          console.log('⚠️ refresh 실패 - 로그아웃');
           authService.clearTokens();
           setUser(null);
           localStorage.removeItem('ahp_user');
@@ -605,7 +561,6 @@ function App() {
       await fetchProjects();
       
     } catch (error: any) {
-      console.error('Registration failed:', error);
       setLoginError(error.message || '회원가입 중 오류가 발생했습니다.');
     } finally {
       setLoginLoading(false);
@@ -617,27 +572,17 @@ function App() {
     setLoginError('');
 
     try {
-      console.log('🔍 백엔드 로그인 시도:', { username });
-      
       const result = await authService.login(username, password);
-      
-      console.log('🎯 로그인 결과 전체:', result);
-      console.log('🎯 사용자 역할:', result.user.role);
-      console.log('🎯 사용자 이메일:', result.user.email);
-      
+
       // admin@ahp.com은 슈퍼 관리자로 처리 (재확인)
       let finalUser = { ...result.user };
       if (result.user.email === 'admin@ahp.com') {
         finalUser.role = 'super_admin';
-        console.log('🔑 App.tsx - 슈퍼 관리자 권한 강제 부여');
-        console.log('🔑 변경 전 role:', result.user.role);
-        console.log('🔑 변경 후 role:', finalUser.role);
       }
-      
+
       setUser(finalUser);
       // localStorage에 사용자 정보 저장 (수정된 finalUser 저장)
       localStorage.setItem('ahp_user', JSON.stringify(finalUser));
-      console.log('💾 localStorage에 저장된 user:', finalUser);
       sessionService.startSession();
       
       const urlParams = new URLSearchParams(window.location.search);
@@ -654,10 +599,7 @@ function App() {
         targetTab = 'personal-service';
       }
       
-      console.log('🎯 로그인 후 타겟 탭:', targetTab, '(URL 파라미터:', tabParam, ')');
       setActiveTab(targetTab);
-      
-      console.log('✅ 백엔드 로그인 성공');
       await fetchProjects();
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : 'Login failed');
@@ -678,7 +620,7 @@ function App() {
     // localStorage 정리
     localStorage.removeItem('ahp_user');
     localStorage.removeItem('ahp_temp_role');
-    
+
     // 상태 초기화
     setUser(null);
     setActiveTab('home');
@@ -688,8 +630,6 @@ function App() {
     setUsers([]);
     setLoginError('');
     setRegisterMode(null);
-    
-    console.log('✅ 로그아웃 완료');
   };
 
   // 소셜 인증 핸들러들
@@ -697,10 +637,8 @@ function App() {
     try {
       setLoginLoading(true);
       setLoginError('');
-      console.log('🔍 Google 소셜 로그인 시도');
       await authService.googleLogin();
     } catch (error: any) {
-      console.error('❌ Google 로그인 실패:', error);
       setLoginError(error.message || 'Google 로그인에 실패했습니다.');
       setLoginLoading(false);
     }
@@ -710,10 +648,8 @@ function App() {
     try {
       setLoginLoading(true);
       setLoginError('');
-      console.log('🔍 Kakao 소셜 로그인 시도');
       await authService.kakaoLogin();
     } catch (error: any) {
-      console.error('❌ Kakao 로그인 실패:', error);
       setLoginError(error.message || 'Kakao 로그인에 실패했습니다.');
       setLoginLoading(false);
     }
@@ -723,10 +659,8 @@ function App() {
     try {
       setLoginLoading(true);
       setLoginError('');
-      console.log('🔍 Naver 소셜 로그인 시도');
       await authService.naverLogin();
     } catch (error: any) {
-      console.error('❌ Naver 로그인 실패:', error);
       setLoginError(error.message || 'Naver 로그인에 실패했습니다.');
       setLoginLoading(false);
     }
@@ -821,8 +755,6 @@ function App() {
       } else {
         setActiveTab('personal-service');
       }
-      
-      console.log(`🔄 모드 전환: ${targetMode}`);
     }
   };
 
@@ -882,13 +814,8 @@ function App() {
 
   // 프로젝트 생성 함수 (DB 저장 - dataService_clean 사용)
   const createProject = async (projectData: any) => {
-    console.log('🚀 App.tsx createProject 호출됨:', projectData);
-    
-    // 디버깅 모드 활성화
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 프로젝트 생성 디버깅 시작...');
-      const debugReport = await projectDebugger.debugProjectCreation(projectData);
-      console.log('📊 디버그 보고서:', debugReport);
+      await projectDebugger.debugProjectCreation(projectData);
     }
     
     try {
@@ -906,30 +833,20 @@ function App() {
       });
       
       if (newProject) {
-        console.log('✅ 프로젝트 생성 성공:', newProject.id);
         await fetchProjects(); // 목록 새로고침
-        
+
         // 프로젝트 생성 후 자동으로 모델 구축 페이지로 이동
         setSelectedProjectId(newProject.id || '');
         setActiveTab('project-workflow');
-        console.log('🎯 자동 이동: project-workflow 페이지, 프로젝트 ID:', newProject.id);
-        
+
         return newProject;
       } else {
-        console.error('❌ 프로젝트 생성 실패: newProject가 null');
         throw new Error('프로젝트 생성에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (error: any) {
-      console.error('❌ createProject 실패:', error);
-      console.error('오류 상세:', {
-        message: error.message,
-        stack: error.stack,
-        response: error.response
-      });
-      
       // 사용자에게 구체적인 오류 메시지 제공
       showActionMessage('error', `프로젝트 생성 실패: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
-      
+
       // 에러를 다시 throw하지 않고 null 반환 (사용자에게 친화적)
       return null;
     }
@@ -1034,21 +951,17 @@ function App() {
 
   // 프로젝트 삭제 (휴지통으로 이동)
   const deleteProject = async (projectId: string) => {
-    console.log('🗑️ App.tsx deleteProject 호출됨:', projectId);
-    
     try {
       // dataService_clean.ts의 deleteProject 사용 (정확한 API 엔드포인트 사용)
       const success = await cleanDataService.deleteProject(projectId);
-      
+
       if (success) {
-        console.log('✅ 프로젝트 삭제 성공:', projectId);
         await fetchProjects(); // 목록 새로고침
         return true;
       } else {
         throw new Error('프로젝트 삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('❌ deleteProject 실패:', error);
       // 에러를 다시 throw하여 호출자가 처리하도록 함
       throw error;
     }
@@ -1134,7 +1047,6 @@ function App() {
       await fetchProjects(); // 목록 새로고침
       return response.json();
     } catch (error) {
-      console.error('휴지통 오버플로우 처리 실패:', error);
       throw error;
     }
   };
@@ -1248,7 +1160,6 @@ function App() {
       setSelectedProjectId(projectId);
       setSelectedProjectTitle(projectTitle || '');
     }
-    console.log(`📦 탭 전환: ${newTab}${projectId ? ` (프로젝트: ${projectTitle})` : ''}`);
   }, []);
   
   // Navigation handlers
@@ -1292,7 +1203,6 @@ function App() {
   const handleProjectSelect = (projectId: string, projectTitle: string) => {
     setSelectedProjectId(projectId);
     setSelectedProjectTitle(projectTitle);
-    console.log(`📋 프로젝트 선택됨: ${projectTitle}`);
   };
 
   // Evaluator workflow handlers
@@ -1309,17 +1219,14 @@ function App() {
     changeTab('evaluator-dashboard');
     setSelectedProjectId(null);
     setSelectedProjectTitle('');
-    console.log('✅ 평가자 평가 완료');
   };
 
   useEffect(() => {
     if (user && (activeTab === 'personal-projects' || activeTab === 'personal-service' || activeTab === 'welcome' || activeTab === 'my-projects' || activeTab === 'home')) {
-      console.log('🔄 사용자 로그인 확인됨 - 프로젝트 로드 시작 (탭:', activeTab, ')');
       fetchProjects();
     } else if (user && activeTab === 'personal-users' && (user.role === 'super_admin' || user.role === 'service_admin')) {
       fetchUsers();
     } else if (!user) {
-      console.log('⚠️ 로그인하지 않은 상태 - 프로젝트 초기화');
       setProjects([]);
     }
   }, [user, activeTab, fetchProjects, fetchUsers]);
@@ -1327,16 +1234,8 @@ function App() {
   // 로그인 후 리다이렉트 처리를 렌더링 시점에서 직접 처리
 
   const renderContent = () => {
-    console.log('🎯 App.tsx renderContent 호출됨:', { 
-      activeTab, 
-      user: !!user, 
-      userRole: user?.role,
-      userEmail: user?.email 
-    });
-
     // 로그인하지 않은 상태에서는 메인페이지와 관련 페이지만 렌더링
     if (!user) {
-      console.log('❌ 로그인하지 않은 상태 - 기본 페이지 렌더링');
       
       switch (activeTab) {
         case 'home':
@@ -1442,17 +1341,13 @@ function App() {
     }
     
     // 로그인한 상태에서의 라우팅
-    console.log('✅ 로그인된 사용자 - 탭별 라우팅:', activeTab);
     switch (activeTab) {
       case 'home':
       case 'register':
       case 'welcome':
         // 로그인된 사용자가 home에 접근하면 적절한 대시보드로 자동 리다이렉트
-        console.log('🔄 로그인된 사용자 home 접근 - 자동 리다이렉트 처리');
-        
         // 사용자 역할에 따라 적절한 대시보드로 리다이렉트
         const redirectTab = user.role === 'evaluator' ? 'evaluator-dashboard' : 'personal-service';
-        console.log(`🎯 ${user.role} 역할 → ${redirectTab}로 리다이렉트`);
         
         // URL도 함께 업데이트하여 주소창의 ?tab=home을 제거
         const newUrl = new URL(window.location.href);
@@ -1586,8 +1481,7 @@ function App() {
           <SystemReset
             onBack={() => setActiveTab('super-admin-dashboard')}
             onReset={(options) => {
-              console.log('시스템 초기화 실행:', options);
-              // TODO: 실제 초기화 API 호출
+                // TODO: 실제 초기화 API 호출
               showActionMessage('success', '시스템 초기화가 완료되었습니다.');
             }}
           />
@@ -1808,7 +1702,6 @@ function App() {
       case 'project-wizard':
       case 'demographic-setup':
       case 'evaluator-invitation':
-        console.log('🎯 PersonalServiceDashboard_Enhanced 렌더링 (my-projects/project-creation/wizard):', { activeTab, userId: user.id, userRole: user.role });
         return (
           <PersonalServiceDashboard 
             user={user}
@@ -1848,7 +1741,6 @@ function App() {
       case 'workshop-management':
       case 'decision-support-system':
       case 'personal-settings':
-        console.log('🎯 PersonalServiceDashboard_Enhanced 렌더링:', { activeTab, userId: user.id, userRole: user.role });
         return (
           <PersonalServiceDashboard 
             user={user}
@@ -2250,7 +2142,6 @@ function App() {
         );
         
       default:
-        console.warn('⚠️ 처리되지 않은 activeTab:', activeTab);
         // personal-service로 리다이렉트
         setActiveTab('personal-service');
         return null;

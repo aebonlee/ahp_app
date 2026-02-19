@@ -133,7 +133,6 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
         setLoadError(true);
       }
     } catch (error) {
-      console.error('Failed to load evaluation data:', error);
       setLoadError(true);
     } finally {
       setIsLoading(false);
@@ -214,7 +213,6 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
       showActionMessage('success', '평가가 저장되었습니다.');
       setTimeout(() => onComplete(), 1000);
     } catch (error) {
-      console.error('Failed to save evaluation:', error);
       showActionMessage('error', '저장에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSaving(false);

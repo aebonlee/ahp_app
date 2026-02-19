@@ -71,7 +71,6 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       // const securityResponse = await userApi.getSecuritySettings();
       
     } catch (err: any) {
-      console.error('보안 설정 로드 오류:', err);
       setError('보안 설정을 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -84,8 +83,6 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
     setError('');
 
     try {
-      console.log('🔧 2FA 설정 완료 처리');
-      
       // Update local state
       setTwoFactorStatus(prev => ({
         ...prev,
@@ -107,7 +104,6 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       onSettingsUpdate?.({ twoFactorEnabled: true });
       
     } catch (err: any) {
-      console.error('2FA 설정 오류:', err);
       setError('2FA 설정 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -146,7 +142,6 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       onSettingsUpdate?.({ twoFactorEnabled: false });
       
     } catch (err: any) {
-      console.error('2FA 비활성화 오류:', err);
       setError(err.message || '2FA 비활성화 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -173,7 +168,6 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       setSuccess('새로운 백업 코드가 생성되었습니다.');
       
     } catch (err: any) {
-      console.error('백업 코드 생성 오류:', err);
       setError(err.message || '백업 코드 생성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);

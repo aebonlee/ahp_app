@@ -84,10 +84,6 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
   }, []);
 
   const particlesLoaded = useCallback(async (container: Container | undefined) => {
-    // 성능 최적화: 필요시에만 로그
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Particles loaded:', container);
-    }
   }, []);
 
   const particlesOptions: ISourceOptions = useMemo(() => {

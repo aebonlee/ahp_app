@@ -88,7 +88,6 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
         onSuccess();
       }
     } catch (error: any) {
-      console.error('초대 발송 실패:', error);
       setErrors([error.response?.data?.error || '초대 발송에 실패했습니다.']);
     } finally {
       setLoading(false);

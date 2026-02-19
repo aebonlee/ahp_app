@@ -138,7 +138,6 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
       // 완료 콜백 호출 - 평가자 관리 페이지로 이동
       onComplete();
     } catch (error) {
-      console.error('모델 완료 처리 실패:', error);
       showActionMessage('error', '모델 완료 처리 중 오류가 발생했습니다.');
     }
   };

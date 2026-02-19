@@ -208,7 +208,6 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
     }));
 
     // 실제 구현에서는 서버로 내보내기 요청
-    console.log(`논문을 ${format} 형식으로 내보내기:`, paperContent);
     showActionMessage('success', `${format.toUpperCase()} 형식으로 논문이 생성되었습니다. (구현 예정)`);
   };
 

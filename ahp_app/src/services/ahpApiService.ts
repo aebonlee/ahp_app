@@ -236,7 +236,6 @@ class AHPApiService {
       };
 
     } catch (error) {
-      console.error('Workflow execution failed:', error);
       throw error;
     }
   }

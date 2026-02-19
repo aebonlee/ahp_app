@@ -112,8 +112,6 @@ class MonitoringService {
     // 프로덕션 환경에서만 서버로 전송
     if (this.isProduction) {
       this.sendToServer('errors', errorLog);
-    } else {
-      console.error('[Monitoring]', errorLog);
     }
   }
 
@@ -134,8 +132,6 @@ class MonitoringService {
 
     if (this.isProduction) {
       this.sendToServer('performance', metric);
-    } else {
-      console.log('[Performance]', metric);
     }
   }
 
@@ -154,8 +150,6 @@ class MonitoringService {
 
     if (this.isProduction) {
       this.sendToServer('actions', userAction);
-    } else {
-      console.log('[UserAction]', userAction);
     }
   }
 

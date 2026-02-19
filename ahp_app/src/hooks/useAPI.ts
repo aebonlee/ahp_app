@@ -42,7 +42,6 @@ export const useAPI = () => {
         data: result
       };
     } catch (error) {
-      console.error('API call failed:', error);
       return {
         ok: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -69,7 +68,6 @@ export const useAPI = () => {
         data: result
       };
     } catch (error) {
-      console.error('API call failed:', error);
       return {
         ok: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -97,7 +95,6 @@ export const useAPI = () => {
         data: result
       };
     } catch (error) {
-      console.error('API call failed:', error);
       return {
         ok: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -124,7 +121,6 @@ export const useAPI = () => {
         data: result
       };
     } catch (error) {
-      console.error('API call failed:', error);
       return {
         ok: false,
         error: error instanceof Error ? error.message : 'Unknown error'

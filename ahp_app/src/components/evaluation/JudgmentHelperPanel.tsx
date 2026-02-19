@@ -64,7 +64,6 @@ const JudgmentHelperPanel: React.FC<JudgmentHelperPanelProps> = ({
       setSuggestions(newSuggestions);
       
     } catch (error) {
-      console.error('Failed to generate suggestions:', error);
       setSuggestions([]);
     } finally {
       setLoading(false);
@@ -132,7 +131,6 @@ const JudgmentHelperPanel: React.FC<JudgmentHelperPanelProps> = ({
         .map((s, index) => ({ ...s, priority: index + 1 }));
         
     } catch (error) {
-      console.error('Error in generateConsistencySuggestions:', error);
       return [];
     }
   };

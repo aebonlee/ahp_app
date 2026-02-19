@@ -34,12 +34,10 @@ const SystemHealthPage: React.FC = () => {
   const runHealthCheck = async () => {
     setLoading(true);
     try {
-      console.log('🔍 시스템 점검 시작...');
       const report = await healthChecker.runFullHealthCheck();
       setHealthReport(report);
-      console.log('✅ 시스템 점검 완료');
     } catch (error) {
-      console.error('❌ 시스템 점검 실패:', error);
+      console.error('시스템 점검 실패:', error);
     } finally {
       setLoading(false);
     }

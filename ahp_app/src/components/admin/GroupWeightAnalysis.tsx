@@ -70,7 +70,6 @@ const GroupWeightAnalysis: React.FC<GroupWeightAnalysisProps> = ({ projectId }) 
 
   const calculateResults = () => {
     // Simulate recalculation
-    console.log('Recalculating with selected evaluators and weights...');
     // Update results based on selected evaluators and their weights
   };
 

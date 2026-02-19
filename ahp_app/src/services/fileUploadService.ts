@@ -79,8 +79,6 @@ const makeFileUploadRequest = async <T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log(`📁 File Upload API: ${options.method || 'GET'} ${endpoint}`);
-    
     const response = await fetch(url, {
       credentials: 'include',
       ...options,
@@ -99,16 +97,10 @@ const makeFileUploadRequest = async <T>(
       data = { success: true };
     } else {
       const text = await response.text();
-      console.error(`File Upload API: Expected JSON, got ${contentType}`, text.substring(0, 200));
+      void text; // non-JSON response body discarded
     }
 
     if (!response.ok) {
-      console.error(`File Upload API Error [${endpoint}]:`, {
-        status: response.status,
-        statusText: response.statusText,
-        data
-      });
-      
       throw new Error(data?.message || data?.error || `HTTP ${response.status}: File upload API 요청 실패`);
     }
 
@@ -210,7 +202,6 @@ export const fileUploadService = {
         xhr.send(formData);
       });
     } catch (error: any) {
-      console.error('File upload failed:', error);
       return {
         success: false,
         error: error.message || 'File upload failed'

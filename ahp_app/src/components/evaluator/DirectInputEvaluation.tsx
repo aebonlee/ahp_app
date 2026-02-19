@@ -156,14 +156,11 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
         evaluationMethod: 'direct_input'
       };
       
-      console.log(`💾 Saving group ${currentGroup.name} to database...`, groupData);
-      
       // 실제 API 호출로 그룹 결과 저장
       // const response = await apiService.evaluationAPI.saveDirectInput(groupData);
-      // console.log('✅ Group saved successfully:', response);
-      
+
     } catch (error) {
-      console.error('❌ Failed to save group to database:', error);
+      console.error('Failed to save group to database:', error);
     }
 
     if (currentGroupIndex < evaluationGroups.length - 1) {
@@ -179,14 +176,11 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
           completedAt: new Date().toISOString()
         };
         
-        console.log(`🎯 Saving final direct input results to database...`, evaluationResults);
-        
         // 실제 API 호출로 최종 결과 저장
         // const response = await apiService.evaluationAPI.saveFinalDirectInput(evaluationResults);
-        // console.log('✅ Final direct input results saved successfully:', response);
-        
+
       } catch (error) {
-        console.error('❌ Failed to save final direct input results to database:', error);
+        console.error('Failed to save final direct input results to database:', error);
       }
       
       onComplete();

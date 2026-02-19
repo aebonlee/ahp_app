@@ -18,7 +18,6 @@ const EvaluatorOnlyDashboard: React.FC<EvaluatorOnlyDashboardProps> = ({ user, o
     e.preventDefault();
     if (invitationCode.trim()) {
       // TODO: 초대 코드로 평가 페이지로 이동
-      console.log('초대 코드 입력됨:', invitationCode);
       onTabChange('pairwise-evaluation');
     }
   };

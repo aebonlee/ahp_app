@@ -140,7 +140,6 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
 
         if (response.ok) {
           const data = await response.json();
-          console.log('✅ API에서 사용자 설정 로드 성공');
           
           if (data.user) {
             const apiSettings = {
@@ -176,12 +175,10 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
             }
           }
         } else if (response.status === 404) {
-          console.log('⚠️ 사용자 프로필이 DB에 없음 - 초기 설정 사용');
           // DB에 프로필이 없으면 현재 설정을 저장
           saveSettingsToAPI();
         }
       } catch (error) {
-        console.warn('📴 API 연결 실패:', error);
         // API 실패 시 기본 설정 유지
       }
     };
@@ -202,13 +199,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
 
       // 사용자 정보 변경 시 즉시 UI 업데이트
       const isNameChanged = settings.profile.firstName !== user.first_name || settings.profile.lastName !== user.last_name;
-      console.log('🔍 PersonalSettings: 이름 변경 체크', {
-        현재이름: `${user.first_name} ${user.last_name}`,
-        새이름: `${settings.profile.firstName} ${settings.profile.lastName}`,
-        변경됨: isNameChanged,
-        onUserUpdate존재: !!onUserUpdate
-      });
-      
+
       if (isNameChanged && onUserUpdate) {
         // 즉시 상위 컴포넌트에 변경사항 알림
         const updatedUser = {
@@ -217,7 +208,6 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
           last_name: settings.profile.lastName,
           _updated: Date.now()
         };
-        console.log('🔄 PersonalSettings: 즉시 UI 업데이트!', updatedUser);
         onUserUpdate(updatedUser);
       }
 
@@ -234,8 +224,6 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
         language: settings.display.language
       };
 
-      console.log('💾 API로 사용자 설정 저장 시작');
-      
       const response = await fetch(`${API_BASE_URL}/api/service/auth/profile/`, {
         method: 'PUT',
         credentials: 'include',
@@ -246,14 +234,12 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
       });
 
       if (response.ok) {
-        console.log('✅ API 설정 저장 성공');
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
       } else {
         throw new Error('API 저장 실패');
       }
     } catch (error) {
-      console.error('❌ 설정 저장 실패:', error);
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
     }

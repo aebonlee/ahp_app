@@ -50,8 +50,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
   const handleProjectCreated = async (projectData: any) => {
     try {
       setLoading(true);
-      console.log('🔄 프로젝트 생성 중...', projectData);
-      
       const createdProject = await dataService.createProject({
         title: projectData.title,
         description: projectData.description,
@@ -63,7 +61,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
       });
 
       if (createdProject && createdProject.id) {
-        console.log('✅ 프로젝트 생성 성공:', createdProject);
         setWorkflowState(prev => ({
           ...prev,
           currentStep: 2,
@@ -72,7 +69,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
         }));
       }
     } catch (error) {
-      console.error('❌ 프로젝트 생성 실패:', error);
       setError('프로젝트 생성에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setLoading(false);
@@ -81,7 +77,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
 
   // 기준 설정 완료 핸들러
   const handleCriteriaComplete = () => {
-    console.log(`✅ 기준 설정 완료: ${workflowState.criteriaCount}개`);
     setWorkflowState(prev => ({
       ...prev,
       currentStep: 3
@@ -90,7 +85,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
 
   // 대안 설정 완료 핸들러
   const handleAlternativesComplete = () => {
-    console.log(`✅ 대안 설정 완료: ${workflowState.alternativesCount}개`);
     setWorkflowState(prev => ({
       ...prev,
       currentStep: 4
@@ -99,7 +93,6 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
 
   // 평가자 배정 완료 핸들러
   const handleEvaluatorsComplete = () => {
-    console.log(`✅ 평가자 배정 완료: ${workflowState.evaluatorsCount}명`);
     setWorkflowState(prev => ({
       ...prev,
       currentStep: 5

@@ -97,7 +97,6 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, refres
       showActionMessage('success', `${response.data.resent_count}개의 이메일을 재발송 대기열에 추가했습니다.`);
       loadInvitations();
     } catch (error) {
-      console.error('재발송 실패:', error);
       showActionMessage('error', '재발송에 실패했습니다.');
     }
   };

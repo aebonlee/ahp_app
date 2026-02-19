@@ -85,8 +85,6 @@ const makeSystemRequest = async <T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log(`🔧 System API Request: ${options.method || 'GET'} ${endpoint}`);
-    
     const response = await fetch(url, {
       credentials: 'include',
       ...options,
@@ -106,16 +104,10 @@ const makeSystemRequest = async <T>(
       data = { success: true };
     } else {
       const text = await response.text();
-      console.error(`System API: Expected JSON, got ${contentType}`, text.substring(0, 200));
+      void text; // non-JSON response body discarded
     }
 
     if (!response.ok) {
-      console.error(`System API Error [${endpoint}]:`, {
-        status: response.status,
-        statusText: response.statusText,
-        data
-      });
-      
       throw new Error(data?.message || data?.error || `HTTP ${response.status}: System API 요청 실패`);
     }
 

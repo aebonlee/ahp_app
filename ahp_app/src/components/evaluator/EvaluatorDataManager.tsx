@@ -226,8 +226,7 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
 
     try {
       setLoading(true);
-      console.log('🗑️ 모든 평가자 삭제...');
-      
+
       // 데이터 서비스에서 모든 평가자 삭제
       for (const evaluator of evaluators) {
         if (!evaluator.id.startsWith('sample-') && !evaluator.id.startsWith('new-')) {

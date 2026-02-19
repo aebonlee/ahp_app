@@ -106,12 +106,10 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
         onProjectCreated();
       } else {
         // Fallback: 시뮬레이션
-        console.log("Creating project with data:", formData);
         await new Promise((resolve) => setTimeout(resolve, 1000));
         onProjectCreated();
       }
     } catch (error) {
-      console.error("Failed to create project:", error);
       // 에러 메시지를 사용자에게 표시
       setErrors({
         general:

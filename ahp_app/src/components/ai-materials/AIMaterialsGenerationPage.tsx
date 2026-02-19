@@ -185,7 +185,6 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
       setGeneratedMaterial(mockMaterial);
       setActiveTab('result');
     } catch (error) {
-      console.error('자료 생성 실패:', error);
       showActionMessage('error', '자료 생성 중 오류가 발생했습니다.');
     } finally {
       setGenerating(false);
@@ -760,7 +759,6 @@ ${selectedProject?.title} AHP 분석 연구
         <div className="flex flex-wrap justify-center gap-4">
           <button
             onClick={() => {
-              console.log('Word 다운로드');
               showActionMessage('info', 'Word 파일이 다운로드됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
@@ -771,7 +769,6 @@ ${selectedProject?.title} AHP 분석 연구
           
           <button
             onClick={() => {
-              console.log('PDF 다운로드');
               showActionMessage('info', 'PDF 파일이 다운로드됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -782,7 +779,6 @@ ${selectedProject?.title} AHP 분석 연구
           
           <button
             onClick={() => {
-              console.log('이메일 전송');
               showActionMessage('info', '이메일로 전송됩니다. (구현 예정)');
             }}
             className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"

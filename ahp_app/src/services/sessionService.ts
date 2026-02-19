@@ -26,18 +26,16 @@ class SessionService {
     // JWT 기반 인증에서는 서버가 세션 관리를 담당
     // 클라이언트는 세션 상태 확인만 수행
     this.checkSessionStatus();
-    
+
     // localStorage 제거됨 - JWT 토큰 만료 시간에 따라 서버에서 처리
   }
 
   // 로그인 시 세션 시작 (30분 세션)
   public startSession(): void {
-    console.log('30분 세션이 시작되었습니다.');
-    
     // 30분 세션 타이머 시작
     this.clearTimers();
     this.resumeSessionTimer(this.SESSION_DURATION);
-    
+
     // 토큰 만료 이벤트 리스너 등록
     this.setupTokenExpirationListener();
   }
@@ -45,14 +43,12 @@ class SessionService {
   // JWT 토큰 만료 이벤트 리스너 설정
   private setupTokenExpirationListener(): void {
     window.addEventListener('auth:tokenExpired', () => {
-      console.log('JWT 토큰 만료 - 자동 로그아웃');
       this.logout();
     });
   }
 
   // 세션 타이머 시작 (30분 기본)
   private startSessionTimer(): void {
-    console.log('30분 세션 타이머 시작');
     this.clearTimers();
     this.resumeSessionTimer(this.SESSION_DURATION);
   }
@@ -60,10 +56,7 @@ class SessionService {
   // 세션 타이머 재개 (JWT 기반에서는 사용하지 않음)
   private resumeSessionTimer(remainingTime: number): void {
     // JWT 기반에서는 authService가 자동으로 토큰 상태를 관리
-    console.log('JWT 기반 인증: 토큰 자동 갱신으로 세션 유지');
-    
-    console.log(`세션 타이머 재개: 남은 시간 ${Math.floor(remainingTime / 60000)}분`);
-    
+
     // 5분 이상 남았으면 경고 타이머 설정
     if (remainingTime > this.WARNING_TIME) {
       this.warningTimer = setTimeout(() => {
@@ -73,7 +66,7 @@ class SessionService {
       // 5분 이하 남았으면 바로 경고 표시
       this.showSessionWarning();
     }
-    
+
     // 남은 시간 후 자동 로그아웃
     this.sessionTimer = setTimeout(() => {
       this.forceLogout();
@@ -84,14 +77,12 @@ class SessionService {
   public extendSession(): void {
     // JWT 토큰 연장은 서버에서 처리
     // TODO: API 호출로 서버 세션 연장 처리
-    
+
     // 30분(1800초) 연장을 위한 타이머 재시작
     this.clearTimers();
     this.resumeSessionTimer(this.SESSION_DURATION); // 새로운 30분 세션 시작
     this.hideSessionWarning();
-    
-    console.log('세션이 30분 연장되었습니다.');
-    
+
     // 사용자에게 연장 확인 알림
     this.showExtensionConfirmation();
   }
@@ -100,7 +91,6 @@ class SessionService {
   public updateLastActivity(): void {
     // 현재 세션이 유효한 경우에만 활동 업데이트
     if (this.sessionTimer) {
-      console.log('사용자 활동 감지 - 세션 갱신');
       // 새로운 30분 세션으로 갱신
       this.clearTimers();
       this.resumeSessionTimer(this.SESSION_DURATION);
@@ -117,14 +107,14 @@ class SessionService {
   public async getRemainingTime(): Promise<number> {
     const token = authService.getAccessToken();
     if (!token) return 0;
-    
+
     try {
       // JWT 토큰에서 만료 시간 추출
       const payload = JSON.parse(atob(token.split('.')[1]));
       const expirationTime = payload.exp * 1000; // 밀리초로 변환
       const currentTime = Date.now();
       const remainingTime = expirationTime - currentTime;
-      
+
       return Math.max(0, Math.floor(remainingTime / 60000)); // 분 단위로 반환
     } catch {
       return 0;
@@ -135,7 +125,7 @@ class SessionService {
   private showSessionWarning(): void {
     // 이미 경고가 표시되어 있으면 제거
     this.hideSessionWarning();
-    
+
     // 경고 알림 표시
     const warningDiv = document.createElement('div');
     warningDiv.id = 'session-warning';
@@ -152,7 +142,7 @@ class SessionService {
       min-width: 350px;
       animation: slideIn 0.3s ease-out;
     `;
-    
+
     warningDiv.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <div>
@@ -160,7 +150,7 @@ class SessionService {
           <p style="font-size: 14px; margin-top: 4px; margin-bottom: 0;">5분 후 자동 로그아웃됩니다.</p>
           <p style="font-size: 12px; margin-top: 4px; opacity: 0.9;">작업 내용을 저장하세요.</p>
         </div>
-        <button 
+        <button
           id="extend-session-btn"
           style="
             margin-left: 16px;
@@ -180,7 +170,7 @@ class SessionService {
         </button>
       </div>
     `;
-    
+
     // 애니메이션 CSS 추가
     const style = document.createElement('style');
     style.textContent = `
@@ -196,9 +186,9 @@ class SessionService {
       }
     `;
     document.head.appendChild(style);
-    
+
     document.body.appendChild(warningDiv);
-    
+
     // 연장하기 버튼 이벤트
     const extendBtn = document.getElementById('extend-session-btn');
     if (extendBtn) {
@@ -206,7 +196,7 @@ class SessionService {
         this.extendSession();
       });
     }
-    
+
     // 5초마다 남은 시간 업데이트
     let countdown = 5;
     const countdownInterval = setInterval(() => {
@@ -245,7 +235,7 @@ class SessionService {
       min-width: 300px;
       animation: slideIn 0.3s ease-out;
     `;
-    
+
     confirmDiv.innerHTML = `
       <div style="display: flex; align-items: center;">
         <div>
@@ -254,9 +244,9 @@ class SessionService {
         </div>
       </div>
     `;
-    
+
     document.body.appendChild(confirmDiv);
-    
+
     // 3초 후 자동 제거
     setTimeout(() => {
       confirmDiv.remove();
@@ -272,7 +262,7 @@ class SessionService {
   private async forceLogout(): Promise<void> {
     this.clearTimers();
     this.hideSessionWarning();
-    
+
     // 세션 만료 알림 표시
     const logoutDiv = document.createElement('div');
     logoutDiv.style.cssText = `
@@ -289,7 +279,7 @@ class SessionService {
       text-align: center;
       min-width: 400px;
     `;
-    
+
     logoutDiv.innerHTML = `
       <div>
         <h3 style="font-weight: 700; font-size: 20px; margin: 0 0 8px 0;">🔒 세션 만료</h3>
@@ -297,17 +287,15 @@ class SessionService {
         <p style="font-size: 14px; opacity: 0.9; margin: 0;">다시 로그인해주세요.</p>
       </div>
     `;
-    
+
     document.body.appendChild(logoutDiv);
-    
+
     // 3초 후 로그아웃 처리
     setTimeout(() => {
       logoutDiv.remove();
-      
+
       // localStorage 제거됨 - JWT 기반 세션 관리
-      
-      console.log('세션이 만료되어 로그아웃되었습니다.');
-      
+
       // 콜백을 통해 App 상태 업데이트
       if (this.logoutCallback) {
         this.logoutCallback();
@@ -321,7 +309,7 @@ class SessionService {
   public async logout(): Promise<void> {
     this.clearTimers();
     this.hideSessionWarning();
-    
+
     // 서버에 로그아웃 요청
     try {
       await fetch(`${API_BASE_URL}/api/service/auth/logout/`, {
@@ -331,8 +319,6 @@ class SessionService {
     } catch (error) {
       console.error('로그아웃 요청 실패:', error);
     }
-    
-    console.log('로그아웃되었습니다.');
   }
 
   // 타이머 정리
@@ -358,7 +344,6 @@ class SessionService {
     try {
       const token = authService.getAccessToken();
       if (!token) {
-        console.log('⚠️ 토큰 없음 - 세션 새로고침 건너뜀');
         return;
       }
 

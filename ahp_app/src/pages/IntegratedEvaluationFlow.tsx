@@ -66,7 +66,6 @@ const IntegratedEvaluationFlow: React.FC = () => {
       });
       setSessionId(sessionResponse.data.session_id);
     } catch (error) {
-      console.error('프로젝트 정보 로드 실패:', error);
       navigate('/error');
     } finally {
       setLoading(false);

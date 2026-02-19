@@ -191,7 +191,6 @@ const AISettingsManager: React.FC = () => {
         showActionMessage('error', `연결 테스트 실패: ${result.message}`);
       }
     } catch (error) {
-      console.error('Connection test failed:', error);
       showActionMessage('error', '연결 테스트 중 오류가 발생했습니다.');
     } finally {
       setTestingConnection(null);

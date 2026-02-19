@@ -91,8 +91,6 @@ const makeDjangoAdminRequest = async <T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log(`🔧 Django Admin API: ${options.method || 'GET'} ${endpoint}`);
-    
     const response = await fetch(url, {
       credentials: 'include',
       ...options,
@@ -111,16 +109,10 @@ const makeDjangoAdminRequest = async <T>(
       data = { success: true };
     } else {
       const text = await response.text();
-      console.error(`Django Admin API: Expected JSON, got ${contentType}`, text.substring(0, 200));
+      void text; // non-JSON response body discarded
     }
 
     if (!response.ok) {
-      console.error(`Django Admin API Error [${endpoint}]:`, {
-        status: response.status,
-        statusText: response.statusText,
-        data
-      });
-      
       throw new Error(data?.message || data?.error || `HTTP ${response.status}: Django Admin API 요청 실패`);
     }
 

@@ -130,9 +130,7 @@ export class RealTimeSyncManager {
         this.sendHeartbeat();
       }, 30000);
 
-      console.log('실시간 동기화 시작됨');
     } catch (error) {
-      console.error('동기화 시작 실패:', error);
       // 오프라인 모드로 전환
       this.handleOfflineMode();
     }
@@ -157,7 +155,6 @@ export class RealTimeSyncManager {
       this.heartbeatInterval = undefined;
     }
 
-    console.log('실시간 동기화 중지됨');
   }
 
   /**
@@ -171,7 +168,6 @@ export class RealTimeSyncManager {
       this.eventSource = new EventSource(eventSourceUrl);
 
       this.eventSource.onopen = () => {
-        console.log('EventSource 연결됨');
         this.isOnline = true;
       };
 
@@ -184,14 +180,12 @@ export class RealTimeSyncManager {
         }
       };
 
-      this.eventSource.onerror = (error) => {
-        console.error('EventSource 오류:', error);
+      this.eventSource.onerror = (_error) => {
         this.handleConnectionError();
       };
 
     } catch (error) {
       // EventSource를 사용할 수 없는 경우 폴백
-      console.warn('EventSource 사용 불가, 폴링 모드로 전환');
       this.startPollingMode();
     }
   }
@@ -235,7 +229,6 @@ export class RealTimeSyncManager {
     try {
       await this.sendEventToServer(fullEvent);
     } catch (error) {
-      console.error('이벤트 전송 실패:', error);
       // 오프라인 큐에 저장
       this.queueOfflineEvent(fullEvent);
     }
@@ -370,7 +363,6 @@ export class RealTimeSyncManager {
       // 충돌 목록에서 제거
       this.syncState.conflicts = this.syncState.conflicts.filter(c => c.conflictId !== conflict.conflictId);
 
-      console.log('충돌 자동 해결됨:', conflict.conflictId);
     } catch (error) {
       console.error('충돌 해결 실패:', error);
     }
@@ -432,11 +424,8 @@ export class RealTimeSyncManager {
     this.isOnline = isOnline;
 
     if (isOnline) {
-      console.log('온라인 상태로 복구됨');
       // 오프라인 동안의 변경사항 동기화
       this.syncOfflineChanges();
-    } else {
-      console.log('오프라인 상태로 전환됨');
     }
   }
 
@@ -444,7 +433,6 @@ export class RealTimeSyncManager {
    * 오프라인 모드 처리
    */
   private handleOfflineMode(): void {
-    console.log('오프라인 모드로 전환');
     // 로컬 스토리지에 변경사항 저장
     this.saveToLocalStorage();
   }
@@ -453,8 +441,6 @@ export class RealTimeSyncManager {
    * 연결 오류 처리
    */
   private handleConnectionError(): void {
-    console.log('연결 오류 발생, 재연결 시도');
-    
     setTimeout(() => {
       if (this.eventSource) {
         this.eventSource.close();
@@ -505,7 +491,6 @@ export class RealTimeSyncManager {
       const stored = localStorage.getItem(`collaboration_offline_${this.modelId}`);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('로컬 스토리지 로드 실패:', error);
       return [];
     }
   }
@@ -669,9 +654,8 @@ export class MockCollaborationServer {
     return { success: true, version: this.events[modelId].length };
   }
 
-  private broadcastEvent(modelId: string, event: CollaborationEvent): void {
+  private broadcastEvent(_modelId: string, _event: CollaborationEvent): void {
     // 실제로는 SSE나 WebSocket을 통해 브로드캐스트
-    console.log('브로드캐스트:', event);
   }
 
   getEvents(modelId: string, since?: string): CollaborationEvent[] {

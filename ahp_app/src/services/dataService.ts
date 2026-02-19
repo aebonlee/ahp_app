@@ -34,7 +34,7 @@ const _generateUUID = (): string => {
 
 // === 통합 데이터 서비스 클래스 ===
 class DataService {
-  
+
   // === 프로젝트 관리 ===
   async getProjects(): Promise<ProjectData[]> {
     try {
@@ -74,7 +74,6 @@ class DataService {
       console.error('Failed to create project');
       return null;
     } catch (error) {
-      console.error('Error creating project:', error);
       throw error;
     }
   }
@@ -86,7 +85,7 @@ class DataService {
     };
 
     // 오프라인 모드 제거됨 - 순수 API만 사용
-    
+
     try {
       const response = await projectApi.updateProject(id, updateData);
       if (response.success && response.data) {
@@ -96,14 +95,14 @@ class DataService {
     } catch (error) {
       console.warn('Backend API update failed:', error);
     }
-    
+
     // 백엔드 실패시 오류 반환 (localStorage 제거)
     throw new Error('Backend API 업데이트 실패');
   }
 
   async deleteProject(id: string): Promise<boolean> {
     // 오프라인 모드 제거됨 - API만 사용
-    
+
     try {
       const response = await projectApi.deleteProject(id);
       if (response.success) {
@@ -113,7 +112,7 @@ class DataService {
     } catch (error) {
       console.warn('Backend API delete failed:', error);
     }
-    
+
     // 백엔드 실패시 오류 반환 (localStorage 제거)
     throw new Error('Backend API 삭제 실패');
   }
@@ -121,7 +120,7 @@ class DataService {
   // === 기준 관리 ===
   async getCriteria(projectId: string): Promise<CriteriaData[]> {
     // 오프라인 모드 제거됨 - API만 사용
-    
+
     try {
       const response = await criteriaApi.getCriteria(projectId);
       if (response.success && response.data) {
@@ -130,7 +129,7 @@ class DataService {
     } catch (error) {
       console.warn('Backend API getCriteria failed:', error);
     }
-    
+
     // API 실패시 빈 배열 반환 (localStorage 제거)
     return [];
   }
@@ -142,10 +141,9 @@ class DataService {
         return response.data;
       }
     } catch (error) {
-      console.warn('Backend API createCriteria failed:', error);
       throw error;
     }
-    
+
     throw new Error('Backend API 기준 생성 실패');
   }
 
@@ -156,10 +154,9 @@ class DataService {
         return response.data;
       }
     } catch (error) {
-      console.warn('Backend API updateCriteria failed:', error);
       throw error;
     }
-    
+
     throw new Error('Backend API 기준 업데이트 실패');
   }
 
@@ -170,10 +167,9 @@ class DataService {
         return true;
       }
     } catch (error) {
-      console.warn('Backend API deleteCriteria failed:', error);
       throw error;
     }
-    
+
     throw new Error('Backend API 기준 삭제 실패');
   }
 
@@ -187,7 +183,7 @@ class DataService {
     } catch (error) {
       console.warn('Backend API getAlternatives failed:', error);
     }
-    
+
     return [];
   }
 
@@ -198,10 +194,9 @@ class DataService {
         return response.data;
       }
     } catch (error) {
-      console.warn('Backend API createAlternative failed:', error);
       throw error;
     }
-    
+
     throw new Error('Backend API 대안 생성 실패');
   }
 
@@ -212,10 +207,9 @@ class DataService {
         return response.data;
       }
     } catch (error) {
-      console.warn('Backend API updateAlternative failed:', error);
       throw error;
     }
-    
+
     throw new Error('Backend API 대안 업데이트 실패');
   }
 
@@ -226,10 +220,9 @@ class DataService {
         return true;
       }
     } catch (error) {
-      console.warn('Backend API deleteAlternative failed:', error);
       throw error;
     }
-    
+
     throw new Error('Backend API 대안 삭제 실패');
   }
 
@@ -243,7 +236,7 @@ class DataService {
     } catch (error) {
       console.warn('Backend API getEvaluators failed:', error);
     }
-    
+
     return [];
   }
 
@@ -254,10 +247,9 @@ class DataService {
         return response.data;
       }
     } catch (error) {
-      console.warn('Backend API addEvaluator failed:', error);
       throw error;
     }
-    
+
     throw new Error('Backend API 평가자 추가 실패');
   }
 
@@ -268,10 +260,9 @@ class DataService {
         return true;
       }
     } catch (error) {
-      console.warn('Backend API removeEvaluator failed:', error);
       throw error;
     }
-    
+
     throw new Error('Backend API 평가자 제거 실패');
   }
 
@@ -283,10 +274,9 @@ class DataService {
         return response.data;
       }
     } catch (error) {
-      console.warn('Backend API savePairwiseComparison failed:', error);
       throw error;
     }
-    
+
     throw new Error('Backend API 쌍대비교 저장 실패');
   }
 
@@ -299,7 +289,7 @@ class DataService {
     } catch (error) {
       console.warn('Backend API getPairwiseComparisons failed:', error);
     }
-    
+
     return [];
   }
 
@@ -329,7 +319,7 @@ class DataService {
     } catch (error) {
       console.warn('Backend API getTrashedProjects failed:', error);
     }
-    
+
     return [];
   }
 
@@ -338,7 +328,6 @@ class DataService {
       const response = await projectApi.restoreProject(id);
       return response.success;
     } catch (error) {
-      console.warn('Backend API restoreProject failed:', error);
       throw error;
     }
   }
@@ -348,7 +337,6 @@ class DataService {
       const response = await projectApi.permanentDeleteProject(id);
       return response.success;
     } catch (error) {
-      console.warn('Backend API permanentDeleteProject failed:', error);
       throw error;
     }
   }
@@ -364,10 +352,10 @@ const dataService = new DataService();
 
 export default dataService;
 export { DataService };
-export type { 
-  ProjectData, 
-  CriteriaData, 
-  AlternativeData, 
-  EvaluatorData, 
-  PairwiseComparisonData 
+export type {
+  ProjectData,
+  CriteriaData,
+  AlternativeData,
+  EvaluatorData,
+  PairwiseComparisonData
 };
