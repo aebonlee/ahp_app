@@ -838,63 +838,42 @@ function App() {
   };
 
   const fetchProjects = useCallback(async () => {
-    // 로그인하지 않은 상태에서는 프로젝트 로드하지 않음
     if (!user) {
-      console.log('⚠️ 로그인하지 않은 상태 - 프로젝트 로드 스킵');
       setProjects([]);
       return;
     }
 
     setLoading(true);
     try {
-      console.log('🔍 App.tsx fetchProjects 시작... (사용자:', user.email, ')');
-      
-      // cleanDataService 사용 (자동 fallback 포함)
+      // getProjects()가 이미 criteria_count, alternatives_count를 포함해 반환함
       const projectsData = await cleanDataService.getProjects();
-      console.log('📊 fetchProjects 데이터:', projectsData);
-      
-      // 각 프로젝트의 실제 관련 데이터 수를 조회하여 정확한 정보 제공
-      const projectsWithCounts = await Promise.all(
-        projectsData.map(async (project: any) => {
-          try {
-            const [criteriaData, alternativesData, evaluatorsData] = await Promise.all([
-              cleanDataService.getCriteria(project.id || ''),
-              cleanDataService.getAlternatives(project.id || ''),
-              cleanDataService.getEvaluators(project.id || '')
-            ]);
 
-            const criteriaCount = criteriaData?.length || 0;
-            const alternativesCount = alternativesData?.length || 0;
-            const evaluatorCount = evaluatorsData?.length || 0;
+      const projectsWithCounts = projectsData.map((project: any) => {
+        const criteriaCount = project.criteria_count ?? 0;
+        const alternativesCount = project.alternatives_count ?? 0;
+        // evaluators는 project.settings.evaluators 또는 evaluatorCount(member_count) 사용
+        const evaluatorCount =
+          project.settings?.evaluators?.length ??
+          project.evaluator_count ??
+          project.evaluatorCount ??
+          0;
+        // 진행률: 기준(40%) + 대안(40%) + 평가자(20%)
+        const completion_rate =
+          (criteriaCount >= 3 ? 40 : 0) +
+          (alternativesCount >= 2 ? 40 : 0) +
+          (evaluatorCount >= 1 ? 20 : 0);
 
-            // 진행률 계산: 기준(40%) + 대안(40%) + 평가자(20%)
-            const progress = ((criteriaCount >= 3 ? 40 : 0) + (alternativesCount >= 2 ? 40 : 0) + (evaluatorCount >= 1 ? 20 : 0));
+        return {
+          ...project,
+          criteria_count: criteriaCount,
+          alternatives_count: alternativesCount,
+          evaluator_count: evaluatorCount,
+          completion_rate,
+        };
+      });
 
-            return {
-              ...project,
-              criteria_count: criteriaCount,
-              alternatives_count: alternativesCount,
-              evaluator_count: evaluatorCount,
-              completion_rate: progress
-            };
-          } catch (error) {
-            console.error('❌ 프로젝트 관련 데이터 조회 실패:', project.id, error);
-            return {
-              ...project,
-              criteria_count: 0,
-              alternatives_count: 0,
-              evaluator_count: 0,
-              completion_rate: 0
-            };
-          }
-        })
-      );
-
-      console.log('✅ 프로젝트 수:', projectsWithCounts.length);
-      console.log('📋 프로젝트 목록:', projectsWithCounts);
       setProjects(projectsWithCounts);
     } catch (error) {
-      console.error('❌ fetchProjects 오류:', error);
       setProjects([]);
     } finally {
       setLoading(false);
