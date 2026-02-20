@@ -406,7 +406,7 @@ const ResultsDataManager: React.FC<ResultsDataManagerProps> = ({
               ].map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => setSelectedTab(tab.id as any)}
+                  onClick={() => setSelectedTab(tab.id as 'summary' | 'criteria' | 'alternatives' | 'individual' | 'sensitivity')}
                   className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                     selectedTab === tab.id
                       ? 'border-blue-500 text-blue-600'

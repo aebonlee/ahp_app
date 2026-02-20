@@ -480,7 +480,7 @@ const PaperManagement: React.FC = () => {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'references' | 'results' | 'surveys' | 'writing' | 'generator')}
                 className={`flex-1 min-w-0 py-6 px-6 border-b-3 font-semibold text-base rounded-t-lg transition-all duration-200 ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-700 bg-blue-50 shadow-sm'

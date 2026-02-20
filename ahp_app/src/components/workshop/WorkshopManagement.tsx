@@ -565,7 +565,7 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
                 />
                 <select
                   value={newParticipant.role}
-                  onChange={(e) => setNewParticipant({ ...newParticipant, role: e.target.value as any })}
+                  onChange={(e) => setNewParticipant({ ...newParticipant, role: e.target.value as 'evaluator' | 'observer' | 'facilitator' })}
                   className="border rounded px-3 py-2 text-sm"
                 >
                   <option value="evaluator">평가자</option>
@@ -746,7 +746,7 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => { setActiveTab(tab.id as any); if (tab.id !== 'facilitation') setSelectedWorkshop(null); }}
+              onClick={() => { setActiveTab(tab.id as 'overview' | 'planning' | 'facilitation' | 'history'); if (tab.id !== 'facilitation') setSelectedWorkshop(null); }}
               className={`flex-1 min-w-0 py-6 px-6 border-b-2 font-semibold text-base rounded-t-lg transition-all duration-200 ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-700 bg-blue-50 shadow-sm'

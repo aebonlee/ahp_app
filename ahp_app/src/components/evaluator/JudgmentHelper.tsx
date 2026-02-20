@@ -224,7 +224,7 @@ const JudgmentHelper: React.FC<JudgmentHelperProps> = ({ currentMatrix, onClose 
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'guide' | 'analysis' | 'tips')}
               className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
                 activeTab === tab.id
                   ? 'bg-white text-blue-600 shadow-sm'

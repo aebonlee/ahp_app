@@ -234,7 +234,7 @@ const AllProjectsManagement: React.FC = () => {
             />
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'draft' | 'active' | 'completed' | 'archived')}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">모든 상태</option>

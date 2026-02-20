@@ -445,7 +445,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
                 {tabs.map(tab => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id as 'profile' | 'security' | 'workflow' | 'notifications' | 'display' | 'privacy' | 'data')}
                     className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ${
                       activeTab === tab.id
                         ? 'bg-blue-600 text-white shadow-md'

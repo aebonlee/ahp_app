@@ -411,7 +411,7 @@ const AHPResultsDashboard: React.FC<AHPResultsDashboardProps> = ({
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setSelectedView(tab.id as any)}
+              onClick={() => setSelectedView(tab.id as 'overview' | 'individual' | 'group' | 'consistency' | 'sensitivity')}
               className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center ${
                 selectedView === tab.id
                   ? 'border-blue-500 text-blue-600'

@@ -819,7 +819,7 @@ const ModelVisualization: React.FC<ModelVisualizationProps> = ({
                   value={filterSettings.showOnlyType}
                   onChange={(e) => setFilterSettings({
                     ...filterSettings,
-                    showOnlyType: e.target.value as any
+                    showOnlyType: e.target.value as 'goal' | 'criterion' | 'subcriteria' | 'alternative' | 'all'
                   })}
                   className="w-full border rounded px-3 py-2 text-sm"
                 >

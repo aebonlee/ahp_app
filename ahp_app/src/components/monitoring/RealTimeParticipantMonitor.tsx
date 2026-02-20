@@ -424,7 +424,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
         <div className="flex items-center space-x-4">
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
+            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'in_progress' | 'completed' | 'overdue')}
             className="border rounded px-3 py-2"
           >
             <option value="all">전체 참가자</option>
@@ -435,7 +435,7 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
 
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as 'name' | 'progress' | 'lastActivity' | 'consistency')}
             className="border rounded px-3 py-2"
           >
             <option value="lastActivity">최근 활동</option>

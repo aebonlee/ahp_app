@@ -885,7 +885,7 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
         ].map(chart => (
           <button
             key={chart.id}
-            onClick={() => setSelectedChart(chart.id as any)}
+            onClick={() => setSelectedChart(chart.id as 'hierarchy' | 'ranking' | 'consensus' | 'sensitivity' | 'weight_distribution' | 'ranking_stability' | 'participant_agreement' | 'criteria_matrix')}
             className={`py-2 px-3 border-b-2 font-medium text-xs flex items-center space-x-1 ${
               selectedChart === chart.id
                 ? 'border-blue-500 text-blue-600'
@@ -1022,7 +1022,7 @@ const EnhancedResultsDashboard: React.FC<EnhancedResultsDashboardProps> = ({
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'overview' | 'detailed' | 'sensitivity' | 'progress' | 'export')}
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600'

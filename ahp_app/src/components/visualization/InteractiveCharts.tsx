@@ -521,7 +521,7 @@ const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
             ].map(chart => (
               <button
                 key={chart.type}
-                onClick={() => setSelectedChart(chart.type as any)}
+                onClick={() => setSelectedChart(chart.type as 'bar' | 'pie' | 'radar' | 'line')}
                 className={`px-3 py-1 text-sm rounded border ${
                   selectedChart === chart.type
                     ? 'bg-blue-500 text-white border-blue-500'

@@ -242,7 +242,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
         ...prev.metadata,
         name: template.name,
         description: template.description,
-        templateType: template.category as any
+        templateType: template.category as 'custom' | 'technology' | 'strategy' | 'resource' | 'quality'
       },
       hasUnsavedChanges: true,
       version: prev.version + 1
@@ -584,7 +584,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
               <label className="block text-sm font-medium mb-1">템플릿 유형</label>
               <select
                 value={modelState.metadata.templateType}
-                onChange={(e) => updateMetadata({ templateType: e.target.value as any })}
+                onChange={(e) => updateMetadata({ templateType: e.target.value as 'custom' | 'technology' | 'strategy' | 'resource' | 'quality' })}
                 className="w-full border rounded px-3 py-2"
               >
                 <option value="custom">사용자 정의</option>

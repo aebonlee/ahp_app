@@ -577,7 +577,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
                 ].map((step) => (
                   <button
                     key={step.key}
-                    onClick={() => setCurrentStep(step.key as any)}
+                    onClick={() => setCurrentStep(step.key as 'overview' | 'invite' | 'monitor' | 'analyze')}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       currentStep === step.key
                         ? 'bg-blue-600 text-white'

@@ -363,7 +363,7 @@ const RealTimeMonitor: React.FC<RealTimeMonitorProps> = ({
             <div className="flex space-x-2">
               <select
                 value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
+                onChange={(e) => setFilterType(e.target.value as 'all' | 'progress' | 'issues' | 'completed')}
                 className="text-sm border rounded px-3 py-1"
               >
                 <option value="all">모든 활동</option>

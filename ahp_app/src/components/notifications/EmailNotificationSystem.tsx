@@ -808,7 +808,7 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setCurrentView(tab.id as any)}
+              onClick={() => setCurrentView(tab.id as 'templates' | 'notifications' | 'settings')}
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                 currentView === tab.id
                   ? 'border-blue-500 text-blue-600'

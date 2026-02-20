@@ -410,7 +410,7 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
           </div>
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
+            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'invited' | 'accepted' | 'declined' | 'in_progress' | 'completed')}
             className="px-3 py-2 border rounded-lg"
           >
             <option value="all">모든 상태</option>
@@ -457,7 +457,7 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
               />
               <select
                 value={newParticipant.role}
-                onChange={(e) => setNewParticipant({...newParticipant, role: e.target.value as any})}
+                onChange={(e) => setNewParticipant({...newParticipant, role: e.target.value as 'facilitator' | 'expert' | 'stakeholder' | 'observer'})}
                 className="px-3 py-2 border rounded"
               >
                 <option value="expert">전문가</option>

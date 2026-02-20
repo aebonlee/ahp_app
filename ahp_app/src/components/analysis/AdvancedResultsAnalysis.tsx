@@ -437,7 +437,7 @@ const AdvancedResultsAnalysis: React.FC<AdvancedResultsAnalysisProps> = ({
           ].map(type => (
             <button
               key={type.id}
-              onClick={() => setAnalysisType(type.id as any)}
+              onClick={() => setAnalysisType(type.id as 'individual' | 'group' | 'sensitivity')}
               className={`px-4 py-2 rounded border ${
                 analysisType === type.id
                   ? 'bg-blue-500 text-white border-blue-500'

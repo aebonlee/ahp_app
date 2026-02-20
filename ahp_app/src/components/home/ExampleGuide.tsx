@@ -30,7 +30,7 @@ const ExampleGuide: React.FC = () => {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'overview' | 'criteria' | 'alternatives' | 'analysis')}
                 className={`px-4 py-2 rounded-md transition-colors ${
                   activeTab === tab.id
                     ? 'bg-blue-600 text-white'

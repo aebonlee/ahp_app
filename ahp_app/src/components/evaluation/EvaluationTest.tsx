@@ -601,7 +601,7 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
           ].map((step, index) => (
             <React.Fragment key={step.id}>
               <button
-                onClick={() => setCurrentStep(step.id as any)}
+                onClick={() => setCurrentStep(step.id as 'select' | 'demographic' | 'evaluation' | 'result')}
                 className={`flex-1 min-w-0 flex flex-col items-center py-6 px-4 rounded-lg transition-all duration-200 ${
                   currentStep === step.id 
                     ? 'bg-blue-50 text-blue-700 shadow-md border-2 border-blue-300' 
@@ -738,7 +738,7 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
             const steps = ['select', 'demographic', 'evaluation', 'result'];
             const currentIndex = steps.indexOf(currentStep);
             if (currentIndex > 0) {
-              setCurrentStep(steps[currentIndex - 1] as any);
+              setCurrentStep(steps[currentIndex - 1] as 'select' | 'demographic' | 'evaluation' | 'result');
             }
           }}
         >
@@ -752,7 +752,7 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
             const steps = ['select', 'demographic', 'evaluation', 'result'];
             const currentIndex = steps.indexOf(currentStep);
             if (currentIndex < steps.length - 1) {
-              setCurrentStep(steps[currentIndex + 1] as any);
+              setCurrentStep(steps[currentIndex + 1] as 'select' | 'demographic' | 'evaluation' | 'result');
             }
           }}
         >

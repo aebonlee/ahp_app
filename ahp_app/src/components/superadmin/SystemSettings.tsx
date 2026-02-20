@@ -269,7 +269,7 @@ const SystemSettings: React.FC = () => {
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'general' | 'security' | 'email' | 'backup' | 'api' | 'maintenance')}
               className={`px-6 py-3 font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id
                   ? 'border-b-3 border-blue-600 text-blue-600 bg-blue-50'

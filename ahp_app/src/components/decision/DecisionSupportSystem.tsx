@@ -82,12 +82,18 @@ interface DecisionSupportSystemProps {
 const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className = '' }) => {
   const [currentProblem, setCurrentProblem] = useState<DecisionProblem | null>(null);
   const [activeStep, setActiveStep] = useState<'definition' | 'structuring' | 'evaluation' | 'analysis' | 'validation'>('definition');
-  const [problemFormData, setProblemFormData] = useState({
+  const [problemFormData, setProblemFormData] = useState<{
+    title: string;
+    description: string;
+    objective: string;
+    timeframe: string;
+    importance: 'low' | 'medium' | 'high' | 'critical';
+  }>({
     title: '',
     description: '',
     objective: '',
     timeframe: '',
-    importance: 'medium' as const
+    importance: 'medium'
   });
   
   // DSS 고급 기능 상태
@@ -271,7 +277,7 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
               <label className="block text-sm font-medium mb-2">중요도</label>
               <select
                 value={problemFormData.importance}
-                onChange={(e) => setProblemFormData({...problemFormData, importance: e.target.value as any})}
+                onChange={(e) => setProblemFormData({...problemFormData, importance: e.target.value as 'low' | 'medium' | 'high' | 'critical'})}
                 className="w-full border rounded px-3 py-2"
               >
                 <option value="low">낮음</option>
@@ -706,7 +712,7 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
               ].map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveAnalysisTab(tab.id as any)}
+                  onClick={() => setActiveAnalysisTab(tab.id as 'scenario' | 'sensitivity' | 'montecarlo' | 'risk')}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
                     activeAnalysisTab === tab.id
                       ? 'border-blue-500 text-blue-600'
@@ -1102,7 +1108,7 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
           ].map((step, index) => (
             <React.Fragment key={step.id}>
               <button
-                onClick={() => setActiveStep(step.id as any)}
+                onClick={() => setActiveStep(step.id as 'definition' | 'structuring' | 'evaluation' | 'analysis' | 'validation')}
                 className={`flex-1 min-w-0 flex flex-col items-center py-6 px-4 rounded-lg transition-all duration-200 ${
                   activeStep === step.id 
                     ? 'bg-blue-50 text-blue-700 shadow-md border-2 border-blue-300' 
@@ -1137,7 +1143,7 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
             const steps = ['definition', 'structuring', 'evaluation', 'analysis', 'validation'];
             const currentIndex = steps.indexOf(activeStep);
             if (currentIndex > 0) {
-              setActiveStep(steps[currentIndex - 1] as any);
+              setActiveStep(steps[currentIndex - 1] as 'definition' | 'structuring' | 'evaluation' | 'analysis' | 'validation');
             }
           }}
         >
@@ -1151,7 +1157,7 @@ const DecisionSupportSystem: React.FC<DecisionSupportSystemProps> = ({ className
             const steps = ['definition', 'structuring', 'evaluation', 'analysis', 'validation'];
             const currentIndex = steps.indexOf(activeStep);
             if (currentIndex < steps.length - 1) {
-              setActiveStep(steps[currentIndex + 1] as any);
+              setActiveStep(steps[currentIndex + 1] as 'definition' | 'structuring' | 'evaluation' | 'analysis' | 'validation');
             }
           }}
         >
