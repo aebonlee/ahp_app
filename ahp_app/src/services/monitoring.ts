@@ -171,20 +171,22 @@ class MonitoringService {
       });
       
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const duration = performance.now() - startTime;
-      
+
       this.logPerformance(`API_${endpoint}`, duration, 'ms', {
         endpoint,
         status: 'error'
       });
-      
+
+      const errMsg = error instanceof Error ? error.message : String(error);
+      const errStack = error instanceof Error ? error.stack : undefined;
       this.logError({
-        message: `API Error: ${endpoint} - ${error.message}`,
-        stack: error.stack,
+        message: `API Error: ${endpoint} - ${errMsg}`,
+        stack: errStack,
         level: 'error'
       });
-      
+
       throw error;
     }
   }

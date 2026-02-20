@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
 import Input from '../common/Input';
@@ -164,14 +165,14 @@ const RealUserManagement: React.FC = () => {
       } else {
         throw new Error(response.error || '사용자 생성에 실패했습니다.');
       }
-    } catch (error: any) {
-      if (error.response?.data) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.data) {
         const errorData = error.response.data;
         if (typeof errorData === 'object') {
           const fieldErrors: Record<string, string> = {};
           Object.keys(errorData).forEach(key => {
-            fieldErrors[key] = Array.isArray(errorData[key]) 
-              ? errorData[key].join(', ') 
+            fieldErrors[key] = Array.isArray(errorData[key])
+              ? errorData[key].join(', ')
               : errorData[key];
           });
           setErrors(fieldErrors);
@@ -179,7 +180,7 @@ const RealUserManagement: React.FC = () => {
           setErrorMessage('사용자 생성에 실패했습니다.');
         }
       } else {
-        setErrorMessage(error.message || '사용자 생성에 실패했습니다.');
+        setErrorMessage((error instanceof Error ? error.message : '') || '사용자 생성에 실패했습니다.');
       }
     } finally {
       setFormLoading(false);
@@ -194,7 +195,7 @@ const RealUserManagement: React.FC = () => {
     setErrorMessage('');
 
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         username: formData.username,
         email: formData.email,
         first_name: formData.first_name,
@@ -222,14 +223,14 @@ const RealUserManagement: React.FC = () => {
       } else {
         throw new Error(response.error || '사용자 수정에 실패했습니다.');
       }
-    } catch (error: any) {
-      if (error.response?.data) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.data) {
         const errorData = error.response.data;
         if (typeof errorData === 'object') {
           const fieldErrors: Record<string, string> = {};
           Object.keys(errorData).forEach(key => {
-            fieldErrors[key] = Array.isArray(errorData[key]) 
-              ? errorData[key].join(', ') 
+            fieldErrors[key] = Array.isArray(errorData[key])
+              ? errorData[key].join(', ')
               : errorData[key];
           });
           setErrors(fieldErrors);
@@ -237,7 +238,7 @@ const RealUserManagement: React.FC = () => {
           setErrorMessage('사용자 수정에 실패했습니다.');
         }
       } else {
-        setErrorMessage(error.message || '사용자 수정에 실패했습니다.');
+        setErrorMessage((error instanceof Error ? error.message : '') || '사용자 수정에 실패했습니다.');
       }
     } finally {
       setFormLoading(false);
