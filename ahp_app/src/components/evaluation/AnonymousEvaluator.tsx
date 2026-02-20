@@ -21,14 +21,17 @@ import {
   EvaluationProgress,
   SessionRecoveryData
 } from '../../services/anonymousEvaluationService';
-import { projectApi, criteriaApi, alternativeApi } from '../../services/api';
+import { projectApi, criteriaApi, alternativeApi, ProjectData, CriteriaData, AlternativeData } from '../../services/api';
+
+/** A single item in a pairwise comparison — either a criterion or an alternative. */
+type ComparisonItem = CriteriaData | AlternativeData;
 
 interface ComparisonPair {
   id: string;
   type: 'criteria' | 'alternative';
-  left: any;
-  right: any;
-  parent?: any;
+  left: ComparisonItem;
+  right: ComparisonItem;
+  parent?: CriteriaData;
   completed?: boolean;
   value?: number;
 }
@@ -53,9 +56,9 @@ const AnonymousEvaluator: React.FC = () => {
   });
   
   // Project data
-  const [project, setProject] = useState<any>(null);
-  const [criteria, setCriteria] = useState<any[]>([]);
-  const [alternatives, setAlternatives] = useState<any[]>([]);
+  const [project, setProject] = useState<ProjectData | null>(null);
+  const [criteria, setCriteria] = useState<CriteriaData[]>([]);
+  const [alternatives, setAlternatives] = useState<AlternativeData[]>([]);
   
   // Evaluation state
   const [comparisons, setComparisons] = useState<ComparisonPair[]>([]);
@@ -146,8 +149,8 @@ const AnonymousEvaluator: React.FC = () => {
       // Load project data
       await loadProjectData();
       
-    } catch (err: any) {
-      setError(err.message || '평가를 초기화하는 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '평가를 초기화하는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -282,8 +285,8 @@ const AnonymousEvaluator: React.FC = () => {
       } else {
         throw new Error(response.error || '세션 생성에 실패했습니다.');
       }
-    } catch (err: any) {
-      setError(err.message || '등록 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '등록 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -302,7 +305,7 @@ const AnonymousEvaluator: React.FC = () => {
             type: 'criteria',
             left: criteria[i],
             right: criteria[j],
-            parent: criteria[i].parent_id ? criteria.find(c => c.id === criteria[i].parent_id) : null
+            parent: criteria[i].parent_id ? criteria.find(c => c.id === criteria[i].parent_id) : undefined
           });
         }
       }
@@ -347,9 +350,9 @@ const AnonymousEvaluator: React.FC = () => {
         project_id: session.project_id,
         comparison_type: currentComparison.type,
         parent_criteria_id: currentComparison.parent?.id,
-        left_element_id: currentComparison.left.id,
+        left_element_id: currentComparison.left.id ?? '',
         left_element_name: currentComparison.left.name,
-        right_element_id: currentComparison.right.id,
+        right_element_id: currentComparison.right.id ?? '',
         right_element_name: currentComparison.right.name,
         comparison_value: value,
         response_time_ms: responseTime,
@@ -400,8 +403,8 @@ const AnonymousEvaluator: React.FC = () => {
         throw new Error(response.error || '비교 저장에 실패했습니다.');
       }
       
-    } catch (err: any) {
-      setError(err.message || '비교를 저장하는 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '비교를 저장하는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -433,8 +436,8 @@ const AnonymousEvaluator: React.FC = () => {
         throw new Error(response.error || '평가 완료 처리에 실패했습니다.');
       }
       
-    } catch (err: any) {
-      setError(err.message || '평가 완료 처리 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '평가 완료 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -453,8 +456,8 @@ const AnonymousEvaluator: React.FC = () => {
         setIsPaused(true);
         setSuccess('평가가 일시정지되었습니다.');
       }
-    } catch (err: any) {
-      setError(err.message || '상태 변경 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '상태 변경 중 오류가 발생했습니다.');
     }
   };
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import EvaluatorAssignment from '../admin/EvaluatorAssignment';
-import CanvasModelBuilder from './CanvasModelBuilder';
+import CanvasModelBuilder, { CanvasNode } from './CanvasModelBuilder';
 import { DEMO_PROJECTS, DEMO_CRITERIA, DEMO_ALTERNATIVES } from '../../data/demoData';
 import api from '../../services/api';
 import {
@@ -54,7 +54,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
   // 빌더 모드 선택
   const [builderMode, setBuilderMode] = useState<'select' | 'canvas' | 'form'>('select');
-  const [modelData, setModelData] = useState<any[]>([]);
+  const [modelData, setModelData] = useState<CanvasNode[]>([]);
   const [modelCompleted, setModelCompleted] = useState(false);
 
   // 기존 상태들
@@ -67,7 +67,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
   const [activeTab, setActiveTab] = useState<'criteria' | 'alternatives' | 'evaluators' | 'settings'>('criteria');
 
   // 캔버스 모델 저장 핸들러
-  const handleCanvasModelSave = useCallback((canvasNodes: any[]) => {
+  const handleCanvasModelSave = useCallback((canvasNodes: CanvasNode[]) => {
     setModelData(canvasNodes);
     setModelCompleted(true);
     setSaving(true);
@@ -128,8 +128,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
         criteria: buildHierarchy(criteria),
         alternatives
       });
-    } catch (err: any) {
-      setError(err.message || '프로젝트 데이터를 불러오는 데 실패했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '프로젝트 데이터를 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -190,8 +190,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       setNewCriterionDescription('');
       setEditingCriterion(null);
       fetchProject();
-    } catch (err: any) {
-      setError(err.message || '기준 추가에 실패했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '기준 추가에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -220,8 +220,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
       setNewAlternativeDescription('');
       setEditingAlternative(null);
       fetchProject();
-    } catch (err: any) {
-      setError(err.message || '대안 추가에 실패했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '대안 추가에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -236,8 +236,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
         throw new Error(response.error || 'Failed to delete criterion');
       }
       fetchProject();
-    } catch (err: any) {
-      setError(err.message || '기준 삭제에 실패했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '기준 삭제에 실패했습니다.');
     }
   };
 
@@ -250,8 +250,8 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
         throw new Error(response.error || 'Failed to delete alternative');
       }
       fetchProject();
-    } catch (err: any) {
-      setError(err.message || '대안 삭제에 실패했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '대안 삭제에 실패했습니다.');
     }
   };
 

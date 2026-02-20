@@ -8,12 +8,18 @@ import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import HierarchyTreeBuilder from '../modeling/HierarchyTreeBuilder';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
-import CriteriaTemplates from '../criteria/CriteriaTemplates';
-import VisualCriteriaBuilder from '../criteria/VisualCriteriaBuilder';
+import CriteriaTemplates, { CriteriaTemplate } from '../criteria/CriteriaTemplates';
+import VisualCriteriaBuilder, { CriteriaNode as VisualCriteriaNode } from '../criteria/VisualCriteriaBuilder';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import InteractiveCriteriaEditor from '../criteria/InteractiveCriteriaEditor';
 import cleanDataService from '../../services/dataService_clean';
 import { generateUUID, isTempId } from '../../utils/uuid';
+
+interface TemplateItem {
+  name: string;
+  description?: string;
+  children?: TemplateItem[];
+}
 
 interface Criterion {
   id: string;
@@ -271,7 +277,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       
       // 새로운 기준 저장
       let success = true;
-      const createdCriteriaMap = new Map<string, any>(); // 원본 ID -> 생성된 기준 매핑
+      const createdCriteriaMap = new Map<string, { id: string; level: number; name: string }>(); // 원본 ID -> 생성된 기준 매핑
       
       // 계층 구조 순서대로 정렬 (부모부터 자식 순으로, 같은 레벨 내에서는 order 순)
       const sortedCriteria = flatCriteria.sort((a, b) => {
@@ -332,12 +338,11 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
         // 레벨 정보도 함께 저장
         // 원본 임시 ID를 키로 하여 생성된 기준 정보 저장
         const mappedCriteria = {
-          ...result,
-          id: result?.id, // 명시적으로 id 보장
+          id: result?.id ?? criterion.id, // 명시적으로 id 보장 (fallback to original id)
           level: resolvedLevel,
           name: result?.name || criterion.name
         };
-        
+
         createdCriteriaMap.set(criterion.id, mappedCriteria);
       }
 
@@ -626,8 +631,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   };
 
   // 템플릿 선택 처리
-  const handleTemplateSelect = (template: any) => {
-    const convertTemplateStructure = (items: any[], parentId: string | null = null, level: number = 1): Criterion[] => {
+  const handleTemplateSelect = (template: CriteriaTemplate) => {
+    const convertTemplateStructure = (items: TemplateItem[], parentId: string | null = null, level: number = 1): Criterion[] => {
       const result: Criterion[] = [];
       
       items.forEach((item, index) => {
@@ -733,10 +738,10 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   };
 
   // 시각적 빌더 데이터 변환
-  const convertVisualBuilderData = (builderCriteria: any[]): Criterion[] => {
+  const convertVisualBuilderData = (builderCriteria: VisualCriteriaNode[]): Criterion[] => {
     const result: Criterion[] = [];
-    
-    const traverse = (nodes: any[], parentId: string | null = null, level: number = 1) => {
+
+    const traverse = (nodes: VisualCriteriaNode[], parentId: string | null = null, level: number = 1) => {
       nodes.forEach((node, index) => {
         const criterion: Criterion = {
           id: node.id || generateUUID(),
@@ -764,7 +769,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   };
 
   // Criterion을 CriteriaNode로 변환 (재귀적)
-  const convertToVisualNode = (criteria: Criterion[]): any[] => {
+  const convertToVisualNode = (criteria: Criterion[]): VisualCriteriaNode[] => {
     return criteria.map(c => ({
       id: c.id,
       name: c.name,
@@ -777,7 +782,7 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   };
 
   // 시각적 빌더 저장 처리
-  const handleVisualBuilderSave = (builderCriteria: any[]) => {
+  const handleVisualBuilderSave = (builderCriteria: VisualCriteriaNode[]) => {
     const convertedCriteria = convertVisualBuilderData(builderCriteria);
     
     // 임시 저장소에 저장

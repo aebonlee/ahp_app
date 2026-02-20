@@ -5,6 +5,8 @@ import sessionService from './services/sessionService';
 import authService from './services/authService';
 import cleanDataService from './services/dataService_clean';
 import api from './services/api';
+import type { ProjectData, CriteriaData, AlternativeData, PairwiseComparisonData } from './services/api';
+import type { UserProject } from './types';
 import { setAPIKeyDirectly } from './utils/aiInitializer';
 import type { User, UserRole } from './types';
 import Layout from './components/layout/Layout';
@@ -159,8 +161,8 @@ function App() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [registerMode, setRegisterMode] = useState<'service' | 'admin' | null>(null);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const [projects, setProjects] = useState<UserProject[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedProjectTitle, setSelectedProjectTitle] = useState<string>('');
@@ -177,7 +179,7 @@ function App() {
 
   // 휴지통 오버플로우 관리 상태
   const [trashOverflowData, setTrashOverflowData] = useState<{
-    trashedProjects: any[];
+    trashedProjects: { id: string; title: string; description: string; deleted_at: string }[];
     projectToDelete: string;
     isVisible: boolean;
   } | null>(null);
@@ -752,13 +754,13 @@ function App() {
       // getProjects()가 이미 criteria_count, alternatives_count를 포함해 반환함
       const projectsData = await cleanDataService.getProjects();
 
-      const projectsWithCounts = projectsData.map((project: any) => {
+      const projectsWithCounts: UserProject[] = projectsData.map((project) => {
         const criteriaCount = project.criteria_count ?? 0;
         const alternativesCount = project.alternatives_count ?? 0;
         // evaluators는 project.settings.evaluators 또는 evaluatorCount(member_count) 사용
+        const settingsEvaluators = project.settings?.evaluators;
         const evaluatorCount =
-          project.settings?.evaluators?.length ??
-          project.evaluator_count ??
+          (Array.isArray(settingsEvaluators) ? settingsEvaluators.length : undefined) ??
           project.evaluatorCount ??
           0;
         // 진행률: 기준(40%) + 대안(40%) + 평가자(20%)
@@ -773,7 +775,9 @@ function App() {
           alternatives_count: alternativesCount,
           evaluator_count: evaluatorCount,
           completion_rate,
-        };
+          last_modified: project.updated_at ?? project.created_at ?? new Date().toISOString(),
+          evaluation_method: (project as ProjectData & { evaluation_method?: 'pairwise' | 'direct' | 'mixed' }).evaluation_method ?? 'pairwise',
+        } as UserProject;
       });
 
       setProjects(projectsWithCounts);
@@ -786,17 +790,17 @@ function App() {
 
   // 프로젝트 생성 함수 (DB 저장 - dataService_clean 사용)
   // 에러는 re-throw하여 호출한 컴포넌트(ProjectCreation.tsx)에서 폼 내 메시지로 표시
-  const createProject = async (projectData: any) => {
+  const createProject = async (projectData: Partial<ProjectData>) => {
     const newProject = await cleanDataService.createProject({
-      title: projectData.title,
-      description: projectData.description || '',
-      objective: projectData.objective || '',
-      status: projectData.status || 'draft',
-      evaluation_mode: projectData.evaluation_mode || 'practical',
-      workflow_stage: projectData.workflow_stage || 'creating',
-      ahp_type: projectData.ahp_type || 'general',
-      require_demographics: projectData.require_demographics || false,
-      evaluation_flow_type: projectData.evaluation_flow_type || 'ahp_first'
+      title: projectData.title ?? '',
+      description: projectData.description ?? '',
+      objective: projectData.objective ?? '',
+      status: projectData.status ?? 'draft',
+      evaluation_mode: projectData.evaluation_mode ?? 'practical',
+      workflow_stage: projectData.workflow_stage ?? 'creating',
+      ahp_type: projectData.ahp_type ?? 'general',
+      require_demographics: projectData.require_demographics ?? false,
+      evaluation_flow_type: projectData.evaluation_flow_type ?? 'ahp_first'
     });
 
     if (newProject) {
@@ -818,11 +822,11 @@ function App() {
     }
   };
 
-  const createCriteria = async (projectId: string, criteriaData: any) => {
+  const createCriteria = async (projectId: string, criteriaData: Record<string, unknown>) => {
     return await cleanDataService.createCriteria({
       ...criteriaData,
       project_id: projectId
-    });
+    } as Omit<CriteriaData, 'id'>);
   };
 
   // 대안(Alternatives) CRUD 함수들
@@ -834,19 +838,19 @@ function App() {
     }
   };
 
-  const createAlternative = async (projectId: string, alternativeData: any) => {
+  const createAlternative = async (projectId: string, alternativeData: Record<string, unknown>) => {
     return await cleanDataService.createAlternative({
       ...alternativeData,
       project_id: projectId
-    });
+    } as Omit<AlternativeData, 'id'>);
   };
 
   // 평가 데이터 저장
-  const saveEvaluation = async (projectId: string, evaluationData: any) => {
+  const saveEvaluation = async (projectId: string, evaluationData: Record<string, unknown>) => {
     return await cleanDataService.saveEvaluation({
       project_id: projectId,
       ...evaluationData
-    });
+    } as PairwiseComparisonData);
   };
 
   // 프로젝트 삭제 (휴지통으로 이동)
@@ -911,7 +915,7 @@ function App() {
       const response = await api.get('/api/service/accounts/');
       if (response.success && response.data) {
         const data = response.data;
-        setUsers(Array.isArray(data) ? data : data.results || data.users || []);
+        setUsers(Array.isArray(data) ? (data as User[]) : ((data.results || data.users || []) as User[]));
       } else if (!response.success) {
         showActionMessage('error', response.error || '사용자 목록을 불러오지 못했습니다.');
       }
@@ -923,7 +927,7 @@ function App() {
   }, []);
 
   // 사용자 관리 함수들
-  const createUser = async (userData: any) => {
+  const createUser = async (userData: Record<string, unknown>) => {
     const response = await api.post('/api/service/accounts/', userData);
     if (!response.success) {
       throw new Error(response.error || '사용자 생성에 실패했습니다.');
@@ -931,7 +935,7 @@ function App() {
     await fetchUsers();
   };
 
-  const updateUser = async (userId: string, userData: any) => {
+  const updateUser = async (userId: string, userData: Record<string, unknown>) => {
     const response = await api.patch(`/api/service/accounts/${userId}/`, userData);
     if (!response.success) {
       throw new Error(response.error || '사용자 수정에 실패했습니다.');
@@ -1690,8 +1694,8 @@ function App() {
                   </div>
                 ) : (
                   <div className="grid gap-4">
-                    {projects.map((project: any) => (
-                      <div key={project.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                    {projects.map((project) => (
+                      <div key={project.id ?? ''} className="border rounded-lg p-4 hover:bg-gray-50">
                         <h5 className="font-medium text-lg">{project.title}</h5>
                         <p className="text-gray-600 text-sm mt-1">{project.description}</p>
                         <div className="flex justify-between items-center mt-3">
@@ -1703,7 +1707,7 @@ function App() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleProjectSelect(project.id, project.title);
+                                handleProjectSelect(project.id ?? '', project.title);
                                 setActiveTab('model-building');
                               }}
                               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -1716,7 +1720,7 @@ function App() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleProjectSelect(project.id, project.title);
+                                handleProjectSelect(project.id ?? '', project.title);
                                 setActiveTab('model-building');
                               }}
                               className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
@@ -1729,7 +1733,7 @@ function App() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleProjectSelect(project.id, project.title);
+                                handleProjectSelect(project.id ?? '', project.title);
                                 setActiveTab('results-analysis');
                               }}
                               className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
@@ -1742,7 +1746,7 @@ function App() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                setPendingDeleteProjectId(project.id);
+                                setPendingDeleteProjectId(project.id ?? null);
                               }}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="삭제"
@@ -1751,7 +1755,7 @@ function App() {
                               <DeleteIcon preset="button" hover />
                             </button>
                             <span className="text-xs text-gray-500 ml-2">
-                              {new Date(project.created_at).toLocaleDateString()}
+                              {new Date(project.created_at ?? '').toLocaleDateString()}
                             </span>
                           </div>
                         </div>
@@ -1775,10 +1779,10 @@ function App() {
           </Card>
         ) : (
           <UserManagement
-            users={users}
+            users={users as unknown as Parameters<typeof UserManagement>[0]['users']}
             loading={loading}
-            onCreateUser={createUser}
-            onUpdateUser={updateUser}
+            onCreateUser={createUser as Parameters<typeof UserManagement>[0]['onCreateUser']}
+            onUpdateUser={updateUser as Parameters<typeof UserManagement>[0]['onUpdateUser']}
             onDeleteUser={deleteUser}
             onRefresh={fetchUsers}
           />

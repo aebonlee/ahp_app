@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 
-interface CriteriaNode {
+export interface CriteriaNode {
   id: string;
   name: string;
   description?: string;

@@ -15,7 +15,7 @@ import Button from '../common/Button';
 import Input from '../common/Input';
 import Modal from '../common/Modal';
 
-interface CanvasNode {
+export interface CanvasNode {
   id: string;
   type: 'goal' | 'criteria' | 'sub_criteria' | 'sub_sub_criteria' | 'alternative';
   name: string;
