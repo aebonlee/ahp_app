@@ -181,7 +181,7 @@ export interface PaymentContextType {
   // Actions
   subscribeToPlan: (planId: string) => Promise<void>;
   cancelSubscription: () => Promise<void>;
-  updatePaymentMethod: (method: any) => Promise<void>;
+  updatePaymentMethod: (method: PaymentMethod) => Promise<void>;
   getUsage: () => Promise<SubscriptionUsage>;
   checkLimits: (resource: string, required: number) => boolean;
   

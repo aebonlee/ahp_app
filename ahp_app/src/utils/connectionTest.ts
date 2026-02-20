@@ -17,7 +17,7 @@ const getAuthHeaders = (): HeadersInit => {
 interface ConnectionTestResult {
   success: boolean;
   message: string;
-  details?: any;
+  details?: unknown;
   timestamp: string;
 }
 

@@ -155,14 +155,15 @@ const ConnectionTestPage: React.FC = () => {
                     <span className="font-medium">{result.message}</span>
                   </div>
                   
-                  {result.details && (
-                    <div 
-                      className="p-3 rounded text-xs font-mono"
-                      style={{ backgroundColor: 'var(--bg-subtle)' }}
-                    >
-                      <pre>{JSON.stringify(result.details, null, 2)}</pre>
-                    </div>
-                  )}
+                  {result.details
+                    ? <div
+                        className="p-3 rounded text-xs font-mono"
+                        style={{ backgroundColor: 'var(--bg-subtle)' }}
+                      >
+                        <pre>{JSON.stringify(result.details, null, 2)}</pre>
+                      </div>
+                    : null
+                  }
                 </div>
                 
                 <div className="text-xs opacity-75 ml-4">

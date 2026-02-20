@@ -6,7 +6,7 @@ export interface AHPError {
   type: 'validation' | 'calculation' | 'network' | 'permission' | 'data' | 'consistency';
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
   suggestions?: string[];
 }
 
@@ -15,7 +15,7 @@ export class AHPErrorHandler {
   /**
    * 입력 데이터 검증
    */
-  static validatePairwiseInput(matrix: number[][], elements: any[]): AHPError[] {
+  static validatePairwiseInput(matrix: number[][], elements: unknown[]): AHPError[] {
     const errors: AHPError[] = [];
     
     // 1. 매트릭스 크기 검증
@@ -229,13 +229,15 @@ export class AHPErrorHandler {
   /**
    * 네트워크 에러 처리
    */
-  static handleNetworkError(error: any): AHPError {
-    if (error.code === 'NETWORK_ERROR' || !navigator.onLine) {
+  static handleNetworkError(error: unknown): AHPError {
+    const err = error as { code?: string; message?: string; status?: number };
+
+    if (err.code === 'NETWORK_ERROR' || !navigator.onLine) {
       return {
         type: 'network',
         code: 'OFFLINE',
         message: '네트워크 연결을 확인해주세요.',
-        details: { error: error.message },
+        details: { error: err.message },
         suggestions: [
           '인터넷 연결을 확인하세요.',
           '잠시 후 다시 시도하세요.',
@@ -244,12 +246,12 @@ export class AHPErrorHandler {
       };
     }
 
-    if (error.status === 408 || error.code === 'TIMEOUT') {
+    if (err.status === 408 || err.code === 'TIMEOUT') {
       return {
         type: 'network',
         code: 'TIMEOUT',
         message: '요청 시간이 초과되었습니다.',
-        details: { error: error.message },
+        details: { error: err.message },
         suggestions: [
           '잠시 후 다시 시도하세요.',
           '데이터 크기를 줄여보세요.'
@@ -257,12 +259,12 @@ export class AHPErrorHandler {
       };
     }
 
-    if (error.status >= 500) {
+    if ((err.status ?? 0) >= 500) {
       return {
         type: 'network',
         code: 'SERVER_ERROR',
         message: '서버 오류가 발생했습니다.',
-        details: { status: error.status, error: error.message },
+        details: { status: err.status, error: err.message },
         suggestions: [
           '잠시 후 다시 시도하세요.',
           '문제가 지속되면 관리자에게 문의하세요.'
@@ -274,7 +276,7 @@ export class AHPErrorHandler {
       type: 'network',
       code: 'UNKNOWN_ERROR',
       message: '알 수 없는 네트워크 오류가 발생했습니다.',
-      details: { error: error.message },
+      details: { error: err.message },
       suggestions: ['페이지를 새로고침하고 다시 시도하세요.']
     };
   }
@@ -282,13 +284,14 @@ export class AHPErrorHandler {
   /**
    * 권한 에러 처리
    */
-  static handlePermissionError(error: any): AHPError {
-    if (error.status === 401) {
+  static handlePermissionError(error: unknown): AHPError {
+    const err = error as { code?: string; message?: string; status?: number };
+    if (err.status === 401) {
       return {
         type: 'permission',
         code: 'UNAUTHORIZED',
         message: '인증이 필요합니다. 다시 로그인해주세요.',
-        details: { error: error.message },
+        details: { error: err.message },
         suggestions: [
           '로그아웃 후 다시 로그인하세요.',
           '접속키를 확인하세요.'
@@ -296,12 +299,12 @@ export class AHPErrorHandler {
       };
     }
 
-    if (error.status === 403) {
+    if (err.status === 403) {
       return {
         type: 'permission',
         code: 'FORBIDDEN',
         message: '이 작업을 수행할 권한이 없습니다.',
-        details: { error: error.message },
+        details: { error: err.message },
         suggestions: [
           '관리자에게 권한 요청을 하세요.',
           '올바른 접속키를 사용하고 있는지 확인하세요.'
@@ -313,7 +316,7 @@ export class AHPErrorHandler {
       type: 'permission',
       code: 'ACCESS_DENIED',
       message: '접근이 거부되었습니다.',
-      details: { error: error.message },
+      details: { error: err.message },
       suggestions: ['관리자에게 문의하세요.']
     };
   }

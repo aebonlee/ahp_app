@@ -159,7 +159,7 @@ export interface ProjectData {
   evaluatorCount?: number;
   completionRate?: number;
   dueDate?: string;
-  settings?: any;
+  settings?: Record<string, unknown>;
 }
 
 // 사용자 프로젝트 타입 (UI용 확장)
@@ -175,6 +175,6 @@ export interface UserProject extends Omit<ProjectData, 'evaluation_method'> {
 // API 에러 타입
 export interface ApiError {
   message: string;
-  details?: any;
+  details?: unknown;
   status?: number;
 }

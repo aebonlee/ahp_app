@@ -64,7 +64,7 @@ export interface SurveyResponse {
     education?: string;
     occupation?: string;
     experience?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
