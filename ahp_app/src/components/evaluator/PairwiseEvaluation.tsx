@@ -88,40 +88,52 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
     setLoadError(false);
     try {
       // 1. 현재 사용자의 평가 조회
-      const evalsRes = await apiService.get<any>(
+      const evalsRes = await apiService.get<unknown>(
         `/api/service/evaluations/evaluations/?project=${projectId}&page_size=10`
       );
-      const evalsList: any[] = evalsRes.data?.results ?? evalsRes.data ?? [];
+      const evalsData = evalsRes.data as { results?: unknown[]; id?: unknown } | unknown[];
+      const evalsList: unknown[] = (Array.isArray(evalsData) ? evalsData : (evalsData as { results?: unknown[] }).results) ?? [];
       const evalItem = evalsList[0];
       if (!evalItem) {
         setLoadError(true);
         return;
       }
-      const evalId = String(evalItem.id);
+      const evalId = String((evalItem as { id: unknown }).id);
       setEvaluationId(evalId);
 
       // 2. 기준 + 비교쌍 병렬 로드
       const [criteriaRes, comparisonsRes] = await Promise.allSettled([
-        apiService.get<any>(`/api/service/projects/criteria/?project=${projectId}&page_size=100`),
-        apiService.get<any>(`/api/service/evaluations/comparisons/?evaluation=${evalId}&page_size=100`),
+        apiService.get<unknown>(`/api/service/projects/criteria/?project=${projectId}&page_size=100`),
+        apiService.get<unknown>(`/api/service/evaluations/comparisons/?evaluation=${evalId}&page_size=100`),
       ]);
 
       const criteriaList: CriterionItem[] =
         criteriaRes.status === 'fulfilled'
-          ? (criteriaRes.value.data?.results ?? criteriaRes.value.data ?? []).map((c: any) => ({
-              id: String(c.id),
-              name: c.name || c.title || `기준 ${c.id}`,
-            }))
+          ? (() => {
+              const d = criteriaRes.value.data as { results?: unknown[] } | unknown[];
+              const arr: unknown[] = (Array.isArray(d) ? d : (d as { results?: unknown[] }).results) ?? [];
+              return arr.map((c) => {
+                const item = c as { id: unknown; name?: string; title?: string };
+                return { id: String(item.id), name: item.name || item.title || `기준 ${item.id}` };
+              });
+            })()
           : [];
 
       const compList: ComparisonItem[] =
         comparisonsRes.status === 'fulfilled'
-          ? (comparisonsRes.value.data?.results ?? comparisonsRes.value.data ?? []).map((c: any) => ({
-              id: String(c.id),
-              criteriaAId: String(c.criteria_a),
-              criteriaBId: String(c.criteria_b),
-              value: c.value ?? 1,
-            }))
+          ? (() => {
+              const d = comparisonsRes.value.data as { results?: unknown[] } | unknown[];
+              const arr: unknown[] = (Array.isArray(d) ? d : (d as { results?: unknown[] }).results) ?? [];
+              return arr.map((c) => {
+                const item = c as { id: unknown; criteria_a: unknown; criteria_b: unknown; value?: number };
+                return {
+                  id: String(item.id),
+                  criteriaAId: String(item.criteria_a),
+                  criteriaBId: String(item.criteria_b),
+                  value: item.value ?? 1,
+                };
+              });
+            })()
           : [];
 
       setCriteria(criteriaList);
@@ -169,7 +181,7 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
     setIsSaving(true);
     try {
       // 상위 삼각 비교쌍 모두 PATCH
-      const patchPromises: Promise<any>[] = [];
+      const patchPromises: Promise<unknown>[] = [];
       for (let i = 0; i < criteria.length; i++) {
         for (let j = i + 1; j < criteria.length; j++) {
           const comp = comparisons.find(c =>
@@ -182,7 +194,7 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
             ? matrix.values[i][j]
             : matrix.values[j][i];
           patchPromises.push(
-            apiService.patch<any>(
+            apiService.patch<unknown>(
               `/api/service/evaluations/comparisons/${comp.id}/`,
               { value }
             )
@@ -193,11 +205,12 @@ const PairwiseEvaluation: React.FC<PairwiseEvaluationProps> = ({
 
       // CR 계산 (calculate/individual)
       try {
-        const crRes = await apiService.post<any>(
+        const crRes = await apiService.post<unknown>(
           '/api/service/analysis/calculate/individual/',
           { evaluation_id: evaluationId }
         );
-        const cr: number = crRes?.data?.consistency_ratio ?? 0;
+        const crData = crRes?.data as { consistency_ratio?: number } | undefined;
+        const cr: number = crData?.consistency_ratio ?? 0;
         setMatrix(prev => prev ? { ...prev, consistencyRatio: cr, completed: true } : prev);
 
         if (cr > 0.1) {

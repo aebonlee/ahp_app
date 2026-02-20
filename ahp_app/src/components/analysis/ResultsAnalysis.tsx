@@ -57,14 +57,29 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId }) => {
     setLoading(true);
     try {
       const [evalsRes, summaryRes] = await Promise.allSettled([
-        apiService.get<any>(`/api/service/evaluations/evaluations/?project=${projectId}&page_size=100`),
-        apiService.get<any>(`/api/service/analysis/project-summary/?project_id=${projectId}`),
+        apiService.get<unknown>(`/api/service/evaluations/evaluations/?project=${projectId}&page_size=100`),
+        apiService.get<unknown>(`/api/service/analysis/project-summary/?project_id=${projectId}`),
       ]);
+
+      type RawEval = {
+        id: string;
+        evaluator_name?: string;
+        evaluator_username?: string;
+        progress?: number;
+        status?: string;
+        updated_at?: string;
+        consistency_ratio?: number | null;
+        is_consistent?: boolean;
+      };
+      type RawWeight = { criteria_id: string; criteria_name: string; normalized_weight: number };
+      type SummaryData = { is_ready_for_analysis?: boolean };
+      type GroupData = { weights?: RawWeight[] };
 
       // 평가자 목록
       if (evalsRes.status === 'fulfilled' && evalsRes.value?.data) {
-        const evals: any[] = evalsRes.value.data.results ?? evalsRes.value.data;
-        const progress: EvaluationProgress[] = evals.map((ev: any) => ({
+        const rawData = evalsRes.value.data as { results?: RawEval[] } | RawEval[];
+        const evals: RawEval[] = (Array.isArray(rawData) ? rawData : (rawData as { results?: RawEval[] }).results) ?? [];
+        const progress: EvaluationProgress[] = evals.map((ev) => ({
           evaluatorId: ev.id,
           evaluatorName: ev.evaluator_name || ev.evaluator_username || '평가자',
           completionRate: Math.round(ev.progress ?? 0),
@@ -78,8 +93,8 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId }) => {
 
         // 일관성 데이터
         const crData: ConsistencyData[] = evals
-          .filter((ev: any) => ev.consistency_ratio != null)
-          .map((ev: any) => ({
+          .filter((ev) => ev.consistency_ratio != null)
+          .map((ev) => ({
             evaluatorId: ev.id,
             evaluatorName: ev.evaluator_name || ev.evaluator_username || '평가자',
             consistencyRatio: ev.consistency_ratio ?? 0,
@@ -89,11 +104,11 @@ const ResultsAnalysis: React.FC<ResultsAnalysisProps> = ({ projectId }) => {
       }
 
       // 완료 평가 있으면 기준 가중치 계산
-      if (summaryRes.status === 'fulfilled' && summaryRes.value?.data?.is_ready_for_analysis) {
+      if (summaryRes.status === 'fulfilled' && (summaryRes.value?.data as SummaryData)?.is_ready_for_analysis) {
         setSummaryReady(true);
-        const groupRes = await apiService.post<any>('/api/service/analysis/calculate/group/', { project_id: projectId });
-        if (groupRes?.data?.weights) {
-          const weights: any[] = groupRes.data.weights;
+        const groupRes = await apiService.post<unknown>('/api/service/analysis/calculate/group/', { project_id: projectId });
+        if ((groupRes?.data as GroupData)?.weights) {
+          const weights: RawWeight[] = (groupRes.data as GroupData).weights!;
           const sorted = [...weights].sort((a, b) => b.normalized_weight - a.normalized_weight);
           const criteria: ResultRanking[] = sorted.map((w, idx) => ({
             id: w.criteria_id,

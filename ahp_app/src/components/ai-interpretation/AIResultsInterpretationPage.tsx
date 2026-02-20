@@ -58,7 +58,7 @@ interface Insight {
   title: string;
   description: string;
   priority: 'high' | 'medium' | 'low';
-  relatedData?: any;
+  relatedData?: unknown;
 }
 
 interface AIResultsInterpretationPageProps {
@@ -91,10 +91,11 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
   const loadProjects = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiService.get<any>('/api/service/projects/projects/?page_size=100');
-      const all: any[] = res?.data?.results ?? res?.data ?? [];
-      const completedProjects = all.filter(
-        (p: any) => p.status === 'completed' || p.status === 'evaluation'
+      const res = await apiService.get<unknown>('/api/service/projects/projects/?page_size=100');
+      const resData = res?.data as { results?: unknown[]; [key: string]: unknown } | unknown[] | undefined;
+      const all: unknown[] = (Array.isArray(resData) ? resData : (resData as { results?: unknown[] })?.results) ?? [];
+      const completedProjects = (all as Project[]).filter(
+        (p) => p.status === 'completed' || p.status === 'evaluation'
       );
       setProjects(completedProjects);
     } catch (error) {
@@ -121,30 +122,38 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
     try {
       // 평가 결과 데이터 로드
       const [criteriaRes, groupRes, evalsRes] = await Promise.allSettled([
-        apiService.get<any>(`/api/service/projects/criteria/?project=${project.id}&page_size=100`),
-        apiService.post<any>('/api/service/analysis/calculate/group/', { project_id: project.id }),
-        apiService.get<any>(`/api/service/evaluations/evaluations/?project=${project.id}&page_size=100`),
+        apiService.get<unknown>(`/api/service/projects/criteria/?project=${project.id}&page_size=100`),
+        apiService.post<unknown>('/api/service/analysis/calculate/group/', { project_id: project.id }),
+        apiService.get<unknown>(`/api/service/evaluations/evaluations/?project=${project.id}&page_size=100`),
       ]);
 
-      const criteriaList: any[] = criteriaRes.status === 'fulfilled'
-        ? (criteriaRes.value?.data?.results ?? criteriaRes.value?.data ?? []) : [];
-      const groupWeights: any[] = groupRes.status === 'fulfilled'
-        ? (groupRes.value?.data?.weights ?? []) : [];
-      const evalList: any[] = evalsRes.status === 'fulfilled'
-        ? (evalsRes.value?.data?.results ?? evalsRes.value?.data ?? []) : [];
+      type RawCriterion = { id: string; name: string };
+      type RawWeight = { criteria_id: string; criteria_name: string; normalized_weight: number; weight: number };
+      type RawEval = { consistency_ratio?: number | null };
 
-      const avgCR = evalList.reduce((s: number, e: any) => s + (e.consistency_ratio ?? 0), 0)
-        / (evalList.filter((e: any) => e.consistency_ratio != null).length || 1);
+      const criteriaList: RawCriterion[] = criteriaRes.status === 'fulfilled'
+        ? ((criteriaRes.value?.data as { results?: RawCriterion[] })?.results
+            ?? (criteriaRes.value?.data as RawCriterion[])
+            ?? []) : [];
+      const groupWeights: RawWeight[] = groupRes.status === 'fulfilled'
+        ? ((groupRes.value?.data as { weights?: RawWeight[] })?.weights ?? []) : [];
+      const evalList: RawEval[] = evalsRes.status === 'fulfilled'
+        ? ((evalsRes.value?.data as { results?: RawEval[] })?.results
+            ?? (evalsRes.value?.data as RawEval[])
+            ?? []) : [];
+
+      const avgCR = evalList.reduce((s: number, e) => s + (e.consistency_ratio ?? 0), 0)
+        / (evalList.filter((e) => e.consistency_ratio != null).length || 1);
 
       const weights: Criterion[] = groupWeights.length > 0
-        ? groupWeights.map((w: any) => ({
+        ? groupWeights.map((w) => ({
             id: w.criteria_id,
             name: w.criteria_name,
             weight: w.normalized_weight,
             localWeight: w.weight,
             globalWeight: w.normalized_weight,
           }))
-        : criteriaList.map((c: any) => ({
+        : criteriaList.map((c) => ({
             id: c.id,
             name: c.name,
             weight: 0,

@@ -144,8 +144,9 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
       setNewWorkshop({ title: '', description: '', project: '', scheduled_at: '', duration_minutes: 120, max_participants: 30, is_anonymous: false, allow_late_join: true });
       await loadWorkshops();
       setActiveTab('overview');
-    } catch (err: any) {
-      const msg = err?.response?.data?.title?.[0] ?? err?.response?.data?.non_field_errors?.[0] ?? '워크숍 생성에 실패했습니다.';
+    } catch (err: unknown) {
+      const errData = (err as { response?: { data?: { title?: string[]; non_field_errors?: string[] } } })?.response?.data;
+      const msg = errData?.title?.[0] ?? errData?.non_field_errors?.[0] ?? '워크숍 생성에 실패했습니다.';
       showActionMessage('error', msg);
     } finally {
       setIsSubmitting(false);
@@ -158,8 +159,9 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
       showActionMessage('success', '워크숍이 시작되었습니다.');
       await loadWorkshops();
       if (selectedWorkshop?.id === workshop.id) setSelectedWorkshop(res.data as WorkshopSession);
-    } catch (err: any) {
-      showActionMessage('error', err?.response?.data?.error ?? '워크숍 시작에 실패했습니다.');
+    } catch (err: unknown) {
+      const errMsg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      showActionMessage('error', errMsg ?? '워크숍 시작에 실패했습니다.');
     }
   };
 
@@ -169,8 +171,9 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
       showActionMessage('success', '워크숍이 완료 처리되었습니다.');
       setSelectedWorkshop(null);
       await loadWorkshops();
-    } catch (err: any) {
-      showActionMessage('error', err?.response?.data?.error ?? '워크숍 완료 처리에 실패했습니다.');
+    } catch (err: unknown) {
+      const errMsg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      showActionMessage('error', errMsg ?? '워크숍 완료 처리에 실패했습니다.');
     }
   };
 
@@ -180,8 +183,9 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
       showActionMessage('info', '워크숍이 취소되었습니다.');
       setSelectedWorkshop(null);
       await loadWorkshops();
-    } catch (err: any) {
-      showActionMessage('error', err?.response?.data?.error ?? '워크숍 취소에 실패했습니다.');
+    } catch (err: unknown) {
+      const errMsg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      showActionMessage('error', errMsg ?? '워크숍 취소에 실패했습니다.');
     }
   };
 
@@ -203,10 +207,11 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
       showActionMessage('success', '참가자가 추가되었습니다.');
       setNewParticipant({ name: '', email: '', role: 'evaluator', organization: '' });
       await handleLoadWorkshopDetail(selectedWorkshop);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errData = (err as { response?: { data?: { email?: string[]; non_field_errors?: string[] } } })?.response?.data;
       const msg =
-        err?.response?.data?.email?.[0] ??
-        err?.response?.data?.non_field_errors?.[0] ??
+        errData?.email?.[0] ??
+        errData?.non_field_errors?.[0] ??
         '참가자 추가에 실패했습니다.';
       showActionMessage('error', msg);
     } finally {
