@@ -89,7 +89,7 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
     setIsVerifying(true);
     try {
       const result = await apiService.post('/api/service/accounts/verify-password/', { password });
-      if (result.data && (result.data as any).valid) {
+      if (result.data && (result.data as { valid?: boolean }).valid) {
         onRoleSwitch(targetRole);
         showActionMessage('success', `${info.title} 모드로 전환되었습니다.`);
         setIsConfirming(false);

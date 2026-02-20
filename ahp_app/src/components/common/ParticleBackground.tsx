@@ -16,7 +16,7 @@ const getDevicePerformanceLevel = (): 'low' | 'medium' | 'high' => {
   const cores = navigator.hardwareConcurrency || 4;
   
   // 메모리 정보 (사용 가능한 경우)
-  const memory = (navigator as any).deviceMemory || 4;
+  const memory = navigator.deviceMemory || 4;
   
   // GPU 웹GL 컨텍스트 체크 (기본적인 성능 지표)
   const canvas = document.createElement('canvas');
@@ -49,7 +49,7 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
 
     // 배터리 API 체크 (지원하는 브라우저에서)
     if ('getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
+      navigator.getBattery!().then((battery) => {
         const updateBatteryStatus = () => {
           // 배터리 부족 시 particles 비활성화
           if (battery.level < 0.2 && !battery.charging) {

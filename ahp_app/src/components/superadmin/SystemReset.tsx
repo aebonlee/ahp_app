@@ -116,7 +116,7 @@ const SystemReset: React.FC<SystemResetProps> = ({ onBack, onReset }) => {
     setIsVerifying(true);
     try {
       const result = await apiService.post('/api/service/accounts/verify-password/', { password });
-      if (result.data && (result.data as any).valid) {
+      if (result.data && (result.data as { valid?: boolean }).valid) {
         onReset(resetOptions);
         showActionMessage('success', '시스템 초기화가 시작되었습니다.');
         setConfirmStep(0);

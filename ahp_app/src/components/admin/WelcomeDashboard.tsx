@@ -17,7 +17,7 @@ const WelcomeDashboard: React.FC<WelcomeDashboardProps> = ({
 }) => {
   // 시스템 관리자는 모드 선택, 일반 사용자는 바로 서비스 시작
   const isSystemAdmin = user.role === 'super_admin';
-  const needsModeSelection = isSystemAdmin && !(user as any).admin_type;
+  const needsModeSelection = isSystemAdmin && !user.admin_type;
   
   if (needsModeSelection) {
     return (

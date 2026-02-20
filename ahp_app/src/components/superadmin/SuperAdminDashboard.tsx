@@ -167,9 +167,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
       const uptimeDays = Math.floor((new Date().getTime() - new Date(sessionStart).getTime()) / (1000 * 60 * 60 * 24));
 
       // 실시간 성능 메트릭 (시뮬레이션)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _performanceData = performance.getEntriesByType('navigation')[0] as any;
-      const memoryInfo = (performance as any).memory;
+      const memoryInfo = performance.memory;
       
       setSystemStats({
         totalUsers: users?.length || 0,

@@ -380,7 +380,7 @@ const AnonymousEvaluator: React.FC = () => {
         if (nextIndex < comparisons.length) {
           setCurrentIndex(nextIndex);
           comparisonStartTime.current = Date.now();
-          (window as any).comparisonStartTime = Date.now();
+          window.comparisonStartTime = Date.now();
           
           // Update progress
           const progressPercentage = Math.round((nextIndex / comparisons.length) * 100);

@@ -19,6 +19,8 @@ export interface User {
   created_at: string;
   last_login?: string;
   profile?: UserProfile;
+  /** Admin dashboard type: distinguishes super admin vs personal service admin */
+  admin_type?: 'super' | 'personal';
 }
 
 // 사용자 프로필
