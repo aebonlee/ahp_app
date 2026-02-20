@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import PairwiseGrid from '../evaluation/PairwiseGrid';
 import CRBadge, { CRBadgeWithActions } from '../evaluation/CRBadge';
 import JudgmentHelperPanel from '../evaluation/JudgmentHelperPanel';
-import HierarchyBuilder from '../project/HierarchyBuilder';
+import HierarchyBuilder, { HierarchyNode } from '../project/HierarchyBuilder';
 import SensitivityView from '../analysis/SensitivityView';
 import BudgetingView from '../analysis/BudgetingView';
 import ApiTestPage from './ApiTestPage';
@@ -112,7 +112,7 @@ const ComponentShowcase: React.FC = () => {
   const [comparisons, setComparisons] = useState(INCONSISTENT_COMPARISONS);
   const [consistencyRatio, setConsistencyRatio] = useState<number>(0);
   const [showHelper, setShowHelper] = useState(false);
-  const [hierarchy, setHierarchy] = useState(DEMO_HIERARCHY);
+  const [hierarchy, setHierarchy] = useState<HierarchyNode[]>(DEMO_HIERARCHY as HierarchyNode[]);
 
   useEffect(() => {
     // 초기 CR 계산
@@ -278,8 +278,8 @@ const ComponentShowcase: React.FC = () => {
             <p className="text-gray-600">드래그&드롭으로 계층구조 편집</p>
             
             <HierarchyBuilder
-              initialHierarchy={hierarchy as any}
-              onHierarchyChange={(newHierarchy) => setHierarchy(newHierarchy as any)}
+              initialHierarchy={hierarchy}
+              onHierarchyChange={(newHierarchy) => setHierarchy(newHierarchy)}
               maxLevels={4}
               allowAlternatives={true}
             />

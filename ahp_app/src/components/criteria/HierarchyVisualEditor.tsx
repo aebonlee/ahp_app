@@ -358,7 +358,7 @@ const HierarchyVisualEditor: React.FC<HierarchyVisualEditorProps> = ({
                 <label className="text-sm font-medium text-gray-700">템플릿:</label>
                 <select
                   value={selectedTemplate}
-                  onChange={(e) => setSelectedTemplate(e.target.value as any)}
+                  onChange={(e) => setSelectedTemplate(e.target.value as '3x3' | '4x3' | '5x3' | 'custom')}
                   className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="3x3">3×3 구조 (상위 3개, 각 하위 3개)</option>

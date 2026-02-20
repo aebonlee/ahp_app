@@ -81,7 +81,7 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
     setIsLoading(true);
     try {
       const res = await apiService.get('/api/service/workshops/sessions/');
-      const data = res.data as any;
+      const data = res.data as WorkshopSession[] | { results?: WorkshopSession[] };
       setWorkshops(Array.isArray(data) ? data : (data.results ?? []));
     } catch (err) {
       showActionMessage('error', '워크숍 목록을 불러오는데 실패했습니다.');
@@ -93,9 +93,9 @@ const WorkshopManagement: React.FC<WorkshopManagementProps> = ({ className = '' 
   const loadProjects = useCallback(async () => {
     try {
       const res = await apiService.get('/api/service/projects/projects/?page_size=100');
-      const data = res.data as any;
+      const data = res.data as Project[] | { results?: Project[] };
       const list = Array.isArray(data) ? data : (data.results ?? []);
-      setProjects(list.map((p: any) => ({ id: p.id, title: p.title })));
+      setProjects(list.map((p) => ({ id: p.id, title: p.title })));
     } catch (err) {
       showActionMessage('error', '프로젝트 목록을 불러오는데 실패했습니다.');
     }

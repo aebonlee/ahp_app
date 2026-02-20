@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Modal from '../common/Modal';
 
-interface HierarchyNode {
+export interface HierarchyNode {
   id: string;
   name: string;
   description?: string;

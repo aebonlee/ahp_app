@@ -452,7 +452,7 @@ const InteractiveTreeModel: React.FC<InteractiveTreeModelProps> = ({
                   strokeWidth="3"
                   rx="8"
                   className="cursor-pointer"
-                  onMouseDown={(e) => handleNodeDragStart(node.id, e as any)}
+                  onMouseDown={(e) => handleNodeDragStart(node.id, e)}
                   onClick={() => handleNodeClick(node.id)}
                 />
 

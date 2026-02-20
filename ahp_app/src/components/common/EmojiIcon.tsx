@@ -1,5 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconPrefix, IconName } from '@fortawesome/fontawesome-svg-core';
 import { emojiToFontAwesome } from '../../utils/fontAwesome';
 
 interface EmojiIconProps {
@@ -20,7 +21,7 @@ export const EmojiIcon: React.FC<EmojiIconProps> = ({
   if (iconName) {
     return (
       <FontAwesomeIcon
-        icon={['fas', iconName] as any}
+        icon={['fas', iconName as IconName] as [IconPrefix, IconName]}
         size={size}
         className={className}
       />

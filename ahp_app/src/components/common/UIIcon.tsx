@@ -1,5 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconPrefix, IconName } from '@fortawesome/fontawesome-svg-core';
 import { emojiToFontAwesome } from '../../utils/fontAwesome';
 
 // UI 디자인 시스템 색상 팔레트
@@ -116,9 +117,9 @@ export const UIIcon: React.FC<UIIconProps> = ({
   if (iconName) {
     return (
       <FontAwesomeIcon
-        icon={['fas', iconName] as any}
+        icon={['fas', iconName as IconName] as [IconPrefix, IconName]}
         className={combinedClassName}
-        style={iconStyle as any}
+        style={iconStyle as any /* FA CSSVariables index sig incompatible with CSSProperties */}
         aria-label={ariaLabel}
         onClick={onClick}
         role={onClick ? 'button' : undefined}
@@ -138,7 +139,7 @@ export const UIIcon: React.FC<UIIconProps> = ({
     return (
       <span
         className={combinedClassName}
-        style={iconStyle as any}
+        style={iconStyle as React.CSSProperties}
         aria-label={ariaLabel}
         onClick={onClick}
         role={onClick ? 'button' : undefined}

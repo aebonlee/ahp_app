@@ -69,14 +69,14 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
       }
 
       const criteriaRaw = criteriaResponse.data;
-      const alternativesRaw = (alternativesResponse.data as any);
+      const alternativesRaw = alternativesResponse.data as Alternative[] | { results?: Alternative[] };
 
       const projectData: Project = {
         id: projectId,
-        title: (projectResponse.data as any)?.title || '평가 프로젝트',
-        description: (projectResponse.data as any)?.description || '',
+        title: (projectResponse.data as { title?: string })?.title || '평가 프로젝트',
+        description: (projectResponse.data as { description?: string })?.description || '',
         criteria: Array.isArray(criteriaRaw) ? (criteriaRaw as unknown as Criterion[]) : [],
-        alternatives: alternativesRaw?.results ?? (Array.isArray(alternativesRaw) ? alternativesRaw : []),
+        alternatives: Array.isArray(alternativesRaw) ? alternativesRaw : (alternativesRaw as { results?: Alternative[] })?.results ?? [],
       };
 
       setProject(projectData);

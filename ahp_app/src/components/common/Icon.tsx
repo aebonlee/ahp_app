@@ -41,7 +41,7 @@ const Icon: React.FC<IconProps> = ({
       icon={iconName as IconProp} 
       size={size} 
       className={className}
-      style={finalStyle as any}
+      style={finalStyle as any /* FA CSSVariables index sig incompatible with CSSProperties */}
     />
   );
 };

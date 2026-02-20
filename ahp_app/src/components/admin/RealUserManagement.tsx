@@ -77,10 +77,12 @@ const RealUserManagement: React.FC = () => {
       const response = await apiService.get<any>(`/api/accounts/?${params}`);
       
       if (response.data) {
-        const data = response.data as any;
-        setUsers(data.results || data);
-        setTotalCount(data.count || (Array.isArray(data) ? data.length : 0));
-        setTotalPages(Math.ceil((data.count || (Array.isArray(data) ? data.length : 0)) / pageSize));
+        const data = response.data as DjangoUser[] | { results?: DjangoUser[]; count?: number };
+        const list = Array.isArray(data) ? data : (data.results ?? []);
+        const count = Array.isArray(data) ? data.length : (data.count ?? list.length);
+        setUsers(list);
+        setTotalCount(count);
+        setTotalPages(Math.ceil(count / pageSize));
       } else {
         throw new Error('데이터를 불러올 수 없습니다.');
       }

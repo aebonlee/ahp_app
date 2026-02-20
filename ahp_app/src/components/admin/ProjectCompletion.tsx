@@ -82,15 +82,15 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
 
       // 기준 처리
       if (criteriaRes.status === 'fulfilled') {
-        const criteriaData = criteriaRes.value.data as any;
-        const list: any[] = Array.isArray(criteriaData) ? criteriaData : (criteriaData.results ?? []);
+        const criteriaData = criteriaRes.value.data as Criterion[] | { results?: Criterion[]; count?: number };
+        const list: Criterion[] = Array.isArray(criteriaData) ? criteriaData : (criteriaData.results ?? []);
         setCriteriaData(
-          list.map((c: any) => ({
+          list.map((c) => ({
             id: String(c.id),
             name: c.name ?? '',
             description: c.description,
             level: c.level ?? 1,
-            parent_id: c.parent_id ?? c.parent ?? null,
+            parent_id: c.parent_id ?? null,
           }))
         );
       }
@@ -98,9 +98,9 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
       // 평가 처리
       let evals: EvaluationItem[] = [];
       if (evalsRes.status === 'fulfilled') {
-        const evalsData = evalsRes.value.data as any;
-        const list: any[] = Array.isArray(evalsData) ? evalsData : (evalsData.results ?? []);
-        evals = list.map((e: any) => ({
+        const evalsData = evalsRes.value.data as EvaluationItem[] | { results?: EvaluationItem[] };
+        const list: EvaluationItem[] = Array.isArray(evalsData) ? evalsData : (evalsData.results ?? []);
+        evals = list.map((e) => ({
           id: String(e.id),
           evaluator_name: e.evaluator_name || e.evaluator_username || '알 수 없음',
           evaluator_username: e.evaluator_username ?? '',
@@ -116,7 +116,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
       const critCount =
         criteriaRes.status === 'fulfilled'
           ? (() => {
-              const d = criteriaRes.value.data as any;
+              const d = criteriaRes.value.data as Criterion[] | { count?: number; results?: Criterion[] };
               return Array.isArray(d) ? d.length : (d.count ?? d.results?.length ?? 0);
             })()
           : criteriaCount;
@@ -136,7 +136,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
       let createdDate = new Date().toLocaleDateString('ko-KR');
       let lastModified = new Date().toLocaleDateString('ko-KR');
       if (projectRes.status === 'fulfilled') {
-        const proj = projectRes.value.data as any;
+        const proj = projectRes.value.data as { created_at?: string; updated_at?: string };
         if (proj.created_at) createdDate = new Date(proj.created_at).toLocaleDateString('ko-KR');
         if (proj.updated_at) lastModified = new Date(proj.updated_at).toLocaleDateString('ko-KR');
       }

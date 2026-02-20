@@ -53,10 +53,11 @@ const AllProjectsManagement: React.FC = () => {
       const response = await apiService.get<any>(`/api/service/projects/projects/?${params}`);
       
       if (response.data) {
-        const data = response.data as any;
-        const projectsData = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+        const data = response.data as Project[] | { results?: Project[]; count?: number };
+        const projectsData = Array.isArray(data) ? data : (Array.isArray(data.results) ? data.results : []);
+        const totalCount = Array.isArray(data) ? data.length : (data.count ?? projectsData.length);
         setProjects(projectsData);
-        setTotalPages(Math.ceil((data.count || projectsData.length) / pageSize));
+        setTotalPages(Math.ceil(totalCount / pageSize));
       }
     } catch (error) {
       showActionMessage('error', '프로젝트 목록을 불러오는 중 오류가 발생했습니다.');

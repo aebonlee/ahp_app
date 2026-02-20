@@ -184,7 +184,7 @@ const ResultsDataManager: React.FC<ResultsDataManagerProps> = ({
       const rawList = evalListRes.data;
       const evalList: EvaluationItem[] = Array.isArray(rawList)
         ? rawList
-        : (rawList as any).results ?? [];
+        : (rawList as { results?: EvaluationItem[] }).results ?? [];
 
       if (evalList.length === 0) return {};
 
