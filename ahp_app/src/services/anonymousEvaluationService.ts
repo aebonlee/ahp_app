@@ -16,7 +16,7 @@ export interface AnonymousEvaluationSession {
   current_step: number;
   total_steps: number;
   progress_percentage: number;
-  session_data: any;
+  session_data: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
   status: 'active' | 'paused' | 'completed' | 'expired' | 'abandoned';
@@ -55,7 +55,7 @@ export interface EvaluationProgress {
 export interface SessionRecoveryData {
   session: AnonymousEvaluationSession;
   completed_comparisons: PairwiseComparisonResult[];
-  remaining_comparisons: any[];
+  remaining_comparisons: Record<string, unknown>[];
   progress: EvaluationProgress;
 }
 
@@ -130,6 +130,12 @@ const makeAnonymousEvalRequest = async <T>(
     };
   }
 };
+
+interface ResultsSummary {
+  rankings?: Array<{ name: string; score: number; rank: number }>;
+  consistencyRatio?: number;
+  [key: string]: unknown;
+}
 
 // Anonymous Evaluation Service
 export const anonymousEvaluationService = {
@@ -243,14 +249,14 @@ export const anonymousEvaluationService = {
     feedback?: string;
     satisfaction_rating?: number;
     completion_notes?: string;
-  }): Promise<ApiResponse<{ session: AnonymousEvaluationSession; results_summary: any }>> => {
+  }): Promise<ApiResponse<{ session: AnonymousEvaluationSession; results_summary: ResultsSummary }>> => {
     const data = {
       completed_at: new Date().toISOString(),
       status: 'completed',
       ...completionData
     };
 
-    const response = await makeAnonymousEvalRequest<{ session: AnonymousEvaluationSession; results_summary: any }>(`/api/evaluation/anonymous/sessions/${sessionId}/complete/`, {
+    const response = await makeAnonymousEvalRequest<{ session: AnonymousEvaluationSession; results_summary: ResultsSummary }>(`/api/evaluation/anonymous/sessions/${sessionId}/complete/`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -525,7 +531,7 @@ function generateBrowserFingerprint(): string {
   }));
 }
 
-function getLocalSessionData(): any {
+function getLocalSessionData(): Record<string, unknown> | null {
   try {
     return JSON.parse(localStorage.getItem('anonymous_session_data') || '{}');
   } catch {

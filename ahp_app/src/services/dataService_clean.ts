@@ -538,7 +538,7 @@ class CleanDataService {
       if (!projectId) {
         const projects = await this.getProjects();
         for (const project of projects) {
-          const evaluators = project.settings?.evaluators || [];
+          const evaluators = (project.settings?.evaluators as EvaluatorData[] | undefined) ?? [];
           const foundEvaluator = evaluators.find((e: EvaluatorData) => e.id === evaluatorId);
           if (foundEvaluator) {
             projectId = project.id;

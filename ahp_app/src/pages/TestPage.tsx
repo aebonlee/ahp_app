@@ -228,9 +228,10 @@ const TestPage: React.FC = () => {
           <p><strong>설명:</strong> {selectedProject.description}</p>
           <p><strong>상태:</strong> {selectedProject.status} / {selectedProject.workflow_stage}</p>
           <p><strong>ID:</strong> {selectedProject.id}</p>
-          {selectedProject.settings?.criteria && (
-            <p><strong>메타데이터 기준:</strong> {selectedProject.settings.criteria.length}개</p>
-          )}
+          {selectedProject.settings?.criteria
+            ? <p><strong>메타데이터 기준:</strong> {(selectedProject.settings.criteria as unknown[]).length}개</p>
+            : null
+          }
         </div>
       )}
 

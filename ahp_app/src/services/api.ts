@@ -26,7 +26,7 @@ export interface DjangoProjectResponse {
   member_count?: number;
   owner?: string;
   tags?: string[];
-  settings?: any; // 메타데이터 저장용 필드
+  settings?: Record<string, unknown>; // 메타데이터 저장용 필드
 }
 
 // 프론트엔드에서 사용하는 정규화된 타입
@@ -54,7 +54,7 @@ export interface ProjectData {
     decisionRole: string;
     additionalInfo: string;
   };
-  demographic_survey_config?: any;
+  demographic_survey_config?: Record<string, unknown>;
   require_demographics?: boolean;
   evaluation_flow_type?: 'survey_first' | 'ahp_first' | 'parallel';
   deleted_at?: string;
@@ -65,7 +65,7 @@ export interface ProjectData {
   evaluatorCount?: number;
   completionRate?: number;
   dueDate?: string;
-  settings?: any; // 메타데이터 저장용 필드
+  settings?: Record<string, unknown>; // 메타데이터 저장용 필드
 }
 
 // 기준 관련 타입
@@ -307,7 +307,7 @@ export const projectApi = {
   // 프로젝트 수정 (정규화 적용)
   updateProject: async (id: string, data: Partial<ProjectData>) => {
     // 프론트엔드 데이터를 Django 형식으로 변환
-    const djangoData: any = {};
+    const djangoData: Record<string, unknown> = {};
     if (data.title !== undefined) djangoData.title = data.title;
     if (data.description !== undefined) djangoData.description = data.description;
     if (data.objective !== undefined) djangoData.objective = data.objective;
@@ -598,7 +598,7 @@ export const evaluationApi = {
     ),
 
   // 평가 세션 상태 업데이트
-  updateEvaluationSession: (projectId: string, evaluatorId: string, data: any) =>
+  updateEvaluationSession: (projectId: string, evaluatorId: string, data: Record<string, unknown>) =>
     makeRequest<void>(`/api/projects/${projectId}/evaluators/${evaluatorId}/session`, {
       method: 'PUT',
       body: JSON.stringify(data)
@@ -622,7 +622,7 @@ export const resultsApi = {
     }),
 
   // 민감도 분석 실행
-  runSensitivityAnalysis: (projectId: string, parameters?: any) =>
+  runSensitivityAnalysis: (projectId: string, parameters?: Record<string, unknown>) =>
     makeRequest<any>(`/api/projects/${projectId}/analysis/sensitivity`, {
       method: 'POST',
       body: JSON.stringify(parameters || {})
@@ -638,7 +638,7 @@ export const exportApi = {
     }),
 
   // PDF 보고서 생성
-  generateReport: (projectId: string, options?: any) =>
+  generateReport: (projectId: string, options?: Record<string, unknown>) =>
     makeRequest<Blob>(`/api/projects/${projectId}/export/report`, {
       method: 'POST',
       body: JSON.stringify(options || {})
@@ -761,28 +761,28 @@ export const advancedAnalysisApi = {
   get: (url: string) => makeRequest<any>(url),
 
   // 일반 POST 요청 메서드
-  post: (url: string, data?: any) => makeRequest<any>(url, {
+  post: (url: string, data?: unknown) => makeRequest<any>(url, {
     method: 'POST',
     body: data ? JSON.stringify(data) : undefined
   }),
 
   // 일반 PUT 요청 메서드
-  put: (url: string, data?: any) => makeRequest<any>(url, {
+  put: (url: string, data?: unknown) => makeRequest<any>(url, {
     method: 'PUT',
     body: data ? JSON.stringify(data) : undefined
   }),
 
   // 일반 PATCH 요청 메서드
-  patch: (url: string, data?: any) => makeRequest<any>(url, {
+  patch: (url: string, data?: unknown) => makeRequest<any>(url, {
     method: 'PATCH',
     body: data ? JSON.stringify(data) : undefined
   }),
 
   // 일반 DELETE 요청 메서드
   delete: (url: string) => makeRequest<any>(url, { method: 'DELETE' }),
-  
+
   // 민감도 분석
-  runSensitivityAnalysis: (projectId: string, data: any) =>
+  runSensitivityAnalysis: (projectId: string, data: Record<string, unknown>) =>
     makeRequest<any>(`/api/service/analysis/advanced/${projectId}/sensitivity_analysis/`, {
       method: 'POST',
       body: JSON.stringify(data)
