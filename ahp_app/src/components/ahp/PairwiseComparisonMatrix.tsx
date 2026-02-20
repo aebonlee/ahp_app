@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { buildComparisonMatrix, calculateAHP, getConsistencyColor, getConsistencyLevel } from '../../utils/ahpCalculator';
-import type { ComparisonInput } from '../../utils/ahpCalculator';
+import type { ComparisonInput, AHPResult } from '../../utils/ahpCalculator';
 
 interface Element {
   id: string;
@@ -8,10 +8,17 @@ interface Element {
   description?: string;
 }
 
+interface ComparisonCallbackResult {
+  matrix: number[][];
+  comparisons: ComparisonInput[];
+  results: AHPResult;
+  elements: Element[];
+}
+
 interface PairwiseComparisonMatrixProps {
   elements: Element[];
   title: string;
-  onComplete?: (results: any) => void;
+  onComplete?: (results: ComparisonCallbackResult) => void;
   savedComparisons?: ComparisonInput[];
 }
 
@@ -35,7 +42,7 @@ const PairwiseComparisonMatrix: React.FC<PairwiseComparisonMatrixProps> = ({
 }) => {
   const [comparisons, setComparisons] = useState<ComparisonInput[]>([]);
   const [matrix, setMatrix] = useState<number[][]>([]);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<AHPResult | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
 
   // Initialize comparisons

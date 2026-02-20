@@ -13,6 +13,23 @@ interface Project extends ProjectFormData {
   lastActivity?: string;
 }
 
+interface Criterion {
+  id: string;
+  name: string;
+  description?: string;
+  weight?: number;
+  parentId?: string;
+  level: number;
+  order: number;
+}
+
+interface Alternative {
+  id: string;
+  name: string;
+  description?: string;
+  order: number;
+}
+
 const EnhancedProjectDashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -147,7 +164,7 @@ const EnhancedProjectDashboard: React.FC = () => {
     return labels[method as keyof typeof labels] || method;
   };
 
-  const handleModelSave = (criteria: any[], alternatives: any[]) => {
+  const handleModelSave = (criteria: Criterion[], alternatives: Alternative[]) => {
     if (selectedProject) {
       // Update project status to waiting after model is configured
       setProjects(projects.map(p => 

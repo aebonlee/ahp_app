@@ -11,13 +11,37 @@ import api from '../services/api';
 
 type FlowStep = 'landing' | 'demographic' | 'ahp' | 'completion';
 
+interface SurveyConfig {
+  customQuestions?: Array<{
+    id: string;
+    question: string;
+    type: 'text' | 'select' | 'radio';
+    options?: string[];
+  }>;
+  surveyTitle?: string;
+  surveyDescription?: string;
+  estimatedTime?: number;
+  [key: string]: unknown;
+}
+
+interface DemographicData {
+  age_group: string;
+  gender: string;
+  education_level: string;
+  occupation: string;
+  industry: string;
+  experience_years: string;
+  decision_role: string;
+  custom_fields: { [key: string]: unknown };
+}
+
 interface ProjectInfo {
   id: string;
   title: string;
   description: string;
   objective?: string;
   evaluation_flow_type: 'survey_first' | 'ahp_first' | 'parallel';
-  demographic_survey_config: any;
+  demographic_survey_config: SurveyConfig | null;
   require_demographics: boolean;
   criteria_count: number;
   alternatives_count: number;
@@ -32,7 +56,7 @@ const IntegratedEvaluationFlow: React.FC = () => {
   const [project, setProject] = useState<ProjectInfo | null>(null);
   const [currentStep, setCurrentStep] = useState<FlowStep>('landing');
   const [sessionId, setSessionId] = useState<string>('');
-  const [demographicData, setDemographicData] = useState<any>(null);
+  const [demographicData, setDemographicData] = useState<DemographicData | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
@@ -78,7 +102,7 @@ const IntegratedEvaluationFlow: React.FC = () => {
     }
   };
 
-  const handleDemographicComplete = async (data: any) => {
+  const handleDemographicComplete = async (data: DemographicData) => {
     try {
       // 인구통계 데이터 제출
       await api.post('/api/service/evaluation/demographic/', {

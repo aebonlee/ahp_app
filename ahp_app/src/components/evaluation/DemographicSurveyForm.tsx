@@ -7,6 +7,21 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 
+interface CustomQuestion {
+  id: string;
+  question: string;
+  type: 'text' | 'select' | 'radio';
+  options?: string[];
+}
+
+interface SurveyConfig {
+  customQuestions?: CustomQuestion[];
+  surveyTitle?: string;
+  surveyDescription?: string;
+  estimatedTime?: number;
+  [key: string]: unknown;
+}
+
 interface DemographicData {
   age_group: string;
   gender: string;
@@ -15,12 +30,12 @@ interface DemographicData {
   industry: string;
   experience_years: string;
   decision_role: string;
-  custom_fields: { [key: string]: any };
+  custom_fields: { [key: string]: unknown };
 }
 
 interface DemographicSurveyFormProps {
   projectId: string;
-  surveyConfig: any;
+  surveyConfig: SurveyConfig | null | undefined;
   onComplete: (data: DemographicData) => void;
 }
 
@@ -73,18 +88,19 @@ const DemographicSurveyForm: React.FC<DemographicSurveyFormProps> = ({
   ];
 
   // 커스텀 질문이 있으면 추가 단계 생성
-  if (surveyConfig?.customQuestions?.length > 0) {
+  const customQuestions = surveyConfig?.customQuestions;
+  if (customQuestions && customQuestions.length > 0) {
     steps.push({
       id: 'custom',
       title: '추가 질문',
       icon: UserIcon,
-      fields: surveyConfig.customQuestions.map((q: any) => q.id),
+      fields: customQuestions.map((q: CustomQuestion) => q.id),
     });
   }
 
   const currentStepData = steps[currentStep];
 
-  const handleFieldChange = (field: string, value: any) => {
+  const handleFieldChange = (field: string, value: string) => {
     if (field.startsWith('custom_')) {
       setFormData({
         ...formData,
@@ -113,9 +129,9 @@ const DemographicSurveyForm: React.FC<DemographicSurveyFormProps> = ({
     stepFields.forEach((field) => {
       const value = field.startsWith('custom_')
         ? formData.custom_fields[field]
-        : formData[field as keyof DemographicData];
+        : formData[field as keyof Omit<DemographicData, 'custom_fields'>];
 
-      if (surveyConfig[`use${field.charAt(0).toUpperCase() + field.slice(1).replace('_', '')}`] && !value) {
+      if (surveyConfig?.[`use${field.charAt(0).toUpperCase() + field.slice(1).replace('_', '')}`] && !value) {
         stepErrors[field] = '이 항목은 필수입니다.';
       }
     });
@@ -362,7 +378,7 @@ const DemographicSurveyForm: React.FC<DemographicSurveyFormProps> = ({
 
       default:
         // 커스텀 필드 처리
-        const customQuestion = surveyConfig?.customQuestions?.find((q: any) => q.id === field);
+        const customQuestion = surveyConfig?.customQuestions?.find((q: CustomQuestion) => q.id === field);
         if (customQuestion) {
           return (
             <div>
@@ -372,14 +388,14 @@ const DemographicSurveyForm: React.FC<DemographicSurveyFormProps> = ({
               {customQuestion.type === 'text' && (
                 <input
                   type="text"
-                  value={formData.custom_fields[field] || ''}
+                  value={(formData.custom_fields[field] as string) || ''}
                   onChange={(e) => handleFieldChange(field, e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               )}
               {(customQuestion.type === 'select' || customQuestion.type === 'radio') && (
                 <select
-                  value={formData.custom_fields[field] || ''}
+                  value={(formData.custom_fields[field] as string) || ''}
                   onChange={(e) => handleFieldChange(field, e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >

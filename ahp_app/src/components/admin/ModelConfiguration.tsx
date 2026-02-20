@@ -74,7 +74,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
     description: ''
   });
 
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // 초기 데모 데이터 설정
   useEffect(() => {
@@ -96,7 +96,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   }, []);
 
   const validateCriterionForm = () => {
-    const newErrors: any = {};
+    const newErrors: Record<string, string> = {};
     
     if (!criterionForm.name.trim()) {
       newErrors.name = '기준명을 입력해주세요.';
@@ -111,7 +111,7 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   };
 
   const validateAlternativeForm = () => {
-    const newErrors: any = {};
+    const newErrors: Record<string, string> = {};
     
     if (!alternativeForm.name.trim()) {
       newErrors.name = '대안명을 입력해주세요.';
@@ -266,8 +266,18 @@ const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
         onBack={onBack}
         onSave={(treeModel, alternatives) => {
           // Convert tree model to criteria format for compatibility
+          interface FlattenNode {
+            id: string;
+            name: string;
+            description?: string;
+            parentId?: string;
+            level: number;
+            order: number;
+            type: 'goal' | 'criterion' | 'alternative';
+            children?: FlattenNode[];
+          }
           const flatCriteria: Criterion[] = [];
-          const flattenTree = (nodes: any[], parentId?: string) => {
+          const flattenTree = (nodes: FlattenNode[], parentId?: string) => {
             nodes.forEach(node => {
               if (node.type === 'criterion') {
                 flatCriteria.push({

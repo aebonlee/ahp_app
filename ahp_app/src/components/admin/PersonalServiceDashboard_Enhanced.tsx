@@ -8,24 +8,25 @@ import MyProjects from './MyProjects';
 import ProjectCreation from './ProjectCreation';
 import EnhancedEvaluatorManagement from './EnhancedEvaluatorManagement';
 import TrashBin from './TrashBin';
-import type { User } from '../../types';
+import type { User, UserProject } from '../../types';
+import type { ProjectData } from '../../services/api';
 
 interface PersonalServiceProps {
   user: User;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
   onUserUpdate?: (updatedUser: User) => void;
-  projects?: any[];
-  onCreateProject?: (projectData: any) => Promise<any>;
-  onDeleteProject?: (projectId: string) => Promise<any>;
-  onFetchCriteria?: (projectId: string) => Promise<any[]>;
-  onCreateCriteria?: (projectId: string, criteriaData: any) => Promise<any>;
-  onFetchAlternatives?: (projectId: string) => Promise<any[]>;
-  onCreateAlternative?: (projectId: string, alternativeData: any) => Promise<any>;
-  onSaveEvaluation?: (projectId: string, evaluationData: any) => Promise<any>;
-  onFetchTrashedProjects?: () => Promise<any[]>;
-  onRestoreProject?: (projectId: string) => Promise<any>;
-  onPermanentDeleteProject?: (projectId: string) => Promise<any>;
+  projects?: UserProject[];
+  onCreateProject?: (projectData: Partial<ProjectData>) => Promise<unknown>;
+  onDeleteProject?: (projectId: string) => Promise<unknown>;
+  onFetchCriteria?: (projectId: string) => Promise<unknown[]>;
+  onCreateCriteria?: (projectId: string, criteriaData: Record<string, unknown>) => Promise<unknown>;
+  onFetchAlternatives?: (projectId: string) => Promise<unknown[]>;
+  onCreateAlternative?: (projectId: string, alternativeData: Record<string, unknown>) => Promise<unknown>;
+  onSaveEvaluation?: (projectId: string, evaluationData: Record<string, unknown>) => Promise<unknown>;
+  onFetchTrashedProjects?: () => Promise<unknown[]>;
+  onRestoreProject?: (projectId: string) => Promise<unknown>;
+  onPermanentDeleteProject?: (projectId: string) => Promise<unknown>;
   selectedProjectId?: string | null;
   onSelectProject?: (projectId: string | null) => void;
 }
@@ -227,7 +228,17 @@ const PersonalServiceDashboard_Enhanced: React.FC<PersonalServiceProps> = ({
     <ProjectCreation
       onProjectCreated={() => handleMenuClick('projects')}
       onCancel={() => handleMenuClick('projects')}
-      createProject={onCreateProject}
+      createProject={onCreateProject ? async (projectData) => {
+        const convertedData: Partial<ProjectData> = {
+          title: projectData.title,
+          description: projectData.description,
+          objective: projectData.objective,
+          evaluation_mode: projectData.evaluationMode,
+          status: 'draft' as const,
+          workflow_stage: 'creating' as const
+        };
+        return onCreateProject(convertedData);
+      } : undefined}
     />
   );
 

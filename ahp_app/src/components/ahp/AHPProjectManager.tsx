@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PairwiseComparisonMatrix from './PairwiseComparisonMatrix';
 import AHPResultsVisualization from './AHPResultsVisualization';
-import { calculateHierarchicalAHP } from '../../utils/ahpCalculator';
+import { calculateHierarchicalAHP, AHPResult, ComparisonInput } from '../../utils/ahpCalculator';
 
 interface Criterion {
   id: string;
@@ -31,6 +31,20 @@ interface AHPProjectManagerProps {
   onSave?: (project: AHPProject) => void;
 }
 
+interface ComparisonCallbackResult {
+  matrix: number[][];
+  comparisons: ComparisonInput[];
+  results: AHPResult;
+  elements: Array<{ id: string; name: string; description?: string }>;
+}
+
+interface HierarchicalAHPResult {
+  finalScores: { [alternativeId: string]: number };
+  ranking: Array<{ alternativeId: string; alternativeName: string; score: number; rank: number }>;
+  criteriaWeights: { [key: string]: number };
+  alternativeScores: { [criterionId: string]: { [alternativeId: string]: number } };
+}
+
 const AHPProjectManager: React.FC<AHPProjectManagerProps> = ({ projectId, onSave }) => {
   const [project, setProject] = useState<AHPProject>({
     id: projectId || `project-${Date.now()}`,
@@ -47,7 +61,7 @@ const AHPProjectManager: React.FC<AHPProjectManagerProps> = ({ projectId, onSave
     [criterionId: string]: { [alternativeId: string]: number } 
   }>({});
   const [currentCriterionIndex, setCurrentCriterionIndex] = useState(0);
-  const [finalResults, setFinalResults] = useState<any>(null);
+  const [finalResults, setFinalResults] = useState<HierarchicalAHPResult | null>(null);
 
   // Step 1: Project Setup
   const [newCriterion, setNewCriterion] = useState('');
@@ -101,7 +115,7 @@ const AHPProjectManager: React.FC<AHPProjectManagerProps> = ({ projectId, onSave
     }
   };
 
-  const handleCriteriaComparison = (results: any) => {
+  const handleCriteriaComparison = (results: ComparisonCallbackResult) => {
     const weights: { [key: string]: number } = {};
     project.criteria.forEach((criterion, index) => {
       weights[criterion.id] = results.results.priorities[index];
@@ -111,7 +125,7 @@ const AHPProjectManager: React.FC<AHPProjectManagerProps> = ({ projectId, onSave
     setCurrentCriterionIndex(0);
   };
 
-  const handleAlternativesComparison = (criterionId: string, results: any) => {
+  const handleAlternativesComparison = (criterionId: string, results: ComparisonCallbackResult) => {
     const scores: { [alternativeId: string]: number } = {};
     project.alternatives.forEach((alternative, index) => {
       scores[alternative.id] = results.results.priorities[index];
