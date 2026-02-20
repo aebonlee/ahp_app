@@ -71,7 +71,6 @@ const ValidityCheck: React.FC = () => {
   const calculateValidity = async () => {
     setIsLoading(true);
 
-    // TODO: real API call for AHP validity calculation
     const matrix = createComparisonMatrix();
     const cr = calculateConsistencyRatio(matrix);
     const eigenValues = calculateEigenVector(matrix);

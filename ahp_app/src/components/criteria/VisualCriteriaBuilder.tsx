@@ -13,6 +13,15 @@ interface CriteriaNode {
   isExpanded?: boolean;
 }
 
+interface FlatCriteriaItem {
+  id: string;
+  name: string;
+  description?: string;
+  level: number;
+  parent_id: string | null;
+  order: number;
+}
+
 interface VisualCriteriaBuilderProps {
   initialCriteria?: CriteriaNode[];
   onSave: (criteria: CriteriaNode[]) => void;
@@ -167,7 +176,47 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
     e.preventDefault();
     if (!draggedNodeId || draggedNodeId === targetId) return;
 
-    // TODO: 노드 이동 로직 구현
+    setCriteria(prev => {
+      const draggedNode = findNode(prev, draggedNodeId);
+      if (!draggedNode) return prev;
+
+      // Prevent dropping onto own descendant (would create circular reference)
+      const isDescendantOf = (ancestorId: string, searchId: string): boolean => {
+        const ancestor = findNode(prev, ancestorId);
+        if (!ancestor) return false;
+        const check = (children: CriteriaNode[]): boolean =>
+          children.some(c => c.id === searchId || check(c.children));
+        return check(ancestor.children);
+      };
+      if (isDescendantOf(draggedNodeId, targetId)) return prev;
+
+      // Remove dragged node from its current position
+      const removeNode = (nodes: CriteriaNode[]): CriteriaNode[] =>
+        nodes
+          .filter(n => n.id !== draggedNodeId)
+          .map(n => ({ ...n, children: removeNode(n.children) }));
+
+      // Recursively fix levels and parent references after move
+      const fixLevels = (node: CriteriaNode, parentLevel: number, newParentId: string | null): CriteriaNode => ({
+        ...node,
+        level: parentLevel + 1,
+        parent_id: newParentId,
+        children: node.children.map(c => fixLevels(c, parentLevel + 1, node.id))
+      });
+
+      // Insert dragged node as a child of the target
+      const insertAtTarget = (nodes: CriteriaNode[]): CriteriaNode[] =>
+        nodes.map(n => {
+          if (n.id === targetId) {
+            const movedNode = fixLevels(draggedNode, n.level, targetId);
+            return { ...n, children: [...n.children, movedNode], isExpanded: true };
+          }
+          return { ...n, children: insertAtTarget(n.children) };
+        });
+
+      return insertAtTarget(removeNode(prev));
+    });
+
     setDraggedNodeId(null);
   };
 
@@ -311,8 +360,8 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
   };
 
   // 평면 구조로 변환 (저장용)
-  const flattenCriteria = (nodes: CriteriaNode[], parentId: string | null = null): any[] => {
-    const result: any[] = [];
+  const flattenCriteria = (nodes: CriteriaNode[], parentId: string | null = null): FlatCriteriaItem[] => {
+    const result: FlatCriteriaItem[] = [];
     nodes.forEach((node, index) => {
       result.push({
         id: node.id,
@@ -522,7 +571,7 @@ const VisualCriteriaBuilder: React.FC<VisualCriteriaBuilderProps> = ({
                 <li>• ➕ 버튼으로 하위 기준 추가</li>
                 <li>• ✏️ 버튼으로 이름과 설명 편집</li>
                 <li>• 🗑️ 버튼으로 삭제 (하위 포함)</li>
-                <li>• 드래그로 순서 변경 (개발중)</li>
+                <li>• 드래그로 노드를 다른 부모에 이동</li>
                 <li>• ▼/▶ 버튼으로 접기/펼치기</li>
               </ul>
             </div>

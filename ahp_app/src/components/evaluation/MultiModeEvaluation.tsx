@@ -381,19 +381,49 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
   };
 
   const calculateConsistencyRatio = (matrix: number[][]): number => {
-    // 간단한 일관성 비율 계산 (실제로는 더 복잡한 알고리즘 필요)
     const n = matrix.length;
     if (n < 3) return 0;
 
-    // 임의 인덱스
-    const randomIndex = [0, 0, 0.52, 0.89, 1.11, 1.25, 1.35, 1.40, 1.45, 1.49];
-    const ri = randomIndex[n] || 1.49;
+    // Saaty Random Index table (n = 1..10)
+    const randomIndex = [0, 0, 0, 0.52, 0.89, 1.11, 1.25, 1.35, 1.40, 1.45, 1.49];
+    const ri = randomIndex[n] ?? 1.49;
 
-    // TODO: calculate CI properly using eigenvalue method (λmax - n) / (n - 1)
-    // Returning 0 as placeholder until real calculation is implemented
-    const ci = 0;
+    // Step 1: column sums
+    const colSums = Array(n).fill(0) as number[];
+    for (let j = 0; j < n; j++) {
+      for (let i = 0; i < n; i++) {
+        colSums[j] += matrix[i][j];
+      }
+    }
 
-    return ci / ri;
+    // Step 2: normalize matrix and compute priority weights (row averages)
+    const weights = Array(n).fill(0) as number[];
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        weights[i] += colSums[j] > 0 ? matrix[i][j] / colSums[j] : 0;
+      }
+      weights[i] /= n;
+    }
+
+    // Step 3: compute weighted sum vector (A * w)
+    const weightedSum = Array(n).fill(0) as number[];
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        weightedSum[i] += matrix[i][j] * weights[j];
+      }
+    }
+
+    // Step 4: λmax = average of (weightedSum[i] / weights[i])
+    let lambdaMax = 0;
+    for (let i = 0; i < n; i++) {
+      lambdaMax += weights[i] > 0 ? weightedSum[i] / weights[i] : 0;
+    }
+    lambdaMax /= n;
+
+    // CI = (λmax - n) / (n - 1)
+    const ci = (lambdaMax - n) / (n - 1);
+
+    return ri > 0 ? ci / ri : 0;
   };
 
   const handleComplete = async () => {
