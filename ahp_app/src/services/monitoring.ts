@@ -75,8 +75,9 @@ class MonitoringService {
       // FID (First Input Delay)
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          this.logPerformance('FID', entry.processingStart - entry.startTime, 'ms');
+        entries.forEach((entry) => {
+          const fidEntry = entry as PerformanceEntry & { processingStart: number; startTime: number };
+          this.logPerformance('FID', fidEntry.processingStart - fidEntry.startTime, 'ms');
         });
       });
       fidObserver.observe({ entryTypes: ['first-input'] });
@@ -211,7 +212,7 @@ class MonitoringService {
   }
 
   // 서버로 데이터 전송
-  private async sendToServer(type: string, data: any) {
+  private async sendToServer(type: string, data: unknown) {
     try {
       await fetch(`${this.apiEndpoint}/${type}`, {
         method: 'POST',

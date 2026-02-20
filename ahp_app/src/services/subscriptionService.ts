@@ -12,6 +12,16 @@ import {
   UsageAlert
 } from '../types/subscription';
 
+interface PaymentRecord {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  planId?: string;
+  subscriptionId?: string;
+}
+
 class SubscriptionService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -158,12 +168,12 @@ class SubscriptionService {
   }
 
   // 결제 이력
-  async getPaymentHistory(userId: string): Promise<any[]> {
-    return this.request<any[]>('/api/subscriptions/payment-records/');
+  async getPaymentHistory(userId: string): Promise<PaymentRecord[]> {
+    return this.request<PaymentRecord[]>('/api/subscriptions/payment-records/');
   }
 
   // 결제 방법 관리
-  async updatePaymentMethod(subscriptionId: string, paymentMethodData: any): Promise<void> {
+  async updatePaymentMethod(subscriptionId: string, paymentMethodData: Record<string, unknown>): Promise<void> {
     await this.request('/api/subscriptions/payment-methods/', {
       method: 'POST',
       body: JSON.stringify(paymentMethodData),

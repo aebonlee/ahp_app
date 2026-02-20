@@ -18,7 +18,7 @@ class CleanDataService {
         const projects = Array.isArray(response.data) ? response.data : [];
 
         // 각 프로젝트 데이터 무결성 검증 (정규화된 데이터에 대해)
-        const validProjects = projects.filter((project: any) => {
+        const validProjects = projects.filter((project: ProjectData) => {
           const isValid = project &&
                          typeof project.id !== 'undefined' &&
                          typeof project.title === 'string' &&
@@ -113,7 +113,7 @@ class CleanDataService {
         // projectApi에서 이미 정규화된 데이터를 반환하므로 직접 사용
         const projects = Array.isArray(response.data) ? response.data : [];
 
-        const validProjects = projects.filter((project: any) => {
+        const validProjects = projects.filter((project: ProjectData) => {
           const isValid = project &&
                          typeof project.id !== 'undefined' &&
                          typeof project.title === 'string' &&
@@ -165,8 +165,8 @@ class CleanDataService {
 
         // type이 'criteria' 또는 없는 항목만 필터링 (alternative 제외)
         const criteria = dataArray
-          .filter((item: any) => !item.type || item.type === 'criteria')
-          .map((item: any) => {
+          .filter((item: CriteriaData) => !item.type || item.type === 'criteria')
+          .map((item: CriteriaData) => {
             // level 필드 상세 처리
             const originalLevel = item.level;
             const finalLevel = originalLevel || 1;
@@ -212,10 +212,10 @@ class CleanDataService {
         const existingCriteria = existingResponse.success && existingResponse.data ? existingResponse.data : [];
 
         // 정규화 함수
-        const normalizeParentId = (id: any) => (!id || id === '') ? null : id;
+        const normalizeParentId = (id: unknown) => (!id || id === '') ? null : id;
 
         // 중복 검사 1: 동일한 이름과 레벨, 부모
-        const exactDuplicate = existingCriteria.find((c: any) =>
+        const exactDuplicate = existingCriteria.find((c: CriteriaData) =>
           c.name.toLowerCase() === data.name.toLowerCase() &&
           c.level === data.level &&
           normalizeParentId(c.parent_id) === normalizeParentId(data.parent_id) &&
@@ -227,7 +227,7 @@ class CleanDataService {
         }
 
         // 중복 검사 2: 동일한 이름만 (서로 다른 레벨이나 부모)
-        const nameDuplicate = existingCriteria.find((c: any) =>
+        const nameDuplicate = existingCriteria.find((c: CriteriaData) =>
           c.name.toLowerCase() === data.name.toLowerCase() &&
           (!c.type || c.type === 'criteria')
         );
@@ -274,7 +274,7 @@ class CleanDataService {
         try {
           const retryResponse = await criteriaApi.getCriteria(data.project_id);
           if (retryResponse.success && retryResponse.data) {
-            const existing = retryResponse.data.find((c: any) =>
+            const existing = retryResponse.data.find((c: CriteriaData) =>
               c.name.toLowerCase() === data.name.toLowerCase() &&
               (!c.type || c.type === 'criteria')
             );
@@ -297,7 +297,7 @@ class CleanDataService {
   }
 
   // 메모리 데이터 관리 헬퍼 메서드들 (더 이상 사용하지 않음)
-  private memoryStorage: { [key: string]: any } = {};
+  private memoryStorage: Record<string, unknown> = {};
 
   private getMemoryData(key: string): any {
     // Deprecated - 모든 데이터는 DB에서 직접 조회
@@ -348,8 +348,8 @@ class CleanDataService {
 
         // type이 'alternative'인 항목만 필터링하고 AlternativeData 형식으로 변환
         const alternatives = dataArray
-          .filter((item: any) => item.type === 'alternative')
-          .map((item: any) => ({
+          .filter((item: CriteriaData) => item.type === 'alternative')
+          .map((item: CriteriaData & { cost?: number; position?: number }) => ({
             id: item.id,
             project_id: projectId,
             name: item.name,
@@ -485,7 +485,7 @@ class CleanDataService {
       const existingEvaluators = currentSettings.evaluators || [];
 
       // 중복 검사
-      const isDuplicate = existingEvaluators.some((e: any) =>
+      const isDuplicate = existingEvaluators.some((e: EvaluatorData) =>
         e.email.toLowerCase() === data.email.toLowerCase()
       );
       if (isDuplicate) {
@@ -539,7 +539,7 @@ class CleanDataService {
         const projects = await this.getProjects();
         for (const project of projects) {
           const evaluators = project.settings?.evaluators || [];
-          const foundEvaluator = evaluators.find((e: any) => e.id === evaluatorId);
+          const foundEvaluator = evaluators.find((e: EvaluatorData) => e.id === evaluatorId);
           if (foundEvaluator) {
             projectId = project.id;
             break;
@@ -561,7 +561,7 @@ class CleanDataService {
       const existingEvaluators = currentProject.settings?.evaluators || [];
 
       // 평가자 제거
-      const updatedEvaluators = existingEvaluators.filter((e: any) => e.id !== evaluatorId);
+      const updatedEvaluators = existingEvaluators.filter((e: EvaluatorData) => e.id !== evaluatorId);
 
       if (updatedEvaluators.length === existingEvaluators.length) {
         return false;

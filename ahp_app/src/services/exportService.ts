@@ -1,5 +1,26 @@
 // Excel functionality temporarily disabled for security
 
+interface FlatCriterionRow {
+  level: number;
+  name: string;
+  description: string;
+  parent: string;
+  weight: number;
+  [key: string]: string | number;
+}
+
+interface AhpResult {
+  alternative_name: string;
+  final_score: number;
+  rank: number;
+}
+
+interface AlternativeExport {
+  id?: string;
+  name: string;
+  description?: string;
+}
+
 interface ExportOptions {
   format: 'csv' | 'excel';
   includeWeights?: boolean;
@@ -17,8 +38,8 @@ interface Criterion {
   children?: Criterion[];
 }
 
-const flattenCriteria = (criteria: Criterion[]): any[] => {
-  const result: any[] = [];
+const flattenCriteria = (criteria: Criterion[]): FlatCriterionRow[] => {
+  const result: FlatCriterionRow[] = [];
   
   const process = (items: Criterion[], parentName: string = '') => {
     items.forEach(item => {
@@ -67,10 +88,9 @@ const exportService = {
       window.URL.revokeObjectURL(url);
     } else {
       // Excel functionality temporarily disabled for security
-      console.warn('Excel export is temporarily disabled for security reasons. Falling back to CSV.');
       const csvContent = [
         fields.join(','),
-        ...flatData.map(row => 
+        ...flatData.map(row =>
           fields.map(field => `"${row[field]}"`).join(',')
         )
       ].join('\n');
@@ -85,7 +105,7 @@ const exportService = {
     }
   },
 
-  async exportResults(projectId: string, format: 'csv' | 'excel', results: any[]) {
+  async exportResults(projectId: string, format: 'csv' | 'excel', results: AhpResult[]) {
     const flatData = results.map(result => ({
       alternative: result.alternative_name,
       score: result.final_score,
@@ -109,7 +129,6 @@ const exportService = {
       window.URL.revokeObjectURL(url);
     } else {
       // Excel functionality temporarily disabled for security
-      console.warn('Excel export is temporarily disabled for security reasons. Falling back to CSV.');
       const csvContent = [
         'Alternative,Score,Rank',
         ...flatData.map(result => `"${result.alternative}","${result.score}","${result.rank}"`)
@@ -125,7 +144,7 @@ const exportService = {
     }
   },
 
-  async exportAlternatives(projectId: string, alternatives: any[], format: 'csv' | 'excel') {
+  async exportAlternatives(projectId: string, alternatives: AlternativeExport[], format: 'csv' | 'excel') {
     const flatData = alternatives.map((alt, index) => ({
       id: alt.id || `alt_${index + 1}`,
       name: alt.name,
@@ -149,7 +168,6 @@ const exportService = {
       window.URL.revokeObjectURL(url);
     } else {
       // Excel functionality temporarily disabled for security
-      console.warn('Excel export is temporarily disabled for security reasons. Falling back to CSV.');
       const csvContent = [
         'ID,Name,Description',
         ...flatData.map(alt => `"${alt.id}","${alt.name}","${alt.description}"`)
