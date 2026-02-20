@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PageHeader from '../common/PageHeader';
 import apiService from '../../services/apiService';
-import { getAIService } from '../../services/aiService';
+import { getAIService, type AhpProjectData } from '../../services/aiService';
 import type { User } from '../../types';
 
 interface Project {
@@ -184,7 +184,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
       const aiService = getAIService();
       if (aiService) {
         try {
-          await aiService.interpretAHPResults(selectedProject, result);
+          await aiService.interpretAHPResults(selectedProject as AhpProjectData, result);
         } catch {
           // AI 분석 부분 실패 — 계속 진행
         }

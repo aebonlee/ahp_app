@@ -13,6 +13,46 @@ interface ChatMessage {
   content: string;
 }
 
+export interface AhpProjectData {
+  title?: string;
+  description?: string;
+}
+
+interface AhpRanking {
+  name: string;
+  score?: number;
+}
+
+interface AhpWeight {
+  name: string;
+  weight?: number;
+}
+
+interface AhpAnalysisResult {
+  rankings?: AhpRanking[];
+  weights?: AhpWeight[];
+  consistencyRatio?: number;
+}
+
+interface PaperValidationSettings {
+  checkGrammar?: boolean;
+  checkStructure?: boolean;
+  checkMethodology?: boolean;
+  checkReferences?: boolean;
+  checkOriginality?: boolean;
+  checkClarity?: boolean;
+  language?: string;
+  detailLevel?: string;
+}
+
+interface QualityValidationResult {
+  overallScore: number;
+  overallGrade: string;
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+}
+
 interface AIResponse {
   content: string;
   usage?: {
@@ -82,7 +122,7 @@ class AIService {
   }
 
   // AHP 결과 해석
-  async interpretAHPResults(projectData: any, analysisResult: any): Promise<string> {
+  async interpretAHPResults(projectData: AhpProjectData, analysisResult: AhpAnalysisResult): Promise<string> {
     const systemPrompt = `당신은 AHP(Analytic Hierarchy Process) 전문가입니다. 
     주어진 AHP 분석 결과를 해석하여 의사결정에 도움이 되는 인사이트를 제공하세요.
     결과는 한국어로 작성하고, 실무진이 이해하기 쉽게 설명해주세요.`;
@@ -114,7 +154,7 @@ class AIService {
   }
 
   // 논문 품질 검증
-  async validatePaperQuality(content: string, settings: any): Promise<any> {
+  async validatePaperQuality(content: string, settings: PaperValidationSettings): Promise<QualityValidationResult> {
     const systemPrompt = `당신은 학술논문 품질 검증 전문가입니다.
     AHP 관련 논문의 품질을 다각도로 평가하고 개선사항을 제안하세요.`;
 
@@ -146,7 +186,7 @@ class AIService {
   }
 
   // 학술 자료 생성
-  async generateAcademicMaterial(type: string, projectData: any, settings: any): Promise<string> {
+  async generateAcademicMaterial(type: string, projectData: AhpProjectData, settings: PaperValidationSettings): Promise<string> {
     const systemPrompt = `당신은 AHP 전문가이자 학술 작성 전문가입니다.
     고품질의 학술 자료를 생성하여 연구자들에게 도움을 제공하세요.`;
 
@@ -173,7 +213,7 @@ class AIService {
   }
 
   // 논문 섹션 생성
-  async generatePaperSection(sectionType: string, projectData: any, paperSettings: any): Promise<string> {
+  async generatePaperSection(sectionType: string, projectData: AhpProjectData, paperSettings: PaperValidationSettings): Promise<string> {
     const systemPrompt = this.createPaperSystemPrompt(sectionType, paperSettings);
     const userPrompt = this.createPaperUserPrompt(sectionType, projectData);
 
@@ -211,7 +251,7 @@ class AIService {
   }
 
   // 기본 응답 생성 메서드들
-  private getDefaultInterpretation(analysisResult: any): string {
+  private getDefaultInterpretation(analysisResult: AhpAnalysisResult): string {
     return `## AHP 분석 결과 해석
 
 **최적 대안**
@@ -219,13 +259,13 @@ ${analysisResult?.rankings?.[0]?.name || '데이터 없음'}이 가장 높은 �
 
 **주요 특징**
 - 일관성 비율: ${analysisResult?.consistencyRatio || 'N/A'}
-- 전반적으로 ${analysisResult?.consistencyRatio <= 0.1 ? '신뢰할 수 있는' : '재검토가 필요한'} 결과입니다.
+- 전반적으로 ${(analysisResult?.consistencyRatio ?? 1) <= 0.1 ? '신뢰할 수 있는' : '재검토가 필요한'} 결과입니다.
 
 **권장사항**
 추가적인 민감도 분석과 전문가 검토를 통해 결과를 보완하시기 바랍니다.`;
   }
 
-  private getDefaultQualityValidation(): any {
+  private getDefaultQualityValidation(): QualityValidationResult {
     return {
       overallScore: 75,
       overallGrade: 'B',
@@ -277,13 +317,13 @@ OpenAI API 키를 설정하시면 맞춤형 논문 섹션이 생성됩니다.
   }
 
   // 헬퍼 메서드들
-  private createPaperSystemPrompt(sectionType: string, settings: any): string {
+  private createPaperSystemPrompt(sectionType: string, settings: PaperValidationSettings): string {
     return `당신은 AHP 전문가이자 학술논문 작성 전문가입니다.
     ${sectionType} 섹션을 ${settings.language || '한국어'}로 작성해주세요.
     학술적 엄밀성과 실무 적용성을 모두 고려하여 작성하세요.`;
   }
 
-  private createPaperUserPrompt(sectionType: string, projectData: any): string {
+  private createPaperUserPrompt(sectionType: string, projectData: AhpProjectData): string {
     return `다음 AHP 프로젝트의 ${sectionType} 섹션을 작성해주세요:
     
     프로젝트 제목: ${projectData?.title || '미지정'}
@@ -292,7 +332,7 @@ OpenAI API 키를 설정하시면 맞춤형 논문 섹션이 생성됩니다.
     학술논문 수준의 품질로 작성해주세요.`;
   }
 
-  private parseQualityValidationResponse(response: string): any {
+  private parseQualityValidationResponse(response: string): QualityValidationResult {
     // AI 응답을 파싱하여 구조화된 검증 결과로 변환
     return {
       overallScore: 85,
