@@ -109,11 +109,12 @@ const makeFileUploadRequest = async <T>(
       data: data?.data || data,
       message: data?.message
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`File Upload API Error [${endpoint}]:`, error);
+    const errorMessage = error instanceof Error ? error.message : '';
     return {
       success: false,
-      error: error.message || 'Unknown file upload error occurred'
+      error: errorMessage || 'Unknown file upload error occurred'
     };
   }
 };
@@ -201,10 +202,11 @@ export const fileUploadService = {
         
         xhr.send(formData);
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '';
       return {
         success: false,
-        error: error.message || 'File upload failed'
+        error: errorMessage || 'File upload failed'
       };
     }
   },

@@ -46,8 +46,8 @@ const NewsPage: React.FC<NewsPageProps> = ({ onBackClick }) => {
       } else {
         setError(response.error || '소식을 불러오는데 실패했습니다.');
       }
-    } catch (error: any) {
-      setError(error.message || '서버 연결에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }

@@ -181,8 +181,8 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
           setCurrentPairIndex(currentPairIndex + 1);
         }
       }
-    } catch (error: any) {
-      setSaveError(error.message || '비교값 저장에 실패했습니다.');
+    } catch (error: unknown) {
+      setSaveError((error instanceof Error ? error.message : '') || '비교값 저장에 실패했습니다.');
     } finally {
       setSaving(false);
     }

@@ -181,9 +181,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
         } else {
           throw new Error(response.error || '파일 업로드에 실패했습니다.');
         }
-      } catch (error: any) {
-        setError(`파일 업로드 실패 (${file.name}): ${error.message}`);
-        
+      } catch (error: unknown) {
+        setError(`파일 업로드 실패 (${file.name}): ${error instanceof Error ? error.message : String(error)}`);
+
         // Update progress to failed
         setState(prev => ({
           ...prev,
@@ -195,7 +195,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               bytes_uploaded: 0,
               total_bytes: file.size,
               status: 'failed',
-              error_message: error.message
+              error_message: error instanceof Error ? error.message : String(error)
             }
           }
         }));
@@ -249,8 +249,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
       } else {
         throw new Error(response.error || '파일 삭제에 실패했습니다.');
       }
-    } catch (error: any) {
-      setError(`파일 삭제 실패: ${error.message}`);
+    } catch (error: unknown) {
+      setError(`파일 삭제 실패: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
@@ -263,8 +263,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
       } else {
         throw new Error(response.error || '파일 다운로드에 실패했습니다.');
       }
-    } catch (error: any) {
-      setError(`파일 다운로드 실패: ${error.message}`);
+    } catch (error: unknown) {
+      setError(`파일 다운로드 실패: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 

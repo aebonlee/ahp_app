@@ -665,9 +665,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       setNewProjectStep(2);
       
       // 폼 데이터는 유지 (평가자 배정 후 완전히 리셋)
-    } catch (error: any) {
+    } catch (error: unknown) {
       // dataService가 자동으로 오프라인 모드로 처리하므로 에러 메시지를 사용자 친화적으로 변경
-      setError(error.message || '프로젝트 생성 중 오류가 발생했습니다.');
+      setError((error instanceof Error ? error.message : '') || '프로젝트 생성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }

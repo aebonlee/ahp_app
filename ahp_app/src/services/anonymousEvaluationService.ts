@@ -122,10 +122,11 @@ const makeAnonymousEvalRequest = async <T>(
       data: data?.data || data,
       message: data?.message
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : '';
     return {
       success: false,
-      error: error.message || 'Unknown anonymous evaluation error occurred'
+      error: errorMessage || 'Unknown anonymous evaluation error occurred'
     };
   }
 };

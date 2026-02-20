@@ -72,14 +72,15 @@ class SystemHealthChecker {
           details: response.data
         };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       return {
         component: 'Backend Server (Django)',
         status: 'error',
-        message: `Cannot connect to backend: ${error.message}`,
+        message: `Cannot connect to backend: ${errMsg}`,
         details: {
           url: API_BASE_URL,
-          error: error.message
+          error: errMsg
         }
       };
     }
@@ -111,13 +112,13 @@ class SystemHealthChecker {
           details: response.data
         };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 대체 방법: API를 통해 간접 확인
       try {
         const testResponse = await axios.get(`${API_BASE_URL}/api/service/status/`, {
           timeout: 5000
         });
-        
+
         if (testResponse.status === 200) {
           return {
             component: 'Database (PostgreSQL)',
@@ -131,10 +132,11 @@ class SystemHealthChecker {
         // 최종 실패
       }
 
+      const errMsg = error instanceof Error ? error.message : String(error);
       return {
         component: 'Database (PostgreSQL)',
         status: 'error',
-        message: `Database check failed: ${error.message}`
+        message: `Database check failed: ${errMsg}`
       };
     }
   }
@@ -176,11 +178,12 @@ class SystemHealthChecker {
           responseTime,
           healthy: isHealthy
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : String(error);
         results.push({
           endpoint,
           status: 0,
-          error: error.message,
+          error: errMsg,
           healthy: false
         });
       }
@@ -223,11 +226,12 @@ class SystemHealthChecker {
         message: hasProperCORS ? 'CORS properly configured' : 'CORS not configured',
         details: corsHeaders
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       return {
         component: 'CORS Configuration',
         status: 'error',
-        message: `CORS check failed: ${error.message}`
+        message: `CORS check failed: ${errMsg}`
       };
     }
   }
@@ -259,11 +263,12 @@ class SystemHealthChecker {
           status: response.status
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       return {
         component: 'Authentication System',
         status: 'error',
-        message: `Auth check failed: ${error.message}`
+        message: `Auth check failed: ${errMsg}`
       };
     }
   }

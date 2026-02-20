@@ -116,11 +116,12 @@ const makeSystemRequest = async <T>(
       data: data?.data || data,
       message: data?.message
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`System API Error [${endpoint}]:`, error);
+    const errorMessage = error instanceof Error ? error.message : '';
     return {
       success: false,
-      error: error.message || 'Unknown system error occurred'
+      error: errorMessage || 'Unknown system error occurred'
     };
   }
 };

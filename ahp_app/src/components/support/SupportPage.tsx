@@ -55,8 +55,8 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
       } else {
         setError(response.error || '게시글을 불러오는데 실패했습니다.');
       }
-    } catch (error: any) {
-      setError(error.message || '서버 연결에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -79,8 +79,8 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
       } else {
         setError(response.error || '게시글 작성에 실패했습니다.');
       }
-    } catch (error: any) {
-      setError(error.message || '서버 연결에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -98,8 +98,8 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
       } else {
         setError(response.error || '게시글을 불러오는데 실패했습니다.');
       }
-    } catch (error: any) {
-      setError(error.message || '서버 연결에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -124,8 +124,8 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBackClick }) => {
       } else {
         setError(response.error || '답글 작성에 실패했습니다.');
       }
-    } catch (error: any) {
-      setError(error.message || '서버 연결에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '서버 연결에 실패했습니다.');
     } finally {
       setLoading(false);
     }

@@ -121,11 +121,12 @@ const makeDjangoAdminRequest = async <T>(
       data: data?.data || data,
       message: data?.message
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Django Admin API Error [${endpoint}]:`, error);
+    const errorMessage = error instanceof Error ? error.message : '';
     return {
       success: false,
-      error: error.message || 'Unknown Django admin error occurred'
+      error: errorMessage || 'Unknown Django admin error occurred'
     };
   }
 };

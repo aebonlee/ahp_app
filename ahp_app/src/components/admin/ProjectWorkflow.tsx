@@ -116,8 +116,8 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
           onCancel();
         }
       }
-    } catch (error: any) {
-      setError(error.message || '프로젝트 상태 변경에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '프로젝트 상태 변경에 실패했습니다.');
     }
   };
 
@@ -146,8 +146,8 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
       if (onCancel) {
         onCancel();
       }
-    } catch (error: any) {
-      setError(error.message || '프로젝트 취소 중 오류가 발생했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '프로젝트 취소 중 오류가 발생했습니다.');
     }
   };
 

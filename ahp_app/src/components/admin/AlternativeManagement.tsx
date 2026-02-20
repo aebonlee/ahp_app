@@ -180,8 +180,8 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
       setEditingId(null);
       setEditingAlternative({ name: '', description: '' });
       setErrors({});
-    } catch (error: any) {
-      setErrors({ general: error.message || '대안 수정 중 오류가 발생했습니다.' });
+    } catch (error: unknown) {
+      setErrors({ general: (error instanceof Error ? error.message : '') || '대안 수정 중 오류가 발생했습니다.' });
     }
   };
 

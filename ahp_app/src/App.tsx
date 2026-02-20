@@ -532,8 +532,8 @@ function App() {
       
       await fetchProjects();
       
-    } catch (error: any) {
-      setLoginError(error.message || '회원가입 중 오류가 발생했습니다.');
+    } catch (error: unknown) {
+      setLoginError((error instanceof Error ? error.message : '') || '회원가입 중 오류가 발생했습니다.');
     } finally {
       setLoginLoading(false);
     }
@@ -610,8 +610,8 @@ function App() {
       setLoginLoading(true);
       setLoginError('');
       await authService.googleLogin();
-    } catch (error: any) {
-      setLoginError(error.message || 'Google 로그인에 실패했습니다.');
+    } catch (error: unknown) {
+      setLoginError((error instanceof Error ? error.message : '') || 'Google 로그인에 실패했습니다.');
       setLoginLoading(false);
     }
   };
@@ -621,8 +621,8 @@ function App() {
       setLoginLoading(true);
       setLoginError('');
       await authService.kakaoLogin();
-    } catch (error: any) {
-      setLoginError(error.message || 'Kakao 로그인에 실패했습니다.');
+    } catch (error: unknown) {
+      setLoginError((error instanceof Error ? error.message : '') || 'Kakao 로그인에 실패했습니다.');
       setLoginLoading(false);
     }
   };
@@ -632,8 +632,8 @@ function App() {
       setLoginLoading(true);
       setLoginError('');
       await authService.naverLogin();
-    } catch (error: any) {
-      setLoginError(error.message || 'Naver 로그인에 실패했습니다.');
+    } catch (error: unknown) {
+      setLoginError((error instanceof Error ? error.message : '') || 'Naver 로그인에 실패했습니다.');
       setLoginLoading(false);
     }
   };

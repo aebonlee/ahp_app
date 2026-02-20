@@ -93,7 +93,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       
       setProjects(formattedProjects);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError('프로젝트를 불러오는데 실패했습니다.');
       setProjects([]);
     } finally {

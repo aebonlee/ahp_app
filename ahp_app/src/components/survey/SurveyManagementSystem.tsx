@@ -81,8 +81,8 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
       await fetchSurveys();
       setCurrentView('list');
       showActionMessage('success', `설문조사가 생성되었습니다! 평가자 링크: ${response.data?.evaluator_link || ''}`);
-    } catch (error: any) {
-      showActionMessage('error', error.message || '설문조사 생성에 실패했습니다.');
+    } catch (error: unknown) {
+      showActionMessage('error', (error instanceof Error ? error.message : '') || '설문조사 생성에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -98,8 +98,8 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
       }
 
       await fetchSurveys();
-    } catch (error: any) {
-      showActionMessage('error', error.message || '설문조사 상태 변경에 실패했습니다.');
+    } catch (error: unknown) {
+      showActionMessage('error', (error instanceof Error ? error.message : '') || '설문조사 상태 변경에 실패했습니다.');
     }
   };
 
@@ -138,8 +138,8 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
 
       await fetchSurveys();
       showActionMessage('success', '설문조사가 삭제되었습니다.');
-    } catch (error: any) {
-      showActionMessage('error', error.message || '설문조사 삭제에 실패했습니다.');
+    } catch (error: unknown) {
+      showActionMessage('error', (error instanceof Error ? error.message : '') || '설문조사 삭제에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -616,8 +616,8 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
               await fetchSurveys();
               setCurrentView('list');
               showActionMessage('success', '설문조사가 수정되었습니다!');
-            } catch (error: any) {
-              showActionMessage('error', error.message || '설문조사 수정에 실패했습니다.');
+            } catch (error: unknown) {
+              showActionMessage('error', (error instanceof Error ? error.message : '') || '설문조사 수정에 실패했습니다.');
             } finally {
               setIsLoading(false);
             }

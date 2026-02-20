@@ -91,8 +91,8 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
       } else {
         setError('프로젝트 정보를 불러올 수 없습니다.');
       }
-    } catch (error: any) {
-      setError(error.message || '프로젝트 정보 로드에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '프로젝트 정보 로드에 실패했습니다.');
     }
   };
 
@@ -105,8 +105,8 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
       } else {
         setError('평가자 데이터를 불러올 수 없습니다.');
       }
-    } catch (error: any) {
-      setError(error.message || '평가자 데이터 로드에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '평가자 데이터 로드에 실패했습니다.');
     } finally {
       setLoading(false);
     }

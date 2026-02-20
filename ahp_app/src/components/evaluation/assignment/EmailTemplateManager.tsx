@@ -37,8 +37,8 @@ const EmailTemplateManager: React.FC<EmailTemplateManagerProps> = ({ projectId }
       } else {
         setError('이메일 템플릿을 불러올 수 없습니다.');
       }
-    } catch (error: any) {
-      setError(error.message || '템플릿 로드에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '템플릿 로드에 실패했습니다.');
     } finally {
       setLoading(false);
     }

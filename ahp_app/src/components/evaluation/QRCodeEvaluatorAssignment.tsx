@@ -83,8 +83,8 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
           });
         }
         setSessions(newSessions);
-      } catch (error: any) {
-        setInitError(error.message || '세션 초기화에 실패했습니다.');
+      } catch (error: unknown) {
+        setInitError((error instanceof Error ? error.message : '') || '세션 초기화에 실패했습니다.');
       }
     };
 

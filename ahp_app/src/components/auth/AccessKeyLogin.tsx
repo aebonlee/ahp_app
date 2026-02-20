@@ -96,8 +96,8 @@ const AccessKeyLogin: React.FC<AccessKeyLoginProps> = ({ onLogin, onBack }) => {
       // 성공적으로 검증되면 로그인 처리
       onLogin(info.evaluatorCode, info.projectCode, info.evaluatorName || info.evaluatorCode);
       
-    } catch (error: any) {
-      setError(error.message || '로그인에 실패했습니다.');
+    } catch (error: unknown) {
+      setError((error instanceof Error ? error.message : '') || '로그인에 실패했습니다.');
     } finally {
       setLoading(false);
     }

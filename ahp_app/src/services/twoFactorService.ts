@@ -74,11 +74,12 @@ const makeSecureRequest = async <T>(
       data: data?.data || data,
       message: data?.message
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`2FA API Error [${endpoint}]:`, error);
+    const errorMessage = error instanceof Error ? error.message : '';
     return {
       success: false,
-      error: error.message || 'Unknown 2FA error occurred'
+      error: errorMessage || 'Unknown 2FA error occurred'
     };
   }
 };

@@ -158,8 +158,8 @@ const EnhancedProjectCreationWizard: React.FC<EnhancedProjectCreationWizardProps
       } else {
         setCreateError('프로젝트 생성에 실패했습니다. 다시 시도해주세요.');
       }
-    } catch (error: any) {
-      setCreateError(error.message || '프로젝트 생성 중 오류가 발생했습니다.');
+    } catch (error: unknown) {
+      setCreateError((error instanceof Error ? error.message : '') || '프로젝트 생성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
