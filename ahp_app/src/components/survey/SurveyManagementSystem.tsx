@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Survey, SurveyResponse, SurveyAnalytics, CreateSurveyRequest } from '../../types/survey';
+import QRCode from 'react-qr-code';
+import { Survey, SurveyResponse, CreateSurveyRequest } from '../../types/survey';
 import SurveyFormBuilder from './SurveyFormBuilder';
 import Button from '../common/Button';
 import Card from '../common/Card';
@@ -22,6 +23,8 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
   const [projects, setProjects] = useState<any[]>([]); // 프로젝트 개수 추적용
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [qrCodeSurvey, setQrCodeSurvey] = useState<Survey | null>(null);
+  const [exportingCsv, setExportingCsv] = useState(false);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
     setActionMessage({type, text});
@@ -109,13 +112,80 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
     showActionMessage('success', '평가자 링크가 클립보드에 복사되었습니다!');
   };
 
-  // QR 코드 생성
+  // QR 코드 생성 모달
   const generateQRCode = (surveyId: string) => {
     const survey = surveys.find(s => s.id === surveyId);
     if (survey) {
-      // TODO: QR 코드 생성 라이브러리 사용
-      showActionMessage('info', `QR 코드 생성 기능은 준비 중입니다. 링크: ${survey.evaluatorLink}`);
+      setQrCodeSurvey(survey);
     }
+  };
+
+  // CSV 내보내기
+  const exportCsv = async () => {
+    if (!selectedSurvey) return;
+    setExportingCsv(true);
+    try {
+      const response = await api.get(
+        `/api/service/evaluations/demographic-surveys/${selectedSurvey.id}/responses/`
+      );
+      const responses: SurveyResponse[] = response.data?.results || response.data || [];
+
+      if (responses.length === 0) {
+        // 응답 데이터가 없으면 설문 요약 정보 내보내기
+        const summaryRows = [
+          ['항목', '값'],
+          ['제목', selectedSurvey.title],
+          ['설명', selectedSurvey.description],
+          ['상태', selectedSurvey.status],
+          ['총 응답 수', String(selectedSurvey.totalResponses)],
+          ['완료된 응답', String(selectedSurvey.completedResponses)],
+          ['완료율(%)', selectedSurvey.totalResponses > 0
+            ? String(Math.round((selectedSurvey.completedResponses / selectedSurvey.totalResponses) * 100))
+            : '0'],
+          ['평균 소요시간(분)', String(selectedSurvey.averageCompletionTime ?? '')],
+        ];
+        const csv = summaryRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        downloadCsv(csv, `${selectedSurvey.title}_요약.csv`);
+        showActionMessage('success', '설문조사 요약이 CSV로 내보내졌습니다.');
+        return;
+      }
+
+      // 응답 데이터로 CSV 생성
+      const questionHeaders = selectedSurvey.questions.map(q => q.question);
+      const headers = ['응답ID', '완료여부', '시작시간', '완료시간', ...questionHeaders];
+      const rows = responses.map(r => [
+        r.id,
+        r.isCompleted ? '완료' : '미완료',
+        r.startedAt ? new Date(r.startedAt).toLocaleString() : '',
+        r.completedAt ? new Date(r.completedAt).toLocaleString() : '',
+        ...selectedSurvey.questions.map(q => {
+          const ans = r.responses?.[q.id];
+          return Array.isArray(ans) ? ans.join('; ') : String(ans ?? '');
+        }),
+      ]);
+
+      const allRows = [headers, ...rows];
+      const csv = allRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+      downloadCsv(csv, `${selectedSurvey.title}_응답데이터.csv`);
+      showActionMessage('success', `${responses.length}개 응답이 CSV로 내보내졌습니다.`);
+    } catch {
+      showActionMessage('error', 'CSV 내보내기에 실패했습니다.');
+    } finally {
+      setExportingCsv(false);
+    }
+  };
+
+  const downloadCsv = (csv: string, filename: string) => {
+    const bom = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // 설문조사 삭제
@@ -568,11 +638,8 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
             <p style={{ color: 'var(--text-secondary)' }}>
               응답 데이터 상세 분석 기능은 준비 중입니다.
             </p>
-            <Button variant="primary" className="mt-4" onClick={() => {
-              // TODO: CSV 내보내기 기능
-              showActionMessage('info', 'CSV 내보내기 기능은 준비 중입니다.');
-            }}>
-              📊 CSV 내보내기
+            <Button variant="primary" className="mt-4" onClick={exportCsv} disabled={exportingCsv}>
+              {exportingCsv ? '내보내는 중...' : '📊 CSV 내보내기'}
             </Button>
           </div>
         </Card>
@@ -642,6 +709,39 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
       return (
         <>
           {renderSurveyList()}
+
+          {/* QR 코드 모달 */}
+          <Modal
+            isOpen={qrCodeSurvey !== null}
+            onClose={() => setQrCodeSurvey(null)}
+            title="QR 코드"
+            size="sm"
+            footer={
+              <div className="flex justify-end space-x-3">
+                <Button variant="outline" size="sm" onClick={() => {
+                  if (qrCodeSurvey) copyEvaluatorLink(qrCodeSurvey.evaluatorLink);
+                }}>
+                  링크 복사
+                </Button>
+                <Button variant="primary" size="sm" onClick={() => setQrCodeSurvey(null)}>
+                  닫기
+                </Button>
+              </div>
+            }
+          >
+            {qrCodeSurvey && (
+              <div className="flex flex-col items-center space-y-4">
+                <p className="text-sm text-gray-600 text-center">{qrCodeSurvey.title}</p>
+                <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                  <QRCode value={qrCodeSurvey.evaluatorLink} size={200} />
+                </div>
+                <p className="text-xs text-gray-400 text-center break-all max-w-xs">
+                  {qrCodeSurvey.evaluatorLink}
+                </p>
+              </div>
+            )}
+          </Modal>
+
           <Modal
             isOpen={pendingDeleteId !== null}
             onClose={() => setPendingDeleteId(null)}
