@@ -5,16 +5,29 @@ import AdminSelectPage from './AdminSelectPage';
 import { twoFactorService, twoFactorSecurity } from '../../services/twoFactorService';
 import { authApi } from '../../services/api';
 
+interface AuthUser {
+  email: string;
+  is_superuser?: boolean;
+  is_staff?: boolean;
+  current_role?: string;
+}
+
+interface AuthTokens {
+  access_token?: string;
+  access?: string;
+  refresh?: string;
+}
+
 interface EnhancedAuthFlowProps {
-  onAuthSuccess: (user: any, tokens: any) => void;
+  onAuthSuccess: (user: AuthUser, tokens: AuthTokens) => void;
   onAuthError: (error: string) => void;
 }
 
 type AuthStep = 'login' | '2fa-verify' | '2fa-setup' | 'admin-select';
 
 interface AuthState {
-  user: any;
-  tempTokens: any;
+  user: AuthUser | null;
+  tempTokens: AuthTokens | null;
   requires2FA: boolean;
   twoFactorEnabled: boolean;
   isAdmin: boolean;
@@ -53,7 +66,8 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
         throw new Error(loginResponse.error || '로그인에 실패했습니다.');
       }
 
-      const { user, token } = loginResponse.data || {};
+      const { user: rawUser, token } = loginResponse.data || {};
+      const user = rawUser as AuthUser;
       
       // Check if user has 2FA enabled
       const twoFactorStatus = await twoFactorService.getStatus();
@@ -65,7 +79,7 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
           tempTokens: { access_token: token },
           requires2FA: true,
           twoFactorEnabled: true,
-          isAdmin: user.is_superuser || user.is_staff
+          isAdmin: !!(user.is_superuser || user.is_staff)
         });
         setCurrentStep('2fa-verify');
       } else {
@@ -85,8 +99,8 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
           onAuthSuccess(user, { access_token: token });
         }
       }
-    } catch (err: any) {
-      setError(err.message || '로그인 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '로그인 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -119,8 +133,8 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
         setError('회원가입이 완료되었습니다. 로그인해주세요.');
       }
       
-    } catch (err: any) {
-      setError(err.message || '회원가입 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '회원가입 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -150,19 +164,19 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
       }
 
       // Clear rate limit on success
-      twoFactorSecurity.clearRateLimit(`2fa_${authState.user.email}`);
+      twoFactorSecurity.clearRateLimit(`2fa_${authState.user?.email}`);
       
       // Check if admin needs service selection
       if (authState.isAdmin) {
         setCurrentStep('admin-select');
       } else {
         // Complete authentication
-        const finalTokens = verifyResponse.data?.tokens || authState.tempTokens;
-        onAuthSuccess(authState.user, finalTokens);
+        const finalTokens = verifyResponse.data?.tokens || authState.tempTokens || {};
+        onAuthSuccess(authState.user!, finalTokens);
       }
       
-    } catch (err: any) {
-      setError(err.message || '2FA 인증 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '2FA 인증 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -180,11 +194,11 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
       if (authState.isAdmin) {
         setCurrentStep('admin-select');
       } else {
-        onAuthSuccess(authState.user, authState.tempTokens);
+        onAuthSuccess(authState.user!, authState.tempTokens ?? {});
       }
-      
-    } catch (err: any) {
-      setError(err.message || '2FA 설정 중 오류가 발생했습니다.');
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '2FA 설정 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -193,12 +207,12 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
   // Handle admin service selection
   const handleAdminServiceSelect = (serviceType: 'admin' | 'personal') => {
     // Update user role based on selection
-    const updatedUser = {
-      ...authState.user,
+    const updatedUser: AuthUser = {
+      ...(authState.user ?? { email: '' }),
       current_role: serviceType === 'admin' ? 'admin' : 'evaluator'
     };
     
-    onAuthSuccess(updatedUser, authState.tempTokens);
+    onAuthSuccess(updatedUser, authState.tempTokens ?? {});
   };
 
   // Handle social authentication
@@ -211,7 +225,7 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
       // For now, show placeholder message
       setError(`${provider} 로그인은 곧 지원될 예정입니다.`);
       
-    } catch (err: any) {
+    } catch (_err: unknown) {
       setError(`${provider} 로그인 중 오류가 발생했습니다.`);
     } finally {
       setLoading(false);
@@ -290,7 +304,7 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
                     if (authState.isAdmin) {
                       setCurrentStep('admin-select');
                     } else {
-                      onAuthSuccess(authState.user, authState.tempTokens);
+                      onAuthSuccess(authState.user!, authState.tempTokens ?? {});
                     }
                   }}
                   className="text-sm text-gray-600 hover:text-gray-800 underline"

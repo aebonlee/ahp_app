@@ -19,6 +19,11 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
+interface MenuCategory {
+  title: string;
+  items: MenuItem[];
+}
+
 const EnhancedSidebar: React.FC<SidebarProps> = ({ 
   isCollapsed, 
   userRole, 
@@ -185,7 +190,7 @@ const EnhancedSidebar: React.FC<SidebarProps> = ({
     );
   };
 
-  const renderCategory = (categoryKey: string, category: any) => {
+  const renderCategory = (categoryKey: string, category: MenuCategory) => {
     const isExpanded = expandedCategories.includes(categoryKey);
     const hasActiveItem = category.items.some((item: MenuItem) => activeTab === item.id);
     

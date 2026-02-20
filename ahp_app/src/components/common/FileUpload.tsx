@@ -80,8 +80,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
       } else if (!response.success) {
         setError('기존 파일 목록을 불러오지 못했습니다.');
       }
-    } catch (err: any) {
-      setError(`파일 목록 로드 실패: ${err.message || '알 수 없는 오류'}`);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : '알 수 없는 오류';
+      setError(`파일 목록 로드 실패: ${errMsg}`);
     }
   };
 

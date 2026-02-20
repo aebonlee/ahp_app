@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import Button from './Button';
 
+interface TrashedProject {
+  id: string;
+  title: string;
+  description: string;
+  deleted_at: string;
+}
+
 interface TrashOverflowModalProps {
-  trashedProjects: any[];
+  trashedProjects: TrashedProject[];
   projectToDelete: string;
   onPermanentDelete: (projectId: string) => Promise<void>;
   onCancel: () => void;
