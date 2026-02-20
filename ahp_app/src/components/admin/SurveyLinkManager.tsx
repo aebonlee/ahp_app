@@ -20,10 +20,42 @@ interface SurveyLink {
   invitationToken?: string;
 }
 
+interface EvaluationRecord {
+  id: string | number;
+  evaluator: string | number;
+  evaluator_name?: string;
+  evaluator_username?: string;
+  project: string | number;
+  created_at: string;
+  expires_at?: string;
+  progress?: number;
+  status?: string;
+}
+
+interface InvitationRecord {
+  evaluator?: string | number;
+  token?: string;
+}
+
+interface SettingsEvaluator {
+  id?: string | number;
+  access_key?: string;
+  email?: string;
+  name?: string;
+  created_at?: string;
+  expires_at?: string;
+  status?: string;
+}
+
+interface ProjectAPIData {
+  title?: string;
+  settings?: { evaluators?: SettingsEvaluator[] };
+}
+
 interface SurveyLinkManagerProps {
   projectId?: string;
   projectName?: string;
-  evaluators?: any[];
+  evaluators?: unknown[];
 }
 
 const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
@@ -57,25 +89,27 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
       const base = window.location.href.split('?')[0].replace(/\/$/, '');
 
       const [evalsRes, invitesRes, projectRes] = await Promise.allSettled([
-        apiService.get<any>(`/api/service/evaluations/evaluations/?project=${projectId}&page_size=100`),
-        apiService.get<any>(`/api/service/evaluations/invitations/?project=${projectId}&page_size=100`),
-        apiService.get<any>(`/api/service/projects/projects/${projectId}/`),
+        apiService.get<{ results?: EvaluationRecord[]; data?: EvaluationRecord[] } | EvaluationRecord[]>(`/api/service/evaluations/evaluations/?project=${projectId}&page_size=100`),
+        apiService.get<{ results?: InvitationRecord[] } | InvitationRecord[]>(`/api/service/evaluations/invitations/?project=${projectId}&page_size=100`),
+        apiService.get<ProjectAPIData>(`/api/service/projects/projects/${projectId}/`),
       ]);
 
-      const evals: any[] = evalsRes.status === 'fulfilled' && evalsRes.value?.data
-        ? (evalsRes.value.data.results ?? evalsRes.value.data)
+      const evalsData = evalsRes.status === 'fulfilled' ? evalsRes.value?.data : null;
+      const evals: EvaluationRecord[] = evalsData
+        ? ((evalsData as { results?: EvaluationRecord[] }).results ?? (evalsData as EvaluationRecord[]))
         : [];
 
-      const invites: any[] = invitesRes.status === 'fulfilled' && invitesRes.value?.data
-        ? (invitesRes.value.data.results ?? invitesRes.value.data)
+      const invitesData = invitesRes.status === 'fulfilled' ? invitesRes.value?.data : null;
+      const invites: InvitationRecord[] = invitesData
+        ? ((invitesData as { results?: InvitationRecord[] }).results ?? (invitesData as InvitationRecord[]))
         : [];
 
-      const projectData: any = projectRes.status === 'fulfilled' ? projectRes.value?.data : null;
-      const settingsEvaluators: any[] = projectData?.settings?.evaluators ?? [];
+      const projectData: ProjectAPIData | null = projectRes.status === 'fulfilled' ? (projectRes.value?.data ?? null) : null;
+      const settingsEvaluators: SettingsEvaluator[] = projectData?.settings?.evaluators ?? [];
 
       // token map: evaluator id → invitation token
       const tokenMap: Record<string, string> = {};
-      invites.forEach((inv: any) => {
+      invites.forEach((inv) => {
         if (inv.evaluator && inv.token) {
           tokenMap[String(inv.evaluator)] = inv.token;
         }
@@ -84,7 +118,7 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
       // 1. Django Evaluation 레코드 기반 링크
       // URL: ?project=X&token=Y (토큰 있을 때) 또는 ?project=X&evaluation=Z
       // App.tsx evaluator-workflow 케이스가 project/token/key 파라미터를 모두 처리함
-      const djangoLinks: SurveyLink[] = evals.map((ev: any) => {
+      const djangoLinks: SurveyLink[] = evals.map((ev) => {
         const token = tokenMap[String(ev.evaluator)];
         const link = token
           ? `${base}/?project=${projectId}&token=${token}`
@@ -111,9 +145,9 @@ const SurveyLinkManager: React.FC<SurveyLinkManagerProps> = ({
       const djangoEmails = new Set(djangoLinks.map(l => l.evaluatorUsername.toLowerCase()));
 
       const settingsLinks: SurveyLink[] = settingsEvaluators
-        .filter((ev: any) => ev.access_key)
-        .filter((ev: any) => !djangoEmails.has((ev.email || '').toLowerCase()))
-        .map((ev: any) => {
+        .filter((ev) => ev.access_key)
+        .filter((ev) => !djangoEmails.has((ev.email || '').toLowerCase()))
+        .map((ev) => {
           const link = `${base}/?project=${projectId}&key=${ev.access_key}`;
           return {
             id: `settings-${ev.id || ev.access_key}`,

@@ -47,11 +47,30 @@ export interface EvaluationResult {
   mode: EvaluationMode;
   participantId: string;
   criterionId: string;
-  data: any;
+  data: unknown;
   consistencyRatio?: number;
   completionTime: number;
   confidence: number;
   timestamp: string;
+}
+
+interface AlternativeValue { alternativeId: string; value: number }
+interface AlternativeRank { alternativeId: string; rank: number }
+interface AlternativeScore { alternativeId: string; score: number }
+
+interface EvaluationDataRecord {
+  matrix?: unknown;
+  values?: AlternativeValue[];
+  rankings?: AlternativeRank[];
+  scores?: AlternativeScore[];
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  errors?: string[];
+  warnings?: string[];
+  completeness?: number;
+  consistency?: number | null;
 }
 
 interface MultiModeEvaluationProps {
@@ -108,11 +127,11 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     }
   });
 
-  const [evaluationData, setEvaluationData] = useState<any>(null);
+  const [evaluationData, setEvaluationData] = useState<EvaluationDataRecord | null>(null);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [confidence, setConfidence] = useState<number>(3); // 1-5 scale
   const [isValidating, setIsValidating] = useState(false);
-  const [validationResults, setValidationResults] = useState<any>(null);
+  const [validationResults, setValidationResults] = useState<ValidationResult | null>(null);
 
   // 모드별 설명
   const modeDescriptions: { [key in EvaluationMode]: { name: string; description: string; icon: string; difficulty: string } } = {
@@ -196,7 +215,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     
     try {
       // 모드별 검증 로직
-      let validation: any = {
+      let validation: ValidationResult = {
         isValid: true,
         errors: [],
         warnings: [],
@@ -241,7 +260,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
       };
     }
 
-    const matrix = evaluationData.matrix;
+    const matrix = evaluationData.matrix as number[][];
     const n = alternatives.length;
     let completedPairs = 0;
     let totalPairs = (n * (n - 1)) / 2;
@@ -294,7 +313,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     }
 
     const values = evaluationData.values;
-    const completedValues = values.filter((v: any) => v.value > 0).length;
+    const completedValues = values.filter((v) => v.value > 0).length;
     const completeness = (completedValues / alternatives.length) * 100;
 
     const validation = {
@@ -309,7 +328,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     }
 
     // 모든 값이 동일한지 검사
-    const uniqueValues = new Set(values.map((v: any) => v.value));
+    const uniqueValues = new Set(values.map((v) => v.value));
     if (uniqueValues.size === 1) {
       validation.warnings.push('모든 대안의 값이 동일합니다. 차별화된 평가를 고려해보세요.');
     }
@@ -328,7 +347,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     }
 
     const rankings = evaluationData.rankings;
-    const completedRankings = rankings.filter((r: any) => r.rank > 0).length;
+    const completedRankings = rankings.filter((r) => r.rank > 0).length;
     const completeness = (completedRankings / alternatives.length) * 100;
 
     const validation = {
@@ -343,7 +362,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     }
 
     // 중복 순위 검사
-    const ranks = rankings.map((r: any) => r.rank).filter((r: number) => r > 0);
+    const ranks = rankings.map((r) => r.rank).filter((r) => r > 0);
     const uniqueRanks = new Set(ranks);
     if (ranks.length !== uniqueRanks.size) {
       validation.errors.push('중복된 순위가 있습니다.');
@@ -363,7 +382,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
     }
 
     const scores = evaluationData.scores;
-    const completedScores = scores.filter((s: any) => s.score >= 0).length;
+    const completedScores = scores.filter((s) => s.score >= 0).length;
     const completeness = (completedScores / alternatives.length) * 100;
 
     const validation = {
@@ -439,7 +458,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
       participantId,
       criterionId,
       data: evaluationData,
-      consistencyRatio: validationResults?.consistency,
+      consistencyRatio: validationResults?.consistency ?? undefined,
       completionTime: Date.now() - startTime,
       confidence,
       timestamp: new Date().toISOString()
@@ -545,7 +564,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
               <select
                 onChange={(e) => {
                   const rankings = evaluationData?.rankings || alternatives.map(a => ({ alternativeId: a.id, rank: 0 }));
-                  const updated = rankings.map((r: any) => 
+                  const updated = rankings.map((r) =>
                     r.alternativeId === alt.id ? { ...r, rank: parseInt(e.target.value) } : r
                   );
                   setEvaluationData({ rankings: updated });
@@ -597,7 +616,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
                   step="1"
                   onChange={(e) => {
                     const scores = evaluationData?.scores || alternatives.map(a => ({ alternativeId: a.id, score: 0 }));
-                    const updated = scores.map((s: any) => 
+                    const updated = scores.map((s) =>
                       s.alternativeId === alt.id ? { ...s, score: parseInt(e.target.value) } : s
                     );
                     setEvaluationData({ scores: updated });
@@ -612,7 +631,7 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
                   className="w-20 border rounded px-2 py-1 text-center"
                   onChange={(e) => {
                     const scores = evaluationData?.scores || alternatives.map(a => ({ alternativeId: a.id, score: 0 }));
-                    const updated = scores.map((s: any) => 
+                    const updated = scores.map((s) =>
                       s.alternativeId === alt.id ? { ...s, score: parseInt(e.target.value) || 0 } : s
                     );
                     setEvaluationData({ scores: updated });
@@ -693,13 +712,13 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
             <div className="flex items-center justify-between">
               <span>완성도:</span>
               <span className={`font-medium ${
-                validationResults.completeness === 100 ? 'text-green-600' : 'text-red-600'
+                (validationResults.completeness ?? 0) === 100 ? 'text-green-600' : 'text-red-600'
               }`}>
-                {validationResults.completeness.toFixed(1)}%
+                {(validationResults.completeness ?? 0).toFixed(1)}%
               </span>
             </div>
             
-            {validationResults.consistency !== null && (
+            {validationResults.consistency != null && (
               <div className="flex items-center justify-between">
                 <span>일관성 비율:</span>
                 <span className={`font-medium ${
@@ -710,22 +729,22 @@ const MultiModeEvaluation: React.FC<MultiModeEvaluationProps> = ({
               </div>
             )}
 
-            {validationResults.errors.length > 0 && (
+            {(validationResults.errors ?? []).length > 0 && (
               <div className="bg-red-50 border border-red-200 rounded p-3">
                 <h6 className="font-medium text-red-800 mb-1">오류</h6>
                 <ul className="text-red-700 text-sm space-y-1">
-                  {validationResults.errors.map((error: string, index: number) => (
+                  {(validationResults.errors ?? []).map((error: string, index: number) => (
                     <li key={index}>• {error}</li>
                   ))}
                 </ul>
               </div>
             )}
 
-            {validationResults.warnings.length > 0 && (
+            {(validationResults.warnings ?? []).length > 0 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
                 <h6 className="font-medium text-yellow-800 mb-1">경고</h6>
                 <ul className="text-yellow-700 text-sm space-y-1">
-                  {validationResults.warnings.map((warning: string, index: number) => (
+                  {(validationResults.warnings ?? []).map((warning: string, index: number) => (
                     <li key={index}>• {warning}</li>
                   ))}
                 </ul>
