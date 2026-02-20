@@ -88,8 +88,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         setMaintenanceTasks(getDefaultMaintenanceTasks());
       }
 
-    } catch (err: any) {
-      const errorMessage = err.message || '시스템 데이터를 불러오는 중 오류가 발생했습니다.';
+    } catch (err: unknown) {
+      const errorMessage = (err instanceof Error ? err.message : '') || '시스템 데이터를 불러오는 중 오류가 발생했습니다.';
       setError(errorMessage);
       onError?.(errorMessage);
       
@@ -248,8 +248,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         throw new Error(response.error || '설정 업데이트에 실패했습니다.');
       }
       
-    } catch (err: any) {
-      const errorMessage = err.message || '설정 업데이트 중 오류가 발생했습니다.';
+    } catch (err: unknown) {
+      const errorMessage = (err instanceof Error ? err.message : '') || '설정 업데이트 중 오류가 발생했습니다.';
       setError(errorMessage);
       onError?.(errorMessage);
     } finally {
@@ -292,8 +292,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
             throw new Error(response.error || '백업 생성에 실패했습니다.');
           }
           
-        } catch (err: any) {
-          const errorMessage = err.message || '백업 생성 중 오류가 발생했습니다.';
+        } catch (err: unknown) {
+          const errorMessage = (err instanceof Error ? err.message : '') || '백업 생성 중 오류가 발생했습니다.';
           setError(errorMessage);
           onError?.(errorMessage);
         } finally {
@@ -399,8 +399,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
             throw new Error(response.error || '유지보수 작업 실행에 실패했습니다.');
           }
           
-        } catch (err: any) {
-          const errorMessage = err.message || '유지보수 작업 중 오류가 발생했습니다.';
+        } catch (err: unknown) {
+          const errorMessage = (err instanceof Error ? err.message : '') || '유지보수 작업 중 오류가 발생했습니다.';
           setError(errorMessage);
           onError?.(errorMessage);
         } finally {
@@ -429,8 +429,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         throw new Error(response.error || '백업 다운로드에 실패했습니다.');
       }
       
-    } catch (err: any) {
-      const errorMessage = err.message || '백업 다운로드 중 오류가 발생했습니다.';
+    } catch (err: unknown) {
+      const errorMessage = (err instanceof Error ? err.message : '') || '백업 다운로드 중 오류가 발생했습니다.';
       setError(errorMessage);
       onError?.(errorMessage);
     } finally {
@@ -466,8 +466,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
             throw new Error(response.error || '백업 복원에 실패했습니다.');
           }
           
-        } catch (err: any) {
-          const errorMessage = err.message || '백업 복원 중 오류가 발생했습니다.';
+        } catch (err: unknown) {
+          const errorMessage = (err instanceof Error ? err.message : '') || '백업 복원 중 오류가 발생했습니다.';
           setError(errorMessage);
           onError?.(errorMessage);
         } finally {
@@ -501,8 +501,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
             throw new Error(response.error || '백업 삭제에 실패했습니다.');
           }
           
-        } catch (err: any) {
-          const errorMessage = err.message || '백업 삭제 중 오류가 발생했습니다.';
+        } catch (err: unknown) {
+          const errorMessage = (err instanceof Error ? err.message : '') || '백업 삭제 중 오류가 발생했습니다.';
           setError(errorMessage);
           onError?.(errorMessage);
         } finally {
@@ -540,8 +540,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
             throw new Error(response.error || '캐시 정리에 실패했습니다.');
           }
           
-        } catch (err: any) {
-          const errorMessage = err.message || '캐시 정리 중 오류가 발생했습니다.';
+        } catch (err: unknown) {
+          const errorMessage = (err instanceof Error ? err.message : '') || '캐시 정리 중 오류가 발생했습니다.';
           setError(errorMessage);
           onError?.(errorMessage);
         } finally {
@@ -570,8 +570,8 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
         throw new Error(response.error || '시스템 상태 점검에 실패했습니다.');
       }
       
-    } catch (err: any) {
-      const errorMessage = err.message || '시스템 상태 점검 중 오류가 발생했습니다.';
+    } catch (err: unknown) {
+      const errorMessage = (err instanceof Error ? err.message : '') || '시스템 상태 점검 중 오류가 발생했습니다.';
       setError(errorMessage);
       onError?.(errorMessage);
     } finally {

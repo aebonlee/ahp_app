@@ -44,17 +44,17 @@ interface PersonalServiceProps {
   activeTab?: string;
   onTabChange?: (tab: string) => void;
   onUserUpdate?: (updatedUser: User) => void;
-  projects?: any[];
-  onCreateProject?: (projectData: any) => Promise<any>;
-  onDeleteProject?: (projectId: string) => Promise<any>;
-  onFetchCriteria?: (projectId: string) => Promise<any[]>;
-  onCreateCriteria?: (projectId: string, criteriaData: any) => Promise<any>;
-  onFetchAlternatives?: (projectId: string) => Promise<any[]>;
-  onCreateAlternative?: (projectId: string, alternativeData: any) => Promise<any>;
-  onSaveEvaluation?: (projectId: string, evaluationData: any) => Promise<any>;
-  onFetchTrashedProjects?: () => Promise<any[]>;
-  onRestoreProject?: (projectId: string) => Promise<any>;
-  onPermanentDeleteProject?: (projectId: string) => Promise<any>;
+  projects?: UserProject[];
+  onCreateProject?: (projectData: Partial<ProjectData>) => Promise<unknown>;
+  onDeleteProject?: (projectId: string) => Promise<unknown>;
+  onFetchCriteria?: (projectId: string) => Promise<unknown[]>;
+  onCreateCriteria?: (projectId: string, criteriaData: Record<string, unknown>) => Promise<unknown>;
+  onFetchAlternatives?: (projectId: string) => Promise<unknown[]>;
+  onCreateAlternative?: (projectId: string, alternativeData: Record<string, unknown>) => Promise<unknown>;
+  onSaveEvaluation?: (projectId: string, evaluationData: Record<string, unknown>) => Promise<unknown>;
+  onFetchTrashedProjects?: () => Promise<unknown[]>;
+  onRestoreProject?: (projectId: string) => Promise<unknown>;
+  onPermanentDeleteProject?: (projectId: string) => Promise<unknown>;
   selectedProjectId?: string | null;
   onSelectProject?: (projectId: string | null) => void;
 }
@@ -216,7 +216,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const [newProjectStep, setNewProjectStep] = useState(1);
   const [newProjectId, setNewProjectId] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [projectEvaluators, setProjectEvaluators] = useState<any[]>([]);
+  const [projectEvaluators, setProjectEvaluators] = useState<unknown[]>([]);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [projectSelectorConfig, setProjectSelectorConfig] = useState<{
     title: string;
@@ -564,7 +564,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
 
         if (newProject) {
           // 새 프로젝트 생성 완료 - App.tsx에서 관리됨
-          setSelectedProjectId(newProject.id || '');
+          setSelectedProjectId((newProject as { id?: string })?.id || '');
 
           // 실시간 프로젝트 목록 새로고침
           await refreshProjectList();
@@ -581,7 +581,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     }
   };
 
-  const handleExportResults = (format: string, data?: any) => {
+  const handleExportResults = (format: string, data?: unknown) => {
     // 결과 내보내기 로직
     showActionMessage('info', `${format.toUpperCase()} 형식으로 결과를 내보내는 기능을 개발 중입니다.`);
   };
@@ -889,7 +889,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                 key={project.id}
                 className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all cursor-pointer border border-gray-200"
                 onClick={() => {
-                  setSelectedProjectId(project.id);
+                  setSelectedProjectId(project.id ?? '');
                   handleTabChange('model-builder');
                 }}
               >
@@ -912,7 +912,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
                   {project.description || '설명 없음'}
                 </p>
                 <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>평가자: {project.evaluators_count || 0}명</span>
+                  <span>평가자: {project.evaluator_count || 0}명</span>
                   <span>진행률: {project.completion_rate || 0}%</span>
                 </div>
               </div>
@@ -1216,9 +1216,9 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
 
   const [projectData, setProjectData] = useState<{
-    criteria: any[];
-    alternatives: any[];
-    results: any[];
+    criteria: unknown[];
+    alternatives: unknown[];
+    results: unknown[];
   }>({
     criteria: [],
     alternatives: [],
@@ -1284,7 +1284,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     }
   };
 
-  const handleCSVExport = async (type: string, project: any, timestamp: string) => {
+  const handleCSVExport = async (type: string, project: UserProject | undefined, timestamp: string) => {
     let csvContent = '';
     let filename = '';
 
@@ -1306,7 +1306,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     downloadFile(csvContent, filename, 'text/csv');
   };
 
-  const handleExcelExport = async (type: string, project: any, timestamp: string) => {
+  const handleExcelExport = async (type: string, project: UserProject | undefined, timestamp: string) => {
     // Excel 내보내기 로직 (실제 구현 시 ExcelJS 라이브러리 사용)
     const excelData = generateExcelData(type, project);
     const filename = `${project?.title || 'project'}_${type}_${timestamp}.xlsx`;
@@ -1316,7 +1316,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     showActionMessage('info', 'Excel 형식은 개발 중입니다. JSON 형태로 다운로드됩니다.');
   };
 
-  const handlePDFExport = async (type: string, project: any, timestamp: string) => {
+  const handlePDFExport = async (type: string, project: UserProject | undefined, timestamp: string) => {
     // PDF 내보내기 로직 (실제 구현 시 jsPDF 라이브러리 사용)
     const pdfData = generatePDFData(type, project);
     const filename = `${project?.title || 'project'}_${type}_report_${timestamp}.pdf`;
@@ -1326,7 +1326,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     showActionMessage('info', 'PDF 형식은 개발 중입니다. HTML 형태로 다운로드됩니다.');
   };
 
-  const handlePPTExport = async (type: string, project: any, timestamp: string) => {
+  const handlePPTExport = async (type: string, project: UserProject | undefined, timestamp: string) => {
     // PowerPoint 내보내기 로직
     const pptData = generatePPTData(type, project);
     const filename = `${project?.title || 'project'}_${type}_presentation_${timestamp}.pptx`;
@@ -1336,19 +1336,20 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     showActionMessage('info', 'PowerPoint 형식은 개발 중입니다. 텍스트 형태로 다운로드됩니다.');
   };
 
-  const handleJSONExport = async (type: string, project: any, timestamp: string) => {
+  const handleJSONExport = async (type: string, project: UserProject | undefined, timestamp: string) => {
     const jsonData = generateJSONData(type, project);
     const filename = `${project?.title || 'project'}_${type}_${timestamp}.json`;
     
     downloadFile(JSON.stringify(jsonData, null, 2), filename, 'application/json');
   };
 
-  const generateCriteriaCSV = (project: any) => {
+  const generateCriteriaCSV = (_project: UserProject | undefined) => {
+    interface CriterionRow { id: string; name: string; description?: string; weight?: number; parentId?: string; level?: number }
     const headers = ['ID', '기준명', '설명', '가중치', '상위기준', '계층레벨'];
-    const rows = projectData?.criteria || [];
-    
+    const rows = (projectData?.criteria || []) as CriterionRow[];
+
     let csv = headers.join(',') + '\n';
-    rows.forEach((criterion: any) => {
+    rows.forEach((criterion) => {
       csv += [
         criterion.id,
         `"${criterion.name}"`,
@@ -1358,16 +1359,17 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         criterion.level || 1
       ].join(',') + '\n';
     });
-    
+
     return csv;
   };
 
-  const generateAlternativesCSV = (project: any) => {
+  const generateAlternativesCSV = (_project: UserProject | undefined) => {
+    interface AlternativeRow { id: string; name: string; description?: string; created_at?: string; status?: string }
     const headers = ['ID', '대안명', '설명', '생성일', '상태'];
-    const rows = projectData?.alternatives || [];
-    
+    const rows = (projectData?.alternatives || []) as AlternativeRow[];
+
     let csv = headers.join(',') + '\n';
-    rows.forEach((alternative: any) => {
+    rows.forEach((alternative) => {
       csv += [
         alternative.id,
         `"${alternative.name}"`,
@@ -1376,11 +1378,11 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
         alternative.status || 'active'
       ].join(',') + '\n';
     });
-    
+
     return csv;
   };
 
-  const generateResultsCSV = (project: any) => {
+  const generateResultsCSV = (_project: UserProject | undefined) => {
     const headers = ['대안명', '최종점수', '순위', '가중치점수'];
     
     let csv = headers.join(',') + '\n';
@@ -1392,7 +1394,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     return csv;
   };
 
-  const generateExcelData = (type: string, project: any) => {
+  const generateExcelData = (type: string, project: UserProject | undefined) => {
     return {
       projectInfo: {
         title: project?.title,
@@ -1407,7 +1409,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     };
   };
 
-  const generatePDFData = (type: string, project: any) => {
+  const generatePDFData = (type: string, project: UserProject | undefined) => {
     return `
       <!DOCTYPE html>
       <html>
@@ -1433,7 +1435,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     `;
   };
 
-  const generatePPTData = (type: string, project: any) => {
+  const generatePPTData = (type: string, project: UserProject | undefined) => {
     return `
 ${project?.title} - ${type} 프레젠테이션
 
@@ -1454,7 +1456,7 @@ ${project?.title} - ${type} 프레젠테이션
     `;
   };
 
-  const generateJSONData = (type: string, project: any) => {
+  const generateJSONData = (type: string, project: UserProject | undefined) => {
     return {
       exportInfo: {
         projectId: selectedProjectId,

@@ -5,9 +5,38 @@ import {
   PolarRadiusAxis, Radar, PieChart, Pie, Cell
 } from 'recharts';
 
+interface AHPCriterion {
+  id: string;
+  name: string;
+}
+
+interface AHPAlternative {
+  id: string;
+  name: string;
+}
+
+interface AHPRankingItem {
+  alternativeId: string;
+  alternativeName: string;
+  score: number;
+  rank: number;
+}
+
+interface AHPProject {
+  name: string;
+  goal?: string;
+  description?: string;
+  criteria: AHPCriterion[];
+  alternatives: AHPAlternative[];
+}
+
+interface AHPResults {
+  ranking: AHPRankingItem[];
+}
+
 interface AHPResultsVisualizationProps {
-  project: any;
-  results: any;
+  project: AHPProject;
+  results: AHPResults;
   criteriaWeights: { [key: string]: number };
   alternativeScores: { [criterionId: string]: { [alternativeId: string]: number } };
 }
@@ -23,7 +52,7 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
   const [viewMode, setViewMode] = useState<'ranking' | 'criteria' | 'sensitivity'>('ranking');
 
   // Prepare data for ranking chart
-  const rankingData = results.ranking.map((item: any, index: number) => ({
+  const rankingData = results.ranking.map((item, index) => ({
     name: item.alternativeName,
     score: item.score * 100,
     rank: item.rank,
@@ -31,16 +60,16 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
   }));
 
   // Prepare data for criteria weights pie chart
-  const criteriaData = project.criteria.map((criterion: any, index: number) => ({
+  const criteriaData = project.criteria.map((criterion, index) => ({
     name: criterion.name,
     value: (criteriaWeights[criterion.id] || 0) * 100,
     color: COLORS[index % COLORS.length]
   }));
 
   // Prepare data for radar chart
-  const radarData = project.criteria.map((criterion: any) => {
-    const dataPoint: any = { criterion: criterion.name };
-    project.alternatives.forEach((alternative: any) => {
+  const radarData = project.criteria.map((criterion) => {
+    const dataPoint: { criterion: string; [key: string]: number | string } = { criterion: criterion.name };
+    project.alternatives.forEach((alternative) => {
       dataPoint[alternative.name] = 
         (alternativeScores[criterion.id]?.[alternative.id] || 0) * 100;
     });
@@ -48,11 +77,11 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
   });
 
   // Prepare data for detailed scores table
-  const tableData = project.alternatives.map((alternative: any) => {
-    const scores: any = { name: alternative.name };
+  const tableData = project.alternatives.map((alternative) => {
+    const scores: { name: string; total: string; [key: string]: string } = { name: alternative.name, total: '0' };
     let totalScore = 0;
-    
-    project.criteria.forEach((criterion: any) => {
+
+    project.criteria.forEach((criterion) => {
       const weight = criteriaWeights[criterion.id] || 0;
       const score = alternativeScores[criterion.id]?.[alternative.id] || 0;
       scores[criterion.name] = (score * 100).toFixed(2);
@@ -123,9 +152,9 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis domain={[0, 100]} />
-                <Tooltip formatter={(value: any) => `${value.toFixed(2)}%`} />
+                <Tooltip formatter={(value: number) => `${value.toFixed(2)}%`} />
                 <Bar dataKey="score" fill="#3B82F6">
-                  {rankingData.map((entry: any, index: number) => (
+                  {rankingData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Bar>
@@ -137,7 +166,7 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Detailed Ranking</h3>
             <div className="space-y-3">
-              {results.ranking.map((item: any, index: number) => (
+              {results.ranking.map((item, index) => (
                 <div 
                   key={item.alternativeId}
                   className={`flex items-center justify-between p-4 rounded-lg ${
@@ -191,12 +220,12 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={(entry: any) => `${entry.name}: ${entry.value?.toFixed(1) || 0}%`}
+                    label={(entry: { name: string; value?: number }) => `${entry.name}: ${entry.value?.toFixed(1) || 0}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {criteriaData.map((entry: any, index: number) => (
+                    {criteriaData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -205,7 +234,7 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
               </ResponsiveContainer>
               
               <div className="space-y-3">
-                {criteriaData.map((criterion: any, index: number) => (
+                {criteriaData.map((criterion, index) => (
                   <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <div 
@@ -231,7 +260,7 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
                 <PolarGrid />
                 <PolarAngleAxis dataKey="criterion" />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                {project.alternatives.map((alternative: any, index: number) => (
+                {project.alternatives.map((alternative, index) => (
                   <Radar
                     key={alternative.id}
                     name={alternative.name}
@@ -260,7 +289,7 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
                   <th className="border border-gray-300 p-3 bg-gray-100 text-left">
                     Alternative
                   </th>
-                  {project.criteria.map((criterion: any) => (
+                  {project.criteria.map((criterion) => (
                     <th key={criterion.id} className="border border-gray-300 p-3 bg-gray-100">
                       <div>{criterion.name}</div>
                       <div className="text-xs font-normal text-gray-600">
@@ -274,12 +303,12 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {tableData.map((row: any, index: number) => (
+                {tableData.map((row, index) => (
                   <tr key={index} className={index === 0 ? 'bg-blue-50' : ''}>
                     <td className="border border-gray-300 p-3 font-medium">
                       {row.name}
                     </td>
-                    {project.criteria.map((criterion: any) => (
+                    {project.criteria.map((criterion) => (
                       <td key={criterion.id} className="border border-gray-300 p-3 text-center">
                         {row[criterion.name]}%
                       </td>
@@ -342,11 +371,11 @@ const AHPResultsVisualization: React.FC<AHPResultsVisualizationProps> = ({
             onClick={() => {
               // Export to CSV
               let csv = 'Alternative,';
-              csv += project.criteria.map((c: any) => c.name).join(',') + ',Total Score\n';
-              
-              tableData.forEach((row: any) => {
+              csv += project.criteria.map((c) => c.name).join(',') + ',Total Score\n';
+
+              tableData.forEach((row) => {
                 csv += row.name + ',';
-                csv += project.criteria.map((c: any) => row[c.name]).join(',') + ',';
+                csv += project.criteria.map((c) => row[c.name]).join(',') + ',';
                 csv += row.total + '\n';
               });
               
