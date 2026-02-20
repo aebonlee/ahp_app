@@ -26,9 +26,9 @@ class APIClient {
     options: RequestInit = {}
   ): Promise<APIResponse<T>> {
     try {
-      const headers: any = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        ...options.headers,
+        ...(options.headers as Record<string, string>),
       };
       
       // JWT 인증 토큰 추가
@@ -85,14 +85,14 @@ class APIClient {
     return this.request<T>(endpoint, { method: 'GET' });
   }
 
-  post<T>(endpoint: string, body?: any): Promise<APIResponse<T>> {
+  post<T>(endpoint: string, body?: unknown): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: body ? JSON.stringify(body) : undefined,
     });
   }
 
-  put<T>(endpoint: string, body?: any): Promise<APIResponse<T>> {
+  put<T>(endpoint: string, body?: unknown): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: body ? JSON.stringify(body) : undefined,
@@ -103,7 +103,7 @@ class APIClient {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
-  patch<T>(endpoint: string, body?: any): Promise<APIResponse<T>> {
+  patch<T>(endpoint: string, body?: unknown): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: body ? JSON.stringify(body) : undefined,
@@ -252,7 +252,7 @@ export const evaluatorAPI = {
   list: (projectId: string) =>
     apiClient.get(`/api/service/evaluations/evaluations/?project=${projectId}`),
 
-  updateWeight: (evaluatorId: string, data: any) =>
+  updateWeight: (evaluatorId: string, data: Record<string, unknown>) =>
     apiClient.patch(`/api/service/evaluations/invitations/${evaluatorId}/`, data),
 
   remove: (evaluatorId: string) =>
@@ -294,22 +294,22 @@ export const resultsAPI = {
 export const projectAPI = {
   fetch: () => apiClient.get('/api/service/projects/projects/'),
   fetchById: (id: string) => apiClient.get(`/api/service/projects/projects/${id}/`),
-  create: (data: any) => apiClient.post('/api/service/projects/projects/', data),
-  update: (id: string, data: any) => apiClient.patch(`/api/service/projects/projects/${id}/`, data),
+  create: (data: Record<string, unknown>) => apiClient.post('/api/service/projects/projects/', data),
+  update: (id: string, data: Record<string, unknown>) => apiClient.patch(`/api/service/projects/projects/${id}/`, data),
   delete: (id: string) => apiClient.delete(`/api/service/projects/projects/${id}/`),
 };
 
 export const criteriaAPI = {
   fetch: (projectId: string) => apiClient.get(`/api/service/projects/criteria/?project=${projectId}`),
-  create: (data: any) => apiClient.post('/api/service/projects/criteria/', data),
-  update: (id: string, data: any) => apiClient.patch(`/api/service/projects/criteria/${id}/`, data),
+  create: (data: Record<string, unknown>) => apiClient.post('/api/service/projects/criteria/', data),
+  update: (id: string, data: Record<string, unknown>) => apiClient.patch(`/api/service/projects/criteria/${id}/`, data),
   delete: (id: string) => apiClient.delete(`/api/service/projects/criteria/${id}/`),
 };
 
 export const alternativesAPI = {
   fetch: (projectId: string) => apiClient.get(`/api/service/projects/criteria/?project=${projectId}&type=alternative`),
-  create: (data: any) => apiClient.post('/api/service/projects/criteria/', { ...data, type: 'alternative' }),
-  update: (id: string, data: any) => apiClient.patch(`/api/service/projects/criteria/${id}/`, data),
+  create: (data: Record<string, unknown>) => apiClient.post('/api/service/projects/criteria/', { ...data, type: 'alternative' }),
+  update: (id: string, data: Record<string, unknown>) => apiClient.patch(`/api/service/projects/criteria/${id}/`, data),
   delete: (id: string) => apiClient.delete(`/api/service/projects/criteria/${id}/`),
 };
 
