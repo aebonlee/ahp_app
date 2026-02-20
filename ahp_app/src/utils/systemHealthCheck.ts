@@ -11,7 +11,14 @@ interface HealthCheckResult {
   status: 'healthy' | 'degraded' | 'error';
   responseTime?: number;
   message?: string;
-  details?: any;
+  details?: unknown;
+}
+
+interface HealthReport {
+  timestamp: string;
+  overallStatus: 'healthy' | 'degraded' | 'error';
+  results: HealthCheckResult[];
+  summary: { total: number; healthy: number; degraded: number; error: number };
 }
 
 class SystemHealthChecker {
@@ -150,7 +157,8 @@ class SystemHealthChecker {
       '/api/service/auth/token/verify/'
     ];
 
-    const results: any[] = [];
+    interface EndpointResult { endpoint: string; status: number; responseTime?: number; healthy: boolean; error?: string }
+    const results: EndpointResult[] = [];
     let healthyCount = 0;
     let _totalTime = 0;
 
@@ -334,7 +342,7 @@ class SystemHealthChecker {
   }
 
   // 보고서 출력
-  private printReport(report: any): void {
+  private printReport(report: HealthReport): void {
     console.log('\n' + '='.repeat(60));
     console.log('🏥 SYSTEM HEALTH CHECK REPORT');
     console.log('='.repeat(60));

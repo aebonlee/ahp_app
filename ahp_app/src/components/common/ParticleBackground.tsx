@@ -3,6 +3,11 @@ import Particles from 'react-particles';
 import { loadSlim } from 'tsparticles-slim';
 import type { Container, Engine, ISourceOptions } from 'tsparticles-engine';
 
+interface BatteryManager extends EventTarget {
+  level: number;
+  charging: boolean;
+}
+
 interface ParticleBackgroundProps {
   className?: string;
   theme?: 'light' | 'dark';
@@ -44,7 +49,7 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
     setDevicePerformance(performanceLevel);
 
     // Closure variables to capture battery object and handler for cleanup
-    let batteryObject: any = null;
+    let batteryObject: BatteryManager | null = null;
     let batteryUpdateHandler: (() => void) | null = null;
 
     // 배터리 API 체크 (지원하는 브라우저에서)

@@ -39,7 +39,8 @@ export interface CollaborationEvent {
   type: 'node_update' | 'node_create' | 'node_delete' | 'cursor_move' | 'selection_change' | 'user_join' | 'user_leave' | 'chat_message';
   userId: string;
   timestamp: string;
-  data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any; // Varies by event type (node_update, cursor_move, chat_message, etc.)
   acknowledged?: boolean;
   version?: number;
 }
@@ -67,7 +68,7 @@ export interface ConflictResolution {
   conflictId: string;
   type: 'merge' | 'overwrite' | 'skip';
   resolution: 'auto' | 'manual';
-  mergedData?: any;
+  mergedData?: unknown;
   conflictingEvents: CollaborationEvent[];
 }
 

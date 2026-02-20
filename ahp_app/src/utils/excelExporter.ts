@@ -87,7 +87,7 @@ export interface SensitivityResult {
   criterionId: string;
   criterionName: string;
   originalWeight: number;
-  weightVariations: any[];
+  weightVariations: Record<string, unknown>[];
   overallSensitivity: 'low' | 'medium' | 'high';
   criticalThreshold: number;
 }

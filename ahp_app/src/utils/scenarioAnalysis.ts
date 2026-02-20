@@ -278,7 +278,7 @@ export const runMonteCarloSimulation = (
  * 리스크 평가
  */
 export const assessRisk = (
-  alternatives: { [alternativeId: string]: any },
+  alternatives: { [alternativeId: string]: { feasibility?: number; cost?: number; implementationTime?: number; riskLevel?: 'low' | 'medium' | 'high' } },
   riskWeights: {
     implementationWeight: number;
     costWeight: number;

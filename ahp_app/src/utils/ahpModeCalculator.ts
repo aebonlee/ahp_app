@@ -219,7 +219,7 @@ export function analyzeModesensitivity(
   modeImpact: 'high' | 'medium' | 'low';
 }[] {
   const baseResults = calculateBothModes(criteriaWeights, alternativeScores);
-  const sensitivityAnalysis: any[] = [];
+  const sensitivityAnalysis: { criterion: string; idealSensitivity: { [alternative: string]: number }; distributiveSensitivity: { [alternative: string]: number }; modeImpact: 'high' | 'medium' | 'low' }[] = [];
 
   criteriaWeights.forEach(criterion => {
     // 가중치 증가/감소 시나리오

@@ -11,7 +11,7 @@ interface DebugInfo {
   step: string;
   status: 'success' | 'error' | 'warning';
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 class ProjectCreationDebugger {
@@ -27,7 +27,7 @@ class ProjectCreationDebugger {
     this.isEnabled = false;
   }
 
-  private log(step: string, status: DebugInfo['status'], message: string, data?: any) {
+  private log(step: string, status: DebugInfo['status'], message: string, data?: unknown) {
     if (!this.isEnabled) return;
 
     const info: DebugInfo = {
@@ -128,7 +128,7 @@ class ProjectCreationDebugger {
   }
 
   // 3. 프로젝트 생성 요청 디버깅
-  async debugProjectCreation(projectData: any) {
+  async debugProjectCreation(projectData: Record<string, unknown>) {
     this.clearLog();
     this.log('START', 'success', '프로젝트 생성 디버깅 시작', projectData);
 
