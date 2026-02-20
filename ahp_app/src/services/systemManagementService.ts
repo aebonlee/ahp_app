@@ -159,7 +159,7 @@ export const systemManagementService = {
   },
 
   downloadBackup: async (backupId: string): Promise<ApiResponse<Blob>> => {
-    const response = await makeSystemRequest<any>(`/api/admin/system/backups/${backupId}/download/`, {
+    const response = await makeSystemRequest<Blob>(`/api/admin/system/backups/${backupId}/download/`, {
       method: 'GET'
     });
     
@@ -256,8 +256,8 @@ export const systemManagementService = {
     });
   },
 
-  analyzeLogs: async (logLevel: 'error' | 'warning' | 'info', hours?: number): Promise<ApiResponse<any>> => {
-    return makeSystemRequest<any>('/api/admin/system/logs/analyze/', {
+  analyzeLogs: async (logLevel: 'error' | 'warning' | 'info', hours?: number): Promise<ApiResponse<Record<string, unknown>>> => {
+    return makeSystemRequest<Record<string, unknown>>('/api/admin/system/logs/analyze/', {
       method: 'POST',
       body: JSON.stringify({ log_level: logLevel, hours: hours || 24 })
     });
@@ -307,7 +307,7 @@ export const systemManagementService = {
     status: 'pending' | 'running' | 'completed' | 'failed';
     progress: number;
     message?: string;
-    result?: any;
+    result?: Record<string, unknown>;
     started_at?: string;
     completed_at?: string;
   }>> => {

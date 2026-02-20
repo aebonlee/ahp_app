@@ -124,7 +124,7 @@ class AHPApiService {
    * 4. 글로벌 가중치 계산
    * POST /api/compute/global
    */
-  async computeGlobalWeights(data: GlobalWeightData): Promise<any> {
+  async computeGlobalWeights(data: GlobalWeightData): Promise<Record<string, unknown>> {
     return await apiRequest('/compute/global', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -185,7 +185,7 @@ class AHPApiService {
   async executeFullWorkflow(projectId: number): Promise<{
     elements: ElementInfo[];
     weights: WeightResult;
-    globalWeights: any;
+    globalWeights: Record<string, unknown>;
     finalRanking: FinalRanking[];
   }> {
     try {

@@ -104,8 +104,8 @@ export const twoFactorService = {
   },
 
   // Verify 2FA code during login
-  verifyCode: async (code: string, type: 'totp' | 'backup' = 'totp'): Promise<ApiResponse<{ valid: boolean; tokens?: any }>> => {
-    return makeSecureRequest<{ valid: boolean; tokens?: any }>('/api/auth/2fa/verify/', {
+  verifyCode: async (code: string, type: 'totp' | 'backup' = 'totp'): Promise<ApiResponse<{ valid: boolean; tokens?: { access: string; refresh: string } }>> => {
+    return makeSecureRequest<{ valid: boolean; tokens?: { access: string; refresh: string } }>('/api/auth/2fa/verify/', {
       method: 'POST',
       body: JSON.stringify({
         code,
