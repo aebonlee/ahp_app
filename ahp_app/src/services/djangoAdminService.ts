@@ -51,7 +51,7 @@ export interface DjangoUser {
 
 export interface DjangoSession {
   session_key: string;
-  session_data: any;
+  session_data: Record<string, unknown>;
   expire_date: string;
   user_id?: number;
   ip_address?: string;
@@ -154,7 +154,7 @@ export const djangoAdminService = {
   },
 
   getModelData: async (appLabel: string, modelName: string, page: number = 1, pageSize: number = 25): Promise<ApiResponse<{
-    results: any[];
+    results: Record<string, unknown>[];
     count: number;
     next?: string;
     previous?: string;
@@ -243,14 +243,14 @@ export const djangoAdminService = {
     return makeDjangoAdminRequest('/api/admin/auth/permission/');
   },
 
-  createGroup: async (groupData: { name: string; permissions: number[] }): Promise<ApiResponse<any>> => {
+  createGroup: async (groupData: { name: string; permissions: number[] }): Promise<ApiResponse<{ id: number; name: string; permissions: number[] }>> => {
     return makeDjangoAdminRequest('/api/admin/auth/group/', {
       method: 'POST',
       body: JSON.stringify(groupData)
     });
   },
 
-  updateGroup: async (groupId: number, groupData: { name?: string; permissions?: number[] }): Promise<ApiResponse<any>> => {
+  updateGroup: async (groupId: number, groupData: { name?: string; permissions?: number[] }): Promise<ApiResponse<{ id: number; name: string; permissions: number[] }>> => {
     return makeDjangoAdminRequest(`/api/admin/auth/group/${groupId}/`, {
       method: 'PATCH',
       body: JSON.stringify(groupData)
@@ -260,7 +260,7 @@ export const djangoAdminService = {
   // Database Operations
   runDatabaseQuery: async (query: string): Promise<ApiResponse<{
     columns: string[];
-    rows: any[][];
+    rows: unknown[][];
     row_count: number;
     execution_time: number;
   }>> => {
@@ -281,14 +281,14 @@ export const djangoAdminService = {
   },
 
   // Model Content Management
-  createModelInstance: async (appLabel: string, modelName: string, data: any): Promise<ApiResponse<any>> => {
+  createModelInstance: async (appLabel: string, modelName: string, data: Record<string, unknown>): Promise<ApiResponse<Record<string, unknown>>> => {
     return makeDjangoAdminRequest(`/api/admin/models/${appLabel}/${modelName}/`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
   },
 
-  updateModelInstance: async (appLabel: string, modelName: string, instanceId: string, data: any): Promise<ApiResponse<any>> => {
+  updateModelInstance: async (appLabel: string, modelName: string, instanceId: string, data: Record<string, unknown>): Promise<ApiResponse<Record<string, unknown>>> => {
     return makeDjangoAdminRequest(`/api/admin/models/${appLabel}/${modelName}/${instanceId}/`, {
       method: 'PATCH',
       body: JSON.stringify(data)
@@ -309,7 +309,7 @@ export const djangoAdminService = {
     });
   },
 
-  bulkUpdateInstances: async (appLabel: string, modelName: string, updates: { id: string; data: any }[]): Promise<ApiResponse<{ updated_count: number }>> => {
+  bulkUpdateInstances: async (appLabel: string, modelName: string, updates: { id: string; data: Record<string, unknown> }[]): Promise<ApiResponse<{ updated_count: number }>> => {
     return makeDjangoAdminRequest(`/api/admin/models/${appLabel}/${modelName}/bulk-update/`, {
       method: 'POST',
       body: JSON.stringify({ updates })
@@ -412,7 +412,7 @@ export const djangoAdminUtils = {
   },
 
   // Validate Django model data
-  validateModelData: (model: DjangoModel, data: any): { valid: boolean; errors: string[] } => {
+  validateModelData: (model: DjangoModel, data: Record<string, unknown>): { valid: boolean; errors: string[] } => {
     const errors: string[] = [];
     
     // Basic validation (would be enhanced based on actual model fields)
