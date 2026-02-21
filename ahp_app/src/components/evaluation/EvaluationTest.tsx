@@ -49,23 +49,19 @@ const EvaluationTest: React.FC<EvaluationTestProps> = ({ onBack }) => {
 
   // 프로젝트와 관련 데이터 로드
   const loadProjectDetails = async (project: ProjectData): Promise<TestProject> => {
-    try {
-      const [criteria, alternatives] = await Promise.all([
-        dataService.getCriteria(project.id || ''),
-        dataService.getAlternatives(project.id || '')
-      ]);
+    const [criteria, alternatives] = await Promise.all([
+      dataService.getCriteria(project.id || ''),
+      dataService.getAlternatives(project.id || '')
+    ]);
 
-      return {
-        id: project.id || '',
-        title: project.title,
-        description: project.description,
-        criteria: criteria,
-        alternatives: alternatives,
-        evaluationMethod: 'pairwise' // 기본값
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      id: project.id || '',
+      title: project.title,
+      description: project.description,
+      criteria: criteria,
+      alternatives: alternatives,
+      evaluationMethod: 'pairwise' // 기본값
+    };
   };
 
   // 실제 PostgreSQL DB 데이터만 사용

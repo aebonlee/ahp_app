@@ -188,56 +188,51 @@ class AHPApiService {
     globalWeights: Record<string, unknown>;
     finalRanking: FinalRanking[];
   }> {
-    try {
-      // 1. 기준 조회
-      const elements = await this.getMatrixElements(projectId, 'criteria', 1);
-      
-      // 2. 임시 비교 매트릭스 생성 (실제로는 사용자 입력)
-      const n = elements.length;
-      const matrix = Array(n).fill(null).map(() => Array(n).fill(1));
-      
-      // 샘플 비교값 입력 (실제로는 사용자가 입력)
-      if (n >= 2) {
-        matrix[0][1] = 3;
-        matrix[1][0] = 1/3;
-      }
-      if (n >= 3) {
-        matrix[0][2] = 2;
-        matrix[2][0] = 1/2;
-        matrix[1][2] = 1/2;
-        matrix[2][1] = 2;
-      }
+    // 1. 기준 조회
+    const elements = await this.getMatrixElements(projectId, 'criteria', 1);
 
-      // 3. 가중치 계산
-      const weights = await this.computeWeights(matrix, projectId, 'criteria:level1');
+    // 2. 임시 비교 매트릭스 생성 (실제로는 사용자 입력)
+    const n = elements.length;
+    const matrix = Array(n).fill(null).map(() => Array(n).fill(1));
 
-      // 4. 글로벌 가중치 계산 (간단한 예시)
-      const criteriaWeights: { [key: string]: number } = {};
-      elements.forEach((element, index) => {
-        criteriaWeights[element.id] = weights.localWeights[index];
-      });
-
-      const globalWeights = await this.computeGlobalWeights({
-        projectId,
-        criteriaWeights,
-        alternativeWeights: {}, // 실제로는 대안별 가중치 필요
-      });
-
-      // 5. 최종 집계 (단일 평가자 예시)
-      const aggregationResult = await this.aggregateResults(projectId, {
-        '1': 1.0, // 평가자 ID 1에게 100% 가중치
-      });
-
-      return {
-        elements,
-        weights,
-        globalWeights,
-        finalRanking: aggregationResult.finalRanking,
-      };
-
-    } catch (error) {
-      throw error;
+    // 샘플 비교값 입력 (실제로는 사용자가 입력)
+    if (n >= 2) {
+      matrix[0][1] = 3;
+      matrix[1][0] = 1/3;
     }
+    if (n >= 3) {
+      matrix[0][2] = 2;
+      matrix[2][0] = 1/2;
+      matrix[1][2] = 1/2;
+      matrix[2][1] = 2;
+    }
+
+    // 3. 가중치 계산
+    const weights = await this.computeWeights(matrix, projectId, 'criteria:level1');
+
+    // 4. 글로벌 가중치 계산 (간단한 예시)
+    const criteriaWeights: { [key: string]: number } = {};
+    elements.forEach((element, index) => {
+      criteriaWeights[element.id] = weights.localWeights[index];
+    });
+
+    const globalWeights = await this.computeGlobalWeights({
+      projectId,
+      criteriaWeights,
+      alternativeWeights: {}, // 실제로는 대안별 가중치 필요
+    });
+
+    // 5. 최종 집계 (단일 평가자 예시)
+    const aggregationResult = await this.aggregateResults(projectId, {
+      '1': 1.0, // 평가자 ID 1에게 100% 가중치
+    });
+
+    return {
+      elements,
+      weights,
+      globalWeights,
+      finalRanking: aggregationResult.finalRanking,
+    };
   }
 }
 

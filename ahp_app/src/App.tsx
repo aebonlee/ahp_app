@@ -849,19 +849,14 @@ function App() {
 
   // 프로젝트 삭제 (휴지통으로 이동)
   const deleteProject = async (projectId: string) => {
-    try {
-      // dataService_clean.ts의 deleteProject 사용 (정확한 API 엔드포인트 사용)
-      const success = await cleanDataService.deleteProject(projectId);
+    // dataService_clean.ts의 deleteProject 사용 (정확한 API 엔드포인트 사용)
+    const success = await cleanDataService.deleteProject(projectId);
 
-      if (success) {
-        await fetchProjects(); // 목록 새로고침
-        return true;
-      } else {
-        throw new Error('프로젝트 삭제에 실패했습니다.');
-      }
-    } catch (error) {
-      // 에러를 다시 throw하여 호출자가 처리하도록 함
-      throw error;
+    if (success) {
+      await fetchProjects(); // 목록 새로고침
+      return true;
+    } else {
+      throw new Error('프로젝트 삭제에 실패했습니다.');
     }
   };
 

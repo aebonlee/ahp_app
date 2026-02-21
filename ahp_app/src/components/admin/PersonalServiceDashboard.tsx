@@ -214,19 +214,15 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   
   // 실시간 프로젝트 동기화 함수
   const refreshProjectList = useCallback(async () => {
-    try {
-      const updatedProjects = await dataService.getProjects();
+    const updatedProjects = await dataService.getProjects();
 
-      // App.tsx의 프로젝트 목록 업데이트를 위한 이벤트 발생
-      if (onCreateProject && updatedProjects.length > 0) {
-        // 새로고침 트리거를 통해 상위 컴포넌트에 알림
-        setProjectRefreshTrigger(prev => prev + 1);
-      }
-
-      return updatedProjects;
-    } catch (error) {
-      throw error;
+    // App.tsx의 프로젝트 목록 업데이트를 위한 이벤트 발생
+    if (onCreateProject && updatedProjects.length > 0) {
+      // 새로고침 트리거를 통해 상위 컴포넌트에 알림
+      setProjectRefreshTrigger(prev => prev + 1);
     }
+
+    return updatedProjects;
   }, [onCreateProject]);
   
   const [activeMenu, setActiveMenu] = useState<ActiveMenuTab>(() => {
@@ -1797,27 +1793,23 @@ ${project?.title} - ${type} 프레젠테이션
             }
           }}
           createProject={async (projectData) => {
-            try {
-              // ProjectCreation에서 오는 데이터를 ProjectData 형식으로 변환
-              const convertedData = {
-                title: projectData.title,
-                description: projectData.description,
-                objective: projectData.objective,
-                evaluation_mode: projectData.evaluationMode, // evaluationMode -> evaluation_mode
-                ahp_type: projectData.ahpType,
-                status: 'draft' as const,
-                workflow_stage: 'creating' as const
-              };
+            // ProjectCreation에서 오는 데이터를 ProjectData 형식으로 변환
+            const convertedData = {
+              title: projectData.title,
+              description: projectData.description,
+              objective: projectData.objective,
+              evaluation_mode: projectData.evaluationMode, // evaluationMode -> evaluation_mode
+              ahp_type: projectData.ahpType,
+              status: 'draft' as const,
+              workflow_stage: 'creating' as const
+            };
 
-              if (onCreateProject) {
-                const result = await onCreateProject(convertedData);
-                return result;
-              } else {
-                const result = await dataService.createProject(convertedData);
-                return result;
-              }
-            } catch (error) {
-              throw error;
+            if (onCreateProject) {
+              const result = await onCreateProject(convertedData);
+              return result;
+            } else {
+              const result = await dataService.createProject(convertedData);
+              return result;
             }
           }}
         />
