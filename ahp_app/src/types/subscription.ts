@@ -67,65 +67,6 @@ export interface PaymentRecord {
   refundReason?: string;
 }
 
-// 결제 방법 관리
-export interface PaymentMethod {
-  id: string;
-  userId: string;
-  type: 'card' | 'bank_transfer';
-  isDefault: boolean;
-  isActive: boolean;
-  cardInfo?: {
-    lastFourDigits: string;
-    expiryMonth: number;
-    expiryYear: number;
-    cardBrand: string; // 'visa', 'mastercard', 'amex' 등
-    holderName: string;
-  };
-  bankInfo?: {
-    bankName: string;
-    accountNumber: string; // 마스킹된 계좌번호
-    accountHolder: string;
-    bankCode: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
-// 결제 설정
-export interface PaymentSettings {
-  userId: string;
-  autoRenew: boolean;
-  paymentMethodId?: string;
-  billingCycle: 'monthly' | 'yearly';
-  invoiceEmail: string;
-  taxId?: string;
-  companyName?: string;
-  billingAddress: {
-    country: string;
-    state?: string;
-    city: string;
-    address: string;
-    postalCode: string;
-  };
-}
-
-// 구독 한도 커스터마이징
-export interface CustomSubscriptionLimits {
-  id: string;
-  userId: string;
-  subscriptionId: string;
-  maxProjects: number;
-  maxEvaluatorsPerProject: number;
-  maxSurveysPerProject: number;
-  maxCriteriaPerProject: number;
-  maxAlternativesPerProject: number;
-  storageLimit: number; // GB
-  isCustomized: boolean;
-  updatedBy: string; // 관리자 ID
-  updatedAt: string;
-  reason?: string; // 변경 사유
-}
-
 // 사용자 계층 시스템
 export interface UserRole {
   id: string;
@@ -168,26 +109,6 @@ export interface ProjectLimits {
   remainingSurveys: number;
   remainingCriteria: number;
   remainingAlternatives: number;
-}
-
-// 결제 관련 컨텍스트
-export interface PaymentContextType {
-  currentPlan?: SubscriptionPlan;
-  subscription?: UserSubscription;
-  usage?: SubscriptionUsage;
-  limits?: ProjectLimits;
-  availablePlans: SubscriptionPlan[];
-  
-  // Actions
-  subscribeToPlan: (planId: string) => Promise<void>;
-  cancelSubscription: () => Promise<void>;
-  updatePaymentMethod: (method: PaymentMethod) => Promise<void>;
-  getUsage: () => Promise<SubscriptionUsage>;
-  checkLimits: (resource: string, required: number) => boolean;
-  
-  // Loading states
-  loading: boolean;
-  error: string | null;
 }
 
 // API 응답 타입
