@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Layout from './components/layout/Layout';
 import PersonalServiceDashboard from './components/admin/PersonalServiceDashboard';
-import { DEMO_USER, DEMO_PROJECTS } from './data/demoData';
+import { DEMO_USER } from './data/demoData';
 
 function App() {
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('personal-service');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [projects, setProjects] = useState<any[]>(DEMO_PROJECTS);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(DEMO_PROJECTS[0].id);
   const [isInitializing, setIsInitializing] = useState(true);
 
   // 간단한 초기화
@@ -17,7 +13,6 @@ function App() {
     // URL 파라미터 확인
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab');
-    const projectFromUrl = urlParams.get('project');
     
     // 데모 사용자 설정
     const demoUser = {
@@ -33,15 +28,8 @@ function App() {
     if (tabFromUrl && tabFromUrl !== 'welcome') {
       setActiveTab(tabFromUrl);
     }
-    
-    if (projectFromUrl && DEMO_PROJECTS.find(p => p.id === projectFromUrl)) {
-      setSelectedProjectId(projectFromUrl);
-    }
-    
-    // 초기화 완료
-    setTimeout(() => {
-      setIsInitializing(false);
-    }, 100);
+
+    setIsInitializing(false);
   }, []);
 
   // 초기화 로딩 화면

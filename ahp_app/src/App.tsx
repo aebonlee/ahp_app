@@ -666,38 +666,6 @@ function App() {
     }
   }, [user, protectedTabs, selectedProjectId]);
   
-  // 탭 변경 시 저장 (localStorage 제거)
-  useEffect(() => {
-    if (user && activeTab && protectedTabs.includes(activeTab)) {
-      // TODO: 사용자 설정 API를 통해 마지막 활성 탭 저장
-      // 현재는 세션 동안만 메모리에 유지
-    }
-  }, [activeTab, user, protectedTabs]);
-  
-  // 프로젝트 선택 시 저장 (localStorage 제거)
-  useEffect(() => {
-    if (selectedProjectId) {
-      // TODO: 사용자 설정 API를 통해 선택된 프로젝트 저장
-      // 현재는 세션 동안만 메모리에 유지
-    }
-  }, [selectedProjectId]);
-
-  // 관리자 유형 선택 핸들러 (더 이상 사용하지 않음 - 통합 대시보드로 대체)
-  // const handleAdminTypeSelect = (adminType: 'super' | 'personal') => {
-  //   if (user) {
-  //     setUser({
-  //       ...user,
-  //       admin_type: adminType
-  //     });
-  //     
-  //     if (adminType === 'super') {
-  //       setActiveTab('super-admin');
-  //     } else {
-  //       setActiveTab('personal-service');
-  //     }
-  //   }
-  // };
-
   // 모드 전환 핸들러 (서비스 사용자 <-> 평가자)
   const handleModeSwitch = (targetMode: 'service' | 'evaluator') => {
     if (!user) return;
