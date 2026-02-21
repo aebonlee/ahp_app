@@ -146,7 +146,8 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
     // 계층 구조 구성
     flatCriteria.forEach(criterion => {
       const idString = String(criterion.id);
-      const criterionObj = criteriaMap.get(idString)!;
+      const criterionObj = criteriaMap.get(idString);
+      if (!criterionObj) return;
 
       // parent_id 문자열 정규화
       const parentIdString = criterion.parent_id ? String(criterion.parent_id) : null;

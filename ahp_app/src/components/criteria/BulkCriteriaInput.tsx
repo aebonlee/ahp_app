@@ -189,8 +189,9 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 
     // 계층구조 구성
     flatCriteria.forEach(criterion => {
-      const criterionObj = criteriaMap.get(criterion.id)!;
-      
+      const criterionObj = criteriaMap.get(criterion.id);
+      if (!criterionObj) return;
+
       if (criterion.parent_id && criteriaMap.has(criterion.parent_id)) {
         // 부모가 있는 경우 부모의 children에 추가
         const parent = criteriaMap.get(criterion.parent_id);

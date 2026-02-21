@@ -48,9 +48,11 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
 
     // 부모-자식 관계 설정
     flatNodes.forEach(node => {
-      const nodeWithChildren = nodeMap.get(node.id)!;
+      const nodeWithChildren = nodeMap.get(node.id);
+      if (!nodeWithChildren) return;
       if (node.parent_id && nodeMap.has(node.parent_id)) {
-        const parent = nodeMap.get(node.parent_id)!;
+        const parent = nodeMap.get(node.parent_id);
+        if (!parent) return;
         if (!parent.children) parent.children = [];
         parent.children.push(nodeWithChildren);
       } else {

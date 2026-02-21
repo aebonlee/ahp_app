@@ -113,8 +113,10 @@ const SensitivityView: React.FC<SensitivityViewProps> = ({
     
     // 가중치 정규화
     const totalOriginalWeight = criteria.reduce((sum, c) => sum + (c.id === criterionId ? c.originalWeight : c.currentWeight), 0);
-    const weightDifference = newWeight - criteria.find(c => c.id === criterionId)!.originalWeight;
-    const scaleFactor = (totalOriginalWeight - weightDifference) / (totalOriginalWeight - criteria.find(c => c.id === criterionId)!.originalWeight);
+    const targetCriterion = criteria.find(c => c.id === criterionId);
+    const targetOriginalWeight = targetCriterion?.originalWeight ?? 0;
+    const weightDifference = newWeight - targetOriginalWeight;
+    const scaleFactor = (totalOriginalWeight - weightDifference) / (totalOriginalWeight - targetOriginalWeight);
     
     alternatives.forEach(alternative => {
       let totalScore = 0;
@@ -181,7 +183,8 @@ const SensitivityView: React.FC<SensitivityViewProps> = ({
     const newWeights = { ...weightSliders, [criterionId]: value };
     
     // 다른 가중치들을 비례적으로 조정
-    const criterion = criteria.find(c => c.id === criterionId)!;
+    const criterion = criteria.find(c => c.id === criterionId);
+    if (!criterion) return;
     const originalWeight = criterion.originalWeight;
     const weightChange = value - originalWeight;
     

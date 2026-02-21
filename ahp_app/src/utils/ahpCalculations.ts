@@ -184,7 +184,7 @@ export function calculateIndividualAHP(
     if (!nodesByLevel.has(node.level)) {
       nodesByLevel.set(node.level, []);
     }
-    nodesByLevel.get(node.level)!.push(node);
+    nodesByLevel.get(node.level)?.push(node);
   });
 
   // 레벨별로 가중치 계산 (상위 레벨부터)
@@ -208,7 +208,7 @@ export function calculateIndividualAHP(
       if (!nodesByParent.has(parentId)) {
         nodesByParent.set(parentId, []);
       }
-      nodesByParent.get(parentId)!.push(node);
+      nodesByParent.get(parentId)?.push(node);
     });
 
     // 각 부모 그룹별로 가중치 계산

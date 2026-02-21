@@ -66,8 +66,9 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
 
     // 계층 구조 구성
     flatCriteria.forEach(criterion => {
-      const criterionObj = criteriaMap.get(criterion.id)!;
-      
+      const criterionObj = criteriaMap.get(criterion.id);
+      if (!criterionObj) return;
+
       if (criterion.parent_id && criteriaMap.has(criterion.parent_id)) {
         const parent = criteriaMap.get(criterion.parent_id);
         if (parent) {

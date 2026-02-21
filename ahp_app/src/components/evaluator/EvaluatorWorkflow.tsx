@@ -75,7 +75,7 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
         id: projectId,
         title: (projectResponse.data as { title?: string })?.title || '평가 프로젝트',
         description: (projectResponse.data as { description?: string })?.description || '',
-        criteria: Array.isArray(criteriaRaw) ? (criteriaRaw as unknown as Criterion[]) : [],
+        criteria: Array.isArray(criteriaRaw) ? (criteriaRaw as Criterion[]) : [],
         alternatives: Array.isArray(alternativesRaw) ? alternativesRaw : (alternativesRaw as { results?: Alternative[] })?.results ?? [],
       };
 

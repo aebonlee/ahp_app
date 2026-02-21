@@ -161,19 +161,19 @@ const AdvancedAnalysisDashboard: React.FC = () => {
 
           <Tab.Panels>
             <Tab.Panel>
-              <SensitivityAnalysisPanel projectId={parseInt(projectId!)} />
+              <SensitivityAnalysisPanel projectId={parseInt(projectId ?? '0')} />
             </Tab.Panel>
 
             <Tab.Panel>
-              <GroupConsensusPanel projectId={parseInt(projectId!)} />
+              <GroupConsensusPanel projectId={parseInt(projectId ?? '0')} />
             </Tab.Panel>
 
             <Tab.Panel>
-              <MonteCarloSimulation projectId={parseInt(projectId!)} />
+              <MonteCarloSimulation projectId={parseInt(projectId ?? '0')} />
             </Tab.Panel>
 
             <Tab.Panel>
-              <ComprehensiveReport projectId={parseInt(projectId!)} />
+              <ComprehensiveReport projectId={parseInt(projectId ?? '0')} />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>

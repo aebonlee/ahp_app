@@ -151,11 +151,13 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({ projectId, onSave, demoMode
 
     // Build hierarchy
     criteria.forEach(criterion => {
-      const criterionWithChildren = criteriaMap.get(criterion.id)!;
+      const criterionWithChildren = criteriaMap.get(criterion.id);
+      if (!criterionWithChildren) return;
       if (criterion.parent_id) {
         const parent = criteriaMap.get(criterion.parent_id);
         if (parent) {
-          parent.children!.push(criterionWithChildren);
+          if (!parent.children) parent.children = [];
+          parent.children.push(criterionWithChildren);
         }
       } else {
         rootCriteria.push(criterionWithChildren);
