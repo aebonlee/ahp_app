@@ -5,6 +5,7 @@ import ColorThemeSelector from '../common/ColorThemeSelector';
 import Modal from '../common/Modal';
 import sessionService from '../../services/sessionService';
 import { useTheme } from '../../hooks/useTheme';
+import { SUPER_ADMIN_EMAIL } from '../../config/api';
 
 import type { User } from '../../types';
 
@@ -208,7 +209,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                     if (storedUserStr) {
                       try {
                         const storedUser = JSON.parse(storedUserStr);
-                        isAdminEmail = storedUser.email === 'admin@ahp.com';
+                        isAdminEmail = storedUser.email === SUPER_ADMIN_EMAIL;
                       } catch {
                         // corrupted localStorage data, skip
                       }

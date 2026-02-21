@@ -2,7 +2,7 @@
  * 인증 서비스 - JWT 토큰 관리 및 자동 새로고침
  */
 
-import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import { API_BASE_URL, API_ENDPOINTS, SUPER_ADMIN_EMAIL } from '../config/api';
 import type { User, AuthTokens, LoginResponse } from '../types';
 
 class AuthService {
@@ -195,8 +195,8 @@ class AuthService {
     if (result.success && result.data) {
       const { access, refresh, user } = result.data;
 
-      // admin@ahp.com은 슈퍼 관리자로 처리
-      if (user.email === 'admin@ahp.com') {
+      // 슈퍼 관리자 이메일 처리
+      if (user.email === SUPER_ADMIN_EMAIL) {
         user.role = 'super_admin';
       }
 
@@ -275,8 +275,8 @@ class AuthService {
     const result = await this.apiRequest<User>(API_ENDPOINTS.AUTH.ME);
 
     if (result.success && result.data) {
-      // admin@ahp.com은 슈퍼 관리자로 처리
-      if (result.data.email === 'admin@ahp.com') {
+      // 슈퍼 관리자 이메일 처리
+      if (result.data.email === SUPER_ADMIN_EMAIL) {
         result.data.role = 'super_admin';
       }
       return result.data;

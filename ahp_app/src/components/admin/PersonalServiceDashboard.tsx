@@ -31,6 +31,7 @@ import PersonalUserDashboard from '../user/PersonalUserDashboard';
 import dataService from '../../services/dataService_clean';
 import type { ProjectData } from '../../services/api';
 import type { User, UserProject } from '../../types';
+import { SUPER_ADMIN_EMAIL } from '../../config/api';
 // DEMO 데이터 제거 - 실제 DB만 사용
 
 type ActiveMenuTab = 'dashboard' | 'projects' | 'creation' | 'project-wizard' | 'demographic-setup' | 'evaluator-invitation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash' | 'dev-tools';
@@ -67,8 +68,8 @@ const PLAN_QUOTAS = {
 
 // 사용자별 요금제 매핑 (이메일 기반)
 const USER_PLANS: Record<string, 'basic' | 'standard' | 'premium' | 'enterprise'> = {
-  'test@test.com': 'basic',  // 테스트 계정은 basic (3개 프로젝트, 30명 평가자)
-  'admin@ahp.com': 'enterprise', // 관리자는 enterprise (무제한)
+  'test@test.com': 'basic',        // 테스트 계정은 basic (3개 프로젝트, 30명 평가자)
+  [SUPER_ADMIN_EMAIL]: 'enterprise', // 관리자는 enterprise (무제한)
   'premium@test.com': 'premium',
   'default': 'basic' // 기본값
 };
@@ -321,7 +322,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     if (storedUserStr) {
       try {
         const storedUser = JSON.parse(storedUserStr);
-        isAdminEmail = storedUser.email === 'admin@ahp.com';
+        isAdminEmail = storedUser.email === SUPER_ADMIN_EMAIL;
       } catch (e) {
         // parse error ignored
       }
@@ -3099,7 +3100,7 @@ ${project?.title} - ${type} 프레젠테이션
     if (storedUserStr) {
       try {
         const storedUser = JSON.parse(storedUserStr);
-        isAdminEmail = storedUser.email === 'admin@ahp.com';
+        isAdminEmail = storedUser.email === SUPER_ADMIN_EMAIL;
       } catch (e) {
         // parse error ignored
       }

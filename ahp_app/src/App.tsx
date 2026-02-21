@@ -23,6 +23,7 @@ import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
 import AnonymousEvaluator from './components/evaluation/AnonymousEvaluator';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
+import { SUPER_ADMIN_EMAIL } from './config/api';
 
 // ── Lazy-loaded pages (code splitting) ─────────────────────────────────────
 const PairwiseComparison        = lazy(() => import('./components/comparison/PairwiseComparison'));
@@ -88,8 +89,8 @@ function App() {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        // admin@ahp.com은 무조건 슈퍼 관리자로 처리
-        if (parsedUser.email === 'admin@ahp.com' || parsedUser.email?.toLowerCase() === 'admin@ahp.com') {
+        // 슈퍼 관리자 이메일은 무조건 슈퍼 관리자로 처리
+        if (parsedUser.email === SUPER_ADMIN_EMAIL || parsedUser.email?.toLowerCase() === SUPER_ADMIN_EMAIL) {
           parsedUser.role = 'super_admin';
           // 강제로 localStorage 업데이트
           localStorage.setItem('ahp_user', JSON.stringify(parsedUser));
@@ -452,8 +453,8 @@ function App() {
           ...response.data,
           admin_type: undefined
         };
-        // admin@ahp.com 슈퍼 관리자 처리
-        if (restoredUser.email === 'admin@ahp.com') {
+        // 슈퍼 관리자 이메일 처리
+        if (restoredUser.email === SUPER_ADMIN_EMAIL) {
           restoredUser.role = 'super_admin';
         }
         setUser(restoredUser);
@@ -469,7 +470,7 @@ function App() {
             const retryRes = await api.get('/api/service/accounts/me/');
             if (retryRes.success && retryRes.data) {
               const retryUser = { ...retryRes.data, admin_type: undefined };
-              if (retryUser.email === 'admin@ahp.com') retryUser.role = 'super_admin';
+              if (retryUser.email === SUPER_ADMIN_EMAIL) retryUser.role = 'super_admin';
               setUser(retryUser);
               localStorage.setItem('ahp_user', JSON.stringify(retryUser));
               sessionService.startSession();
@@ -529,9 +530,9 @@ function App() {
     try {
       const result = await authService.login(username, password);
 
-      // admin@ahp.com은 슈퍼 관리자로 처리 (재확인)
+      // 슈퍼 관리자 이메일이면 role 확인
       let finalUser = { ...result.user };
-      if (result.user.email === 'admin@ahp.com') {
+      if (result.user.email === SUPER_ADMIN_EMAIL) {
         finalUser.role = 'super_admin';
       }
 
@@ -1127,7 +1128,7 @@ function App() {
         if (storedUserStr) {
           try {
             const storedUser = JSON.parse(storedUserStr);
-            isAdminEmail = storedUser.email === 'admin@ahp.com';
+            isAdminEmail = storedUser.email === SUPER_ADMIN_EMAIL;
           } catch {
             // corrupted localStorage data, skip
           }

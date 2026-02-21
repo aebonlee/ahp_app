@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { UserRole } from '../../types';
+import { SUPER_ADMIN_EMAIL } from '../../config/api';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -323,7 +324,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       if (storedUserStr) {
         try {
           const storedUser = JSON.parse(storedUserStr);
-          isAdminEmail = storedUser.email === 'admin@ahp.com';
+          isAdminEmail = storedUser.email === SUPER_ADMIN_EMAIL;
         } catch {
           // corrupted localStorage data, skip
         }
@@ -553,7 +554,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             if (storedUserStr) {
               try {
                 const storedUserData = JSON.parse(storedUserStr);
-                isAdminEmail = storedUserData.email === 'admin@ahp.com' || storedUserData.email?.toLowerCase() === 'admin@ahp.com';
+                isAdminEmail = storedUserData.email === SUPER_ADMIN_EMAIL || storedUserData.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
               } catch {
                 // corrupted localStorage data, skip
               }

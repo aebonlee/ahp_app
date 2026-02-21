@@ -3,6 +3,7 @@ import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
 import Modal from '../common/Modal';
 import apiService from '../../services/apiService';
+import { SUPER_ADMIN_EMAIL } from '../../config/api';
 
 interface Project {
   id: string;
@@ -75,7 +76,7 @@ const AllProjectsManagement: React.FC = () => {
         id: '1',
         title: '2025년 신제품 개발 우선순위 결정',
         description: '시장 조사를 바탕으로 한 신제품 개발 우선순위 AHP 분석',
-        owner: { id: '1', username: 'admin', email: 'admin@ahp.com' },
+        owner: { id: '1', username: 'admin', email: SUPER_ADMIN_EMAIL },
         status: 'active',
         created_at: '2025-01-15T10:00:00Z',
         updated_at: '2025-01-20T15:30:00Z',

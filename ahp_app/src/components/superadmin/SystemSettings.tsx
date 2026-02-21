@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
+import { SUPER_ADMIN_EMAIL } from '../../config/api';
 
 interface SystemSettingsData {
   general: {
@@ -63,7 +64,7 @@ const SystemSettings: React.FC = () => {
     general: {
       siteName: 'AHP for Paper',
       siteUrl: 'https://ahp.example.com',
-      adminEmail: 'admin@ahp.com',
+      adminEmail: SUPER_ADMIN_EMAIL,
       supportEmail: 'support@ahp.com',
       timezone: 'Asia/Seoul',
       language: 'ko',

@@ -5,7 +5,7 @@
 
 // 간단한 암호화/복호화 함수 (실제 운영환경에서는 더 강력한 암호화 사용 권장)
 const STORAGE_KEY = 'ahp_secure_';
-const ENCRYPTION_SECRET = 'ahp_platform_2025';
+const ENCRYPTION_SECRET = process.env.REACT_APP_ENCRYPTION_SECRET || 'ahp_platform_2025';
 
 /**
  * 간단한 문자열 암호화 (XOR 기반)

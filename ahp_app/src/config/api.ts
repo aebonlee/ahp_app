@@ -1,6 +1,9 @@
 // API 설정 - 실제 작동하는 Django 백엔드 URL
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ahp-django-backend.onrender.com';
 
+// 슈퍼 관리자 이메일 - 단일 상수로 관리 (DRY)
+export const SUPER_ADMIN_EMAIL = process.env.REACT_APP_SUPER_ADMIN_EMAIL || 'admin@ahp.com';
+
 // 데이터 저장 모드 설정 - Django 백엔드 연동
 export const DATA_STORAGE_MODE = process.env.REACT_APP_DATA_MODE || 
   (process.env.NODE_ENV === 'production' ? 'online' : 'hybrid');
