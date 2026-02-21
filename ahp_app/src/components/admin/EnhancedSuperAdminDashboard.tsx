@@ -246,9 +246,6 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
     return () => clearInterval(interval);
   }, [loadDashboardData, refreshInterval]);
 
-  // TODO: real-time metric updates should be driven by a real monitoring API/WebSocket,
-  // not by Math.random() simulation. Removed fake real-time fluctuation.
-
   const renderOverview = () => (
     <div className="space-y-6">
       {/* 주요 통계 카드 */}

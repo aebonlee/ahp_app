@@ -13,43 +13,6 @@ interface ProjectSelectorProps {
   description?: string;
 }
 
-/*
-// 토큰 유효성 검사 유틸리티 함수
-const isTokenValid = (token: string | null): boolean => {
-  if (!token) return false;
-  
-  // 프로덕션 환경(GitHub Pages)에서는 토큰 검증 스킵
-  if (process.env.NODE_ENV === 'production') {
-    return true;
-  }
-  
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      // 일반 토큰(non-JWT)도 허용
-      return token.length > 0;
-    }
-    
-    try {
-      const payload = JSON.parse(atob(parts[1]));
-      const currentTime = Math.floor(Date.now() / 1000);
-      
-      if (payload.exp && payload.exp < currentTime) {
-        return false;
-      }
-    } catch (e) {
-      // JWT 디코딩 실패해도 토큰은 유효한 것으로 간주
-      return true;
-    }
-    
-    return true;
-  } catch (error) {
-    // 에러가 발생해도 토큰이 있으면 유효한 것으로 간주
-    return token.length > 0;
-  }
-};
-*/
-
 const ProjectSelector: React.FC<ProjectSelectorProps> = ({ 
   onProjectSelect, 
   onCancel, 

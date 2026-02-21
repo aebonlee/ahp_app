@@ -447,12 +447,14 @@ class CleanDataService {
     }
 
     // 새 평가자 생성 - 영어 이름과 이메일만 사용하여 인코딩 문제 방지
+    const secureId = Array.from(crypto.getRandomValues(new Uint8Array(6)), b => b.toString(36)).join('').slice(0, 9);
+    const secureKey = Array.from(crypto.getRandomValues(new Uint8Array(6)), b => b.toString(36)).join('').slice(0, 9).toUpperCase();
     const newEvaluator: EvaluatorData = {
       project_id: data.project_id,
       name: data.name,
       email: data.email,
-      id: `evaluator_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      access_key: `KEY_${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+      id: `evaluator_${Date.now()}_${secureId}`,
+      access_key: `KEY_${secureKey}`,
       status: 'pending'
     };
 

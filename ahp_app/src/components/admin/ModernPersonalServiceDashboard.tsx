@@ -18,8 +18,6 @@ const ModernPersonalServiceDashboard: React.FC<ModernPersonalServiceDashboardPro
   onSelectProject,
   onTabChange
 }) => {
-  // Remove unused state - was for future feature
-
   // 프로젝트 상태 계산
   const activeProjects = projects.filter(p => 
     p.status === 'evaluation_in_progress' || p.status === 'model_building' || p.status === 'evaluator_assignment'
