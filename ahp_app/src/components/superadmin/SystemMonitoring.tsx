@@ -16,58 +16,14 @@ interface Alert {
 }
 
 const SystemMonitoring: React.FC = () => {
-  const [cpuHistory, setCpuHistory] = useState<MetricData[]>([]);
-  const [memoryHistory, setMemoryHistory] = useState<MetricData[]>([]);
-  const [requestHistory, setRequestHistory] = useState<MetricData[]>([]);
-  const [errorHistory, setErrorHistory] = useState<MetricData[]>([]);
+  const cpuHistory: MetricData[] = [];
+  const memoryHistory: MetricData[] = [];
+  const requestHistory: MetricData[] = [];
+  const errorHistory: MetricData[] = [];
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isMonitoring, setIsMonitoring] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(5000);
   const [selectedMetric, setSelectedMetric] = useState<'cpu' | 'memory' | 'requests' | 'errors'>('cpu');
-
-  // TODO: replace with real monitoring API/WebSocket calls.
-  // All Math.random() mock data removed — metrics should come from a real backend.
-  const generateMetrics = () => {
-    const now = new Date();
-
-    // CPU 사용률 — placeholder 0 until real API is connected
-    setCpuHistory(prev => {
-      const newData = [...prev, { timestamp: now, value: 0 }];
-      return newData.slice(-20);
-    });
-
-    // 메모리 사용률 — placeholder 0 until real API is connected
-    setMemoryHistory(prev => {
-      const newData = [...prev, { timestamp: now, value: 0 }];
-      return newData.slice(-20);
-    });
-
-    // 요청 수 — placeholder 0 until real API is connected
-    setRequestHistory(prev => {
-      const newData = [...prev, { timestamp: now, value: 0 }];
-      return newData.slice(-20);
-    });
-
-    // 에러율 — placeholder 0 until real API is connected
-    setErrorHistory(prev => {
-      const newData = [...prev, { timestamp: now, value: 0 }];
-      return newData.slice(-20);
-    });
-  };
-
-  useEffect(() => {
-    if (!isMonitoring) return;
-
-    // 초기 데이터 생성
-    for (let i = 0; i < 10; i++) {
-      generateMetrics();
-    }
-
-    // 주기적 업데이트
-    const interval = setInterval(generateMetrics, refreshInterval);
-
-    return () => clearInterval(interval);
-  }, [isMonitoring, refreshInterval]);
 
   const getAlertIcon = (type: Alert['type']) => {
     switch (type) {

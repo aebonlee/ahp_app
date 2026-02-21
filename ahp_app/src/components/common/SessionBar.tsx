@@ -10,10 +10,6 @@ const SessionBar: React.FC = () => {
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [sessionInfo, setSessionInfo] = useState<{
-    loginTime: string | null;
-    lastActivity: string | null;
-  }>({ loginTime: null, lastActivity: null });
 
   useEffect(() => {
     // 세션 상태 확인 및 시간 업데이트 (localStorage 제거됨)
@@ -141,21 +137,11 @@ const SessionBar: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white p-4 rounded-lg border">
                       <div className="text-gray-600 text-sm mb-1">로그인 시간</div>
-                      <div className="font-medium text-gray-900">
-                        {sessionInfo.loginTime ? 
-                          new Date(parseInt(sessionInfo.loginTime)).toLocaleString() : 
-                          '서버에서 조회 중...'
-                        }
-                      </div>
+                      <div className="font-medium text-gray-900">서버에서 조회 중...</div>
                     </div>
                     <div className="bg-white p-4 rounded-lg border">
                       <div className="text-gray-600 text-sm mb-1">마지막 활동</div>
-                      <div className="font-medium text-gray-900">
-                        {sessionInfo.lastActivity ? 
-                          new Date(parseInt(sessionInfo.lastActivity)).toLocaleString() : 
-                          '서버에서 조회 중...'
-                        }
-                      </div>
+                      <div className="font-medium text-gray-900">서버에서 조회 중...</div>
                     </div>
                   </div>
 
