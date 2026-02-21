@@ -3,8 +3,6 @@
  * ExportManager에서 사용할 실제 파일 생성 로직
  */
 
-// Excel functionality temporarily disabled for security
-
 // 내보내기 옵션 인터페이스
 export interface ExportOptions {
   format: 'excel' | 'pdf' | 'word' | 'csv';
@@ -44,20 +42,11 @@ export interface ProjectExportData {
 }
 
 /**
- * Excel 파일 생성 (보안상 이유로 CSV로 대체)
- */
-export const generateExcelFile = (data: ProjectExportData, options: ExportOptions): Blob => {
-  // Excel functionality temporarily disabled for security
-  console.warn('Excel export is temporarily disabled for security reasons. Generating CSV instead.');
-  return generateCSVFile(data, options);
-};
-
-/**
  * CSV 파일 생성
  */
 export const generateCSVFile = (data: ProjectExportData, options: ExportOptions): Blob => {
   let csvContent = '';
-  
+
   // 프로젝트 개요
   csvContent += '프로젝트 정보\n';
   csvContent += `프로젝트명,${data.title}\n`;
@@ -100,24 +89,6 @@ export const generateCSVFile = (data: ProjectExportData, options: ExportOptions)
 };
 
 /**
- * PDF 파일 생성 (기본 구현)
- */
-export const generatePDFFile = (data: ProjectExportData, options: ExportOptions): Blob => {
-  // PDF 생성 로직 구현 필요
-  console.warn('PDF export not yet implemented. Generating CSV instead.');
-  return generateCSVFile(data, options);
-};
-
-/**
- * Word 파일 생성 (기본 구현)
- */
-export const generateWordFile = (data: ProjectExportData, options: ExportOptions): Blob => {
-  // Word 생성 로직 구현 필요
-  console.warn('Word export not yet implemented. Generating CSV instead.');
-  return generateCSVFile(data, options);
-};
-
-/**
  * 파일명 생성 헬퍼
  */
 export const generateFilename = (projectTitle: string, format: string, includeDate: boolean = true): string => {
@@ -142,46 +113,16 @@ export const downloadFile = (blob: Blob, fileName: string, mimeType: string) => 
 };
 
 /**
- * 통합 내보내기 함수
+ * 통합 내보내기 함수 (excel/pdf/word는 CSV로 출력)
  */
 export const exportProject = (data: ProjectExportData, options: ExportOptions): void => {
-  let blob: Blob;
-  let fileName = options.fileName || `project_${data.id}`;
-  let mimeType: string;
-
-  switch (options.format) {
-    case 'excel':
-      blob = generateExcelFile(data, options);
-      fileName += '.csv'; // Excel이 비활성화되어 CSV로 대체
-      mimeType = 'text/csv';
-      break;
-    case 'csv':
-      blob = generateCSVFile(data, options);
-      fileName += '.csv';
-      mimeType = 'text/csv';
-      break;
-    case 'pdf':
-      blob = generatePDFFile(data, options);
-      fileName += '.csv'; // PDF 미구현으로 CSV로 대체
-      mimeType = 'text/csv';
-      break;
-    case 'word':
-      blob = generateWordFile(data, options);
-      fileName += '.csv'; // Word 미구현으로 CSV로 대체
-      mimeType = 'text/csv';
-      break;
-    default:
-      throw new Error(`Unsupported export format: ${options.format}`);
-  }
-
-  downloadFile(blob, fileName, mimeType);
+  const blob = generateCSVFile(data, options);
+  const fileName = (options.fileName || `project_${data.id}`) + '.csv';
+  downloadFile(blob, fileName, 'text/csv');
 };
 
 export default {
-  generateExcelFile,
   generateCSVFile,
-  generatePDFFile,
-  generateWordFile,
   downloadFile,
   generateFilename,
   exportProject

@@ -5,11 +5,8 @@
 
 import { initializeAIService } from '../services/aiService';
 
-// 환경변수에서 API 키 설정 (보안을 위해 하드코딩 제거)
-const FIXED_OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY || 'API_KEY_NOT_SET';
-
-// 환경변수에서 API 키 가져오기 (개발 환경용 - 폴백)
-const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY || FIXED_OPENAI_API_KEY;
+// 환경변수에서 API 키 가져오기
+const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY || 'API_KEY_NOT_SET';
 
 /**
  * 저장된 API 키로 AI 서비스 초기화
