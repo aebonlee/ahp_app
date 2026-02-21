@@ -102,7 +102,6 @@ const Layout: React.FC<LayoutProps> = ({
             padding: '20px'
           }}>
             <h3>로그인이 필요합니다</h3>
-            <p>user: {JSON.stringify(user)}</p>
           </div>
         )}
         

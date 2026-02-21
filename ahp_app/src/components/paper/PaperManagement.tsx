@@ -41,7 +41,7 @@ interface AHPResultContent {
 const PaperManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'references' | 'results' | 'surveys' | 'writing' | 'generator'>('references');
   const [references, setReferences] = useState<Reference[]>([]);
-  const [ahpResults] = useState<AHPResultContent[]>([]);
+  const ahpResults: AHPResultContent[] = [];
   const [showAddReference, setShowAddReference] = useState(false);
   const [newReference, setNewReference] = useState<Partial<Reference>>({
     type: 'journal',
