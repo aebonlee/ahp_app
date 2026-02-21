@@ -21,7 +21,6 @@ import TrashOverflowModal from './components/common/TrashOverflowModal';
 import LandingPage from './components/admin/LandingPage';
 import EvaluatorWorkflow from './components/evaluator/EvaluatorWorkflow';
 import AnonymousEvaluator from './components/evaluation/AnonymousEvaluator';
-import { API_BASE_URL } from './config/api';
 import { useColorTheme } from './hooks/useColorTheme';
 import { useTheme } from './hooks/useTheme';
 

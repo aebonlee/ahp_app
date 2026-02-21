@@ -4,8 +4,7 @@ export type Theme = 'light' | 'dark' | 'system';
 
 export const useTheme = () => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // localStorage 제거됨 - 사용자 프로필 API에서 불러오도록 개선 예정
-    return 'system'; // 기본값
+    return (localStorage.getItem('ahp_theme') as Theme | null) || 'system';
   });
 
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
@@ -49,12 +48,12 @@ export const useTheme = () => {
     const currentIndex = themes.indexOf(theme);
     const nextTheme = themes[(currentIndex + 1) % themes.length];
     setTheme(nextTheme);
-    // TODO: 사용자 프로필 API를 통해 테마 설정 저장
+    localStorage.setItem('ahp_theme', nextTheme);
   };
 
   const setThemeMode = (newTheme: Theme) => {
     setTheme(newTheme);
-    // TODO: 사용자 프로필 API를 통해 테마 설정 저장
+    localStorage.setItem('ahp_theme', newTheme);
   };
 
   return {

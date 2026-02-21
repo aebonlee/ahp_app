@@ -89,8 +89,7 @@ const colorPalettes: Record<ColorTheme, ColorPalette> = {
 
 export const useColorTheme = () => {
   const [currentTheme, setCurrentTheme] = useState<ColorTheme>(() => {
-    // localStorage 제거됨 - 사용자 프로필 API에서 불러오도록 개선 예정
-    return 'blue'; // 기본 테마
+    return (localStorage.getItem('ahp_color_theme') as ColorTheme | null) || 'blue';
   });
 
   // Apply color theme to CSS variables
@@ -163,10 +162,9 @@ export const useColorTheme = () => {
     applyColorTheme(currentTheme);
   }, [currentTheme]);
 
-  // Change theme and persist (localStorage 제거)
   const changeColorTheme = (theme: ColorTheme) => {
     setCurrentTheme(theme);
-    // TODO: 사용자 프로필 API를 통해 테마 설정 저장
+    localStorage.setItem('ahp_color_theme', theme);
   };
 
   // Get all available themes

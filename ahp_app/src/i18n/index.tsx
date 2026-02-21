@@ -145,16 +145,11 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
   defaultLanguage = 'ko' 
 }) => {
   const [language, setLanguage] = useState<Language>(() => {
-    // 메모리 기반 언어 설정 (사용자 프로필 API에서 불러오도록 개선 예정)
-    // localStorage 제거됨 - 사용자 설정 API 통합 예정
-    return defaultLanguage;
+    return (localStorage.getItem('ahp_language') as Language | null) || defaultLanguage;
   });
 
   useEffect(() => {
-    // 언어 설정 저장 (localStorage 제거)
-    // TODO: 사용자 프로필 API를 통해 언어 설정 저장
-    
-    // HTML lang 속성 업데이트
+    localStorage.setItem('ahp_language', language);
     document.documentElement.lang = language;
   }, [language]);
 

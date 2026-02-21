@@ -259,11 +259,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [projectTemplate, setProjectTemplate] = useState<'blank' | 'business' | 'technical' | 'academic'>('blank');
   
-  // Project management UI states
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'active' | 'completed'>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'progress' | 'status'>('date');
 
   // 현재 사용자의 플랜 정보 (실제로는 API에서 가져와야 함)
   const currentPlan = 'standard'; // 임시로 Standard Plan으로 설정
