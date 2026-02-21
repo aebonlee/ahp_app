@@ -237,7 +237,6 @@ export const migrateLegacyStorage = () => {
       encryptedLocalStorage.setItem(key.replace('ahp_', ''), value);
       // 기존 키 제거
       localStorage.removeItem(key);
-      console.log(`✅ ${key} 마이그레이션 완료`);
     }
   });
 };
