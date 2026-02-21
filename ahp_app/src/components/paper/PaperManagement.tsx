@@ -41,8 +41,7 @@ interface AHPResultContent {
 const PaperManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'references' | 'results' | 'surveys' | 'writing' | 'generator'>('references');
   const [references, setReferences] = useState<Reference[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [ahpResults, _setAhpResults] = useState<AHPResultContent[]>([]);
+  const [ahpResults] = useState<AHPResultContent[]>([]);
   const [showAddReference, setShowAddReference] = useState(false);
   const [newReference, setNewReference] = useState<Partial<Reference>>({
     type: 'journal',

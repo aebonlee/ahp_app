@@ -63,13 +63,11 @@ const AnonymousEvaluator: React.FC = () => {
   // Evaluation state
   const [comparisons, setComparisons] = useState<ComparisonPair[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_progress, setProgress] = useState<EvaluationProgress | null>(null);
+  const [, setProgress] = useState<EvaluationProgress | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [recoveryData, setRecoveryData] = useState<SessionRecoveryData | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [autoSaveEnabled, _setAutoSaveEnabled] = useState(true);
+  const [autoSaveEnabled] = useState(true);
   
   // Refs for cleanup
   const autoSaveCleanup = useRef<(() => void) | null>(null);

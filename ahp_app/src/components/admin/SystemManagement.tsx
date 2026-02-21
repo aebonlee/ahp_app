@@ -32,8 +32,7 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_runningTasks, setRunningTasks] = useState<Set<string>>(new Set());
+  const [, setRunningTasks] = useState<Set<string>>(new Set());
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ action: () => Promise<void>; message: string } | null>(null);
   const monitorIntervalsRef = useRef<Set<ReturnType<typeof setInterval>>>(new Set());
