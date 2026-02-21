@@ -256,7 +256,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // 에러 응답은 그대로 반환
+    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
   },
 
   // 프로젝트 상세 조회 (정규화 적용)
@@ -271,7 +271,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // 에러 응답은 그대로 반환
+    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
   },
 
   // 프로젝트 생성 (정규화 적용)
@@ -301,7 +301,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // 에러 응답은 그대로 반환
+    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
   },
 
   // 프로젝트 수정 (정규화 적용)
@@ -331,7 +331,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // 에러 응답은 그대로 반환
+    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
   },
 
   // 프로젝트 삭제 (휴지통으로 이동)
@@ -352,7 +352,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // 에러 응답은 그대로 반환
+    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
   },
 
   // 프로젝트 복원 - 임시로 업데이트로 대체
