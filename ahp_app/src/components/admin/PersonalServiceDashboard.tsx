@@ -1817,7 +1817,6 @@ ${project?.title} - ${type} 프레젠테이션
     </div>
   );
 
-  // 더 이상 사용하지 않는 함수 - ProjectCreation 컴포넌트를 직접 사용
   const renderProjectCreation = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">새 프로젝트 생성</h3>

@@ -193,31 +193,28 @@ const AIChatbotAssistantPage: React.FC<AIChatbotAssistantPageProps> = ({ user })
     setInputMessage('');
     setIsAssistantTyping(true);
 
-    // AI 응답 시뮬레이션
-    setTimeout(async () => {
-      const assistantResponse = await generateAIResponse(content);
-      
-      const assistantMessage: ChatMessage = {
-        id: `msg_${Date.now()}_assistant`,
-        type: 'assistant',
-        content: assistantResponse,
-        timestamp: new Date()
-      };
+    const assistantResponse = await generateAIResponse(content);
 
-      const finalSession = {
-        ...updatedSession,
-        messages: [...updatedSession.messages, assistantMessage],
-        lastUpdated: new Date()
-      };
+    const assistantMessage: ChatMessage = {
+      id: `msg_${Date.now()}_assistant`,
+      type: 'assistant',
+      content: assistantResponse,
+      timestamp: new Date()
+    };
 
-      setCurrentSession(finalSession);
-      setChatSessions(prev => 
-        prev.map(session => 
-          session.id === currentSession.id ? finalSession : session
-        )
-      );
-      setIsAssistantTyping(false);
-    }, 1500 + Math.random() * 2000); // 1.5~3.5초 지연
+    const finalSession = {
+      ...updatedSession,
+      messages: [...updatedSession.messages, assistantMessage],
+      lastUpdated: new Date()
+    };
+
+    setCurrentSession(finalSession);
+    setChatSessions(prev =>
+      prev.map(session =>
+        session.id === currentSession.id ? finalSession : session
+      )
+    );
+    setIsAssistantTyping(false);
   };
 
   // AI 응답 생성

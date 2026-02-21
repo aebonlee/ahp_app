@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// useEffect - 현재 미사용
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';

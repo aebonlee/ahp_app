@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-// Legend - 현재 미사용
 import Card from '../common/Card';
 import api from '../../services/api';
 import { 

@@ -111,12 +111,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
   const [newEvaluator, setNewEvaluator] = useState({ name: '', email: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 프로젝트별 평가자 데이터 저장 (현재 미사용 - 향후 PostgreSQL 연동 시 활용)
-  // const saveProjectEvaluators = async (evaluatorsData: Evaluator[]) => {
-  //   console.log(`Evaluators now saved to PostgreSQL for project ${projectId}`);
-  //   // localStorage 제거됨 - 모든 데이터는 PostgreSQL에 저장
-  // };
-
   const generateAccessKey = (): string => {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const array = new Uint8Array(8);
@@ -166,12 +160,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  // 초대 링크 생성 (현재 미사용)
-  // const generateInviteLink = (): string => {
-  //   const randomId = Math.random().toString(36).substring(2, 8);
-  //   return `https://ahp-system.com/eval/${randomId}`;
-  // };
 
   const handleAddEvaluator = async () => {
     // 평가자 수 제한 체크

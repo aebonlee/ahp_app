@@ -84,12 +84,6 @@ const AlternativeManagement: React.FC<AlternativeManagementProps> = ({ projectId
     setTimeout(() => setActionMessage(null), 3000);
   };
 
-  // 프로젝트별 대안 데이터 저장 (현재 미사용 - 향후 PostgreSQL 연동 시 활용)
-  // const saveProjectAlternatives = async (alternativesData: Alternative[]) => {
-  //   console.log(`Alternatives now saved to PostgreSQL for project ${projectId}`);
-  //   // localStorage 제거됨 - 모든 데이터는 PostgreSQL에 저장
-  // };
-
   const validateAlternative = (name: string, excludeId?: string): boolean => {
     const newErrors: Record<string, string> = {};
 
