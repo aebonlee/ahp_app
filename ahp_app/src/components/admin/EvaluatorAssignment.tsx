@@ -431,7 +431,7 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
                                 📋 링크 복사
                               </button>
                               <button
-                                onClick={() => toggleQRCode(evaluator.id!)}
+                                onClick={() => toggleQRCode(evaluator.id ?? '')}
                                 className="text-xs bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition-colors"
                               >
                                 {evaluator.showQR ? '🔒 QR 숨기기' : '📱 QR 보기'}
@@ -475,13 +475,13 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
                         <Button
                           size="sm"
                           variant="primary"
-                          onClick={() => handleSendInvite(evaluator.id!)}
+                          onClick={() => handleSendInvite(evaluator.id ?? '')}
                         >
                           📧 초대 발송
                         </Button>
                       )}
                       <button
-                        onClick={() => handleDeleteEvaluator(evaluator.id!)}
+                        onClick={() => handleDeleteEvaluator(evaluator.id ?? '')}
                         className="text-red-500 hover:text-red-700 text-sm"
                         title="삭제"
                       >

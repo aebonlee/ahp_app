@@ -151,34 +151,35 @@ const FileUpload: React.FC<FileUploadProps> = ({
         );
         
         if (response.success && response.data) {
+          const uploadedFile = response.data;
           // Add to file list
           setState(prev => ({
             ...prev,
-            files: [...prev.files, response.data!],
+            files: [...prev.files, uploadedFile],
             uploadProgress: {
               ...prev.uploadProgress,
-              [response.data!.id]: {
-                file_id: response.data!.id,
+              [uploadedFile.id]: {
+                file_id: uploadedFile.id,
                 progress_percentage: 100,
-                bytes_uploaded: response.data!.file_size,
-                total_bytes: response.data!.file_size,
+                bytes_uploaded: uploadedFile.file_size,
+                total_bytes: uploadedFile.file_size,
                 status: 'completed'
               }
             }
           }));
-          
+
           // Clean up progress
           setTimeout(() => {
             setState(prev => {
               const newProgress = { ...prev.uploadProgress };
-              delete newProgress[response.data!.id];
+              delete newProgress[uploadedFile.id];
               return { ...prev, uploadProgress: newProgress };
             });
-            fileUploadUtils.clearUploadProgress(response.data!.id);
+            fileUploadUtils.clearUploadProgress(uploadedFile.id);
           }, 2000);
-          
+
           setSuccess(`파일 업로드 완료: ${file.name}`);
-          onFileUploaded?.(response.data!);
+          onFileUploaded?.(uploadedFile);
         } else {
           throw new Error(response.error || '파일 업로드에 실패했습니다.');
         }

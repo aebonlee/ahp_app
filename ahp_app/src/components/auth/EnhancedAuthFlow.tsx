@@ -169,10 +169,10 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
       // Check if admin needs service selection
       if (authState.isAdmin) {
         setCurrentStep('admin-select');
-      } else {
+      } else if (authState.user) {
         // Complete authentication
         const finalTokens = verifyResponse.data?.tokens || authState.tempTokens || {};
-        onAuthSuccess(authState.user!, finalTokens);
+        onAuthSuccess(authState.user, finalTokens);
       }
       
     } catch (err: unknown) {
@@ -193,8 +193,8 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
       
       if (authState.isAdmin) {
         setCurrentStep('admin-select');
-      } else {
-        onAuthSuccess(authState.user!, authState.tempTokens ?? {});
+      } else if (authState.user) {
+        onAuthSuccess(authState.user, authState.tempTokens ?? {});
       }
 
     } catch (err: unknown) {
@@ -303,8 +303,8 @@ const EnhancedAuthFlow: React.FC<EnhancedAuthFlowProps> = ({
                     // Skip 2FA setup for now
                     if (authState.isAdmin) {
                       setCurrentStep('admin-select');
-                    } else {
-                      onAuthSuccess(authState.user!, authState.tempTokens ?? {});
+                    } else if (authState.user) {
+                      onAuthSuccess(authState.user, authState.tempTokens ?? {});
                     }
                   }}
                   className="text-sm text-gray-600 hover:text-gray-800 underline"

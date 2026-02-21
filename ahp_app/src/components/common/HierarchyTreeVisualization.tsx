@@ -153,7 +153,7 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
             </div>
             {hasChildren && (
               <span className="text-xs text-gray-600">
-                ({node.children!.length}개 하위)
+                ({node.children?.length ?? 0}개 하위)
               </span>
             )}
           </div>
@@ -162,8 +162,8 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
         {/* 하위 노드들 렌더링 */}
         {hasChildren && (
           <div className="relative">
-            {node.children!.map((child, childIndex) => {
-              const childIsLast = [...isLast, childIndex === node.children!.length - 1];
+            {node.children?.map((child, childIndex) => {
+              const childIsLast = [...isLast, childIndex === (node.children?.length ?? 0) - 1];
               return renderVerticalNode(child, childIndex, childIsLast);
             })}
           </div>
@@ -225,25 +225,25 @@ const HierarchyTreeVisualization: React.FC<HierarchyTreeVisualizationProps> = ({
             </div>
             
             {/* 자식 노드가 여러 개일 때 가로 연결선 */}
-            {node.children!.length > 1 && (
+            {(node.children?.length ?? 0) > 1 && (
               <div className="absolute top-0 left-0 right-0 flex justify-center -mt-4">
-                <div 
-                  className="h-px bg-gray-300" 
+                <div
+                  className="h-px bg-gray-300"
                   style={{
-                    width: `${(node.children!.length - 1) * 150}px`,
+                    width: `${((node.children?.length ?? 0) - 1) * 150}px`,
                     marginLeft: '75px',
                     marginRight: '75px'
                   }}
                 />
               </div>
             )}
-            
+
             {/* 각 자식 노드로의 세로 연결선 */}
             <div className="flex space-x-6 justify-center">
-              {node.children!.map((child, index) => (
+              {node.children?.map((child, index) => (
                 <div key={child.id} className="relative">
                   {/* 가로선에서 각 자식으로의 세로 연결선 */}
-                  {node.children!.length > 1 && (
+                  {(node.children?.length ?? 0) > 1 && (
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-px h-4 bg-gray-300 -mt-4"></div>
                   )}
                   {renderHorizontalNode(child)}

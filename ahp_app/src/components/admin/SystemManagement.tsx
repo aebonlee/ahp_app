@@ -275,12 +275,13 @@ const SystemManagement: React.FC<SystemManagementProps> = ({
             
             // Monitor backup progress if task_id is provided
             if (response.data?.task_id) {
+              const taskId = response.data.task_id;
               setRunningTasks(prev => {
                 const newSet = new Set(prev);
-                newSet.add(response.data!.task_id);
+                newSet.add(taskId);
                 return newSet;
               });
-              monitorTask(response.data?.task_id);
+              monitorTask(taskId);
             }
             
             // Refresh backup list

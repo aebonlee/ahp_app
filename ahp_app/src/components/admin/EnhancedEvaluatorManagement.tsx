@@ -514,7 +514,7 @@ ${inviteData.message}
                       <div className="text-xs text-gray-400 mt-1 flex items-center space-x-2">
                         <span>평가 링크: {evaluator.shortLink}</span>
                         <button
-                          onClick={() => handleCopyLink(evaluator.shortLink!)}
+                          onClick={() => handleCopyLink(evaluator.shortLink ?? '')}
                           className="text-blue-600 hover:text-blue-800"
                         >
                           복사

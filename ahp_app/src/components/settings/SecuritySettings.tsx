@@ -161,7 +161,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
         throw new Error(response.error || '백업 코드 생성에 실패했습니다.');
       }
 
-      setNewBackupCodes(response.data!.backup_codes);
+      setNewBackupCodes(response.data?.backup_codes ?? []);
       setShowBackupCodes(true);
       setSuccess('새로운 백업 코드가 생성되었습니다.');
       

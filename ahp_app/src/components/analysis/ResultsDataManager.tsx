@@ -117,7 +117,11 @@ const ResultsDataManager: React.FC<ResultsDataManagerProps> = ({
         setError(summaryRes.error);
         return;
       }
-      const summary = summaryRes.data!;
+      if (!summaryRes.data) {
+        setError('요약 데이터를 불러올 수 없습니다.');
+        return;
+      }
+      const summary = summaryRes.data;
 
       if (!summary.is_ready_for_analysis) {
         setError('완료된 평가가 없습니다. 평가를 완료한 후 결과를 확인해주세요.');
@@ -134,7 +138,11 @@ const ResultsDataManager: React.FC<ResultsDataManagerProps> = ({
         setError(groupRes.error);
         return;
       }
-      const group = groupRes.data!;
+      if (!groupRes.data) {
+        setError('가중치 데이터를 불러올 수 없습니다.');
+        return;
+      }
+      const group = groupRes.data;
 
       // 3) 기준 가중치 맵 생성
       const criteriaWeights = group.weights.reduce((acc, w) => {

@@ -54,7 +54,7 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
 
     // 배터리 API 체크 (지원하는 브라우저에서)
     if ('getBattery' in navigator) {
-      navigator.getBattery!().then((battery) => {
+      (navigator as Navigator & { getBattery: () => Promise<BatteryManager> }).getBattery().then((battery) => {
         const updateBatteryStatus = () => {
           // 배터리 부족 시 particles 비활성화
           if (battery.level < 0.2 && !battery.charging) {

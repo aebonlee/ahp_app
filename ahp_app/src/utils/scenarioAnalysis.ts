@@ -344,8 +344,9 @@ export const generateWhatIfScenarios = (
 
   // 기준 가중치 변경
   if (changes.criteriaWeightChanges) {
-    Object.keys(changes.criteriaWeightChanges).forEach(critId => {
-      newScenario.criteriaWeights[critId] = changes.criteriaWeightChanges![critId];
+    const criteriaWeightChanges = changes.criteriaWeightChanges;
+    Object.keys(criteriaWeightChanges).forEach(critId => {
+      newScenario.criteriaWeights[critId] = criteriaWeightChanges[critId];
     });
 
     // 가중치 정규화
@@ -359,17 +360,19 @@ export const generateWhatIfScenarios = (
 
   // 대안 점수 변경
   if (changes.alternativeScoreChanges) {
-    Object.keys(changes.alternativeScoreChanges).forEach(altId => {
-      Object.keys(changes.alternativeScoreChanges![altId]).forEach(critId => {
-        newScenario.alternativeScores[altId][critId] = changes.alternativeScoreChanges![altId][critId];
+    const alternativeScoreChanges = changes.alternativeScoreChanges;
+    Object.keys(alternativeScoreChanges).forEach(altId => {
+      Object.keys(alternativeScoreChanges[altId]).forEach(critId => {
+        newScenario.alternativeScores[altId][critId] = alternativeScoreChanges[altId][critId];
       });
     });
   }
 
   // 새 대안 추가
   if (changes.newAlternatives) {
-    Object.keys(changes.newAlternatives).forEach(altId => {
-      newScenario.alternativeScores[altId] = changes.newAlternatives![altId];
+    const newAlternatives = changes.newAlternatives;
+    Object.keys(newAlternatives).forEach(altId => {
+      newScenario.alternativeScores[altId] = newAlternatives[altId];
     });
   }
 

@@ -456,7 +456,7 @@ const InteractiveCriteriaEditor: React.FC<InteractiveCriteriaEditorProps> = ({
 
         {hasChildren && node.isExpanded && (
           <div className="mt-2">
-            {node.children!.map(child => renderNode(child, depth + 1))}
+            {node.children?.map(child => renderNode(child, depth + 1))}
           </div>
         )}
       </div>

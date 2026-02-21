@@ -200,7 +200,7 @@ const HierarchyBuilder: React.FC<HierarchyBuilderProps> = ({
       name,
       description,
       type: newNodeDialog.type,
-      level: newNodeDialog.parentId === null ? 1 : (findNodeById(hierarchy, newNodeDialog.parentId!)?.level || 0) + 1,
+      level: newNodeDialog.parentId === null ? 1 : (findNodeById(hierarchy, newNodeDialog.parentId as string)?.level || 0) + 1,
       parentId: newNodeDialog.parentId,
       children: [],
       order: 0,

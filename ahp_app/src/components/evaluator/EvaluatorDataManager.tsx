@@ -53,7 +53,7 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
       const evaluatorsData = await dataService.getEvaluators(projectId);
 
       const convertedEvaluators: Evaluator[] = evaluatorsData.map(data => ({
-        id: data.id!,
+        id: data.id ?? '',
         name: data.name,
         email: data.email,
         access_key: data.access_key,
@@ -118,7 +118,7 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
       
       if (createdEvaluator) {
         const newEval: Evaluator = {
-          id: createdEvaluator.id!,
+          id: createdEvaluator.id ?? '',
           name: createdEvaluator.name,
           email: createdEvaluator.email,
           access_key: createdEvaluator.access_key,

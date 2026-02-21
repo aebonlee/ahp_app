@@ -514,7 +514,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     try {
       if (editingProject) {
         // 편집 모드 - 프로젝트 수정
-        const updatedProject = await dataService.updateProject(editingProject.id!, {
+        const updatedProject = await dataService.updateProject(editingProject.id ?? '', {
           title: projectForm.title,
           description: projectForm.description,
           objective: projectForm.objective,
