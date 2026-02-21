@@ -339,26 +339,6 @@ class SessionService {
     return authService.isAuthenticated();
   }
 
-  // 세션 새로고침
-  private async refreshSession(): Promise<void> {
-    try {
-      const token = authService.getAccessToken();
-      if (!token) {
-        return;
-      }
-
-      await fetch(`${API_BASE_URL}/api/service/auth/profile/`, {
-        credentials: 'include',
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-    } catch (error) {
-      console.error('세션 새로고침 실패:', error);
-    }
-  }
 }
 
 // 싱글톤 인스턴스 내보내기

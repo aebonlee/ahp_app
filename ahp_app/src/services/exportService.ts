@@ -71,38 +71,21 @@ const exportService = {
     if (options.includeWeights) fields.push('weight');
     fields.push('parent');
 
-    if (options.format === 'csv') {
-      const csvContent = [
-        fields.join(','),
-        ...flatData.map(row => 
-          fields.map(field => `"${row[field]}"`).join(',')
-        )
-      ].join('\n');
+    // Excel export disabled; always output as CSV
+    const csvContent = [
+      fields.join(','),
+      ...flatData.map(row =>
+        fields.map(field => `"${row[field]}"`).join(',')
+      )
+    ].join('\n');
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `criteria_${projectId}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } else {
-      // Excel functionality temporarily disabled for security
-      const csvContent = [
-        fields.join(','),
-        ...flatData.map(row =>
-          fields.map(field => `"${row[field]}"`).join(',')
-        )
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `criteria_${projectId}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `criteria_${projectId}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   },
 
   async exportResults(projectId: string, format: 'csv' | 'excel', results: AhpResult[]) {
@@ -112,36 +95,19 @@ const exportService = {
       rank: result.rank
     }));
 
-    if (format === 'csv') {
-      const csvContent = [
-        'Alternative,Score,Rank',
-        ...flatData.map(row => 
-          `"${row.alternative}",${row.score},${row.rank}`
-        )
-      ].join('\n');
+    // Excel export disabled; always output as CSV
+    const csvContent = [
+      'Alternative,Score,Rank',
+      ...flatData.map(row => `"${row.alternative}",${row.score},${row.rank}`)
+    ].join('\n');
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `results_${projectId}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } else {
-      // Excel functionality temporarily disabled for security
-      const csvContent = [
-        'Alternative,Score,Rank',
-        ...flatData.map(result => `"${result.alternative}","${result.score}","${result.rank}"`)
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `results_${projectId}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `results_${projectId}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   },
 
   async exportAlternatives(projectId: string, alternatives: AlternativeExport[], format: 'csv' | 'excel') {
@@ -151,36 +117,19 @@ const exportService = {
       description: alt.description || ''
     }));
 
-    if (format === 'csv') {
-      const csvContent = [
-        'ID,Name,Description',
-        ...flatData.map(row => 
-          `"${row.id}","${row.name}","${row.description}"`
-        )
-      ].join('\n');
+    // Excel export disabled; always output as CSV
+    const csvContent = [
+      'ID,Name,Description',
+      ...flatData.map(row => `"${row.id}","${row.name}","${row.description}"`)
+    ].join('\n');
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `alternatives_${projectId}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } else {
-      // Excel functionality temporarily disabled for security
-      const csvContent = [
-        'ID,Name,Description',
-        ...flatData.map(alt => `"${alt.id}","${alt.name}","${alt.description}"`)
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `alternatives_${projectId}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `alternatives_${projectId}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 };
 

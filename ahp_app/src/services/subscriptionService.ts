@@ -84,10 +84,6 @@ class SubscriptionService {
     return this.request<SubscriptionUsage>('/api/subscriptions/usage/current/');
   }
 
-  async updateUsage(userId: string, resource: string, increment: number): Promise<void> {
-    // 백엔드에서 자동으로 처리되므로 별도 API 불필요
-  }
-
   async checkLimits(userId: string, resource: string, required: number = 1): Promise<boolean> {
     const response = await this.request<{ allowed: boolean; remaining: number }>('/api/subscriptions/check-limits/', {
       method: 'POST',
