@@ -205,7 +205,7 @@ export const anonymousEvaluationService = {
       ...comparisonData,
       created_at: new Date().toISOString(),
       response_time_ms: getResponseTime(),
-      ip_address: await getUserIpAddress()
+      ip_address: undefined
     };
 
     const response = await makeAnonymousEvalRequest<PairwiseComparisonResult>('/api/evaluation/anonymous/comparisons/', {
@@ -573,15 +573,6 @@ function clearLocalSessionData(): void {
 function getResponseTime(): number {
   // This would track the time since the comparison was displayed
   return Date.now() - (window.comparisonStartTime ?? 0);
-}
-
-async function getUserIpAddress(): Promise<string | undefined> {
-  try {
-    // In production, this would be handled by the backend
-    return undefined;
-  } catch {
-    return undefined;
-  }
 }
 
 export default anonymousEvaluationService;
