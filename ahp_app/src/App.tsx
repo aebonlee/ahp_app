@@ -163,11 +163,6 @@ function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedProjectTitle, setSelectedProjectTitle] = useState<string>('');
   
-  // 평가자 설문조사 관련 상태 (현재 미사용)
-  // const [isEvaluatorSurvey, setIsEvaluatorSurvey] = useState(false);
-  // const [surveyId, setSurveyId] = useState<string>('');
-  // const [surveyToken, setSurveyToken] = useState<string>('');
-
   // 프로젝트 삭제 확인 모달 상태
   const [pendingDeleteProjectId, setPendingDeleteProjectId] = useState<string | null>(null);
 
@@ -413,13 +408,6 @@ function App() {
       setIsNavigationReady(true);
     }
   };
-
-  // DB 연결 실패 시 대체 모드는 현재 미사용
-  // const fallbackToDemoMode = () => {
-  //   setBackendStatus('unavailable');
-  //   setShowApiErrorModal(false);
-  //   setIsNavigationReady(true);
-  // };
 
   // API 연결 상태 체크 (백그라운드에서 실행)
   const checkApiConnection = async () => {
@@ -1364,16 +1352,6 @@ function App() {
         }
 
       case 'evaluator-survey':
-        // 평가자 전용 설문조사 페이지 (현재 미사용)
-        // if (isEvaluatorSurvey && surveyId && surveyToken) {
-        //   return (
-        //     <EvaluatorSurveyPage 
-        //       surveyId={surveyId}
-        //       token={surveyToken}
-        //     />
-        //   );
-        // }
-        // 평가자 설문 정보가 없으면 대시보드로
         setActiveTab('personal-service');
         return null;
 

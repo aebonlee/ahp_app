@@ -59,25 +59,9 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
     }
   }, [user]);
 
-  useEffect(() => {
+  const saveFavorites = (newFavorites: FavoriteMenuItem[]) => {
     if (user) {
-      // localStorage 제거됨 - 사용자 선호 API에서 즐겨찾기 데이터 로드
-      // TODO: API에서 사용자별 즐겨찾기 데이터 조회
-      // loadUserFavoritesFromAPI(user.id);
-    }
-  }, [user]);
-
-  const saveFavorites = async (newFavorites: FavoriteMenuItem[]) => {
-    if (user) {
-      // localStorage 제거됨 - API로 사용자 즐겨찾기 저장
-      try {
-        // TODO: API로 사용자 즐겨찾기 저장
-        // await saveUserFavoritesToAPI(user.id, newFavorites);
-        setFavorites(newFavorites);
-      } catch (error) {
-        // 에러 시에도 UI 업데이트
-        setFavorites(newFavorites);
-      }
+      setFavorites(newFavorites);
     }
   };
 

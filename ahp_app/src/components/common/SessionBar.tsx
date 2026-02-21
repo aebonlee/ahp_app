@@ -24,12 +24,6 @@ const SessionBar: React.FC = () => {
       if (sessionValid) {
         const remaining = await sessionService.getRemainingTime();
         setRemainingTime(remaining);
-        
-        // TODO: 서버 API에서 세션 정보 조회
-        // setSessionInfo({
-        //   loginTime: serverSessionInfo.loginTime,
-        //   lastActivity: serverSessionInfo.lastActivity
-        // });
       }
     };
 
