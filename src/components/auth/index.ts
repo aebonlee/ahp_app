@@ -10,7 +10,6 @@ export { default as AdminSelectPage } from './AdminSelectPage';
 
 // Two-Factor Authentication
 export { default as TwoFactorAuth } from './TwoFactorAuth';
-export { default as EnhancedAuthFlow } from './EnhancedAuthFlow';
 
 // Types
 export type { TwoFactorSetupResponse, TwoFactorVerificationRequest, TwoFactorStatus } from '../../services/twoFactorService';
