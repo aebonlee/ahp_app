@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// import Card from '../common/Card';
 import Button from '../common/Button';
 import GroupWeightAnalysis from './GroupWeightAnalysis';
 import SensitivityAnalysis from './SensitivityAnalysis';

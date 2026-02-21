@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import ScreenID from '../common/ScreenID';
 import ConsistencyPanel from '../evaluation/ConsistencyPanel';
-// import { DEMO_COMPARISONS } from '../../data/demoData'; // 현재 미사용
 import { MESSAGES } from '../../constants/messages';
 import { SCREEN_IDS } from '../../constants/screenIds';
 import { buildComparisonMatrix } from '../../utils/ahpCalculator';

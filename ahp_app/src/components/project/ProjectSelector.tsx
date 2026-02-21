@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-// import { API_BASE_URL } from '../../config/api';
 import { EvaluationMode } from '../evaluation/EvaluationModeSelector';
 import { WorkflowStage } from '../workflow/WorkflowStageIndicator';
 import dataService from '../../services/dataService';

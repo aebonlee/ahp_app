@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// useEffect - 현재 미사용
 import Card from '../common/Card';
 import Button from '../common/Button';
 import ScreenID from '../common/ScreenID';
@@ -35,7 +34,6 @@ const ProjectSelection: React.FC<ProjectSelectionProps> = ({
   };
 
   const [assignedProjects] = useState<AssignedProject[]>([
-  // setAssignedProjects - 현재 미사용
     {
       id: '1',
       title: 'IT 시스템 선택 프로젝트',
