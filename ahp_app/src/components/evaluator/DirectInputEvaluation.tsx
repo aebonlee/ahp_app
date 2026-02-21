@@ -141,19 +141,14 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
     );
   };
 
-  const handleNextGroup = async () => {
+  const handleNextGroup = () => {
     const updatedGroups = [...evaluationGroups];
     updatedGroups[currentGroupIndex].completed = true;
     setEvaluationGroups(updatedGroups);
 
-    // TODO: 실제 API 호출로 그룹 결과 저장
-    // await apiService.evaluationAPI.saveDirectInput({ projectId, groupName: currentGroup.name, ... });
-
     if (currentGroupIndex < evaluationGroups.length - 1) {
       setCurrentGroupIndex(currentGroupIndex + 1);
     } else {
-      // TODO: 실제 API 호출로 최종 결과 저장
-      // await apiService.evaluationAPI.saveFinalDirectInput({ projectId, groups: updatedGroups, ... });
       onComplete();
     }
   };
