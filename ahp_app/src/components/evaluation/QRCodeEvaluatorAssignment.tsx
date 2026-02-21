@@ -154,41 +154,8 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
     printWindow.print();
   };
 
-  // Monitor active sessions (simulate real-time updates)
-  useEffect(() => {
-    const checkActiveSessions = async () => {
-      // In production, this would check the actual database
-      // For now, simulate some active sessions
-      const updatedSessions = sessions.map((session, index) => {
-        // Simulate random progress
-        if (Math.random() > 0.7 && session.status === 'pending') {
-          return {
-            ...session,
-            status: 'active' as const,
-            evaluatorName: `평가자 ${index + 1}`,
-            startedAt: new Date().toISOString(),
-            progress: Math.floor(Math.random() * 50) + 10
-          };
-        }
-        if (session.status === 'active' && Math.random() > 0.9) {
-          return {
-            ...session,
-            status: 'completed' as const,
-            progress: 100,
-            completedAt: new Date().toISOString()
-          };
-        }
-        return session;
-      });
-      
-      if (JSON.stringify(updatedSessions) !== JSON.stringify(sessions)) {
-        setSessions(updatedSessions);
-      }
-    };
-
-    const interval = setInterval(checkActiveSessions, 5000);
-    return () => clearInterval(interval);
-  }, [sessions]);
+  // TODO: replace with real API polling for session status
+  // e.g. setInterval(() => api.getSessionStatuses(sessions.map(s => s.sessionId)), 5000)
 
   // Get status color
   const getStatusColor = (status: string) => {

@@ -377,12 +377,7 @@ const ModelVisualization: React.FC<ModelVisualizationProps> = ({
               </tr>
             </thead>
             <tbody>
-              {alternatives.map(alternative => {
-                const scores = criteria.map(criterion => Math.random() * 0.5 + 0.25); // 임시 점수
-                const totalScore = scores.reduce((sum, score, index) => 
-                  sum + score * (criteria[index].weight || 0), 0);
-                
-                return (
+              {alternatives.map(alternative => (
                   <tr
                     key={alternative.id}
                     className="hover:bg-gray-50 cursor-pointer"
@@ -391,28 +386,19 @@ const ModelVisualization: React.FC<ModelVisualizationProps> = ({
                     <td className="border border-gray-300 px-4 py-2 font-medium">
                       {alternative.name}
                     </td>
-                    {scores.map((score, index) => (
+                    {criteria.map((_, index) => (
                       <td
                         key={index}
-                        className="border border-gray-300 px-4 py-2 text-center"
+                        className="border border-gray-300 px-4 py-2 text-center text-gray-400"
                       >
-                        <div
-                          className="w-full h-6 flex items-center justify-center rounded"
-                          style={{
-                            backgroundColor: `rgba(59, 130, 246, ${score})`,
-                            color: score > 0.5 ? 'white' : 'black'
-                          }}
-                        >
-                          {score.toFixed(3)}
-                        </div>
+                        —
                       </td>
                     ))}
-                    <td className="border border-gray-300 px-4 py-2 text-center font-bold">
-                      {totalScore.toFixed(3)}
+                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-400">
+                      —
                     </td>
                   </tr>
-                );
-              })}
+              ))}
             </tbody>
           </table>
         </div>
