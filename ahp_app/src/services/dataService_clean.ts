@@ -7,102 +7,82 @@ import { generateUUID } from '../utils/uuid';
  * localStorage나 mock 데이터 없이 순수 백엔드 API만 사용
  */
 class CleanDataService {
-  
+
   // === 프로젝트 관리 ===
   async getProjects(): Promise<ProjectData[]> {
-    try {
-      const response = await projectApi.getProjects();
+    const response = await projectApi.getProjects();
 
-      if (response.success && response.data) {
-        // projectApi에서 이미 정규화된 데이터를 반환하므로 직접 사용
-        const projects = Array.isArray(response.data) ? response.data : [];
+    if (response.success && response.data) {
+      // projectApi에서 이미 정규화된 데이터를 반환하므로 직접 사용
+      const projects = Array.isArray(response.data) ? response.data : [];
 
-        // 각 프로젝트 데이터 무결성 검증 (정규화된 데이터에 대해)
-        const validProjects = projects.filter((project: ProjectData) => {
-          const isValid = project &&
-                         typeof project.id !== 'undefined' &&
-                         typeof project.title === 'string' &&
-                         typeof project.status === 'string';
+      // 각 프로젝트 데이터 무결성 검증 (정규화된 데이터에 대해)
+      const validProjects = projects.filter((project: ProjectData) => {
+        const isValid = project &&
+                       typeof project.id !== 'undefined' &&
+                       typeof project.title === 'string' &&
+                       typeof project.status === 'string';
 
-          return isValid;
-        });
+        return isValid;
+      });
 
-        return validProjects;
-      }
-      return [];
-    } catch (error) {
-      throw error;
+      return validProjects;
     }
+    return [];
   }
 
   async getProject(id: string): Promise<ProjectData | null> {
-    try {
-      const response = await projectApi.getProject(id);
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return null;
-    } catch (error) {
-      throw error;
+    const response = await projectApi.getProject(id);
+    if (response.success && response.data) {
+      return response.data;
     }
+    return null;
   }
 
   async createProject(data: Omit<ProjectData, 'id'>): Promise<ProjectData | null> {
-    try {
-      const response = await projectApi.createProject(data);
-      if (response.success && response.data) {
-        // ID가 응답에 없으면 목록을 다시 조회해서 새 프로젝트 찾기
-        if (!response.data.id) {
-          const afterResponse = await this.getProjects();
+    const response = await projectApi.createProject(data);
+    if (response.success && response.data) {
+      // ID가 응답에 없으면 목록을 다시 조회해서 새 프로젝트 찾기
+      if (!response.data.id) {
+        const afterResponse = await this.getProjects();
 
-          // 새로 생성된 프로젝트 찾기 (제목으로 매칭)
-          const newProject = afterResponse.find(p =>
-            p.title === data.title &&
-            new Date(p.created_at || '').getTime() > Date.now() - 60000 // 1분 내 생성
-          );
+        // 새로 생성된 프로젝트 찾기 (제목으로 매칭)
+        const newProject = afterResponse.find(p =>
+          p.title === data.title &&
+          new Date(p.created_at || '').getTime() > Date.now() - 60000 // 1분 내 생성
+        );
 
-          if (newProject) {
-            return newProject;
-          } else {
-            // ID 없이라도 생성된 데이터 반환
-            return {
-              ...response.data,
-              id: generateUUID(), // 유효한 UUID 생성
-              created_at: new Date().toISOString()
-            } as ProjectData;
-          }
+        if (newProject) {
+          return newProject;
+        } else {
+          // ID 없이라도 생성된 데이터 반환
+          return {
+            ...response.data,
+            id: generateUUID(), // 유효한 UUID 생성
+            created_at: new Date().toISOString()
+          } as ProjectData;
         }
-
-        return response.data;
       }
-      throw new Error(response.error || '프로젝트 생성에 실패했습니다.');
-    } catch (error) {
-      throw error;
+
+      return response.data;
     }
+    throw new Error(response.error || '프로젝트 생성에 실패했습니다.');
   }
 
   async updateProject(id: string, data: Partial<ProjectData>): Promise<ProjectData | null> {
-    try {
-      const response = await projectApi.updateProject(id, data);
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return null;
-    } catch (error) {
-      throw error;
+    const response = await projectApi.updateProject(id, data);
+    if (response.success && response.data) {
+      return response.data;
     }
+    return null;
   }
 
   async deleteProject(id: string): Promise<boolean> {
-    try {
-      const response = await projectApi.deleteProject(id);
-      if (response.success) {
-        return true;
-      }
-      return false;
-    } catch (error) {
-      throw error;
+    const response = await projectApi.deleteProject(id);
+    if (response.success) {
+      return true;
     }
+    return false;
   }
 
   async getTrashedProjects(): Promise<ProjectData[]> {
@@ -131,27 +111,19 @@ class CleanDataService {
   }
 
   async restoreProject(id: string): Promise<boolean> {
-    try {
-      const response = await projectApi.restoreProject(id);
-      if (response.success) {
-        return true;
-      }
-      return false;
-    } catch (error) {
-      throw error;
+    const response = await projectApi.restoreProject(id);
+    if (response.success) {
+      return true;
     }
+    return false;
   }
 
   async permanentDeleteProject(id: string): Promise<boolean> {
-    try {
-      const response = await projectApi.permanentDeleteProject(id);
-      if (response.success) {
-        return true;
-      }
-      return false;
-    } catch (error) {
-      throw error;
+    const response = await projectApi.permanentDeleteProject(id);
+    if (response.success) {
+      return true;
     }
+    return false;
   }
 
   // === 기준 관리 ===
@@ -296,19 +268,6 @@ class CleanDataService {
     }
   }
 
-  // 메모리 데이터 관리 헬퍼 메서드들 (더 이상 사용하지 않음)
-  private memoryStorage: Record<string, unknown> = {};
-
-  private getMemoryData(key: string): unknown {
-    // Deprecated - 모든 데이터는 DB에서 직접 조회
-    return this.memoryStorage[key];
-  }
-
-  private setMemoryData(key: string, data: unknown): void {
-    // Deprecated - 모든 데이터는 DB에 직접 저장
-    this.memoryStorage[key] = data;
-  }
-
   async deleteCriteria(criteriaId: string, projectId?: string): Promise<boolean> {
     try {
       // Criteria API를 사용하여 삭제 (projectId도 전달)
@@ -368,57 +327,53 @@ class CleanDataService {
   }
 
   async createAlternative(data: Omit<AlternativeData, 'id'>): Promise<AlternativeData | null> {
-    try {
-      if (!data.project_id) {
-        throw new Error('프로젝트 ID가 필요합니다.');
-      }
+    if (!data.project_id) {
+      throw new Error('프로젝트 ID가 필요합니다.');
+    }
 
-      // Criteria API를 사용하여 type='alternative'로 생성
-      const criteriaData: Omit<CriteriaData, 'id'> = {
+    // Criteria API를 사용하여 type='alternative'로 생성
+    const criteriaData: Omit<CriteriaData, 'id'> = {
+      project_id: data.project_id,
+      name: data.name,
+      description: data.description,
+      position: data.position || 0,
+      parent_id: null, // 대안은 최상위 레벨
+      level: 0,
+      order: data.position || 0
+    };
+
+    // Criteria API를 통해 alternative 타입으로 생성
+    // Django 백엔드에서 type='alternative'로 처리됨
+    const response = await criteriaApi.createCriteria({
+      ...criteriaData,
+      type: 'alternative'
+    });
+
+    if (response.success && response.data) {
+      // CriteriaData를 AlternativeData로 변환
+      const newAlternative: AlternativeData = {
+        id: response.data.id,
         project_id: data.project_id,
-        name: data.name,
-        description: data.description,
-        position: data.position || 0,
-        parent_id: null, // 대안은 최상위 레벨
-        level: 0,
-        order: data.position || 0
+        name: response.data.name,
+        description: response.data.description || '',
+        position: response.data.position || response.data.order || 0,
+        cost: data.cost || 0
       };
 
-      // Criteria API를 통해 alternative 타입으로 생성
-      // Django 백엔드에서 type='alternative'로 처리됨
-      const response = await criteriaApi.createCriteria({
-        ...criteriaData,
-        type: 'alternative'
-      });
-
-      if (response.success && response.data) {
-        // CriteriaData를 AlternativeData로 변환
-        const newAlternative: AlternativeData = {
-          id: response.data.id,
-          project_id: data.project_id,
-          name: response.data.name,
-          description: response.data.description || '',
-          position: response.data.position || response.data.order || 0,
-          cost: data.cost || 0
-        };
-
-        // 프로젝트의 alternatives_count 업데이트
-        try {
-          const alternativesResponse = await this.getAlternatives(data.project_id);
-          await projectApi.updateProject(data.project_id, {
-            alternatives_count: alternativesResponse.length
-          });
-        } catch (updateError) {
-          // handle error silently
-        }
-
-        return newAlternative;
+      // 프로젝트의 alternatives_count 업데이트
+      try {
+        const alternativesResponse = await this.getAlternatives(data.project_id);
+        await projectApi.updateProject(data.project_id, {
+          alternatives_count: alternativesResponse.length
+        });
+      } catch (updateError) {
+        // handle error silently
       }
 
-      throw new Error('대안 생성에 실패했습니다.');
-    } catch (error) {
-      throw error;
+      return newAlternative;
     }
+
+    throw new Error('대안 생성에 실패했습니다.');
   }
 
   async deleteAlternative(alternativeId: string, projectId?: string): Promise<boolean> {
@@ -466,70 +421,66 @@ class CleanDataService {
   }
 
   async createEvaluator(data: Omit<EvaluatorData, 'id'>): Promise<EvaluatorData | null> {
-    try {
-      if (!data.project_id) {
-        throw new Error('프로젝트 ID가 필요합니다.');
-      }
-
-      // 프로젝트 조회
-      const projectResponse = await projectApi.getProject(data.project_id);
-
-      if (!projectResponse.success || !projectResponse.data) {
-        throw new Error(`프로젝트를 찾을 수 없습니다. (ID: ${data.project_id})`);
-      }
-
-      const currentProject = projectResponse.data;
-
-      // settings가 null이면 빈 객체로 초기화
-      const currentSettings = currentProject.settings || {};
-      const existingEvaluators = currentSettings.evaluators || [];
-
-      // 중복 검사
-      const isDuplicate = existingEvaluators.some((e: EvaluatorData) =>
-        e.email.toLowerCase() === data.email.toLowerCase()
-      );
-      if (isDuplicate) {
-        throw new Error('동일한 이메일의 평가자가 이미 존재합니다.');
-      }
-
-      // 새 평가자 생성 - 영어 이름과 이메일만 사용하여 인코딩 문제 방지
-      const newEvaluator: EvaluatorData = {
-        project_id: data.project_id,
-        name: data.name,
-        email: data.email,
-        id: `evaluator_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        access_key: `KEY_${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-        status: 'pending'
-      };
-
-      // 메타데이터 업데이트 - Django가 받을 수 있는 형태로 수정
-      const updatedEvaluators = [...existingEvaluators, newEvaluator];
-
-      // settings를 JSON 문자열로 변환 (Django JSONField 대응)
-      const newSettings = {
-        ...currentSettings, // currentProject.settings 대신 currentSettings 사용
-        evaluators: updatedEvaluators,
-        evaluators_count: updatedEvaluators.length
-      };
-
-      // Django 백엔드가 요구하는 필수 필드들을 포함하여 업데이트
-      const updateData = {
-        title: currentProject.title,
-        description: currentProject.description,
-        objective: currentProject.objective || '평가자 추가를 위한 업데이트', // objective는 필수 필드
-        settings: newSettings // JSON 객체 그대로 전송
-      };
-
-      const updateResponse = await projectApi.updateProject(data.project_id, updateData);
-
-      if (updateResponse.success) {
-        return newEvaluator;
-      }
-
-      throw new Error(`프로젝트 업데이트에 실패했습니다: ${updateResponse.error || '알 수 없는 오류'}`);
-    } catch (error) {
-      throw error;
+    if (!data.project_id) {
+      throw new Error('프로젝트 ID가 필요합니다.');
     }
+
+    // 프로젝트 조회
+    const projectResponse = await projectApi.getProject(data.project_id);
+
+    if (!projectResponse.success || !projectResponse.data) {
+      throw new Error(`프로젝트를 찾을 수 없습니다. (ID: ${data.project_id})`);
+    }
+
+    const currentProject = projectResponse.data;
+
+    // settings가 null이면 빈 객체로 초기화
+    const currentSettings = currentProject.settings || {};
+    const existingEvaluators = currentSettings.evaluators || [];
+
+    // 중복 검사
+    const isDuplicate = existingEvaluators.some((e: EvaluatorData) =>
+      e.email.toLowerCase() === data.email.toLowerCase()
+    );
+    if (isDuplicate) {
+      throw new Error('동일한 이메일의 평가자가 이미 존재합니다.');
+    }
+
+    // 새 평가자 생성 - 영어 이름과 이메일만 사용하여 인코딩 문제 방지
+    const newEvaluator: EvaluatorData = {
+      project_id: data.project_id,
+      name: data.name,
+      email: data.email,
+      id: `evaluator_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      access_key: `KEY_${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+      status: 'pending'
+    };
+
+    // 메타데이터 업데이트 - Django가 받을 수 있는 형태로 수정
+    const updatedEvaluators = [...existingEvaluators, newEvaluator];
+
+    // settings를 JSON 문자열로 변환 (Django JSONField 대응)
+    const newSettings = {
+      ...currentSettings,
+      evaluators: updatedEvaluators,
+      evaluators_count: updatedEvaluators.length
+    };
+
+    // Django 백엔드가 요구하는 필수 필드들을 포함하여 업데이트
+    const updateData = {
+      title: currentProject.title,
+      description: currentProject.description,
+      objective: currentProject.objective || '평가자 추가를 위한 업데이트', // objective는 필수 필드
+      settings: newSettings // JSON 객체 그대로 전송
+    };
+
+    const updateResponse = await projectApi.updateProject(data.project_id, updateData);
+
+    if (updateResponse.success) {
+      return newEvaluator;
+    }
+
+    throw new Error(`프로젝트 업데이트에 실패했습니다: ${updateResponse.error || '알 수 없는 오류'}`);
   }
 
   async deleteEvaluator(evaluatorId: string, projectId?: string): Promise<boolean> {
@@ -590,26 +541,18 @@ class CleanDataService {
   }
 
   // === 평가 데이터 관리 ===
-  async saveEvaluation(data: PairwiseComparisonData): Promise<any> {
-    try {
-      const response = await evaluationApi.savePairwiseComparison(data);
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return null;
-    } catch (error) {
-      throw error;
+  async saveEvaluation(data: PairwiseComparisonData): Promise<unknown> {
+    const response = await evaluationApi.savePairwiseComparison(data);
+    if (response.success && response.data) {
+      return response.data;
     }
+    return null;
   }
 
   // === 오프라인 모드 제거 ===
   isOfflineMode(): boolean {
     return false; // 항상 온라인 모드, 실제 DB만 사용
   }
-
-  // === localStorage 완전 제거됨 ===
-  // 이전에 localStorage 정리 기능이 있었으나 완전히 제거됨
-  // 모든 데이터는 Django 백엔드 API를 통해서만 처리
 }
 
 // 싱글톤 인스턴스 생성 및 내보내기
