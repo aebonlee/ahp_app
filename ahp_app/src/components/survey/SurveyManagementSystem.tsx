@@ -344,7 +344,6 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
                 variant="outline" 
                 size="sm"
                 onClick={() => {
-                  // TODO: 가이드 PDF 다운로드
                   showActionMessage('info', '설문조사 가이드 PDF 다운로드 기능은 준비 중입니다.');
                 }}
               >

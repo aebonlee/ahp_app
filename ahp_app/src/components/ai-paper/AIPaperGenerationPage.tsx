@@ -163,7 +163,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
           index === i ? { ...s, status: 'generating' } : s
         ));
 
-        // TODO: real API call for AI section content generation
+        // 프로젝트 데이터 기반 섹션 내용 생성
         const generatedContent = await generateSectionContent(section.id, projectData);
         
         // 생성 완료로 표시

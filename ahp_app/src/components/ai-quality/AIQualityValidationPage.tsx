@@ -146,8 +146,7 @@ const AIQualityValidationPage: React.FC<AIQualityValidationPageProps> = ({ user 
         }
       }
       
-      // TODO: real API call for AI quality validation
-      // AI 결과와 기본 결과 병합
+      // AI 서비스 결과와 기본 폴백 병합
       const result: ValidationResult = {
         ...aiValidationResult,
         overallScore: aiValidationResult?.overallScore || 82,

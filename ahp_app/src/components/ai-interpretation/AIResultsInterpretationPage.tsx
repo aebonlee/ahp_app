@@ -199,7 +199,7 @@ const AIResultsInterpretationPage: React.FC<AIResultsInterpretationPageProps> = 
         }
       }
       
-      // TODO: real API call for AI insights generation
+      // 정적 인사이트 (분석 결과 기반 템플릿)
       const insights: Insight[] = [
         {
           type: 'strength',

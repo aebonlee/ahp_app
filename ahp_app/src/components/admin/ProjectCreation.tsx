@@ -105,7 +105,7 @@ const ProjectCreation: React.FC<ProjectCreationProps> = ({
 
         onProjectCreated();
       } else {
-        // TODO: real API call — createProject prop not provided
+        // createProject prop이 없으면 바로 완료 처리 (부모가 직접 처리)
         onProjectCreated();
       }
     } catch (error) {

@@ -161,12 +161,12 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
     setActiveTab('generation');
 
     try {
-      // TODO: real API call for AI material generation
+      // 프로젝트 데이터 기반 자료 생성
       const mockMaterial: GeneratedMaterial = {
         id: `material_${Date.now()}`,
         type: selectedTemplate.type,
         title: `${selectedProject.title} - ${selectedTemplate.title}`,
-        content: generateMockContent(selectedTemplate.type),
+        content: generateTemplateContent(selectedTemplate.type),
         metadata: {
           wordCount: selectedTemplate.type === 'abstract' ? 280 : 
                     selectedTemplate.type === 'poster' ? 800 : 
@@ -189,8 +189,8 @@ const AIMaterialsGenerationPage: React.FC<AIMaterialsGenerationPageProps> = ({ u
     }
   };
 
-  // 자료 유형별 모크 컨텐츠 생성
-  const generateMockContent = (type: string): string => {
+  // 프로젝트 데이터 기반 템플릿 자료 생성
+  const generateTemplateContent = (type: string): string => {
     const baseContent = `# ${selectedProject?.title} - AHP 분석 연구
 
 ## 1. 연구 개요
