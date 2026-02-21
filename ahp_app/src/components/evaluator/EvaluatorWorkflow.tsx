@@ -81,8 +81,8 @@ const EvaluatorWorkflow: React.FC<EvaluatorWorkflowProps> = ({
 
       setProject(projectData);
       calculateProgress();
-    } catch (err: any) {
-      const errMsg: string = err?.message || '';
+    } catch (err: unknown) {
+      const errMsg: string = err instanceof Error ? err.message : '';
       if (errMsg.includes('인증') || errMsg.includes('권한') || errMsg.includes('로그인')) {
         setNeedsLogin(true);
       } else {

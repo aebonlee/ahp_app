@@ -14,6 +14,18 @@ interface Criterion {
   order?: number;
 }
 
+interface ParsedCriterion {
+  name: string;
+  level: number;
+  description?: string;
+}
+
+interface ParseResult {
+  success: boolean;
+  criteria: ParsedCriterion[];
+  errors: string[];
+}
+
 interface BulkCriteriaInputProps {
   onImport: (criteria: Criterion[]) => void;
   onCancel: () => void;
@@ -27,7 +39,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 }) => {
   const [inputText, setInputText] = useState('');
   const [activeTab, setActiveTab] = useState<'input' | 'examples'>('input');
-  const [parseResult, setParseResult] = useState<any>(null);
+  const [parseResult, setParseResult] = useState<ParseResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
@@ -112,7 +124,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
   };
 
   // 평면 구조로 변환 (CriteriaManagement에서 기대하는 형식)
-  const convertParsedCriteriaFlat = (parsedCriteria: any[]): Criterion[] => {
+  const convertParsedCriteriaFlat = (parsedCriteria: ParsedCriterion[]): Criterion[] => {
     const allCriteria: Criterion[] = [];
     const levelParentMap: Map<number, Criterion> = new Map();
     
@@ -158,7 +170,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
 
   // 계층구조로 변환 (미리보기용)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _convertParsedCriteria = (parsedCriteria: any[]): Criterion[] => {
+  const _convertParsedCriteria = (parsedCriteria: ParsedCriterion[]): Criterion[] => {
     const flatCriteria = convertParsedCriteriaFlat(parsedCriteria);
     return buildHierarchy(flatCriteria);
   };
@@ -348,10 +360,10 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                           {/* 레벨별 요약 */}
                           <div className="text-sm text-green-700 mb-3">
                             {(() => {
-                              const levelCounts = parseResult.criteria.reduce((acc: any, c: any) => {
+                              const levelCounts = parseResult.criteria.reduce((acc: Record<number, number>, c: ParsedCriterion) => {
                                 acc[c.level] = (acc[c.level] || 0) + 1;
                                 return acc;
-                              }, {});
+                              }, {} as Record<number, number>);
                               return Object.entries(levelCounts).map(([level, count]) => (
                                 <span key={level} className="inline-block mr-4">
                                   {`레벨 ${level}: ${count}개`}
@@ -361,7 +373,7 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
                           </div>
                           {/* 계층구조 표시 */}
                           <div className="bg-white rounded p-3 text-sm">
-                            {parseResult.criteria.map((criterion: any, index: number) => (
+                            {parseResult.criteria.map((criterion: ParsedCriterion, index: number) => (
                               <div key={index} className="py-1">
                                 <span style={{ paddingLeft: `${(criterion.level - 1) * 20}px` }}>
                                   {criterion.level === 1 && '📁 '}

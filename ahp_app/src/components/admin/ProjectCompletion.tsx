@@ -175,7 +175,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
 
   // ── 프로젝트 상태 업데이트 ───────────────────────────────────────
   const updateProjectStatus = async (status: 'completed' | 'archived') => {
-    const payload: any = { status };
+    const payload: Record<string, string> = { status };
     if (status === 'completed') payload.workflow_stage = 'completed';
     const res = await apiService.patch(`/api/service/projects/projects/${projectId}/`, payload);
     return res;
@@ -251,10 +251,11 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
           await handleExport();
           break;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string; status?: string[] } } };
       const msg =
-        err?.response?.data?.detail ??
-        err?.response?.data?.status?.[0] ??
+        e?.response?.data?.detail ??
+        e?.response?.data?.status?.[0] ??
         '작업 중 오류가 발생했습니다.';
       showActionMessage('error', msg);
     } finally {

@@ -11,7 +11,7 @@ interface VerificationSection {
   id: string;
   title: string;
   completed: boolean;
-  items?: any[];
+  items?: unknown[];
 }
 
 const CaptureVerificationDashboard: React.FC = () => {
@@ -26,8 +26,8 @@ const CaptureVerificationDashboard: React.FC = () => {
 
   const [checkedLabels, setCheckedLabels] = useState<Record<string, boolean>>({});
   const [workshopStates, setWorkshopStates] = useState<{
-    admin: any;
-    evaluator: any;
+    admin: unknown;
+    evaluator: unknown;
   }>({
     admin: null,
     evaluator: null

@@ -8,12 +8,19 @@ interface HealthResult {
   status: 'healthy' | 'degraded' | 'error';
   responseTime?: number;
   message?: string;
-  details?: any;
+  details?: unknown;
+}
+
+interface HealthReport {
+  timestamp: string;
+  overallStatus: 'healthy' | 'degraded' | 'error';
+  results: HealthResult[];
+  summary: { total: number; healthy: number; degraded: number; error: number };
 }
 
 const SystemHealthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [healthReport, setHealthReport] = useState<any>(null);
+  const [healthReport, setHealthReport] = useState<HealthReport | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
@@ -151,10 +158,10 @@ const SystemHealthPage: React.FC = () => {
         {/* Detailed Results */}
         {healthReport && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {healthReport.results.map((result: HealthResult, index: number) => (
+            {healthReport.results.map((result, index) => (
               <Card key={index} title={result.component}>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
+                <div className="space-y-3">{[
+                  <div key="status" className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">
                         {getStatusEmoji(result.status)}
@@ -168,16 +175,14 @@ const SystemHealthPage: React.FC = () => {
                         {result.responseTime}ms
                       </span>
                     )}
-                  </div>
-                  
-                  {result.message && (
-                    <div className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                  </div>,
+                  result.message ? (
+                    <div key="message" className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
                       {result.message}
                     </div>
-                  )}
-                  
-                  {result.details && (
-                    <details className="text-xs">
+                  ) : null,
+                  result.details ? (
+                    <details key="details" className="text-xs">
                       <summary className="cursor-pointer text-blue-600 hover:text-blue-800">
                         상세 정보 보기
                       </summary>
@@ -185,8 +190,8 @@ const SystemHealthPage: React.FC = () => {
                         {JSON.stringify(result.details, null, 2)}
                       </pre>
                     </details>
-                  )}
-                </div>
+                  ) : null
+                ]}</div>
               </Card>
             ))}
           </div>

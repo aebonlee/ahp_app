@@ -203,7 +203,7 @@ const PromptTemplateManager: React.FC = () => {
     }));
   };
 
-  const updateVariable = (index: number, field: string, value: any) => {
+  const updateVariable = (index: number, field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       variables: prev.variables.map((variable, i) =>

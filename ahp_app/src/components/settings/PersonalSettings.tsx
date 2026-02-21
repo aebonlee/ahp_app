@@ -317,7 +317,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     }
   };
 
-  const updateSettings = (section: keyof UserSettings, field: string, value: any) => {
+  const updateSettings = (section: keyof UserSettings, field: string, value: unknown) => {
     setSettings(prev => ({
       ...prev,
       [section]: {

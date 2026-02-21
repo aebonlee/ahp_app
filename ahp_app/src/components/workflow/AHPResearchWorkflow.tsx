@@ -123,7 +123,7 @@ const AHPResearchWorkflow: React.FC<AHPResearchWorkflowProps> = ({
   }, [projectData]);
 
   // 평가자 배정 완료
-  const handleEvaluatorAssignmentCompleted = useCallback((assignedEvaluators: any[]) => {
+  const handleEvaluatorAssignmentCompleted = useCallback((assignedEvaluators: unknown[]) => {
     setEvaluators(assignedEvaluators);
     if (projectData) {
       setProjectData(prev => prev ? { ...prev, status: 'evaluation_in_progress' } : null);

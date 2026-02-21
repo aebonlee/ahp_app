@@ -2939,7 +2939,7 @@ ${project?.title} - ${type} 프레젠테이션
     const currentProject = projects.find(p => p.id === selectedProjectId);
     
     // 평가자 목록 가져오기 (실제로는 API에서)
-    const evaluators: any[] = [
+    const evaluators: unknown[] = [
       // 임시 데이터 - 실제로는 EnhancedEvaluatorManagement와 연동
     ];
     

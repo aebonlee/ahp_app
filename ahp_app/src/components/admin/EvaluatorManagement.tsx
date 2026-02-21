@@ -66,7 +66,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
     name: '',
     phone: ''
   });
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState('');
 
   // loadDemoData 함수를 먼저 정의 (useCallback으로 래핑)
@@ -165,7 +165,7 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
   };
 
   const validateForm = () => {
-    const newErrors: any = {};
+    const newErrors: Record<string, string> = {};
 
     if (!formData.email.trim()) {
       newErrors.email = '이메일을 입력해주세요.';

@@ -3,8 +3,34 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import { useTranslation } from '../../i18n';
 
-// Google Charts 타입 정의
-declare const google: any;
+// Google Charts 타입 정의 (외부 라이브러리 전역 선언)
+interface GoogleDataTable {
+  addColumn: (...args: unknown[]) => void;
+  addRow: (row: unknown[]) => void;
+  addRows: (rows: unknown[]) => void;
+}
+interface GoogleChart {
+  draw: (data: unknown, options: unknown) => void;
+}
+interface GoogleVisualization {
+  DataTable: new () => GoogleDataTable;
+  OrgChart: new (el: HTMLElement | null) => GoogleChart;
+  Table: new (el: HTMLElement | null) => GoogleChart;
+  BarChart: new (el: HTMLElement | null) => GoogleChart;
+  ComboChart: new (el: HTMLElement | null) => GoogleChart;
+  LineChart: new (el: HTMLElement | null) => GoogleChart;
+  PieChart: new (el: HTMLElement | null) => GoogleChart;
+  ChartWrapper: new (options: unknown) => { draw: () => void };
+}
+declare const google: {
+  visualization: GoogleVisualization;
+  charts: {
+    load: (ver: string, opts: unknown) => void;
+    setOnLoadCallback: (cb: () => void) => void;
+  };
+  setOnLoadCallback: (cb: () => void) => void;
+  load: (pkg: string, ver: string, opts: unknown) => void;
+};
 
 interface EvaluationResult {
   id: string;

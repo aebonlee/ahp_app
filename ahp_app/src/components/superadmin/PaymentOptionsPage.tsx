@@ -86,7 +86,7 @@ const PaymentOptionsPage: React.FC<PaymentOptionsPageProps> = ({ user, onTabChan
       
       // 사용자 목록 로드 (localStorage에서)
       const storedUsers = JSON.parse(localStorage.getItem('ahp_users') || '[]');
-      setUsers(storedUsers.filter((u: any) => u.role !== 'super_admin'));
+      setUsers(storedUsers.filter((u: { role?: string }) => u.role !== 'super_admin'));
       
     } catch (error) {
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
@@ -95,7 +95,7 @@ const PaymentOptionsPage: React.FC<PaymentOptionsPageProps> = ({ user, onTabChan
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: unknown) => {
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
       setFormData(prev => ({

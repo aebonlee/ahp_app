@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { CheckCircleIcon, ExclamationTriangleIcon, ShieldCheckIcon, KeyIcon, CogIcon } from '@heroicons/react/24/outline';
 import TwoFactorAuth from '../auth/TwoFactorAuth';
 import { twoFactorService, TwoFactorStatus } from '../../services/twoFactorService';
+import { User } from '../../types';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 
 interface SecuritySettingsProps {
   userEmail: string;
-  currentUser?: any;
-  onSettingsUpdate?: (settings: any) => void;
+  currentUser?: User;
+  onSettingsUpdate?: (settings: Partial<SecurityConfig>) => void;
 }
 
 interface SecurityConfig {
@@ -73,7 +74,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       // Load other security settings (placeholder - would come from user preferences API)
       // const securityResponse = await userApi.getSecuritySettings();
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('보안 설정을 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -106,7 +107,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       // Notify parent component
       onSettingsUpdate?.({ twoFactorEnabled: true });
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('2FA 설정 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -141,8 +142,8 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       // Notify parent component
       onSettingsUpdate?.({ twoFactorEnabled: false });
       
-    } catch (err: any) {
-      setError(err.message || '2FA 비활성화 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '2FA 비활성화 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -164,15 +165,15 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       setShowBackupCodes(true);
       setSuccess('새로운 백업 코드가 생성되었습니다.');
       
-    } catch (err: any) {
-      setError(err.message || '백업 코드 생성 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '백업 코드 생성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
   // Update security setting
-  const updateSecuritySetting = (key: keyof SecurityConfig, value: any) => {
+  const updateSecuritySetting = (key: keyof SecurityConfig, value: SecurityConfig[keyof SecurityConfig]) => {
     setSecurityConfig(prev => ({
       ...prev,
       [key]: value

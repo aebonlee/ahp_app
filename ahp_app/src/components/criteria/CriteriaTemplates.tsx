@@ -1,16 +1,18 @@
 import React from 'react';
 import Button from '../common/Button';
 
+export interface CriteriaTemplateNode {
+  name: string;
+  description?: string;
+  children?: CriteriaTemplateNode[];
+}
+
 export interface CriteriaTemplate {
   id: string;
   name: string;
   description: string;
   icon: string;
-  structure: {
-    name: string;
-    description?: string;
-    children?: any[];
-  }[];
+  structure: CriteriaTemplateNode[];
 }
 
 export const CRITERIA_TEMPLATES: CriteriaTemplate[] = [

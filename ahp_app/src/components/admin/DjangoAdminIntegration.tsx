@@ -85,8 +85,8 @@ const DjangoAdminIntegration: React.FC<DjangoAdminIntegrationProps> = ({
         setDjangoUsers(usersResponse.data.results.slice(0, 10));
       }
 
-    } catch (err: any) {
-      const errorMessage = err.message || 'Django Admin 데이터를 불러오는 중 오류가 발생했습니다.';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Django Admin 데이터를 불러오는 중 오류가 발생했습니다.';
       setError(errorMessage);
       onError?.(errorMessage);
     } finally {

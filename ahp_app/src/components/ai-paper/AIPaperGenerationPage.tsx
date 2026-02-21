@@ -29,6 +29,23 @@ interface PaperSection {
   status: 'pending' | 'generating' | 'completed' | 'error';
 }
 
+interface CriterionItem {
+  name: string;
+  description?: string;
+}
+
+interface AlternativeItem {
+  name: string;
+  description?: string;
+}
+
+interface ProjectData {
+  project: Project;
+  criteria: CriterionItem[];
+  alternatives: AlternativeItem[];
+  evaluations: unknown[];
+}
+
 interface AIPaperGenerationPageProps {
   user?: User;
 }
@@ -43,7 +60,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
     setTimeout(() => setActionMessage(null), 3000);
   };
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [projectData, setProjectData] = useState<any>(null);
+  const [projectData, setProjectData] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [paperSections, setPaperSections] = useState<PaperSection[]>([]);
@@ -164,7 +181,7 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
   };
 
   // 섹션별 내용 생성 (AI 시뮬레이션)
-  const generateSectionContent = async (sectionId: string, data: any): Promise<string> => {
+  const generateSectionContent = async (sectionId: string, data: ProjectData): Promise<string> => {
     const { project, criteria, alternatives } = data;
     
     switch (sectionId) {
@@ -178,10 +195,10 @@ const AIPaperGenerationPage: React.FC<AIPaperGenerationPageProps> = ({ user }) =
         return `본 연구는 AHP(Analytic Hierarchy Process) 기법을 활용하여 수행되었다. AHP는 Saaty(1980)에 의해 개발된 다기준 의사결정 기법으로, 복잡한 문제를 계층적으로 분해하고 쌍대비교를 통해 대안들의 우선순위를 결정하는 방법이다.\n\n연구 절차는 다음과 같다:\n1. 문제 정의 및 목표 설정\n2. 계층구조 설계 (${criteria.length}개 기준, ${alternatives.length}개 대안)\n3. 쌍대비교 설문 설계\n4. 전문가 설문 실시\n5. 일관성 검증\n6. 가중치 계산 및 대안 순위 도출`;
       
       case 'ahp-model':
-        return `본 연구의 AHP 모델은 다음과 같이 구성되었다:\n\n**평가 기준:**\n${criteria.map((c: any, i: number) => `${i + 1}. ${c.name}: ${c.description || '평가 기준'}`).join('\n')}\n\n**평가 대안:**\n${alternatives.map((a: any, i: number) => `${i + 1}. ${a.name}: ${a.description || '평가 대안'}`).join('\n')}\n\n계층구조는 목표-기준-대안의 3단계로 설계되었으며, 각 단계별로 쌍대비교를 실시하여 상대적 중요도를 도출하였다.`;
+        return `본 연구의 AHP 모델은 다음과 같이 구성되었다:\n\n**평가 기준:**\n${criteria.map((c: CriterionItem, i: number) => `${i + 1}. ${c.name}: ${c.description || '평가 기준'}`).join('\n')}\n\n**평가 대안:**\n${alternatives.map((a: AlternativeItem, i: number) => `${i + 1}. ${a.name}: ${a.description || '평가 대안'}`).join('\n')}\n\n계층구조는 목표-기준-대안의 3단계로 설계되었으며, 각 단계별로 쌍대비교를 실시하여 상대적 중요도를 도출하였다.`;
       
       case 'analysis-results':
-        return `AHP 분석 결과, 평가 기준별 가중치는 다음과 같이 도출되었다:\n\n**기준별 가중치:**\n${criteria.map((c: any, i: number) => `• ${c.name}: 가중치 미산출 (실제 평가 필요)`).join('\n')}\n\n**대안별 종합 점수:**\n${alternatives.map((a: any, i: number) => `• ${a.name}: 종합 점수 미산출 (실제 평가 필요)`).join('\n')}\n\n모든 쌍대비교에서 일관성 비율(CR)이 0.1 이하로 나타나 결과의 신뢰성을 확보하였다.`;
+        return `AHP 분석 결과, 평가 기준별 가중치는 다음과 같이 도출되었다:\n\n**기준별 가중치:**\n${criteria.map((c: CriterionItem) => `• ${c.name}: 가중치 미산출 (실제 평가 필요)`).join('\n')}\n\n**대안별 종합 점수:**\n${alternatives.map((a: AlternativeItem) => `• ${a.name}: 종합 점수 미산출 (실제 평가 필요)`).join('\n')}\n\n모든 쌍대비교에서 일관성 비율(CR)이 0.1 이하로 나타나 결과의 신뢰성을 확보하였다.`;
       
       case 'conclusion':
         return `본 연구는 "${project.title}"에 대한 의사결정 문제를 AHP 기법을 활용하여 체계적으로 분석하였다. ${criteria.length}개의 평가 기준과 ${alternatives.length}개의 대안에 대한 전문가 평가를 통해 객관적이고 일관성 있는 의사결정 방안을 제시하였다.\n\n연구의 기여점은 다음과 같다:\n1. 복잡한 의사결정 문제의 체계적 해결\n2. 전문가 의견의 정량적 통합\n3. 투명하고 추적 가능한 의사결정 과정\n\n향후 연구에서는 퍼지 AHP나 ANP 등의 발전된 기법을 적용하여 더욱 정교한 분석을 수행할 수 있을 것이다.`;

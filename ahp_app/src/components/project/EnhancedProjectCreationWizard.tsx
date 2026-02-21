@@ -41,11 +41,11 @@ interface ProjectData {
   };
   
   // 기준 및 대안 (다음 단계에서 설정)
-  criteria?: any[];
-  alternatives?: any[];
-  
+  criteria?: { name: string; description?: string }[];
+  alternatives?: { name: string; description?: string }[];
+
   // 평가자 초대 설정
-  evaluators?: any[];
+  evaluators?: { email: string; name?: string }[];
   invitation_message?: string;
   deadline?: string;
 }
@@ -1025,21 +1025,23 @@ const CompletionStep: React.FC<{
   );
 };
 
+interface DemographicData {
+  age: string;
+  gender: string;
+  education: string;
+  occupation: string;
+  experience: string;
+  department: string;
+  position: string;
+  projectExperience: string;
+  decisionRole: string;
+  additionalInfo: string;
+}
+
 // 인구통계 설문 단계 - DemographicSurvey 완전 통일
 const DemographicSurveyStep: React.FC<{
-  data: {
-    age: string;
-    gender: string;
-    education: string;
-    occupation: string;
-    experience: string;
-    department: string;
-    position: string;
-    projectExperience: string;
-    decisionRole: string;
-    additionalInfo: string;
-  };
-  onChange: (data: any) => void;
+  data: DemographicData;
+  onChange: (data: DemographicData) => void;
 }> = ({ data, onChange }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

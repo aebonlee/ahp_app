@@ -62,7 +62,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
     message: '',
     sendSMS: false
   });
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState('');
 
   // 실제 평가자 데이터 로드
@@ -100,7 +100,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
   };
 
   const validateForm = () => {
-    const newErrors: any = {};
+    const newErrors: Record<string, string> = {};
 
     if (!formData.email.trim()) {
       newErrors.email = '이메일을 입력해주세요.';

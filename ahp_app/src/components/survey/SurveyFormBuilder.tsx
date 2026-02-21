@@ -8,10 +8,16 @@ interface Question {
   required: boolean;
 }
 
+interface InitialSurveyData {
+  title?: string;
+  description?: string;
+  questions?: Question[];
+}
+
 interface SurveyFormBuilderProps {
   onSave?: (questions: Question[], metadata?: { title: string; description: string }) => void;
   onCancel?: () => void;
-  initialSurvey?: any; // 편집할 기존 설문조사 데이터
+  initialSurvey?: InitialSurveyData; // 편집할 기존 설문조사 데이터
 }
 
 const SurveyFormBuilder: React.FC<SurveyFormBuilderProps> = ({ onSave, onCancel, initialSurvey }) => {
@@ -294,7 +300,7 @@ const SurveyFormBuilder: React.FC<SurveyFormBuilderProps> = ({ onSave, onCancel,
     setQuestions([...questions, newQuestion]);
   };
 
-  const updateQuestion = (id: string, field: keyof Question, value: any) => {
+  const updateQuestion = (id: string, field: keyof Question, value: unknown) => {
     setQuestions(questions.map(q => 
       q.id === id ? { ...q, [field]: value } : q
     ));

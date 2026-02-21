@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
-import api from '../../services/api';
+import api, { CriteriaData } from '../../services/api';
 
 interface ModelFinalizationProps {
   projectId: string;
@@ -19,9 +19,9 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
 }) => {
   const [workshopMode, setWorkshopMode] = useState<'individual' | 'workshop'>('individual');
   const [isConfirming, setIsConfirming] = useState(false);
-  const [criteria, setCriteria] = useState<any[]>([]);
-  const [alternatives, setAlternatives] = useState<any[]>([]);
-  const [evaluators, setEvaluators] = useState<any[]>([]);
+  const [criteria, setCriteria] = useState<CriteriaData[]>([]);
+  const [alternatives, setAlternatives] = useState<{ id?: string; name: string; description?: string }[]>([]);
+  const [evaluators, setEvaluators] = useState<{ id?: string; name: string; email?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
 
@@ -58,8 +58,8 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
         setAlternatives(Array.isArray(alternativesData) ? alternativesData : []);
         setEvaluators(Array.isArray(evaluatorsData) ? evaluatorsData : []);
 
-      } catch (err: any) {
-        setError(err?.message || '프로젝트 데이터를 불러오는 중 오류가 발생했습니다.');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : '프로젝트 데이터를 불러오는 중 오류가 발생했습니다.');
         setCriteria([]);
         setAlternatives([]);
         setEvaluators([]);
@@ -108,7 +108,7 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
     
     return {
       criteria: criteriaCount,
-      subCriteria: safeCriteria.filter(c => c && typeof c === 'object' && c.level > 1).length,
+      subCriteria: safeCriteria.filter(c => c && typeof c === 'object' && (c.level ?? 1) > 1).length,
       alternatives: alternativesCount,
       evaluators: evaluatorsCount,
       estimatedComparisons: estimatedComparisons
@@ -152,7 +152,7 @@ const ModelFinalization: React.FC<ModelFinalizationProps> = ({
           {!loading && criteria.length > 0 && (
             <div>
               <HierarchyTreeVisualization
-                nodes={criteria}
+                nodes={criteria.map(c => ({ id: c.id ?? '', name: c.name, description: c.description, level: c.level ?? 1, weight: c.weight, parent_id: c.parent_id }))}
                 title="프로젝트 최종 계층구조"
                 showWeights={true}
                 interactive={false}

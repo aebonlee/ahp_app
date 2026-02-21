@@ -46,7 +46,7 @@ const InvitationHistory: React.FC<InvitationHistoryProps> = ({ projectId, refres
       setLoading(true);
       const response = await api.get('/api/service/evaluations/bulk-invitations/');
       const projectInvitations = (response.data.results || response.data).filter(
-        (inv: any) => inv.project === projectId
+        (inv: { project?: string | number; [key: string]: unknown }) => inv.project === projectId
       );
       setInvitations(projectInvitations);
     } catch (error) {

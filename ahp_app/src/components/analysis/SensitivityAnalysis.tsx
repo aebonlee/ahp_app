@@ -610,7 +610,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
     });
 
     extendedSensitivityResults.forEach(result => {
-      const row: any[] = [result.criterion];
+      const row: (string | number)[] = [result.criterion];
       alternativeScores.forEach(alt => {
         const altResult = result.alternatives[alt.alternativeName];
         if (altResult) {

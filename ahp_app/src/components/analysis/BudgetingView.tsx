@@ -58,7 +58,7 @@ interface BudgetingViewProps {
   }>;
   initialBudget?: number;
   onOptimize?: (result: OptimizationResult) => void;
-  onExport?: (data: any) => void;
+  onExport?: (data: unknown) => void;
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
@@ -692,10 +692,10 @@ const BudgetingView: React.FC<BudgetingViewProps> = ({
                 <XAxis dataKey="cost" name="비용" />
                 <YAxis dataKey="utility" name="효용" />
                 <Tooltip 
-                  formatter={(value: any, name: string) => [
-                    typeof value === 'number' ? value.toFixed(3) : value,
+                  formatter={(value: unknown, name: string) => [
+                    typeof value === 'number' ? value.toFixed(3) : String(value),
                     name === 'cost' ? '비용' : name === 'utility' ? '효용' : name
-                  ]}
+                  ] as [string, string]}
                 />
                 <Scatter 
                   name="항목" 

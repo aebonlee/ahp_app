@@ -3,6 +3,24 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import apiService from '../../services/apiService';
 
+interface EvaluationApiItem {
+  id?: string;
+  evaluator_name?: string;
+  evaluator_role?: string;
+  evaluator?: { name?: string };
+  last_activity?: string;
+  updated_at?: string;
+  created_at?: string;
+  progress?: number;
+  status?: string;
+  consistency_ratio?: number;
+  total_evaluations?: number;
+  completed_evaluations?: number;
+  total_comparisons?: number;
+  completed_comparisons?: number;
+  evaluator_id?: string;
+}
+
 // 참가자 상태 인터페이스
 interface ParticipantStatus {
   participantId: string;
@@ -69,12 +87,12 @@ const RealTimeParticipantMonitor: React.FC<RealTimeParticipantMonitorProps> = ({
   const fetchParticipantData = useCallback(async () => {
     if (!projectId) return;
     try {
-      const res = await apiService.get<any>(
+      const res = await apiService.get<{ results?: EvaluationApiItem[] }>(
         `/api/service/evaluations/evaluations/?project=${projectId}&page_size=100`
       );
       if (res?.data) {
-        const evals: any[] = res.data.results ?? res.data;
-        const mapped: ParticipantStatus[] = evals.map((ev: any) => {
+        const evals: EvaluationApiItem[] = (res.data as { results?: EvaluationApiItem[] }).results ?? (res.data as unknown as EvaluationApiItem[]);
+        const mapped: ParticipantStatus[] = evals.map((ev: EvaluationApiItem) => {
           const apiStatus = ev.status ?? '';
           let evaluationStatus: ParticipantStatus['evaluationStatus'] = 'not_started';
           if (apiStatus === 'completed') evaluationStatus = 'completed';

@@ -48,6 +48,17 @@ interface FilterSettings {
   hideEmptyNodes: boolean;
 }
 
+// 노드 링크
+interface NodeLink {
+  source: string;
+  target: string;
+  sourcePos: { x: number; y: number };
+  targetPos: { x: number; y: number };
+}
+
+// 트리맵 노드
+type TreemapNode = HierarchyNode & { value: number };
+
 interface ModelVisualizationProps {
   hierarchy: HierarchyNode;
   mode?: VisualizationMode;
@@ -521,7 +532,7 @@ const ModelVisualization: React.FC<ModelVisualizationProps> = ({
   };
 
   // 트리맵 노드 렌더링
-  const renderTreemapNode = (node: any, x: number, y: number, width: number, height: number): ReactElement => {
+  const renderTreemapNode = (node: HierarchyNode & { value: number }, x: number, y: number, width: number, height: number): ReactElement => {
     const nodeState = nodeStates.get(node.id);
     
     if (!nodeState?.visible || !passesFilter(node)) {
@@ -593,8 +604,8 @@ const ModelVisualization: React.FC<ModelVisualizationProps> = ({
     return nodes;
   };
 
-  const getAllLinks = (node: HierarchyNode): any[] => {
-    const links: any[] = [];
+  const getAllLinks = (node: HierarchyNode): NodeLink[] => {
+    const links: NodeLink[] = [];
     
     const addLinks = (n: HierarchyNode) => {
       n.children.forEach(child => {
@@ -612,14 +623,14 @@ const ModelVisualization: React.FC<ModelVisualizationProps> = ({
     return links;
   };
 
-  const convertToTreeData = (node: HierarchyNode): any => {
+  const convertToTreeData = (node: HierarchyNode): HierarchyNode => {
     return {
       ...node,
       children: node.children.map(convertToTreeData)
     };
   };
 
-  const convertToTreemapData = (node: HierarchyNode): any => {
+  const convertToTreemapData = (node: HierarchyNode): TreemapNode => {
     return {
       ...node,
       value: node.weight || 0.25,

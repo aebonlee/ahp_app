@@ -13,7 +13,7 @@ interface RealTimeUpdate {
   participantId: string;
   participantName: string;
   timestamp: string;
-  data: any;
+  data: { completionRate?: number; currentCriterion?: string; consistencyRatio?: number; [key: string]: unknown };
 }
 
 interface EvaluationSession {

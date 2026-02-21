@@ -14,6 +14,21 @@ interface Activity {
   type: 'info' | 'success' | 'warning' | 'error';
 }
 
+interface LoginRecord {
+  timestamp: string;
+  email?: string;
+}
+
+interface StoredProject {
+  created_at?: string;
+  title?: string;
+  created_by?: string;
+}
+
+interface StoredUser {
+  role?: string;
+}
+
 const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabChange }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_activities, _setActivities] = useState<Activity[]>([]);
@@ -51,7 +66,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
     try {
       // 로그인 기록
       const loginHistory = JSON.parse(localStorage.getItem('ahp_login_history') || '[]');
-      loginHistory.slice(-3).forEach((login: any) => {
+      loginHistory.slice(-3).forEach((login: LoginRecord) => {
         const time = new Date(login.timestamp);
         const timeDiff = Date.now() - time.getTime();
         const minutes = Math.floor(timeDiff / 60000);
@@ -67,12 +82,12 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
 
       // 프로젝트 생성 기록
       const projects = JSON.parse(localStorage.getItem('ahp_projects') || '[]');
-      const recentProjects = projects
-        .filter((p: any) => p.created_at)
-        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      const recentProjects = (projects as StoredProject[])
+        .filter((p: StoredProject): p is StoredProject & { created_at: string } => Boolean(p.created_at))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 2);
-      
-      recentProjects.forEach((project: any) => {
+
+      recentProjects.forEach((project) => {
         const time = new Date(project.created_at);
         const timeDiff = Date.now() - time.getTime();
         const minutes = Math.floor(timeDiff / 60000);
@@ -203,7 +218,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
         evaluator: 0
       };
 
-      users?.forEach((user: any) => {
+      users?.forEach((user: StoredUser) => {
         if (user.role && roleCount.hasOwnProperty(user.role)) {
           roleCount[user.role as keyof typeof roleCount]++;
         }
@@ -211,7 +226,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
 
       // localStorage에서 추가 사용자 데이터 확인
       const localUsers = JSON.parse(localStorage.getItem('ahp_users') || '[]');
-      localUsers.forEach((user: any) => {
+      localUsers.forEach((user: StoredUser) => {
         if (user.role && roleCount.hasOwnProperty(user.role)) {
           roleCount[user.role as keyof typeof roleCount]++;
         }

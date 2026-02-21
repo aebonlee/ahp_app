@@ -28,8 +28,8 @@ interface GroupAnalysisResult {
 
 interface AdvancedResultsAnalysisProps {
   projectId: string;
-  results?: any; // 기존 결과 데이터
-  onExport?: (data: any, format: string) => void;
+  results?: unknown; // 기존 결과 데이터
+  onExport?: (data: unknown, format: string) => void;
   className?: string;
 }
 

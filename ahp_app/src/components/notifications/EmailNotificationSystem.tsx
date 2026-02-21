@@ -271,7 +271,7 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
     setNotifications(sampleNotifications);
   };
 
-  const sendNotification = async (templateId: string, recipientIds: string[], customData: any = {}) => {
+  const sendNotification = async (templateId: string, recipientIds: string[], customData: Record<string, string> = {}) => {
     if (!isConfigured) {
       showActionMessage('error', '이메일 설정을 먼저 구성해주세요.');
       return;
@@ -320,7 +320,7 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
     }
   };
 
-  const personalizeContent = (content: string, participant: any, customData: any): string => {
+  const personalizeContent = (content: string, participant: { id: string; name: string; email: string; status?: string; completionRate?: number; completion_rate?: number }, customData: Record<string, string>): string => {
     let personalized = content;
     
     // 기본 변수 치환
@@ -361,7 +361,8 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
       const testParticipant = {
         id: 'test',
         name: '테스트 사용자',
-        email: testEmail
+        email: testEmail,
+        status: 'pending'
       };
 
       const personalizedContent = personalizeContent(selectedTemplate.content, testParticipant, {

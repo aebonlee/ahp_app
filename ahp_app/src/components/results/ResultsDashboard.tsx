@@ -49,7 +49,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ projectId, projectT
   const [comparisons, setComparisons] = useState<Comparison[]>([]);
   const [criteriaResults, setCriteriaResults] = useState<{ [key: string]: AHPResult }>({});
   const [alternativeResults, setAlternativeResults] = useState<{ [key: string]: AHPResult }>({});
-  const [finalResults, setFinalResults] = useState<any>(null);
+  const [finalResults, setFinalResults] = useState<{ ranking: Array<{ alternativeId: string; alternativeName: string; score: number; rank: number }> } | null>(null);
   const [error, setError] = useState<string>('');
 
   const fetchData = useCallback(async () => {
@@ -221,7 +221,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ projectId, projectT
   const topLevelCriteria = criteria.filter(c => c.level === 1);
 
   // Prepare chart data
-  const rankingData = finalResults.ranking.map((item: any) => ({
+  const rankingData = finalResults.ranking.map((item) => ({
     name: item.alternativeName,
     score: (item.score * 100).toFixed(1),
     fullScore: item.score
@@ -239,7 +239,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ projectId, projectT
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-800 mb-2">📊 최종 순위</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {finalResults.ranking.map((item: any, index: number) => (
+            {finalResults.ranking.map((item, index: number) => (
               <div key={item.alternativeId} className={`p-3 rounded-lg border-2 ${
                 index === 0 ? 'border-yellow-400 bg-yellow-50' :
                 index === 1 ? 'border-gray-400 bg-gray-50' :
@@ -391,7 +391,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ projectId, projectT
                   </tr>
                 </thead>
                 <tbody>
-                  {finalResults.ranking.map((item: any) => (
+                  {finalResults.ranking.map((item) => (
                     <tr key={item.alternativeId}>
                       <td className="border p-2 font-medium">{item.alternativeName}</td>
                       {topLevelCriteria.map(criterion => (

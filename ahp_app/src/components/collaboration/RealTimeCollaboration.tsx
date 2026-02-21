@@ -33,7 +33,7 @@ interface UserActivity {
   action: string;
   timestamp: string;
   nodeId?: string;
-  details?: any;
+  details?: unknown;
 }
 
 // 알림 시스템

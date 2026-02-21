@@ -50,7 +50,7 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
     setIsLoading(true);
     setLoadError(false);
     try {
-      const res = await apiService.get<any>(
+      const res = await apiService.get<{ title?: string; project_title?: string; facilitator_name?: string; created_by_name?: string; description?: string; deadline?: string; questions?: Array<{ id?: string | number; type?: string; question?: string; text?: string; required?: boolean; options?: string[]; scale_min?: number; scaleMin?: number; scale_max?: number; scaleMax?: number; scale_labels?: { min: string; max: string }; matrix_rows?: string[]; matrixRows?: string[]; matrix_columns?: string[]; matrixColumns?: string[] }> }>(
         `/api/service/workshops/survey-templates/${surveyId}/`
       );
       if (res?.data) {
@@ -60,9 +60,9 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
           researcherName: d.facilitator_name || d.created_by_name || '',
           description: d.description || '',
           deadline: d.deadline ? new Date(d.deadline) : undefined,
-          questions: (d.questions || []).map((q: any, idx: number) => ({
+          questions: (d.questions || []).map((q, idx: number) => ({
             id: String(q.id ?? idx),
-            type: q.type || 'text',
+            type: (q.type || 'text') as SurveyQuestion['type'],
             question: q.question || q.text || '',
             required: q.required ?? false,
             options: q.options,
@@ -70,7 +70,7 @@ const EvaluatorSurveyPage: React.FC<EvaluatorSurveyPageProps> = ({ surveyId, tok
             scaleMax: q.scale_max ?? q.scaleMax,
             scaleLabels: q.scale_labels
               ? { min: q.scale_labels.min, max: q.scale_labels.max }
-              : q.scaleLabels,
+              : undefined,
             matrixRows: q.matrix_rows ?? q.matrixRows,
             matrixColumns: q.matrix_columns ?? q.matrixColumns,
           })),

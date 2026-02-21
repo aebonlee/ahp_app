@@ -20,7 +20,7 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [projects, setProjects] = useState<any[]>([]); // 프로젝트 개수 추적용
+  const [projects, setProjects] = useState<unknown[]>([]); // 프로젝트 개수 추적용
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [qrCodeSurvey, setQrCodeSurvey] = useState<Survey | null>(null);
@@ -44,12 +44,12 @@ const SurveyManagementSystem: React.FC<SurveyManagementSystemProps> = ({
         throw new Error('설문조사 목록을 불러오지 못했습니다.');
       }
 
-      const surveysData = response.data?.results || response.data || [];
-      setSurveys(surveysData.map((survey: any) => ({
+      const surveysData: Array<{ id: string; title: string; description: string; questions?: unknown[]; created_by: string; project_id: string; created_at: string; updated_at: string; status: 'draft' | 'active' | 'completed' | 'archived'; evaluator_link: string; total_responses?: number; completed_responses?: number; average_completion_time?: number }> = response.data?.results || response.data || [];
+      setSurveys(surveysData.map((survey) => ({
         id: survey.id,
         title: survey.title,
         description: survey.description,
-        questions: survey.questions || [],
+        questions: (survey.questions || []) as import('../../types/survey').SurveyQuestion[],
         createdBy: survey.created_by,
         projectId: survey.project_id,
         createdAt: new Date(survey.created_at),

@@ -160,22 +160,22 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
 
   const t = (key: string, params?: Record<string, string>): string => {
     const keys = key.split('.');
-    let value: any = translations[language];
-    
+    let value: unknown = translations[language];
+
     for (const k of keys) {
       if (value && typeof value === 'object') {
-        value = value[k];
+        value = (value as Record<string, unknown>)[k];
       } else {
         break;
       }
     }
-    
+
     if (typeof value !== 'string') {
       // 키를 찾을 수 없는 경우 영어로 fallback
       value = translations.en;
       for (const k of keys) {
         if (value && typeof value === 'object') {
-          value = value[k];
+          value = (value as Record<string, unknown>)[k];
         } else {
           break;
         }
@@ -185,15 +185,16 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
     if (typeof value !== 'string') {
       return key; // 키를 그대로 반환
     }
-    
+
     // 파라미터 치환
+    let result = value;
     if (params) {
       Object.entries(params).forEach(([param, val]) => {
-        value = value.replace(new RegExp(`{{${param}}}`, 'g'), val);
+        result = result.replace(new RegExp(`{{${param}}}`, 'g'), val);
       });
     }
-    
-    return value;
+
+    return result;
   };
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface DemographicSurveyProps {
-  onSave?: (data: any) => void;
+  onSave?: (data: unknown) => void;
   onCancel?: () => void;
 }
 

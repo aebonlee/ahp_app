@@ -39,8 +39,8 @@ interface EditHistoryEntry {
   timestamp: string;
   action: 'create' | 'update' | 'delete' | 'move' | 'rename';
   description: string;
-  oldState?: any;
-  newState?: any;
+  oldState?: HierarchyNode | ModelState | null;
+  newState?: HierarchyNode | ModelState | null;
 }
 
 // 템플릿 정의
@@ -151,7 +151,7 @@ const ModelBuilder: React.FC<ModelBuilderProps> = ({
   }, []);
 
   // 편집 히스토리에 항목 추가
-  const addToHistory = (action: EditHistoryEntry['action'], description: string, oldState?: any, newState?: any) => {
+  const addToHistory = (action: EditHistoryEntry['action'], description: string, oldState?: HierarchyNode | ModelState | null, newState?: HierarchyNode | ModelState | null) => {
     const entry: EditHistoryEntry = {
       id: `history-${Date.now()}`,
       timestamp: new Date().toISOString(),

@@ -2,11 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 
+interface TrashedProject {
+  id: string;
+  title: string;
+  description?: string;
+  deleted_at?: string;
+  [key: string]: unknown;
+}
+
 interface TrashBinTestProps {
-  onFetchTrashedProjects?: () => Promise<any[]>;
-  onRestoreProject?: (projectId: string) => Promise<any>;
-  onPermanentDeleteProject?: (projectId: string) => Promise<any>;
-  onDeleteProject?: (projectId: string) => Promise<any>;
+  onFetchTrashedProjects?: () => Promise<TrashedProject[]>;
+  onRestoreProject?: (projectId: string) => Promise<unknown>;
+  onPermanentDeleteProject?: (projectId: string) => Promise<unknown>;
+  onDeleteProject?: (projectId: string) => Promise<unknown>;
 }
 
 const TrashBinTest: React.FC<TrashBinTestProps> = ({
@@ -15,7 +23,7 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
   onPermanentDeleteProject,
   onDeleteProject
 }) => {
-  const [trashedProjects, setTrashedProjects] = useState<any[]>([]);
+  const [trashedProjects, setTrashedProjects] = useState<TrashedProject[]>([]);
   const [testProjects] = useState([
     { id: 'test-1', title: '테스트 프로젝트 1', description: '삭제 테스트용 프로젝트' },
     { id: 'test-2', title: '테스트 프로젝트 2', description: '휴지통 테스트용 프로젝트' }
@@ -157,7 +165,7 @@ const TrashBinTest: React.FC<TrashBinTestProps> = ({
           </div>
         ) : (
           <div className="space-y-4">
-            {trashedProjects.map((project: any) => (
+            {trashedProjects.map((project) => (
               <div key={project.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

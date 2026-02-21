@@ -12,12 +12,30 @@ interface SensitivityAnalysisProps {
   onBack?: () => void;
 }
 
+interface Alternative {
+  name: string;
+  score: number;
+  rank: number;
+}
+
+interface AnalysisChange {
+  criterion: string;
+  from: number;
+  to: number;
+}
+
+interface AnalysisResults {
+  original: { alternatives: Alternative[] };
+  modified: { alternatives: Alternative[] };
+  changes: AnalysisChange[];
+}
+
 const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, onBack }) => {
   const [selectedCriterion, setSelectedCriterion] = useState('');
   const [selectedSubCriterion, setSelectedSubCriterion] = useState('');
   const [newValue, setNewValue] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<AnalysisResults | null>(null);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {
@@ -300,7 +318,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, on
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value: any) => [`${value}점`, '']} />
+                      <Tooltip formatter={(value: number | string) => [`${value}점`, '']} />
                       <Legend />
                       <Bar dataKey="기존" fill="#94a3b8" />
                       <Bar dataKey="변경후" fill="#3b82f6" />
@@ -314,7 +332,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, on
                 <div>
                   <h5 className="font-medium text-gray-800 mb-3">기존 결과</h5>
                   <div className="space-y-2">
-                    {results.original.alternatives.map((alternative: any, index: number) => (
+                    {results.original.alternatives.map((alternative: Alternative, index: number) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <span className="w-6 h-6 bg-gray-500 text-white rounded-full text-xs flex items-center justify-center">
@@ -334,7 +352,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, on
                 <div>
                   <h5 className="font-medium text-gray-800 mb-3">변경 후 결과</h5>
                   <div className="space-y-2">
-                    {results.modified.alternatives.map((alternative: any, index: number) => (
+                    {results.modified.alternatives.map((alternative: Alternative, index: number) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <span className={`w-6 h-6 rounded-full text-xs flex items-center justify-center text-white ${
@@ -358,7 +376,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, on
               {/* Changes Summary */}
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                 <h5 className="font-medium text-yellow-900 mb-2">📋 변경 내용</h5>
-                {results.changes.map((change: any, index: number) => (
+                {results.changes.map((change: AnalysisChange, index: number) => (
                   <p key={index} className="text-sm text-yellow-700">
                     <strong>{getCurrentSubCriteria().find(c => c.id === change.criterion)?.name}</strong> 
                     가중치: {(change.from * 100).toFixed(1)}% → {(change.to * 100).toFixed(1)}%

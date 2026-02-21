@@ -5,6 +5,23 @@ import PairwiseEvaluation from './PairwiseEvaluation';
 import DirectInputEvaluation from './DirectInputEvaluation';
 import apiService from '../../services/apiService';
 
+interface EvaluationApiItem {
+  id: string;
+  project_title?: string;
+  title?: string;
+  instructions?: string;
+  created_at: string;
+  expires_at?: string;
+  status?: string;
+  project_id?: string;
+  criteria_count?: number;
+  alternatives_count?: number;
+  evaluation_method?: string;
+  progress?: number;
+  total_comparisons?: number;
+  completed_comparisons?: number;
+}
+
 interface EvaluatorUser {
   id: string;
   firstName: string;
@@ -55,10 +72,10 @@ const EvaluatorDashboard: React.FC<EvaluatorDashboardProps> = ({
   const fetchInvitations = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await apiService.get<any>('/api/service/evaluations/evaluations/?page_size=100');
+      const res = await apiService.get<{ results?: EvaluationApiItem[]; [key: string]: unknown }>('/api/service/evaluations/evaluations/?page_size=100');
       if (res?.data) {
-        const evals: any[] = res.data.results ?? res.data;
-        const mapped: ProjectInvitation[] = evals.map((ev: any) => ({
+        const evals: EvaluationApiItem[] = (res.data as { results?: EvaluationApiItem[] }).results ?? (res.data as unknown as EvaluationApiItem[]);
+        const mapped: ProjectInvitation[] = evals.map((ev: EvaluationApiItem) => ({
           id: ev.id,
           title: ev.project_title || ev.title || '프로젝트',
           description: ev.instructions || '',

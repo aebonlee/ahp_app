@@ -42,7 +42,7 @@ interface SensitivityViewProps {
   alternatives: AlternativeScore[];
   onWeightChange?: (criterionId: string, newWeight: number) => void;
   onReset?: () => void;
-  onExport?: (data: any) => void;
+  onExport?: (data: unknown) => void;
 }
 
 const SensitivityView: React.FC<SensitivityViewProps> = ({
@@ -418,10 +418,10 @@ const SensitivityView: React.FC<SensitivityViewProps> = ({
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip 
-                  formatter={(value: any, name: string) => [
-                    typeof value === 'number' ? value.toFixed(3) : value, 
+                  formatter={(value: unknown, name: string) => [
+                    typeof value === 'number' ? value.toFixed(3) : String(value),
                     name === 'original' ? '원래 점수' : name === 'current' ? '현재 점수' : name
-                  ]}
+                  ] as [string, string]}
                 />
                 <Legend />
                 <Bar dataKey="original" fill="#94a3b8" name="원래 점수" />
@@ -458,10 +458,10 @@ const SensitivityView: React.FC<SensitivityViewProps> = ({
                 <XAxis dataKey="weight" label={{ value: '가중치', position: 'insideBottom', offset: -5 }} />
                 <YAxis label={{ value: '점수', angle: -90, position: 'insideLeft' }} />
                 <Tooltip 
-                  formatter={(value: any, name: string) => [
-                    typeof value === 'number' ? value.toFixed(3) : value, 
+                  formatter={(value: unknown, name: string) => [
+                    typeof value === 'number' ? value.toFixed(3) : String(value),
                     name
-                  ]}
+                  ] as [string, string]}
                 />
                 <Legend />
                 {alternatives.map((alt, index) => (

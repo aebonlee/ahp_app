@@ -49,12 +49,12 @@ const ProjectWorkflow: React.FC<ProjectWorkflowProps> = ({ onComplete, onCancel 
   ];
 
   // 프로젝트 생성 핸들러
-  const handleProjectCreated = async (projectData: any) => {
+  const handleProjectCreated = async (projectData: { title: string; description?: string; objective?: string; ahpType?: 'general' | 'fuzzy'; evaluationMode?: 'practical' | 'theoretical' | 'direct_input' | 'fuzzy_ahp' }) => {
     try {
       setLoading(true);
       const createdProject = await dataService.createProject({
         title: projectData.title,
-        description: projectData.description,
+        description: projectData.description ?? '',
         objective: projectData.objective,
         ahp_type: projectData.ahpType,
         status: 'active',

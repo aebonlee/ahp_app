@@ -75,8 +75,8 @@ const AIManagementDashboard: React.FC<AIManagementDashboardProps> = ({
         const errMsg = accessResponse.error || usageResponse.error || '대시보드 통계를 불러오지 못했습니다.';
         setError(errMsg);
       }
-    } catch (err: any) {
-      setError(err.message || '대시보드 통계를 불러오는 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '대시보드 통계를 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
