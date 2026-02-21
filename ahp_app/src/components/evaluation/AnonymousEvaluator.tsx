@@ -67,7 +67,7 @@ const AnonymousEvaluator: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [recoveryData, setRecoveryData] = useState<SessionRecoveryData | null>(null);
-  const [autoSaveEnabled] = useState(true);
+  const autoSaveEnabled = true;
   
   // Refs for cleanup
   const autoSaveCleanup = useRef<(() => void) | null>(null);

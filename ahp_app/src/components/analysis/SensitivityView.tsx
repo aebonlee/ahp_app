@@ -56,7 +56,7 @@ const SensitivityView: React.FC<SensitivityViewProps> = ({
   const [weightSliders, setWeightSliders] = useState<{ [id: string]: number }>({});
   const [sensitivityData, setSensitivityData] = useState<SensitivityData[]>([]);
   const [chartType, setChartType] = useState<'radar' | 'bar' | 'line'>('bar');
-  const [stabilityIndex] = useState<number>(1.0);
+  const stabilityIndex = 1.0;
   const [criticalThresholds, setCriticalThresholds] = useState<{ [criterionId: string]: number[] }>({});
 
   useEffect(() => {

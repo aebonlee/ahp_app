@@ -30,7 +30,7 @@ const SensitivityAnalysisPanel: React.FC<SensitivityAnalysisPanelProps> = ({ pro
   const [overallStability, setOverallStability] = useState(0);
   const [interpretation, setInterpretation] = useState('');
   const [variationRange, setVariationRange] = useState(0.3);
-  const [selectedCriteria] = useState<number[]>([0, 1, 2]);
+  const selectedCriteria = [0, 1, 2];
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {

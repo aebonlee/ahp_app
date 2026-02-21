@@ -79,7 +79,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   onTabChange: externalOnTabChange 
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>(externalActiveTab || 'dashboard');
-  const [stats] = useState<OperationalStats>({
+  const stats: OperationalStats = {
     totalUsers: 1247,
     activeSubscriptions: 892,
     totalProjects: 3456,
@@ -88,7 +88,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
     serverLoad: 23,
     storageUsed: '1.2TB',
     dailyActiveUsers: 345
-  });
+  };
 
   // 구독 플랜 정의
   const subscriptionPlans: SubscriptionPlan[] = [
