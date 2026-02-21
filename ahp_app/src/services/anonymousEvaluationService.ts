@@ -102,10 +102,10 @@ const makeAnonymousEvalRequest = async <T>(
     });
 
     const contentType = response.headers.get('content-type');
-    let data: any = null;
+    let data: Record<string, unknown> | null = null;
 
     if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
+      data = await response.json() as Record<string, unknown>;
     } else if (response.ok && options.method === 'DELETE') {
       data = { success: true };
     } else {
@@ -114,13 +114,13 @@ const makeAnonymousEvalRequest = async <T>(
     }
 
     if (!response.ok) {
-      throw new Error(data?.message || data?.error || `HTTP ${response.status}: Anonymous evaluation API 요청 실패`);
+      throw new Error((data?.message || data?.error || `HTTP ${response.status}: Anonymous evaluation API 요청 실패`) as string);
     }
 
     return {
       success: true,
-      data: data?.data || data,
-      message: data?.message
+      data: (data?.data ?? data) as T,
+      message: data?.message as string | undefined
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : '';

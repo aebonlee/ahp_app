@@ -95,10 +95,10 @@ const makeSystemRequest = async <T>(
     });
     
     const contentType = response.headers.get('content-type');
-    let data: any = null;
-    
+    let data: Record<string, unknown> | null = null;
+
     if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
+      data = await response.json() as Record<string, unknown>;
     } else if (response.ok && options.method === 'DELETE') {
       // DELETE requests might not return JSON
       data = { success: true };
@@ -108,13 +108,13 @@ const makeSystemRequest = async <T>(
     }
 
     if (!response.ok) {
-      throw new Error(data?.message || data?.error || `HTTP ${response.status}: System API 요청 실패`);
+      throw new Error((data?.message || data?.error || `HTTP ${response.status}: System API 요청 실패`) as string);
     }
 
     return {
       success: true,
-      data: data?.data || data,
-      message: data?.message
+      data: (data?.data ?? data) as T,
+      message: data?.message as string | undefined
     };
   } catch (error: unknown) {
     console.error(`System API Error [${endpoint}]:`, error);

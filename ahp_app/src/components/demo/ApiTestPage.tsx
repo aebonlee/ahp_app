@@ -10,7 +10,7 @@ import AHPApiService from '../../services/ahpApiService';
 interface TestResult {
   step: string;
   status: 'pending' | 'success' | 'error';
-  data?: any;
+  data?: unknown;
   error?: string;
   duration?: number;
 }
@@ -310,7 +310,7 @@ const ApiTestPage: React.FC = () => {
                       </div>
                     )}
                     
-                    {result.data && (
+                    {result.data !== undefined && result.data !== null && (
                       <div className="bg-gray-50 p-3 rounded-md">
                         <pre className="text-sm text-gray-700 overflow-x-auto">
                           {JSON.stringify(result.data, null, 2)}

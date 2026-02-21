@@ -154,8 +154,8 @@ const makeRequest = async <T>(
     
     // 응답이 JSON이 아닌 경우 처리
     const contentType = response.headers.get('content-type');
-    let data: any = null;
-    
+    let data: Record<string, unknown> | null = null;
+
     if (!contentType || !contentType.includes('application/json')) {
       if (isDeleteRequest && response.ok) {
         // DELETE 요청이 성공했고 JSON이 아닌 경우 (예: 204 No Content)
@@ -168,7 +168,7 @@ const makeRequest = async <T>(
         throw new Error(`서버가 올바른 응답을 반환하지 않았습니다. (${response.status})`);
       }
     } else {
-      data = await response.json();
+      data = await response.json() as Record<string, unknown>;
     }
 
     if (!response.ok) {
@@ -184,7 +184,7 @@ const makeRequest = async <T>(
 
       // 500 에러 특별 처리 - 백엔드 상세 에러 메시지 추출
       if (response.status === 500) {
-        const errorDetail = data?.detail || data?.error || data?.message || '서버 내부 오류';
+        const errorDetail = (data?.detail || data?.error || data?.message || '서버 내부 오류') as string;
         throw new Error(`서버 오류: ${errorDetail}`);
       }
 
@@ -200,8 +200,8 @@ const makeRequest = async <T>(
 
       // 400 에러 상세 분석
       if (response.status === 400) {
-        const errorMessage = data.message || data.error ||
-                           (typeof data === 'object' ? JSON.stringify(data) : 'Bad Request');
+        const errorMessage = (data?.message || data?.error ||
+                           (typeof data === 'object' ? JSON.stringify(data) : 'Bad Request')) as string;
         throw new Error(`잘못된 요청: ${errorMessage}`);
       }
 
@@ -210,13 +210,13 @@ const makeRequest = async <T>(
         throw new Error(`엔드포인트를 찾을 수 없습니다: ${endpoint}`);
       }
 
-      throw new Error(data.message || data.error || `HTTP ${response.status}: API 요청 실패`);
+      throw new Error((data?.message || data?.error || `HTTP ${response.status}: API 요청 실패`) as string);
     }
 
     return {
       success: true,
-      data: data.data || data,
-      message: data.message
+      data: (data?.data ?? data) as T,
+      message: data?.message as string | undefined
     };
   } catch (error: unknown) {
     console.error(`API Error [${endpoint}]:`, error);
