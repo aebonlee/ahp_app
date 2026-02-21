@@ -16,8 +16,10 @@ const EvaluatorOnlyDashboard: React.FC<EvaluatorOnlyDashboardProps> = ({ user, o
 
   const handleInvitationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (invitationCode.trim()) {
-      // TODO: 초대 코드로 평가 페이지로 이동
+    const code = invitationCode.trim();
+    if (code) {
+      // 초대 코드를 세션에 저장하여 평가 페이지에서 사용
+      sessionStorage.setItem('ahp_evaluator_access_key', code);
       onTabChange('pairwise-evaluation');
     }
   };

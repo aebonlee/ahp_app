@@ -1,22 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import dataService from '../../services/dataService';
 
 interface ExportOptions {
   format: 'csv';
-  includeCharts?: boolean;
   includeProgress?: boolean;
   includeRanking?: boolean;
   includeConsistency?: boolean;
-}
-
-interface ProjectExportData {
-  id: string;
-  title: string;
-  description: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 interface ExportManagerProps {
@@ -42,31 +33,70 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
 
   const [options, setOptions] = useState<ExportOptions>({
     format: 'csv',
-    includeCharts: true,
     includeProgress: true,
     includeRanking: true,
-    includeConsistency: true
+    includeConsistency: true,
   });
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      // Simple CSV export
-      const csvContent = [
-        '프로젝트 정보',
+      const rows: string[] = [
+        '## 프로젝트 정보',
         `프로젝트 ID,${projectId}`,
-        `프로젝트 제목,${projectTitle}`,
-        `내보내기 날짜,${new Date().toLocaleDateString('ko-KR')}`
-      ].join('\n');
+        `프로젝트 제목,"${projectTitle}"`,
+        `내보내기 날짜,${new Date().toLocaleDateString('ko-KR')}`,
+        '',
+      ];
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      // 평가 기준 fetch
+      const criteria = await dataService.getCriteria(projectId);
+      if (criteria.length > 0) {
+        rows.push('## 평가 기준');
+        rows.push('기준명,설명,가중치,수준');
+        criteria.forEach(c => {
+          rows.push(`"${c.name}","${c.description || ''}",${c.weight ?? ''},${c.level ?? 0}`);
+        });
+        rows.push('');
+      }
+
+      // 대안 fetch
+      const alternatives = await dataService.getAlternatives(projectId);
+      if (alternatives.length > 0) {
+        rows.push('## 대안');
+        rows.push('대안명,설명,비용');
+        alternatives.forEach(a => {
+          rows.push(`"${a.name}","${a.description || ''}",${a.cost ?? ''}`);
+        });
+        rows.push('');
+      }
+
+      // 쌍대비교 데이터 fetch (옵션 선택 시)
+      if (options.includeConsistency) {
+        const comparisons = await dataService.getPairwiseComparisons(projectId);
+        if (comparisons.length > 0) {
+          rows.push('## 쌍대비교 데이터');
+          rows.push('비교유형,항목A ID,항목B ID,비교값,일관성 비율');
+          comparisons.forEach(c => {
+            rows.push(`${c.comparison_type},${c.element_a_id},${c.element_b_id},${c.value},${c.consistency_ratio ?? ''}`);
+          });
+          rows.push('');
+        }
+      }
+
+      // BOM 포함 UTF-8 CSV 생성 (한글 Excel 호환)
+      const csvContent = rows.join('\n');
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${projectTitle}_export_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
 
+      showActionMessage('success', '내보내기가 완료되었습니다.');
       if (onClose) onClose();
     } catch (error) {
       showActionMessage('error', '내보내기에 실패했습니다. 다시 시도해주세요.');
@@ -84,7 +114,7 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
       )}
       <div className="p-6">
         <h2 className="text-xl font-semibold mb-4">프로젝트 내보내기</h2>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">
@@ -96,11 +126,8 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
               className="w-full p-2 border border-gray-300 rounded-md"
               disabled
             >
-              <option value="csv">CSV (현재 지원)</option>
+              <option value="csv">CSV (한글 Excel 호환)</option>
             </select>
-            <p className="text-sm text-gray-500 mt-1">
-              보안상 이유로 Excel 내보내기는 임시로 비활성화되었습니다.
-            </p>
           </div>
 
           <div>
@@ -115,7 +142,7 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
                   onChange={(e) => setOptions({ ...options, includeProgress: e.target.checked })}
                   className="mr-2"
                 />
-                진행 상황
+                평가 기준 및 대안
               </label>
               <label className="flex items-center">
                 <input
@@ -133,7 +160,7 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
                   onChange={(e) => setOptions({ ...options, includeConsistency: e.target.checked })}
                   className="mr-2"
                 />
-                일관성 분석
+                쌍대비교 데이터 및 일관성 분석
               </label>
             </div>
           </div>
