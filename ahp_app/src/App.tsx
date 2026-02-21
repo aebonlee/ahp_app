@@ -1011,7 +1011,6 @@ function App() {
   const handleEvaluatorProjectSelect = (projectId: string, projectTitle: string, evaluationMethod: 'pairwise' | 'direct') => {
     setSelectedProjectId(projectId);
     setSelectedProjectTitle(projectTitle);
-    setSelectedEvaluationMethod(evaluationMethod);
     
     const targetTab = evaluationMethod === 'pairwise' ? 'pairwise-evaluation' : 'direct-evaluation';
     changeTab(targetTab, projectId, projectTitle);

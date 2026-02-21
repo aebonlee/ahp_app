@@ -236,7 +236,6 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
       setSavedCriteria([]);
       setTempCriteria([]);
       setHasTempChanges(false);
-      setEditingIds(new Set());
       showActionMessage('success', '모든 기준이 초기화되었습니다.');
     } catch (error) {
       showActionMessage('error', '기준 초기화 중 오류가 발생했습니다.');
