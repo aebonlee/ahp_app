@@ -36,8 +36,6 @@ const EnhancedProjectDashboard: React.FC = () => {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [activeTab, setActiveTab] = useState<'list' | 'create' | 'manage'>('list');
   const [showModelConfig, setShowModelConfig] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
 
@@ -92,7 +90,6 @@ const EnhancedProjectDashboard: React.FC = () => {
     
     setProjects([newProject, ...projects]);
     setShowCreateForm(false);
-    setActiveTab('list');
   };
 
   const handleEditProject = (projectData: ProjectFormData) => {

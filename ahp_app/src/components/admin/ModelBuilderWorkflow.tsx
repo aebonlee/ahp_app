@@ -39,8 +39,6 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
     evaluationStarted: false
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [project, setProject] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
@@ -55,8 +53,6 @@ const ModelBuilderWorkflow: React.FC<ModelBuilderWorkflowProps> = ({
       
       // 프로젝트 데이터 로드
       const projectData = await cleanDataService.getProject(projectId);
-      setProject(projectData);
-      
       // 기준, 대안, 평가자 수 로드
       const [criteria, alternatives, evaluators] = await Promise.all([
         cleanDataService.getCriteria(projectId),

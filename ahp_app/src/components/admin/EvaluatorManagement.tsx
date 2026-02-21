@@ -243,25 +243,6 @@ const EvaluatorManagement: React.FC<EvaluatorManagementProps> = ({
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleAddEvaluatorDemo = () => {
-    if (!validateForm()) return;
-
-    const newEvaluator: Evaluator = {
-      id: `eval-${Date.now()}`,
-      email: formData.email,
-      name: formData.name,
-      phone: formData.phone,
-      assignedProjects: [],
-      createdAt: new Date().toISOString(),
-      lastActive: '방금 전'
-    };
-
-    setEvaluators([newEvaluator, ...evaluators]);
-    setFormData({ email: '', name: '', phone: '' });
-    setShowAddForm(false);
-    setErrors({});
-  };
 
   const handleEditEvaluator = () => {
     if (!validateForm()) return;

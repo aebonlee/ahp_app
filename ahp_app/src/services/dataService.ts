@@ -1,36 +1,6 @@
 import { projectApi, criteriaApi, alternativeApi, evaluatorApi, evaluationApi } from './api';
 import { ProjectData, CriteriaData, AlternativeData, EvaluatorData, PairwiseComparisonData } from './api';
 
-// localStorage 유틸리티 함수 제거됨 - 순수 API 기반 데이터 서비스로 대체
-// 모든 데이터는 Django 백엔드 API를 통해 처리
-
-// 로컬 스토리지 키 상수 (제거됨)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _STORAGE_KEYS = {
-  PROJECTS: 'ahp_projects',
-  CRITERIA: 'ahp_criteria',
-  ALTERNATIVES: 'ahp_alternatives',
-  EVALUATORS: 'ahp_evaluators',
-  COMPARISONS: 'ahp_comparisons',
-  OFFLINE_MODE: 'ahp_offline_mode',
-  TRASH: 'ahp_trash_projects'
-} as const;
-
-// 오프라인 모드 완전 제거 - 항상 온라인 API 사용
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _isOfflineMode = (): boolean => {
-  return false; // 항상 false
-};
-
-// UUID 생성 함수 (API에서 ID 생성하므로 사용하지 않음)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _generateUUID = (): string => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : ((r & 0x3) | 0x8);
-    return v.toString(16);
-  });
-};
 
 // === 통합 데이터 서비스 클래스 ===
 class DataService {

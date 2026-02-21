@@ -4,8 +4,6 @@ import Button from '../common/Button';
 import Input from '../common/Input';
 import Modal from '../common/Modal';
 import cleanDataService from '../../services/dataService_clean';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { evaluatorApi } from '../../services/api';
 import { EvaluatorData } from '../../services/api';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 
@@ -46,8 +44,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
   currentPlan = 'Standard Plan'
 }) => {
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showBulkQR, setShowBulkQR] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 

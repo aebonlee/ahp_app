@@ -13,8 +13,6 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
   const [scrollY, setScrollY] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light');
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showSupportPage, setShowSupportPage] = useState(false);
   const [showNewsPage, setShowNewsPage] = useState(false);
@@ -43,41 +41,6 @@ const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
 
   // 애니메이션 효과 비활성화 (안정성 확보)
 
-  // 테마 변경 감지
-  useEffect(() => {
-    const detectTheme = () => {
-      const theme = document.documentElement.getAttribute('data-theme');
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setCurrentTheme(theme === 'dark' || (!theme && systemPrefersDark) ? 'dark' : 'light');
-    };
-
-    // 초기 테마 설정
-    detectTheme();
-
-    // 테마 변경 감지
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'data-theme') {
-          detectTheme();
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme']
-    });
-
-    // 시스템 테마 변경 감지
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleMediaChange = () => detectTheme();
-    mediaQuery.addEventListener('change', handleMediaChange);
-
-    return () => {
-      observer.disconnect();
-      mediaQuery.removeEventListener('change', handleMediaChange);
-    };
-  }, []);
 
   // 상단으로 스크롤
   const scrollToTop = () => {

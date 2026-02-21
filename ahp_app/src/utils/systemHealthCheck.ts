@@ -28,9 +28,6 @@ class SystemHealthChecker {
   async checkFrontend(): Promise<HealthCheckResult> {
     const startTime = Date.now();
     try {
-      // React 앱 기본 상태 확인
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _isReactApp = !!window.React || !!document.querySelector('#root');
       const buildInfo = {
         version: process.env.REACT_APP_VERSION || '1.0.0',
         buildTime: process.env.REACT_APP_BUILD_TIME || new Date().toISOString(),
@@ -160,7 +157,6 @@ class SystemHealthChecker {
     interface EndpointResult { endpoint: string; status: number; responseTime?: number; healthy: boolean; error?: string }
     const results: EndpointResult[] = [];
     let healthyCount = 0;
-    let _totalTime = 0;
 
     for (const endpoint of endpoints) {
       try {
@@ -174,9 +170,6 @@ class SystemHealthChecker {
         });
 
         const responseTime = Date.now() - endpointStart;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        _totalTime += responseTime;
-
         const isHealthy = response.status < 500;
         if (isHealthy) healthyCount++;
 

@@ -83,10 +83,6 @@ function App() {
   useColorTheme();
   useTheme();
 
-  // GitHub Pages 하위 경로 처리 - 현재는 루트에 배포되므로 빈 문자열
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const basePath = '';
-  
   // localStorage에서 초기 사용자 정보 복원
   const getInitialUser = (): User | null => {
     const storedUser = localStorage.getItem('ahp_user');
@@ -166,8 +162,6 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedProjectTitle, setSelectedProjectTitle] = useState<string>('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedEvaluationMethod, setSelectedEvaluationMethod] = useState<'pairwise' | 'direct'>('pairwise');
   
   // 평가자 설문조사 관련 상태 (현재 미사용)
   // const [isEvaluatorSurvey, setIsEvaluatorSurvey] = useState(false);
@@ -980,12 +974,6 @@ function App() {
   const handleLoginClick = () => {
     changeTab('login');
     setRegisterMode(null);
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleRegisterClick = () => {
-    setRegisterMode('service');
-    changeTab('register');
   };
 
   const handleBackToLogin = () => {

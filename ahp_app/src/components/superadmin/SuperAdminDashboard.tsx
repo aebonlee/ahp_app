@@ -30,8 +30,6 @@ interface StoredUser {
 }
 
 const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabChange }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_activities, _setActivities] = useState<Activity[]>([]);
   const [actionMessage, setActionMessage] = useState<{type:'success'|'error'|'info', text:string}|null>(null);
 
   const showActionMessage = (type: 'success'|'error'|'info', text: string) => {

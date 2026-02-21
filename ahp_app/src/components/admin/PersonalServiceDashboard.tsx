@@ -22,11 +22,7 @@ import WorkshopManagement from '../workshop/WorkshopManagement';
 import DecisionSupportSystem from '../decision/DecisionSupportSystem';
 import PaperManagement from '../paper/PaperManagement';
 import ProjectSelector from '../project/ProjectSelector';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import SurveyManagementSystem from '../survey/SurveyManagementSystem';
 import PersonalSettings from '../settings/PersonalSettings';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import DemographicSurvey from '../survey/DemographicSurvey';
 import SurveyFormBuilder from '../survey/SurveyFormBuilder';
 import UsageManagement from './UsageManagement';
 import ValidityCheck from '../validity/ValidityCheck';

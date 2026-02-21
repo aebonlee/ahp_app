@@ -2,16 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import Input from '../common/Input';
 import HierarchyTreeVisualization from '../common/HierarchyTreeVisualization';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import HierarchyTreeBuilder from '../modeling/HierarchyTreeBuilder';
 import BulkCriteriaInput from '../criteria/BulkCriteriaInput';
 import CriteriaTemplates, { CriteriaTemplate } from '../criteria/CriteriaTemplates';
 import VisualCriteriaBuilder, { CriteriaNode as VisualCriteriaNode } from '../criteria/VisualCriteriaBuilder';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import InteractiveCriteriaEditor from '../criteria/InteractiveCriteriaEditor';
 import cleanDataService from '../../services/dataService_clean';
 import { generateUUID, isTempId } from '../../utils/uuid';
 
@@ -81,15 +75,11 @@ const CriteriaManagement: React.FC<CriteriaManagementProps> = ({
   const [activeInputMode, setActiveInputMode] = useState<'template' | 'bulk' | 'visual' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>('vertical');
   const [editMode, setEditMode] = useState(false);
   
   // 인라인 편집 상태
   const [editingCriteria, setEditingCriteria] = useState<{[key: string]: {name: string, description: string}}>({});
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [draggedItem, setDraggedItem] = useState<Criterion | null>(null);
 
   // 백엔드에서 기준 로드
   const loadCriteria = useCallback(async () => {

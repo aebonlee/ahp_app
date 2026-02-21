@@ -336,7 +336,6 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _getSaveStatusColor = () => {
     switch (saveStatus) {
       case 'saving': return 'bg-yellow-500';

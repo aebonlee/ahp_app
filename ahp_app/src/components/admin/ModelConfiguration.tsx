@@ -5,8 +5,7 @@ import Input from '../common/Input';
 import Modal from '../common/Modal';
 import HelpModal from '../common/HelpModal';
 import TreeModelConfiguration from './TreeModelConfiguration';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ProjectStatus, ProjectFormData } from './ProjectCreationForm';
+import { ProjectFormData } from './ProjectCreationForm';
 
 interface Project extends ProjectFormData {
   id: string;
