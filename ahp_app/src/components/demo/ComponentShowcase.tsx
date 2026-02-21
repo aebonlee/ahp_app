@@ -138,7 +138,7 @@ const ComponentShowcase: React.FC = () => {
     }
   };
 
-  const handleComparisonChange = (newComparisons: any[]) => {
+  const handleComparisonChange = (newComparisons: { i: number; j: number; value: number }[]) => {
     setComparisons(newComparisons);
     // CR 재계산
     setTimeout(calculateConsistencyRatio, 100);

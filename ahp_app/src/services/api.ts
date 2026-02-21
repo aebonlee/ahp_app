@@ -218,10 +218,10 @@ const makeRequest = async <T>(
       data: data.data || data,
       message: data.message
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`API Error [${endpoint}]:`, error);
     // 네트워크 오류 (서버 다운, CORS, 오프라인 등) 사용자 친화적 메시지로 변환
-    let errorMessage = error.message || '알 수 없는 오류가 발생했습니다.';
+    let errorMessage = (error instanceof Error ? error.message : null) || '알 수 없는 오류가 발생했습니다.';
     if (errorMessage === 'Failed to fetch' || errorMessage.includes('NetworkError') || errorMessage.includes('net::ERR')) {
       errorMessage = '서버에 연결할 수 없습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.';
     }
@@ -649,7 +649,7 @@ export const exportApi = {
 export const authApi = {
   // 로그인
   login: (email: string, password: string) =>
-    makeRequest<{ token: string; user: any }>('/api/service/auth/login', {
+    makeRequest<{ token: string; user: unknown }>('/api/service/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password })
     }),
@@ -789,22 +789,22 @@ export const advancedAnalysisApi = {
     }),
 
   // 그룹 합의 분석
-  runGroupConsensusAnalysis: (projectId: string, data: any) =>
-    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/group_consensus_analysis/`, {
+  runGroupConsensusAnalysis: (projectId: string, data: Record<string, unknown>) =>
+    makeRequest<unknown>(`/api/service/analysis/advanced/${projectId}/group_consensus_analysis/`, {
       method: 'POST',
       body: JSON.stringify(data)
     }),
 
   // 통계적 검증
-  runStatisticalTest: (projectId: string, data: any) =>
-    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/statistical_test/`, {
+  runStatisticalTest: (projectId: string, data: Record<string, unknown>) =>
+    makeRequest<unknown>(`/api/service/analysis/advanced/${projectId}/statistical_test/`, {
       method: 'POST',
       body: JSON.stringify(data)
     }),
 
   // 몬테카를로 시뮬레이션
-  runMonteCarloSimulation: (projectId: string, data: any) =>
-    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/monte_carlo_simulation/`, {
+  runMonteCarloSimulation: (projectId: string, data: Record<string, unknown>) =>
+    makeRequest<unknown>(`/api/service/analysis/advanced/${projectId}/monte_carlo_simulation/`, {
       method: 'POST',
       body: JSON.stringify(data)
     }),

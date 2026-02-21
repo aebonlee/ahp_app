@@ -39,8 +39,7 @@ export interface CollaborationEvent {
   type: 'node_update' | 'node_create' | 'node_delete' | 'cursor_move' | 'selection_change' | 'user_join' | 'user_leave' | 'chat_message';
   userId: string;
   timestamp: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any; // Varies by event type (node_update, cursor_move, chat_message, etc.)
+  data: unknown; // Varies by event type (node_update, cursor_move, chat_message, etc.)
   acknowledged?: boolean;
   version?: number;
 }
@@ -320,7 +319,7 @@ export class RealTimeSyncManager {
       
       // 노드 관련 이벤트의 경우
       if (['node_update', 'node_create', 'node_delete'].includes(localEvent.type)) {
-        return localEvent.data?.nodeId === incomingEvent.data?.nodeId;
+        return (localEvent.data as { nodeId?: unknown })?.nodeId === (incomingEvent.data as { nodeId?: unknown })?.nodeId;
       }
       
       return false;

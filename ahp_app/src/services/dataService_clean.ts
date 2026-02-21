@@ -299,12 +299,12 @@ class CleanDataService {
   // 메모리 데이터 관리 헬퍼 메서드들 (더 이상 사용하지 않음)
   private memoryStorage: Record<string, unknown> = {};
 
-  private getMemoryData(key: string): any {
+  private getMemoryData(key: string): unknown {
     // Deprecated - 모든 데이터는 DB에서 직접 조회
     return this.memoryStorage[key];
   }
 
-  private setMemoryData(key: string, data: any): void {
+  private setMemoryData(key: string, data: unknown): void {
     // Deprecated - 모든 데이터는 DB에 직접 저장
     this.memoryStorage[key] = data;
   }

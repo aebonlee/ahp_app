@@ -151,7 +151,7 @@ const PairwiseComparison: React.FC<PairwiseComparisonProps> = ({
         setTimeout(() => setRecentChange(undefined), 3000);
       }
       
-      const requestBody: any = {
+      const requestBody: Record<string, unknown> = {
         project_id: projectId,
         criterion_id: criterionId,
         value: value

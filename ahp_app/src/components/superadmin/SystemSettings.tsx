@@ -165,7 +165,7 @@ const SystemSettings: React.FC = () => {
     }
   };
 
-  const updateSetting = (category: keyof SystemSettingsData, field: string, value: any) => {
+  const updateSetting = (category: keyof SystemSettingsData, field: string, value: unknown) => {
     setSettings(prev => ({
       ...prev,
       [category]: {

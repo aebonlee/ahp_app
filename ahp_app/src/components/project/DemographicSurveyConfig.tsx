@@ -75,7 +75,7 @@ const DemographicSurveyConfig: React.FC<DemographicSurveyConfigProps> = ({
     }
   };
 
-  const handleBasicFieldChange = (field: keyof DemographicConfig, value: any) => {
+  const handleBasicFieldChange = (field: keyof DemographicConfig, value: DemographicConfig[keyof DemographicConfig]) => {
     onChange({
       ...config,
       [field]: value,

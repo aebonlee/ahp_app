@@ -409,7 +409,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
         userId: event.userId,
         action: event.type,
         timestamp: event.timestamp,
-        nodeId: event.data?.nodeId,
+        nodeId: (event.data as { nodeId?: string } | null)?.nodeId,
         details: event.data
       };
       setUserActivities(prev => [activity, ...prev].slice(0, 50));
@@ -424,7 +424,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
 
   // 사용자 참여 처리 (개선됨)
   const handleUserJoin = useCallback((event: CollaborationEvent) => {
-    const userData: CollaborationUser = event.data;
+    const userData: CollaborationUser = event.data as CollaborationUser;
     
     setUsers(prev => {
       const existingIndex = prev.findIndex(u => u.id === userData.id);
@@ -458,7 +458,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
 
   // 사용자 떠남 처리 (개선됨)
   const handleUserLeave = useCallback((event: CollaborationEvent) => {
-    const userId = event.data.userId;
+    const userId = (event.data as { userId: string }).userId;
     
     setUsers(prev => {
       const updated = prev.map(user => 
@@ -484,7 +484,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
 
   // 노드 업데이트 처리 (개선됨)
   const handleNodeUpdate = useCallback((event: CollaborationEvent) => {
-    const nodeData = event.data;
+    const nodeData = event.data as { hierarchy?: HierarchyNode; nodeId?: string };
     
     // 충돌 상태 확인
     if (syncManager) {
@@ -513,7 +513,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
 
   // 노드 생성/삭제 처리
   const handleNodeCreate = useCallback((event: CollaborationEvent) => {
-    const nodeData = event.data;
+    const nodeData = event.data as { hierarchy?: HierarchyNode; nodeId?: string };
     if (onModelChange && nodeData.hierarchy) {
       onModelChange(nodeData.hierarchy);
     }
@@ -525,7 +525,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
   }, [onModelChange, currentUser.id, users]);
 
   const handleNodeDelete = useCallback((event: CollaborationEvent) => {
-    const nodeData = event.data;
+    const nodeData = event.data as { hierarchy?: HierarchyNode; nodeId?: string };
     if (onModelChange && nodeData.hierarchy) {
       onModelChange(nodeData.hierarchy);
     }
@@ -538,7 +538,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
 
   // 커서 이동 처리 (개선됨)
   const handleCursorMove = useCallback((event: CollaborationEvent) => {
-    const { x, y } = event.data;
+    const { x, y } = event.data as { x: number; y: number };
     const userId = event.userId;
     
     if (userId !== currentUser.id) {
@@ -581,7 +581,7 @@ const RealTimeCollaboration: React.FC<RealTimeCollaborationProps> = ({
 
   // 채팅 메시지 처리 (개선됨)
   const handleChatMessage = useCallback((event: CollaborationEvent) => {
-    const messageData: ChatMessage = event.data;
+    const messageData: ChatMessage = event.data as ChatMessage;
     
     setChatMessages(prev => {
       // 중복 메시지 방지

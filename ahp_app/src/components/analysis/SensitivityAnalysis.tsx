@@ -12,7 +12,10 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 
 // Google Charts 타입 정의
-declare const google: any;
+declare const google: {
+  charts: { load: (version: string, config: Record<string, unknown>) => void; setOnLoadCallback: (cb: () => void) => void };
+  visualization: { DataTable: new () => { addColumn: (type: string, label: string) => void; addRow: (row: unknown[]) => void; addRows: (rows: unknown[][]) => void }; ColumnChart: new (el: Element) => { draw: (data: unknown, options: unknown) => void }; ScatterChart: new (el: Element) => { draw: (data: unknown, options: unknown) => void }; CandlestickChart: new (el: Element) => { draw: (data: unknown, options: unknown) => void } };
+};
 
 interface CriterionNode {
   id: string;

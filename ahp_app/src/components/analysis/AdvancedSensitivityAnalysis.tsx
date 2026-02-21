@@ -8,7 +8,10 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 
 // Google Charts 타입 정의
-declare const google: any;
+declare const google: {
+  charts: { load: (version: string, config: Record<string, unknown>) => void; setOnLoadCallback: (cb: () => void) => void };
+  visualization: { DataTable: new () => { addColumn: (type: string, label: string) => void; addRow: (row: unknown[]) => void; addRows: (rows: unknown[][]) => void }; BarChart: new (el: Element) => { draw: (data: unknown, options: unknown) => void }; LineChart: new (el: Element) => { draw: (data: unknown, options: unknown) => void }; ColumnChart: new (el: Element) => { draw: (data: unknown, options: unknown) => void }; Table: new (el: Element) => { draw: (data: unknown, options: unknown) => void } };
+};
 
 export interface SensitivityScenario {
   id: string;
@@ -255,7 +258,7 @@ const AdvancedSensitivityAnalysis: React.FC<AdvancedSensitivityAnalysisProps> = 
     return results;
   };
 
-  const calculateNewScore = (alternative: any, weightChanges: { [key: string]: number }): number => {
+  const calculateNewScore = (alternative: { id: string; name: string; score: number }, weightChanges: { [key: string]: number }): number => {
     // 실제로는 각 기준별 점수와 새로운 가중치를 곱해서 계산
     // 여기서는 시뮬레이션을 위해 가중치 변화에 따른 점수 변화를 근사
     let newScore = alternative.score;
