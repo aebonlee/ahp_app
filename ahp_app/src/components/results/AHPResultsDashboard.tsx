@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   ChartBarIcon, 
   TableCellsIcon, 
@@ -45,23 +45,11 @@ const AHPResultsDashboard: React.FC<AHPResultsDashboardProps> = ({
   const [selectedView, setSelectedView] = useState<'overview' | 'individual' | 'group' | 'consistency' | 'sensitivity'>('overview');
   const [selectedEvaluator, setSelectedEvaluator] = useState<string | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [sensitivityResults, setSensitivityResults] = useState<any[]>([]);
-
   // 결과 유효성 검증
   const validationResults = individualResults.map(result => ({
     evaluatorId: result.evaluator_id,
     validation: validateAHPResult(result)
   }));
-
-  // 민감도 분석 수행
-  useEffect(() => {
-    if (individualResults.length > 0 && nodes.length > 0) {
-      const baseResult = individualResults[0];
-      // 민감도 분석 실행 (실제 구현에서는 백그라운드에서 수행)
-      // const sensitivity = performSensitivityAnalysis(baseResult, nodes, [], 0.1);
-      // setSensitivityResults(sensitivity);
-    }
-  }, [individualResults, nodes]);
 
   // 일관성 상태 계산
   const getConsistencyStatus = (cr: number) => {

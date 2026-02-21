@@ -110,7 +110,6 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
   const [rankChanges, setRankChanges] = useState<RankChange[]>([]);
   const [stabilityIndex, setStabilityIndex] = useState<number>(1);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [_visualizationData, setVisualizationData] = useState<any[]>([]);
 
   // 새로운 고급 분석 상태
   const [extendedSensitivityResults, setExtendedSensitivityResults] = useState<ExtendedSensitivityResult[]>([]);
@@ -233,9 +232,6 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
       const stability = calculateStabilityIndex(changes);
       setStabilityIndex(stability);
 
-      // 시각화 데이터 생성
-      generateVisualizationData(targetCriterionId);
-      
     } catch (error) {
       showActionMessage('error', '민감도 분석 중 오류가 발생했습니다.');
     } finally {
@@ -292,29 +288,6 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({
     const maxPossibleDelta = changes.length - 1;
     
     return Math.max(0, 1 - (averageDelta / maxPossibleDelta));
-  };
-
-  // 시각화 데이터 생성
-  const generateVisualizationData = (criterionId: string) => {
-    const steps = 21;
-    const data = [];
-    
-    for (let i = 0; i < steps; i++) {
-      const weight = i / (steps - 1); // 0 to 1
-      const scores = recalculateScores(criterionId, weight);
-      const ranking = [...scores].sort((a, b) => b.totalScore - a.totalScore);
-      
-      data.push({
-        weight: weight,
-        rankings: ranking.map((alt, index) => ({
-          alternativeId: alt.alternativeId,
-          rank: index + 1,
-          score: alt.totalScore
-        }))
-      });
-    }
-    
-    setVisualizationData(data);
   };
 
   // 고급 분석 수행
