@@ -1119,7 +1119,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
           results: [] // 결과 데이터는 아직 API가 없어서 빈 배열로 설정
         });
       } catch (error) {
-        // project data load failed silently
+        showActionMessage('error', '프로젝트 데이터를 불러오는 데 실패했습니다.');
       }
     };
     loadProjectData();

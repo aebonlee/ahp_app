@@ -80,7 +80,6 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState<'none' | 'invite' | 'remind' | 'remove'>('none');
   const [emailTemplate, setEmailTemplate] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | Participant['status']>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -288,12 +287,10 @@ const ParticipantManager: React.FC<ParticipantManagerProps> = ({
     ));
   };
 
-  const sendReminder = async (participantIds: string[]) => {
-    setIsLoading(true);
+  const sendReminder = (participantIds: string[]) => {
     // 실제로는 API 호출
     setTimeout(() => {
       showActionMessage('success', `${participantIds.length}명에게 알림 이메일을 전송했습니다.`);
-      setIsLoading(false);
     }, 1000);
   };
 

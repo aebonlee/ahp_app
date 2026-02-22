@@ -566,7 +566,6 @@ const EvaluatorAssignment: React.FC<EvaluatorAssignmentProps> = ({
               <Button
                 variant="primary"
                 onClick={onComplete}
-                disabled={false}
               >
                 다음 단계로
               </Button>
