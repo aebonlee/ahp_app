@@ -163,7 +163,7 @@ const MyProjects: React.FC<MyProjectsProps> = ({
   // 휴지통 프로젝트 복원 - confirm
   const confirmRestoreProject = async () => {
     if (!pendingAction) return;
-    const { id, title: _title } = pendingAction;
+    const { id } = pendingAction;
     setPendingAction(null);
     try {
       const success = await dataService.restoreProject(id);

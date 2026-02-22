@@ -336,14 +336,6 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     }
   };
 
-  const _getSaveStatusColor = () => {
-    switch (saveStatus) {
-      case 'saving': return 'bg-yellow-500';
-      case 'saved': return 'bg-green-500';
-      case 'error': return 'bg-red-500';
-      default: return 'bg-blue-500';
-    }
-  };
 
   const tabs = [
     { id: 'profile', label: '프로필', icon: '👤' },

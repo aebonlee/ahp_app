@@ -15,7 +15,7 @@ import EvaluatorAssignment from './EvaluatorAssignment';
 import EnhancedEvaluatorManagement from '../evaluator/EnhancedEvaluatorManagement';
 import SurveyLinkManager from './SurveyLinkManager';
 import ModelFinalization from './ModelFinalization';
-import WorkflowStageIndicator, { WorkflowStage } from '../workflow/WorkflowStageIndicator';
+import type { WorkflowStage } from '../workflow/WorkflowStageIndicator';
 import { EvaluationMode } from '../evaluation/EvaluationModeSelector';
 import PaymentSystem from '../payment/PaymentSystem';
 import WorkshopManagement from '../workshop/WorkshopManagement';
@@ -190,8 +190,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   };
   
   const [currentStep, setCurrentStep] = useState<'overview' | 'projects' | 'criteria' | 'alternatives' | 'evaluators' | 'finalize'>('overview');
-  const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<UserProject | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [projectForm, setProjectForm] = useState({
@@ -365,54 +363,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
 
   // loadProjects 함수 제거 - App.tsx에서 관리
 
-  const resetProjectForm = () => {
-    setProjectForm({
-      title: '',
-      description: '',
-      objective: '',
-      evaluation_method: 'pairwise',
-      evaluation_mode: 'practical' as EvaluationMode,
-      workflow_stage: 'creating' as WorkflowStage
-    });
-    setProjectTemplate('blank');
-    setEditingProject(null);
-    setNewProjectStep(1);
-    setNewProjectId(null);
-    setIsProjectFormOpen(false);
-    setError(null);
-  };
-
-
-  const handleEditProject = (project: ProjectData | UserProject) => {
-    
-    // ProjectData를 UserProject 형식으로 변환
-    const userProject: UserProject = {
-      id: project.id || '',
-      title: project.title,
-      description: project.description || '',
-      status: project.status || 'draft',
-      evaluation_method: 'pairwise', // 기본값
-      evaluation_mode: project.evaluation_mode || 'practical',
-      workflow_stage: project.workflow_stage || 'creating',
-      objective: (project as ProjectData).objective || '',
-      last_modified: project.updated_at || new Date().toISOString(),
-      evaluator_count: 0,
-      completion_rate: 0,
-      criteria_count: (project as ProjectData).criteria_count || 0,
-      alternatives_count: (project as ProjectData).alternatives_count || 0
-    };
-    
-    setEditingProject(userProject);
-    setProjectForm({
-      title: project.title,
-      description: project.description || '',
-      objective: (project as ProjectData).objective || '',
-      evaluation_method: 'pairwise',
-      evaluation_mode: project.evaluation_mode || 'practical',
-      workflow_stage: project.workflow_stage || 'creating'
-    });
-    setIsProjectFormOpen(true);
-  };
 
   const handleDeleteProject = async (projectId: string) => {
     const project = projects.find(p => p.id === projectId);
@@ -463,83 +413,6 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
       } else {
         showActionMessage('error', '프로젝트 삭제 중 오류가 발생했습니다.');
       }
-    }
-  };
-
-  const handleSaveProject = async () => {
-    if (!projectForm.title.trim()) {
-      setError('프로젝트명을 입력해주세요.');
-      return;
-    }
-
-    // 새 프로젝트 생성 시 할당량 체크
-    if (!editingProject) {
-      const quotas = getCurrentQuotas();
-      if (projects.length >= quotas.maxProjects) {
-        showActionMessage('error', `프로젝트 생성 한도(${quotas.maxProjects}개)에 도달했습니다.`);
-        return;
-      }
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (editingProject) {
-        // 편집 모드 - 프로젝트 수정
-        const updatedProject = await dataService.updateProject(editingProject.id ?? '', {
-          title: projectForm.title,
-          description: projectForm.description,
-          objective: projectForm.objective,
-          evaluation_mode: projectForm.evaluation_mode,
-          workflow_stage: projectForm.workflow_stage
-        });
-
-        if (updatedProject) {
-          // 프로젝트 수정 완료 후 실시간 새로고침
-          await refreshProjectList();
-        } else {
-          throw new Error('프로젝트 수정에 실패했습니다.');
-        }
-      } else {
-        // 생성 모드 - 새 프로젝트 생성
-        let newProject;
-        if (onCreateProject) {
-          newProject = await onCreateProject({
-            title: projectForm.title,
-            description: projectForm.description,
-            objective: projectForm.objective,
-            status: 'draft',
-            evaluation_mode: projectForm.evaluation_mode,
-            workflow_stage: projectForm.workflow_stage
-          });
-        } else {
-          newProject = await dataService.createProject({
-            title: projectForm.title,
-            description: projectForm.description,
-            objective: projectForm.objective,
-            status: 'draft',
-            evaluation_mode: projectForm.evaluation_mode,
-            workflow_stage: projectForm.workflow_stage
-          });
-        }
-
-        if (newProject) {
-          // 새 프로젝트 생성 완료 - App.tsx에서 관리됨
-          setSelectedProjectId((newProject as { id?: string })?.id || '');
-
-          // 실시간 프로젝트 목록 새로고침
-          await refreshProjectList();
-        } else {
-          throw new Error('프로젝트 생성에 실패했습니다.');
-        }
-      }
-
-      resetProjectForm();
-    } catch (error) {
-      setError(error instanceof Error ? error.message : '프로젝트 저장 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -1695,20 +1568,6 @@ ${project?.title} - ${type} 프레젠테이션
             setSelectedProjectId(project.id || '');
           }}
           onEditProject={(project) => {
-            setEditingProject({
-              id: project.id || '',
-              title: project.title,
-              description: project.description || '',
-              status: project.status || 'draft',
-              evaluation_mode: project.evaluation_mode || 'practical',
-              workflow_stage: project.workflow_stage || 'creating',
-              evaluator_count: 0,
-              completion_rate: 0,
-              criteria_count: 0,
-              alternatives_count: 0,
-              last_modified: new Date().toISOString().split('T')[0],
-              evaluation_method: 'pairwise'
-            });
             setProjectForm({
               title: project.title,
               description: project.description || '',
@@ -1717,7 +1576,6 @@ ${project?.title} - ${type} 프레젠테이션
               evaluation_mode: project.evaluation_mode || 'practical',
               workflow_stage: project.workflow_stage || 'creating'
             });
-            setIsProjectFormOpen(true);
           }}
           onDeleteProject={handleDeleteProject}
           onModelBuilder={(project) => {
@@ -3148,20 +3006,6 @@ ${project?.title} - ${type} 프레젠테이션
               setSelectedProjectId(project.id || '');
             }}
             onEditProject={(project) => {
-              setEditingProject({
-                id: project.id || '',
-                title: project.title,
-                description: project.description || '',
-                status: project.status || 'draft',
-                evaluation_mode: project.evaluation_mode || 'practical',
-                workflow_stage: project.workflow_stage || 'creating',
-                evaluator_count: 0,
-                completion_rate: 0,
-                criteria_count: 0,
-                alternatives_count: 0,
-                last_modified: new Date().toISOString().split('T')[0],
-                evaluation_method: 'pairwise'
-              });
               setProjectForm({
                 title: project.title,
                 description: project.description || '',
@@ -3170,7 +3014,6 @@ ${project?.title} - ${type} 프레젠테이션
                 evaluation_mode: project.evaluation_mode || 'practical',
                 workflow_stage: project.workflow_stage || 'creating'
               });
-              setIsProjectFormOpen(true);
             }}
             onDeleteProject={handleDeleteProject}
             onModelBuilder={(project) => {

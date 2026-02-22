@@ -32,6 +32,7 @@ const SystemHealthPage: React.FC = () => {
   useEffect(() => {
     // 초기 점검 실행
     runHealthCheck();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -42,6 +43,7 @@ const SystemHealthPage: React.FC = () => {
 
       return () => clearInterval(interval);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh, loading]);
 
   const runHealthCheck = async () => {

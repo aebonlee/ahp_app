@@ -136,7 +136,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
   useEffect(() => {
     loadSystemStats();
     loadUserStatsByRole();
-    
+
     // 30초마다 자동 새로고침
     const interval = setInterval(() => {
       loadSystemStats();
@@ -144,6 +144,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
     }, 30000);
 
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadSystemStats = async () => {

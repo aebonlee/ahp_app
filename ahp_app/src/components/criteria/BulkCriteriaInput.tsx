@@ -168,49 +168,6 @@ const BulkCriteriaInput: React.FC<BulkCriteriaInputProps> = ({
     return allCriteria;
   };
 
-  const buildHierarchy = (flatCriteria: Criterion[]): Criterion[] => {
-    const criteriaMap = new Map<string, Criterion>();
-    const rootCriteria: Criterion[] = [];
-
-    // 모든 기준을 맵에 저장 (children 배열 초기화)
-    flatCriteria.forEach(criterion => {
-      criteriaMap.set(criterion.id, { 
-        ...criterion, 
-        children: [] 
-      });
-    });
-
-    // 계층구조 구성
-    flatCriteria.forEach(criterion => {
-      const criterionObj = criteriaMap.get(criterion.id);
-      if (!criterionObj) return;
-
-      if (criterion.parent_id && criteriaMap.has(criterion.parent_id)) {
-        // 부모가 있는 경우 부모의 children에 추가
-        const parent = criteriaMap.get(criterion.parent_id);
-        if (parent) {
-          parent.children = parent.children || [];
-          parent.children.push(criterionObj);
-        }
-      } else {
-        // 부모가 없거나 레벨 1인 경우 루트로 처리
-        rootCriteria.push(criterionObj);
-      }
-    });
-
-    // 정렬
-    const sortByOrder = (items: Criterion[]) => {
-      items.sort((a, b) => (a.order || 0) - (b.order || 0));
-      items.forEach(item => {
-        if (item.children && item.children.length > 0) {
-          sortByOrder(item.children);
-        }
-      });
-    };
-    
-    sortByOrder(rootCriteria);
-    return rootCriteria;
-  };
 
   const getAllCriteria = (criteriaList: Criterion[]): Criterion[] => {
     const all: Criterion[] = [];

@@ -6,11 +6,10 @@ import Modal from '../common/Modal';
 import { 
   systemManagementService, 
   systemUtils,
-  SystemConfiguration, 
-  BackupStatus, 
+  SystemConfiguration,
+  BackupStatus,
   SystemHealth,
-  MaintenanceTask,
-  SystemUpdate
+  MaintenanceTask
 } from '../../services/systemManagementService';
 
 interface SystemManagementProps {

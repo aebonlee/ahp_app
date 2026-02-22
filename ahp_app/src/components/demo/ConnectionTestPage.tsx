@@ -16,6 +16,7 @@ const ConnectionTestPage: React.FC = () => {
 
   useEffect(() => {
     runQuickTest();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const runQuickTest = async () => {

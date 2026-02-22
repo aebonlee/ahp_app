@@ -130,6 +130,7 @@ const SystemSettings: React.FC = () => {
   // 설정 불러오기
   useEffect(() => {
     loadSettings();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadSettings = async () => {

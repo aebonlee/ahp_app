@@ -55,6 +55,7 @@ const UsageManagement: React.FC<UsageManagementProps> = ({ user, onBack }) => {
   useEffect(() => {
     loadSubscriptionData();
     loadUsageData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadSubscriptionData = async () => {
