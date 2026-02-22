@@ -215,8 +215,8 @@ class CleanDataService {
           }
         }
 
-      } catch (dupError) {
-        // handle error silently
+      } catch (_dupError) {
+        // 중복 검사 실패 시 생성 계속 진행 (best-effort check)
       }
 
       // PostgreSQL DB에 저장 - Criteria API 사용
@@ -232,8 +232,8 @@ class CleanDataService {
           await projectApi.updateProject(data.project_id, {
             criteria_count: criteriaResponse.length
           });
-        } catch (updateError) {
-          // handle error silently
+        } catch (_updateError) {
+          // criteria_count 업데이트 실패는 비핵심 부작용; 기준 생성 자체는 성공
         }
 
         return response.data;
@@ -254,8 +254,8 @@ class CleanDataService {
               return existing;
             }
           }
-        } catch (retryError) {
-          // handle error silently
+        } catch (_retryError) {
+          // 재시도 실패; 원본 에러를 throw
         }
       }
 
@@ -281,8 +281,8 @@ class CleanDataService {
             await projectApi.updateProject(projectId, {
               criteria_count: criteriaResponse.length
             });
-          } catch (updateError) {
-            // handle error silently
+          } catch (_updateError) {
+            // criteria_count 업데이트 실패는 비핵심 부작용; 기준 삭제 자체는 성공
           }
         }
 
@@ -366,8 +366,8 @@ class CleanDataService {
         await projectApi.updateProject(data.project_id, {
           alternatives_count: alternativesResponse.length
         });
-      } catch (updateError) {
-        // handle error silently
+      } catch (_updateError) {
+        // alternatives_count 업데이트 실패는 비핵심 부작용; 대안 생성 자체는 성공
       }
 
       return newAlternative;
@@ -389,8 +389,8 @@ class CleanDataService {
             await projectApi.updateProject(projectId, {
               alternatives_count: alternativesResponse.length
             });
-          } catch (updateError) {
-            // handle error silently
+          } catch (_updateError) {
+            // alternatives_count 업데이트 실패는 비핵심 부작용; 대안 삭제 자체는 성공
           }
         }
 

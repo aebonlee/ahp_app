@@ -4,8 +4,7 @@
 interface Window {
   __SUPER_ADMIN__?: boolean;
   comparisonStartTime?: number;
-  projectDebugger?: unknown;
-  google?: {
+google?: {
     charts: {
       load: (version: string, options: object) => void;
       setOnLoadCallback: (callback: () => void) => void;
