@@ -545,32 +545,30 @@ const Sidebar: React.FC<SidebarProps> = ({
           }}
         >
           {/* 슈퍼관리자 모드 전환 버튼 - 푸터 내부 상단 */}
-          {isOriginalSuperAdmin && (
-            <div style={{
-              padding: 'var(--space-3)',
-              borderBottom: '1px solid var(--border-light)'
-            }}>
-              <button
-                onClick={() => {
-                  const newMode = !isSuperAdminMode;
-                  setIsSuperAdminMode(newMode);
-                  localStorage.setItem('ahp_super_mode', newMode.toString());
-                  onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
-                }}
-                className="w-full p-2 rounded-lg transition-all flex items-center justify-center gap-2"
-                style={{
-                  backgroundColor: isSuperAdminMode ? '#b8860b' : '#2563eb',
-                  color: 'white',
-                  fontSize: 'var(--font-size-sm)',
-                  fontWeight: 700,
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  cursor: 'pointer'
-                }}
-              >
-                <span>{isSuperAdminMode ? '🔬 연구 플랫폼 모드' : '⚙️ 시스템 관리 모드'}</span>
-              </button>
-            </div>
-          )}
+          <div style={{
+            padding: 'var(--space-3)',
+            borderBottom: '1px solid var(--border-light)'
+          }}>
+            <button
+              onClick={() => {
+                const newMode = !isSuperAdminMode;
+                setIsSuperAdminMode(newMode);
+                localStorage.setItem('ahp_super_mode', newMode.toString());
+                onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
+              }}
+              className="w-full p-2 rounded-lg transition-all flex items-center justify-center gap-2"
+              style={{
+                backgroundColor: isSuperAdminMode ? '#b8860b' : '#2563eb',
+                color: 'white',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                cursor: 'pointer'
+              }}
+            >
+              <span>{isSuperAdminMode ? '🔬 연구 플랫폼 모드' : '⚙️ 시스템 관리 모드'}</span>
+            </button>
+          </div>
 
           <div className="text-center space-y-2 p-4">
             <div 
