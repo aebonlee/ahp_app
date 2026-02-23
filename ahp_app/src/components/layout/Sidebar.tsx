@@ -531,54 +531,44 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       </div>
 
-      {/* 슈퍼관리자 모드 전환 버튼 - 스크롤 영역 밖, 푸터 바로 위 고정 */}
-      {!isCollapsed && userRole === 'super_admin' && (
-        <div style={{
-          padding: 'var(--space-3)',
-          borderTop: '1px solid var(--border-light)',
-          backgroundColor: 'var(--bg-secondary)',
-          flexShrink: 0
-        }}>
-          <button
-            onClick={() => {
-              const newMode = !isSuperAdminMode;
-              setIsSuperAdminMode(newMode);
-              localStorage.setItem('ahp_super_mode', newMode.toString());
-              onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
-            }}
-            className="w-full p-3 rounded-lg transition-all flex items-center justify-center gap-2"
-            style={{
-              background: isSuperAdminMode
-                ? 'linear-gradient(135deg, #2563eb, #1d4ed8)'
-                : 'linear-gradient(135deg, #b8860b, #996515)',
-              color: 'white',
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              boxShadow: '0 3px 8px rgba(0,0,0,0.25)',
-              border: '2px solid rgba(255,255,255,0.25)',
-              letterSpacing: '0.05em',
-              cursor: 'pointer'
-            }}
-          >
-            <span style={{ fontSize: '1.1rem' }}>
-              {isSuperAdminMode ? '🔬' : '⚙️'}
-            </span>
-            <span>
-              {isSuperAdminMode ? '연구 플랫폼 전환' : '시스템 관리 전환'}
-            </span>
-          </button>
-        </div>
-      )}
-
       {/* 하단 푸터 영역 */}
       {!isCollapsed && (
-        <div 
+        <div
           className="border-t"
           style={{
             borderColor: 'var(--border-light)',
-            backgroundColor: 'var(--bg-elevated)'
+            backgroundColor: 'var(--bg-elevated)',
+            flexShrink: 0
           }}
         >
+          {/* 슈퍼관리자 모드 전환 버튼 - 푸터 내부 상단 */}
+          {userRole === 'super_admin' && (
+            <div style={{
+              padding: 'var(--space-3)',
+              borderBottom: '1px solid var(--border-light)'
+            }}>
+              <button
+                onClick={() => {
+                  const newMode = !isSuperAdminMode;
+                  setIsSuperAdminMode(newMode);
+                  localStorage.setItem('ahp_super_mode', newMode.toString());
+                  onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
+                }}
+                className="w-full p-2 rounded-lg transition-all flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: isSuperAdminMode ? '#b8860b' : '#2563eb',
+                  color: 'white',
+                  fontSize: 'var(--font-size-sm)',
+                  fontWeight: 700,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>{isSuperAdminMode ? '🔬 연구 플랫폼 모드' : '⚙️ 시스템 관리 모드'}</span>
+              </button>
+            </div>
+          )}
+
           <div className="text-center space-y-2 p-4">
             <div 
               className="text-xs font-semibold"
