@@ -101,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
       onLogoClick();
     } else {
       // 로그인 상태와 관계없이 메인 페이지로 이동
-      window.location.href = '/?tab=home';
+      window.location.href = (process.env.PUBLIC_URL || '') + '/?tab=home';
     }
   };
 

@@ -330,7 +330,7 @@ const EmailNotificationSystem: React.FC<EmailNotificationSystemProps> = ({
       workshop_date: customData.workshop_date || new Date().toLocaleString('ko-KR'),
       workshop_duration: customData.workshop_duration || '180',
       workshop_description: customData.workshop_description || 'AHP 기반 의사결정 워크숍',
-      participation_link: `${window.location.origin}/workshop/${projectId}?participant=${participant.id}`,
+      participation_link: `${window.location.origin}${process.env.PUBLIC_URL || ''}/?tab=workshop&project=${projectId}&participant=${participant.id}`,
       facilitator_name: settings?.senderInfo.name || '워크숍 진행자',
       organization: settings?.senderInfo.organization || 'TechCorp',
       contact_info: settings?.senderInfo.email || 'facilitator@company.com',

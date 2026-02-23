@@ -311,7 +311,7 @@ const PersonalSettings: React.FC<PersonalSettingsProps> = ({ user, onBack, onUse
     if (response.success) {
       showActionMessage('success', '계정이 삭제되었습니다.');
       // 로그아웃 처리
-      window.location.href = '/';
+      window.location.href = (process.env.PUBLIC_URL || '') + '/';
     } else {
       showActionMessage('error', response.error || '계정 삭제에 실패했습니다.');
     }

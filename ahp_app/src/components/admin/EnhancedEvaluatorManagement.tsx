@@ -161,7 +161,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
     const array = new Uint8Array(6);
     crypto.getRandomValues(array);
     const shortCode = Array.from(array, byte => charset[byte % 36]).join('');
-    const baseUrl = window.location.origin;
+    const baseUrl = window.location.origin + (process.env.PUBLIC_URL || '');
     return `${baseUrl}/e/${shortCode}`;
   };
 
@@ -177,7 +177,7 @@ const EnhancedEvaluatorManagement: React.FC<EnhancedEvaluatorManagementProps> = 
     try {
       for (const evaluator of selectedEvaluators) {
         // 평가 링크 생성
-        const evaluationLink = `${window.location.origin}/?tab=evaluator-dashboard&project=${projectId}&evaluator=${evaluator.id}`;
+        const evaluationLink = `${window.location.origin}${process.env.PUBLIC_URL || ''}/?tab=evaluator-dashboard&project=${projectId}&evaluator=${evaluator.id}`;
 
         // 단축 URL 생성
         const shortLink = await generateShortLink(evaluationLink);

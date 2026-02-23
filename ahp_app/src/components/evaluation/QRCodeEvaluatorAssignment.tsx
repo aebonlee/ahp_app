@@ -42,8 +42,7 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
 
   // Generate base URL for evaluation
   const getBaseUrl = () => {
-    const baseUrl = window.location.origin;
-    return `${baseUrl}/ahp_app`;
+    return window.location.origin + (process.env.PUBLIC_URL || '');
   };
 
   // Generate short URL code (6 characters, cryptographically secure)

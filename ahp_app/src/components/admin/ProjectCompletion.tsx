@@ -226,7 +226,7 @@ const ProjectCompletion: React.FC<ProjectCompletionProps> = ({
     try {
       switch (selectedAction) {
         case 'test': {
-          const testLink = `${window.location.origin}/evaluator?project=${projectId}&test=true`;
+          const testLink = `${window.location.origin}${process.env.PUBLIC_URL || ''}/?project=${projectId}&test=true`;
           window.open(testLink, '_blank');
           showActionMessage('info', '테스트 모드로 평가 화면을 열었습니다. 테스트 데이터는 저장되지 않습니다.');
           break;
