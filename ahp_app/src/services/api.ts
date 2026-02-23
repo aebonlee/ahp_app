@@ -154,14 +154,54 @@ const getAuthHeaders = (): HeadersInit => {
   return headers;
 };
 
+// 응답 파싱 헬퍼
+const parseResponse = async (response: Response, isDeleteRequest: boolean): Promise<{ data: Record<string, unknown> | null }> => {
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    if (isDeleteRequest && response.ok) {
+      return { data: null };
+    }
+    throw new Error(`서버가 올바른 응답을 반환하지 않았습니다. (${response.status})`);
+  }
+  return { data: await response.json() as Record<string, unknown> };
+};
+
+// 에러 응답 처리 헬퍼
+const handleErrorResponse = (response: Response, data: Record<string, unknown> | null, endpoint: string, method?: string): ApiResponse<never> => {
+  if (response.status === 405) {
+    return {
+      success: false,
+      error: `${endpoint} 엔드포인트는 ${method} 메서드를 지원하지 않습니다. 백엔드 설정을 확인하세요.`,
+      message: 'Method Not Allowed'
+    };
+  }
+  if (response.status === 500) {
+    const errorDetail = (data?.detail || data?.error || data?.message || '서버 내부 오류') as string;
+    throw new Error(`서버 오류: ${errorDetail}`);
+  }
+  if (response.status === 400) {
+    const errorMessage = (data?.message || data?.error ||
+                       (typeof data === 'object' ? JSON.stringify(data) : 'Bad Request')) as string;
+    throw new Error(`잘못된 요청: ${errorMessage}`);
+  }
+  if (response.status === 403) {
+    throw new Error('이 작업을 수행할 권한이 없습니다. 로그인 상태를 확인해주세요.');
+  }
+  if (response.status === 404) {
+    throw new Error(`엔드포인트를 찾을 수 없습니다: ${endpoint}`);
+  }
+  throw new Error((data?.message || data?.error || `HTTP ${response.status}: API 요청 실패`) as string);
+};
+
 // API 기본 요청 함수
 const makeRequest = async <T>(
-  endpoint: string, 
+  endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
-    
+    const isDeleteRequest = options.method?.toUpperCase() === 'DELETE';
+
     const response = await fetch(url, {
       credentials: 'include',
       ...options,
@@ -170,79 +210,69 @@ const makeRequest = async <T>(
         ...options.headers
       }
     });
-    
-    // DELETE 요청의 경우 응답 본문이 없을 수 있음
-    const isDeleteRequest = options.method?.toUpperCase() === 'DELETE';
-    
-    // 응답이 JSON이 아닌 경우 처리
-    const contentType = response.headers.get('content-type');
-    let data: Record<string, unknown> | null = null;
 
-    if (!contentType || !contentType.includes('application/json')) {
-      if (isDeleteRequest && response.ok) {
-        // DELETE 요청이 성공했고 JSON이 아닌 경우 (예: 204 No Content)
-        return {
-          success: true,
-          data: undefined,
-          message: '삭제 완료'
-        };
-      } else {
-        throw new Error(`서버가 올바른 응답을 반환하지 않았습니다. (${response.status})`);
+    // 401 Unauthorized → 토큰 갱신 후 재시도
+    if (response.status === 401) {
+      const refreshToken = sessionStorage.getItem('ahp_refresh_token');
+      if (refreshToken) {
+        try {
+          const refreshResponse = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh: refreshToken })
+          });
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            if (refreshData.access) {
+              sessionStorage.setItem('ahp_access_token', refreshData.access);
+              // 새 토큰으로 원래 요청 재시도
+              const retryResponse = await fetch(url, {
+                credentials: 'include',
+                ...options,
+                headers: {
+                  ...getAuthHeaders(),
+                  ...options.headers
+                }
+              });
+              if (retryResponse.ok) {
+                const parsed = await parseResponse(retryResponse, isDeleteRequest);
+                if (!parsed.data && isDeleteRequest) {
+                  return { success: true, data: undefined, message: '삭제 완료' };
+                }
+                return {
+                  success: true,
+                  data: (parsed.data?.data ?? parsed.data) as T,
+                  message: parsed.data?.message as string | undefined
+                };
+              }
+            }
+          }
+        } catch {
+          // 토큰 갱신 실패 시 원래 401 에러 반환
+        }
       }
-    } else {
-      data = await response.json() as Record<string, unknown>;
+      // 토큰 갱신 실패 또는 refresh 토큰 없음
+      window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
+      throw new Error('인증이 필요합니다. 다시 로그인해 주세요.');
+    }
+
+    const parsed = await parseResponse(response, isDeleteRequest);
+
+    if (!parsed.data && isDeleteRequest && response.ok) {
+      return { success: true, data: undefined, message: '삭제 완료' };
     }
 
     if (!response.ok) {
-      // 405 Method Not Allowed 특별 처리
-      if (response.status === 405) {
-        // 405 에러인 경우 더 구체적인 메시지 반환
-        return {
-          success: false,
-          error: `${endpoint} 엔드포인트는 ${options.method} 메서드를 지원하지 않습니다. 백엔드 설정을 확인하세요.`,
-          message: 'Method Not Allowed'
-        };
-      }
-
-      // 500 에러 특별 처리 - 백엔드 상세 에러 메시지 추출
-      if (response.status === 500) {
-        const errorDetail = (data?.detail || data?.error || data?.message || '서버 내부 오류') as string;
-        throw new Error(`서버 오류: ${errorDetail}`);
-      }
-
-      // 401 Unauthorized 처리
-      if (response.status === 401) {
-        throw new Error('인증이 필요합니다. 다시 로그인해 주세요.');
-      }
-
-      // 권한 오류 처리
-      if (response.status === 403) {
-        throw new Error('이 작업을 수행할 권한이 없습니다. 로그인 상태를 확인해주세요.');
-      }
-
-      // 400 에러 상세 분석
-      if (response.status === 400) {
-        const errorMessage = (data?.message || data?.error ||
-                           (typeof data === 'object' ? JSON.stringify(data) : 'Bad Request')) as string;
-        throw new Error(`잘못된 요청: ${errorMessage}`);
-      }
-
-      // 404 Not Found 처리
-      if (response.status === 404) {
-        throw new Error(`엔드포인트를 찾을 수 없습니다: ${endpoint}`);
-      }
-
-      throw new Error((data?.message || data?.error || `HTTP ${response.status}: API 요청 실패`) as string);
+      return handleErrorResponse(response, parsed.data, endpoint, options.method);
     }
 
     return {
       success: true,
-      data: (data?.data ?? data) as T,
-      message: data?.message as string | undefined
+      data: (parsed.data?.data ?? parsed.data) as T,
+      message: parsed.data?.message as string | undefined
     };
   } catch (error: unknown) {
     logger.error(`API Error [${endpoint}]:`, error);
-    // 네트워크 오류 (서버 다운, CORS, 오프라인 등) 사용자 친화적 메시지로 변환
     let errorMessage = (error instanceof Error ? error.message : null) || '알 수 없는 오류가 발생했습니다.';
     if (errorMessage === 'Failed to fetch' || errorMessage.includes('NetworkError') || errorMessage.includes('net::ERR')) {
       errorMessage = '서버에 연결할 수 없습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.';
@@ -524,84 +554,79 @@ export const criteriaApi = {
     })
 };
 
-// === 대안 API ===
+// === 대안 API (Django에서는 Criteria 모델의 type='alternative'로 구분) ===
 export const alternativeApi = {
   // 프로젝트의 대안 목록 조회
   getAlternatives: (projectId: string) =>
-    makeRequest<AlternativeData[]>(`/api/service/projects/${projectId}/alternatives/`),
+    makeRequest<AlternativeData[]>(API_ENDPOINTS.ALTERNATIVES.LIST(projectId)),
 
-  // 대안 생성
+  // 대안 생성 (Criteria 모델에 type='alternative'로 생성)
   createAlternative: (data: Omit<AlternativeData, 'id'>) =>
-    makeRequest<AlternativeData>('/api/service/projects/alternatives/', {
+    makeRequest<AlternativeData>(API_ENDPOINTS.ALTERNATIVES.CREATE, {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        project: data.project_id,
+        name: data.name,
+        description: data.description || '',
+        type: 'alternative',
+        position: data.position || 0,
+        order: data.position || 0,
+        level: 0,
+        weight: 0,
+        is_active: true
+      })
     }),
 
   // 대안 수정
   updateAlternative: (id: string, data: Partial<AlternativeData>) =>
-    makeRequest<AlternativeData>(`/api/service/projects/alternatives/${id}/`, {
+    makeRequest<AlternativeData>(API_ENDPOINTS.ALTERNATIVES.UPDATE(id), {
       method: 'PUT',
       body: JSON.stringify(data)
     }),
 
   // 대안 삭제
   deleteAlternative: (id: string) =>
-    makeRequest<void>(`/api/service/projects/alternatives/${id}/`, {
+    makeRequest<void>(API_ENDPOINTS.ALTERNATIVES.DELETE(id), {
       method: 'DELETE'
-    }),
-
-  // 대안 순서 변경
-  reorderAlternatives: (projectId: string, alternativeIds: string[]) =>
-    makeRequest<void>(`/api/service/projects/${projectId}/alternatives/reorder/`, {
-      method: 'PUT',
-      body: JSON.stringify({ alternativeIds })
     })
 };
 
-// === 평가자 API (Django ProjectMember 사용) ===
+// === 평가자 API (Django EvaluationInvitation 사용) ===
 export const evaluatorApi = {
-  // 프로젝트의 평가자(멤버) 목록 조회
+  // 프로젝트의 평가자(초대) 목록 조회
   getEvaluators: (projectId: string) =>
-    makeRequest<EvaluatorData[]>(`/api/service/projects/${projectId}/members/`),
+    makeRequest<EvaluatorData[]>(API_ENDPOINTS.EVALUATORS.LIST(projectId)),
 
-  // 평가자(멤버) 추가 - Django의 add_member action 사용
-  addEvaluator: (data: Omit<EvaluatorData, 'id'>) => {
-    // Django ProjectMember 형식으로 변환
-    const memberData = {
-      user: data.email, // 일단 email을 user로 전달 (나중에 user 생성 로직 필요)
-      role: 'evaluator',
-      can_edit_structure: false,
-      can_manage_evaluators: false,
-      can_view_results: true
-    };
-    
-    return makeRequest<EvaluatorData>(
-      `/api/service/projects/${data.project_id}/add_member/`, 
-      {
-        method: 'POST',
-        body: JSON.stringify(memberData)
-      }
-    );
-  },
-
-  // 평가자(멤버) 수정
-  updateEvaluator: (id: string, data: Partial<EvaluatorData>) =>
-    makeRequest<EvaluatorData>(`/api/service/projects/${data.project_id}/update_member/`, {
-      method: 'PATCH',
-      body: JSON.stringify({ member_id: id, ...data })
+  // 평가자 초대 추가
+  addEvaluator: (data: Omit<EvaluatorData, 'id'>) =>
+    makeRequest<EvaluatorData>(API_ENDPOINTS.EVALUATORS.ADD, {
+      method: 'POST',
+      body: JSON.stringify({
+        project: data.project_id,
+        name: data.name,
+        email: data.email,
+        status: data.status || 'pending'
+      })
     }),
 
-  // 평가자(멤버) 삭제
+  // 평가자 초대 수정
+  updateEvaluator: (id: string, data: Partial<EvaluatorData>) =>
+    makeRequest<EvaluatorData>(API_ENDPOINTS.EVALUATORS.UPDATE(id), {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    }),
+
+  // 평가자 초대 삭제
   removeEvaluator: (id: string) =>
-    makeRequest<void>(`/api/service/projects/remove_member/?member_id=${id}`, {
+    makeRequest<void>(API_ENDPOINTS.EVALUATORS.REMOVE(id), {
       method: 'DELETE'
     }),
 
-  // 평가 초대 이메일 발송 (임시 - 향후 구현)
+  // 평가 초대 일괄 발송
   sendInvitation: (projectId: string, evaluatorIds: string[]) =>
-    makeRequest<void>(`/api/service/projects/${projectId}/send_invitations/`, {
+    makeRequest<void>(API_ENDPOINTS.EVALUATORS.SEND_INVITATIONS(projectId), {
       method: 'POST',
-      body: JSON.stringify({ evaluatorIds })
+      body: JSON.stringify({ evaluator_ids: evaluatorIds })
     })
 };
 
@@ -609,7 +634,7 @@ export const evaluatorApi = {
 export const evaluationApi = {
   // 쌍대비교 데이터 저장
   savePairwiseComparison: (data: Omit<PairwiseComparisonData, 'id'>) =>
-    makeRequest<PairwiseComparisonData>('/api/comparisons', {
+    makeRequest<PairwiseComparisonData>(API_ENDPOINTS.COMPARISONS.SAVE, {
       method: 'POST',
       body: JSON.stringify(data)
     }),
@@ -617,12 +642,12 @@ export const evaluationApi = {
   // 쌍대비교 데이터 조회
   getPairwiseComparisons: (projectId: string, evaluatorId?: string) =>
     makeRequest<PairwiseComparisonData[]>(
-      `/api/projects/${projectId}/comparisons${evaluatorId ? `?evaluatorId=${evaluatorId}` : ''}`
+      API_ENDPOINTS.COMPARISONS.GET(projectId, evaluatorId)
     ),
 
   // 평가 세션 상태 업데이트
-  updateEvaluationSession: (projectId: string, evaluatorId: string, data: Record<string, unknown>) =>
-    makeRequest<void>(`/api/projects/${projectId}/evaluators/${evaluatorId}/session`, {
+  updateEvaluationSession: (_projectId: string, evaluatorId: string, data: Record<string, unknown>) =>
+    makeRequest<void>(API_ENDPOINTS.COMPARISONS.UPDATE_SESSION(_projectId, evaluatorId), {
       method: 'PUT',
       body: JSON.stringify(data)
     })
@@ -632,23 +657,27 @@ export const evaluationApi = {
 export const resultsApi = {
   // AHP 계산 결과 조회
   getResults: (projectId: string) =>
-    makeRequest<AnalysisResult>(`/api/projects/${projectId}/results`),
+    makeRequest<AnalysisResult>(API_ENDPOINTS.RESULTS.GET(projectId)),
 
   // 개별 평가자 결과 조회
   getIndividualResults: (projectId: string, evaluatorId: string) =>
-    makeRequest<AnalysisResult>(`/api/projects/${projectId}/evaluators/${evaluatorId}/results`),
+    makeRequest<AnalysisResult>(API_ENDPOINTS.RESULTS.INDIVIDUAL(projectId, evaluatorId), {
+      method: 'POST',
+      body: JSON.stringify({ project_id: projectId, evaluator_id: evaluatorId })
+    }),
 
   // 그룹 결과 계산 및 조회
   calculateGroupResults: (projectId: string) =>
-    makeRequest<AnalysisResult>(`/api/projects/${projectId}/results/calculate`, {
-      method: 'POST'
+    makeRequest<AnalysisResult>(API_ENDPOINTS.RESULTS.CALCULATE_GROUP(projectId), {
+      method: 'POST',
+      body: JSON.stringify({ project_id: projectId })
     }),
 
   // 민감도 분석 실행
   runSensitivityAnalysis: (projectId: string, parameters?: Record<string, unknown>) =>
-    makeRequest<AnalysisResult>(`/api/projects/${projectId}/analysis/sensitivity`, {
+    makeRequest<AnalysisResult>(API_ENDPOINTS.RESULTS.SENSITIVITY(projectId), {
       method: 'POST',
-      body: JSON.stringify(parameters || {})
+      body: JSON.stringify({ project_id: projectId, ...parameters })
     })
 };
 
@@ -656,34 +685,36 @@ export const resultsApi = {
 export const exportApi = {
   // Excel 내보내기
   exportToExcel: (projectId: string) =>
-    makeRequest<Blob>(`/api/projects/${projectId}/export/excel`, {
-      method: 'GET'
-    }),
+    makeRequest<Blob>(API_ENDPOINTS.EXPORT.EXCEL(projectId)),
 
   // PDF 보고서 생성
-  generateReport: (projectId: string, options?: Record<string, unknown>) =>
-    makeRequest<Blob>(`/api/projects/${projectId}/export/report`, {
-      method: 'POST',
-      body: JSON.stringify(options || {})
-    })
+  exportToPdf: (projectId: string) =>
+    makeRequest<Blob>(API_ENDPOINTS.EXPORT.PDF(projectId)),
+
+  // 보고서 생성
+  generateReport: (projectId: string) =>
+    makeRequest<Blob>(API_ENDPOINTS.EXPORT.REPORT(projectId))
 };
 
 // === 인증 API ===
 export const authApi = {
-  // 로그인
+  // 로그인 (JWT 토큰 발급)
   login: (email: string, password: string) =>
-    makeRequest<{ token: string; user: unknown }>('/api/service/auth/login', {
+    makeRequest<{ access: string; refresh: string; user: unknown }>(API_ENDPOINTS.AUTH.LOGIN, {
       method: 'POST',
       body: JSON.stringify({ email, password })
     }),
 
   // 사용자 정보 조회
   getCurrentUser: () =>
-    makeRequest<Record<string, unknown>>('/api/service/auth/me'),
+    makeRequest<Record<string, unknown>>(API_ENDPOINTS.AUTH.ME),
 
-  // 토큰 검증
-  verifyToken: () =>
-    makeRequest<Record<string, unknown>>('/api/service/auth/verify')
+  // 토큰 갱신
+  refreshToken: (refreshToken: string) =>
+    makeRequest<{ access: string }>(API_ENDPOINTS.AUTH.REFRESH, {
+      method: 'POST',
+      body: JSON.stringify({ refresh: refreshToken })
+    })
 };
 
 // === 데이터 정규화 함수 ===

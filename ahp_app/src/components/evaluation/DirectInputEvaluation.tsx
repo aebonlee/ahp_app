@@ -117,7 +117,7 @@ const DirectInputEvaluation: React.FC<DirectInputEvaluationProps> = ({
       // API 호출로 직접입력 데이터 저장
       const savePromises = values.map(value => 
         directEvaluationAPI.save({
-          project_id: parseInt(projectId),
+          project_id: projectId,
           target_key: apiHelpers.generateTargetKey('alternative', value.alternativeId, criterionId),
           value: value.value,
           is_benefit: isBenefitCriterion

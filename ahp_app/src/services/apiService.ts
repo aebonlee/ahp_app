@@ -199,33 +199,33 @@ export const authAPI = {
 // 직접입력 평가 API
 export const directEvaluationAPI = {
   save: (data: {
-    project_id: number;
+    project_id: string;
     target_key: string;
     value: number;
     is_benefit: boolean;
-  }) => apiClient.post('/api/evaluate/direct', data),
+  }) => apiClient.post('/api/service/evaluations/direct-input/', data),
 
-  fetch: (projectId: number) => 
-    apiClient.get(`/api/evaluate/direct/${projectId}`),
+  fetch: (projectId: string) =>
+    apiClient.get(`/api/service/evaluations/direct-input/?project=${projectId}`),
 
   normalize: (data: {
     values: number[];
     is_benefit: boolean;
-  }) => apiClient.post('/api/calculate/normalize', data),
+  }) => apiClient.post('/api/service/analysis/normalize/', data),
 };
 
-// 쌍대비교 평가 API (새로운 matrix_key 지원)
+// 쌍대비교 평가 API
 export const pairwiseEvaluationAPI = {
   save: (data: {
-    project_id: number;
+    project_id: string;
     matrix_key: string;
     i_index: number;
     j_index: number;
     value: number;
-  }) => apiClient.post('/api/evaluate/pairwise', data),
+  }) => apiClient.post('/api/service/evaluations/comparisons/', data),
 
-  fetchMatrix: (projectId: number, matrixKey: string) =>
-    apiClient.get(`/api/evaluate/pairwise/${projectId}/${matrixKey}`),
+  fetchMatrix: (projectId: string, matrixKey: string) =>
+    apiClient.get(`/api/service/evaluations/comparisons/?project=${projectId}&matrix_key=${matrixKey}`),
 };
 
 // AHP 계산 API
@@ -233,10 +233,10 @@ export const ahpCalculationAPI = {
   calculate: (data: {
     matrix: number[][];
     matrix_key?: string;
-  }) => apiClient.post('/api/calculate/ahp', data),
+  }) => apiClient.post('/api/service/analysis/calculate/individual/', data),
 
   validateMatrix: (matrix: number[][]) =>
-    apiClient.post('/api/calculate/validate-matrix', { matrix }),
+    apiClient.post('/api/service/analysis/validate-matrix/', { matrix }),
 };
 
 // 평가자 관리 API
