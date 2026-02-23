@@ -310,27 +310,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       return;
     }
     
-    // 슈퍼관리자 역할 전환 처리
-    if (userRole === 'super_admin') {
-      if (itemId === 'role-switch-admin') {
-        // 서비스 관리자 역할로 전환
-        if (onModeSwitch) onModeSwitch('service');
-        // 실제로는 여기서 사용자 역할도 변경해야 함
-        onTabChange('dashboard');
-        return;
-      } else if (itemId === 'role-switch-user') {
-        // 서비스 사용자 역할로 전환  
-        if (onModeSwitch) onModeSwitch('service');
-        onTabChange('dashboard');
-        return;
-      } else if (itemId === 'role-switch-evaluator') {
-        // 평가자 역할로 전환
-        if (onModeSwitch) onModeSwitch('evaluator');
-        onTabChange('dashboard');
-        return;
-      }
-    }
-    
     // 사이드바 "대시보드" 클릭 시 역할별 대시보드로 라우팅
     if (itemId === 'dashboard') {
       if (isSuperAdminMode && (userRole === 'super_admin')) {
