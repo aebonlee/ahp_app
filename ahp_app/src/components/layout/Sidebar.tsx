@@ -369,9 +369,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* 메뉴 영역 - 스크롤 가능 */}
       <div 
         className="flex-1 scrollbar-luxury overflow-y-auto"
-        style={{ 
-          padding: 'var(--space-6)',
-          paddingBottom: 'var(--space-8)' // 하단 여백 추가하여 모든 메뉴가 보이도록
+        style={{
+          padding: '1.2rem 1.5rem',
+          paddingBottom: '1rem'
         }}
       >
         {!isCollapsed && (
@@ -383,8 +383,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   color: 'var(--text-primary)',
                   fontFamily: 'Inter, system-ui, sans-serif',
                   borderBottom: '2px solid var(--gold-primary)',
-                  paddingBottom: 'var(--space-3)',
-                  marginBottom: 'var(--space-6)'
+                  paddingBottom: '0.4rem',
+                  marginBottom: '1rem'
                 }}>
               {isSuperAdminMode
                 ? '시스템 관리 콘솔'
@@ -403,7 +403,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </>
         )}
         
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
           {menuCategories.map((category) => (
             <div key={category.id}>
               {/* 카테고리 헤더 */}
@@ -411,13 +411,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => toggleCategory(category.id)}
                 className="w-full flex items-center justify-between text-left transition-luxury"
                 style={{
-                  padding: 'var(--space-3) var(--space-4)',
+                  padding: '0.4rem 0.8rem',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: expandedCategories.includes(category.id) ? 'var(--bg-elevated)' : 'var(--bg-subtle)',
                   color: 'var(--text-primary)',
-                  fontSize: 'var(--font-size-md)',
+                  fontSize: '0.9rem',
                   fontWeight: 'var(--font-weight-bold)',
-                  marginBottom: 'var(--space-3)',
+                  marginBottom: '0.3rem',
                   border: '1px solid',
                   borderColor: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--border-light)',
                   boxShadow: expandedCategories.includes(category.id) ? 'var(--shadow-sm)' : 'none'
@@ -459,7 +459,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
               {/* 카테고리 아이템들 */}
               {expandedCategories.includes(category.id) && (
-                <div style={{ marginBottom: 'var(--space-4)' }}>
+                <div style={{ marginBottom: '0.5rem' }}>
                   {category.items.map((item) => {
                     const isModeSwitch = item.id.startsWith('mode-switch-');
                     const isActive = activeTab === item.id;
@@ -470,8 +470,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onClick={() => handleItemClick(item.id)}
                         className="w-full flex items-center text-left transition-luxury group"
                         style={{
-                          padding: 'var(--space-2) var(--space-4)',
-                          paddingLeft: 'calc(var(--space-8) + var(--space-4))',
+                          padding: '0.35rem 0.8rem',
+                          paddingLeft: '2.5rem',
                           borderRadius: 'var(--radius-sm)',
                           backgroundColor: isActive
                             ? 'var(--gold-primary)'
@@ -484,8 +484,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                             ? 'var(--color-warning)'
                             : 'var(--text-secondary)',
                           fontWeight: 'var(--font-weight-medium)',
-                          fontSize: 'var(--font-size-sm)',
-                          marginBottom: 'var(--space-1)',
+                          fontSize: '0.82rem',
+                          marginBottom: '1px',
                           position: 'relative'
                         }}
                         onMouseEnter={(e) => {
