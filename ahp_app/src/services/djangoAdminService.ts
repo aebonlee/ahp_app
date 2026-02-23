@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 import { ApiResponse } from './api';
+import logger from '../utils/logger';
 
 // Django Admin Integration Interfaces
 export interface DjangoAdminStatus {
@@ -122,7 +123,7 @@ const makeDjangoAdminRequest = async <T>(
       message: data?.message as string | undefined
     };
   } catch (error: unknown) {
-    console.error(`Django Admin API Error [${endpoint}]:`, error);
+    logger.error(`Django Admin API Error [${endpoint}]:`, error);
     const errorMessage = error instanceof Error ? error.message : '';
     return {
       success: false,

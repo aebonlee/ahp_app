@@ -1,5 +1,6 @@
 import authService from './authService';
 import { API_BASE_URL } from '../config/api';
+import logger from '../utils/logger';
 
 // 세션 관리 서비스 (JWT 기반 - localStorage 제거됨)
 class SessionService {
@@ -308,7 +309,7 @@ class SessionService {
         method: 'POST'
       });
     } catch (error) {
-      console.error('로그아웃 요청 실패:', error);
+      logger.error('로그아웃 요청 실패:', error);
     }
   }
 

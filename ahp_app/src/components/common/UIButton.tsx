@@ -187,4 +187,4 @@ export const GhostButton: React.FC<Omit<UIButtonProps, 'variant'>> = (props) => 
   <UIButton variant="ghost" {...props} />
 );
 
-export default UIButton;
+export default React.memo(UIButton);

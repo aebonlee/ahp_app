@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 import { ApiResponse } from './api';
+import logger from '../utils/logger';
 
 // Two-Factor Authentication interfaces
 export interface TwoFactorSetupResponse {
@@ -60,7 +61,7 @@ const makeSecureRequest = async <T>(
     }
 
     if (!response.ok) {
-      console.error(`2FA API Error [${endpoint}]:`, {
+      logger.error(`2FA API Error [${endpoint}]:`, {
         status: response.status,
         statusText: response.statusText,
         data
@@ -75,7 +76,7 @@ const makeSecureRequest = async <T>(
       message: data?.message as string | undefined
     };
   } catch (error: unknown) {
-    console.error(`2FA API Error [${endpoint}]:`, error);
+    logger.error(`2FA API Error [${endpoint}]:`, error);
     const errorMessage = error instanceof Error ? error.message : '';
     return {
       success: false,
@@ -221,7 +222,7 @@ export class TOTPGenerator {
       
       return (code % 1000000).toString().padStart(6, '0');
     } catch (error) {
-      console.error('TOTP generation error:', error);
+      logger.error('TOTP generation error:', error);
       // Fallback to simple hash-based generation
       return this.fallbackTOTP(secret, time);
     }
@@ -321,7 +322,7 @@ export const twoFactorSecurity = {
       
       return true; // Not rate limited
     } catch (error) {
-      console.error('Rate limit check error:', error);
+      logger.error('Rate limit check error:', error);
       return true; // Allow on error
     }
   },

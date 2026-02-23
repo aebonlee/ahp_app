@@ -65,4 +65,4 @@ const ApiErrorModal: React.FC<ApiErrorModalProps> = ({
   );
 };
 
-export default ApiErrorModal;
+export default React.memo(ApiErrorModal);

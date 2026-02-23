@@ -196,4 +196,4 @@ const HelpModal: React.FC<HelpModalProps> = ({ isVisible, onClose, helpType }) =
   );
 };
 
-export default HelpModal;
+export default React.memo(HelpModal);

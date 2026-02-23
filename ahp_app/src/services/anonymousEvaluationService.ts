@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 import { ApiResponse } from './api';
+import logger from '../utils/logger';
 
 // Anonymous Evaluation Interfaces
 export interface AnonymousEvaluationSession {
@@ -110,7 +111,7 @@ const makeAnonymousEvalRequest = async <T>(
       data = { success: true };
     } else {
       const text = await response.text();
-      console.error(`Anonymous Eval API: Expected JSON, got ${contentType}`, text.substring(0, 200));
+      logger.error(`Anonymous Eval API: Expected JSON, got ${contentType}`, text.substring(0, 200));
     }
 
     if (!response.ok) {
@@ -347,7 +348,7 @@ export const anonymousEvaluationUtils = {
       };
       localStorage.setItem(`session_${session.id}`, JSON.stringify(sessionData));
     } catch (error) {
-      console.error('Failed to store session locally:', error);
+      logger.error('Failed to store session locally:', error);
     }
   },
 
@@ -359,7 +360,7 @@ export const anonymousEvaluationUtils = {
         return data;
       }
     } catch (error) {
-      console.error('Failed to retrieve session from local storage:', error);
+      logger.error('Failed to retrieve session from local storage:', error);
     }
     return null;
   },
@@ -460,7 +461,7 @@ export const anonymousEvaluationUtils = {
         await anonymousEvaluationService.updateSessionActivity(sessionId);
         await anonymousEvaluationService.syncLocalData(sessionId);
       } catch (error) {
-        console.error('Auto-save failed:', error);
+        logger.error('Auto-save failed:', error);
       }
     }, interval);
 
@@ -504,7 +505,7 @@ export const anonymousEvaluationUtils = {
       }
 
     } catch (error) {
-      console.error('Session recovery failed:', error);
+      logger.error('Session recovery failed:', error);
     }
 
     return null;
@@ -553,7 +554,7 @@ function storeComparisonLocally(comparison: PairwiseComparisonResult): void {
     existing.push(comparison);
     localStorage.setItem('anonymous_comparisons', JSON.stringify(existing));
   } catch (error) {
-    console.error('Failed to store comparison locally:', error);
+    logger.error('Failed to store comparison locally:', error);
   }
 }
 
@@ -566,7 +567,7 @@ function clearLocalSessionData(): void {
     sessionStorage.removeItem('anonymous_session_key');
     sessionStorage.removeItem('anonymous_session_id');
   } catch (error) {
-    console.error('Failed to clear local session data:', error);
+    logger.error('Failed to clear local session data:', error);
   }
 }
 

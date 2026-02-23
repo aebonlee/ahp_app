@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 import { ApiResponse } from './api';
+import logger from '../utils/logger';
 
 // File Upload Service Interfaces
 export interface FileUploadInfo {
@@ -110,7 +111,7 @@ const makeFileUploadRequest = async <T>(
       message: data?.message as string | undefined
     };
   } catch (error: unknown) {
-    console.error(`File Upload API Error [${endpoint}]:`, error);
+    logger.error(`File Upload API Error [${endpoint}]:`, error);
     const errorMessage = error instanceof Error ? error.message : '';
     return {
       success: false,
@@ -478,7 +479,7 @@ export const fileUploadUtils = {
       const key = `upload_progress_${fileId}`;
       localStorage.setItem(key, JSON.stringify(progress));
     } catch (error) {
-      console.error('Failed to store upload progress:', error);
+      logger.error('Failed to store upload progress:', error);
     }
   },
 
@@ -491,7 +492,7 @@ export const fileUploadUtils = {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Failed to get upload progress:', error);
+      logger.error('Failed to get upload progress:', error);
     }
     return null;
   },
@@ -502,7 +503,7 @@ export const fileUploadUtils = {
       const key = `upload_progress_${fileId}`;
       localStorage.removeItem(key);
     } catch (error) {
-      console.error('Failed to clear upload progress:', error);
+      logger.error('Failed to clear upload progress:', error);
     }
   }
 };
@@ -525,7 +526,7 @@ function storeFileInfoLocally(fileInfo: FileUploadInfo): void {
     existing[fileInfo.id] = fileInfo;
     localStorage.setItem('ahp_uploaded_files', JSON.stringify(existing));
   } catch (error) {
-    console.error('Failed to store file info locally:', error);
+    logger.error('Failed to store file info locally:', error);
   }
 }
 
@@ -535,7 +536,7 @@ function removeFileInfoLocally(fileId: string): void {
     delete existing[fileId];
     localStorage.setItem('ahp_uploaded_files', JSON.stringify(existing));
   } catch (error) {
-    console.error('Failed to remove file info locally:', error);
+    logger.error('Failed to remove file info locally:', error);
   }
 }
 
@@ -544,7 +545,7 @@ function getLocalFileInfos(): Record<string, FileUploadInfo> {
     const stored = localStorage.getItem('ahp_uploaded_files');
     return stored ? JSON.parse(stored) : {};
   } catch (error) {
-    console.error('Failed to get local file infos:', error);
+    logger.error('Failed to get local file infos:', error);
     return {};
   }
 }

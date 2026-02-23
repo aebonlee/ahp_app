@@ -5,6 +5,7 @@
 
 import { HierarchyNode } from '../components/modeling/HierarchyTreeEditor';
 import { API_BASE_URL } from '../config/api';
+import logger from './logger';
 
 const getAuthHeaders = (): HeadersInit => {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
@@ -191,7 +192,7 @@ export class RealTimeSyncManager {
           const collaborationEvent: CollaborationEvent = JSON.parse(event.data);
           this.handleRemoteEvent(collaborationEvent);
         } catch (error) {
-          console.error('이벤트 파싱 오류:', error);
+          logger.error('이벤트 파싱 오류:', error);
         }
       };
 
@@ -219,7 +220,7 @@ export class RealTimeSyncManager {
           events.forEach(event => this.handleRemoteEvent(event));
         }
       } catch (error) {
-        console.error('폴링 오류:', error);
+        logger.error('폴링 오류:', error);
       }
     };
 
@@ -379,7 +380,7 @@ export class RealTimeSyncManager {
       this.syncState.conflicts = this.syncState.conflicts.filter(c => c.conflictId !== conflict.conflictId);
 
     } catch (error) {
-      console.error('충돌 해결 실패:', error);
+      logger.error('충돌 해결 실패:', error);
     }
   }
 
@@ -404,7 +405,7 @@ export class RealTimeSyncManager {
       this.syncState.localChanges = this.syncState.localChanges.filter(e => !e.acknowledged);
 
     } catch (error) {
-      console.error('동기화 실패:', error);
+      logger.error('동기화 실패:', error);
     }
   }
 
@@ -426,7 +427,7 @@ export class RealTimeSyncManager {
         this.lastHeartbeat = Date.now();
       }
     } catch (error) {
-      console.error('하트비트 실패:', error);
+      logger.error('하트비트 실패:', error);
     }
   }
 
@@ -472,7 +473,7 @@ export class RealTimeSyncManager {
       try {
         await this.sendEventToServer(event);
       } catch (error) {
-        console.error('오프라인 변경사항 동기화 실패:', error);
+        logger.error('오프라인 변경사항 동기화 실패:', error);
       }
     }
 
@@ -543,7 +544,7 @@ export class RealTimeSyncManager {
       try {
         listener(event);
       } catch (error) {
-        console.error('이벤트 리스너 오류:', error);
+        logger.error('이벤트 리스너 오류:', error);
       }
     });
 
@@ -553,7 +554,7 @@ export class RealTimeSyncManager {
       try {
         listener(event);
       } catch (error) {
-        console.error('전체 이벤트 리스너 오류:', error);
+        logger.error('전체 이벤트 리스너 오류:', error);
       }
     });
   }

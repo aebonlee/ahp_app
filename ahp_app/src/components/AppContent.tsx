@@ -9,6 +9,7 @@ import authService from '../services/authService';
 import sessionService from '../services/sessionService';
 
 import Layout from './layout/Layout';
+import ErrorBoundary from './common/ErrorBoundary';
 import UnifiedAuthPage from './auth/UnifiedAuthPage';
 import RegisterForm from './auth/RegisterForm';
 import HomePage from './home/HomePage';
@@ -740,9 +741,11 @@ export default function AppContent() {
           onLogout={handleLogout}
           onModeSwitch={handleModeSwitch}
         >
-          <Suspense fallback={<PageLoader />}>
-            {renderContent()}
-          </Suspense>
+          <ErrorBoundary level="section">
+            <Suspense fallback={<PageLoader />}>
+              {renderContent()}
+            </Suspense>
+          </ErrorBoundary>
         </Layout>
         <ApiErrorModal isVisible={showApiErrorModal} onClose={handleCloseApiError} onRetry={handleApiRetry} />
         {trashOverflowData && (
@@ -796,9 +799,11 @@ export default function AppContent() {
           {actionMessage.text}
         </div>
       )}
-      <Suspense fallback={<PageLoader />}>
-        {renderContent()}
-      </Suspense>
+      <ErrorBoundary level="section">
+        <Suspense fallback={<PageLoader />}>
+          {renderContent()}
+        </Suspense>
+      </ErrorBoundary>
       <ApiErrorModal isVisible={showApiErrorModal} onClose={handleCloseApiError} onRetry={handleApiRetry} />
       {trashOverflowData && (
         <TrashOverflowModal

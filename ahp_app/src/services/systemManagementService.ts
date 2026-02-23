@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 import { ApiResponse } from './api';
+import logger from '../utils/logger';
 
 // System Management Interfaces
 export interface SystemConfiguration {
@@ -117,7 +118,7 @@ const makeSystemRequest = async <T>(
       message: data?.message as string | undefined
     };
   } catch (error: unknown) {
-    console.error(`System API Error [${endpoint}]:`, error);
+    logger.error(`System API Error [${endpoint}]:`, error);
     const errorMessage = error instanceof Error ? error.message : '';
     return {
       success: false,

@@ -36,4 +36,4 @@ export const EmojiIcon: React.FC<EmojiIconProps> = ({
   return <span className={className}></span>;
 };
 
-export default EmojiIcon;
+export default React.memo(EmojiIcon);

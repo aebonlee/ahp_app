@@ -185,4 +185,4 @@ export const SettingsIcon: React.FC<Omit<UIIconProps, 'emoji'>> = (props) => (
   <UIIcon emoji="⚙️" ariaLabel="설정" color="secondary" {...props} />
 );
 
-export default UIIcon;
+export default React.memo(UIIcon);

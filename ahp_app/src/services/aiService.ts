@@ -3,6 +3,8 @@
  * ChatGPT API와 Claude API를 활용하여 AHP 관련 AI 기능을 제공
  */
 
+import logger from '../utils/logger';
+
 interface AIServiceConfig {
   provider: 'openai' | 'claude';
   apiKey: string;
@@ -84,7 +86,7 @@ class AIService {
       }
       return false;
     } catch (error) {
-      console.error('API 키 검증 실패:', error);
+      logger.error('API 키 검증 실패:', error);
       return false;
     }
   }
@@ -116,7 +118,7 @@ class AIService {
         usage: data.usage
       };
     } catch (error) {
-      console.error('ChatGPT API 호출 실패:', error);
+      logger.error('ChatGPT API 호출 실패:', error);
       throw error;
     }
   }

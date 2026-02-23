@@ -5,6 +5,7 @@
 
 import { API_BASE_URL } from '../config/api';
 import authService from './authService';
+import logger from '../utils/logger';
 
 // API 응답 타입 정의
 export interface APIResponse<T = any> {
@@ -76,7 +77,7 @@ class APIClient {
 
       return { data };
     } catch (error) {
-      console.error('API request failed:', error);
+      logger.error('API request failed:', error);
       return { error: 'Network error' };
     }
   }

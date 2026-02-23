@@ -1,4 +1,5 @@
 import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import logger from '../utils/logger';
 
 // API 응답 타입 정의
 export interface ApiResponse<T = unknown> {
@@ -240,7 +241,7 @@ const makeRequest = async <T>(
       message: data?.message as string | undefined
     };
   } catch (error: unknown) {
-    console.error(`API Error [${endpoint}]:`, error);
+    logger.error(`API Error [${endpoint}]:`, error);
     // 네트워크 오류 (서버 다운, CORS, 오프라인 등) 사용자 친화적 메시지로 변환
     let errorMessage = (error instanceof Error ? error.message : null) || '알 수 없는 오류가 발생했습니다.';
     if (errorMessage === 'Failed to fetch' || errorMessage.includes('NetworkError') || errorMessage.includes('net::ERR')) {

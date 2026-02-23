@@ -3,6 +3,8 @@
  * 사용자가 요구한 체계적인 계산 및 결과 분석 시스템
  */
 
+import logger from './logger';
+
 export interface AHPNode {
   id: string;
   name: string;
@@ -100,7 +102,7 @@ export function calculateConsistencyRatio(matrix: number[][]): number {
   const RI = [0, 0, 0.58, 0.90, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49];
   
   if (n > RI.length) {
-    console.warn(`Matrix size ${n} exceeds RI table. Using approximation.`);
+    logger.warn(`Matrix size ${n} exceeds RI table. Using approximation.`);
     return 0.1; // 근사값 반환
   }
 

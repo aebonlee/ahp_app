@@ -5,6 +5,7 @@
 
 import { initializeAIService } from '../services/aiService';
 import { encryptedLocalStorage } from './secureStorage';
+import logger from './logger';
 
 // 환경변수에서 API 키 가져오기
 const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY || 'API_KEY_NOT_SET';
@@ -71,7 +72,7 @@ export const getCurrentAISettings = () => {
  */
 export const setAPIKeyDirectly = (apiKey: string, provider: 'openai' | 'claude' = 'openai') => {
   if (!apiKey || apiKey.trim() === '') {
-    console.error('API 키가 비어있습니다');
+    logger.error('API 키가 비어있습니다');
     return null;
   }
 

@@ -170,4 +170,4 @@ const UnifiedButton: React.FC<UnifiedButtonProps> = ({
   );
 };
 
-export default UnifiedButton;
+export default React.memo(UnifiedButton);
