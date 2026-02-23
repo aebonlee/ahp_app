@@ -183,9 +183,19 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  // 슈퍼관리자 메뉴는 이제 개인 관리자 서비스 메뉴에 추가하지 않음
-  // 슈퍼 어드민 모드에서만 superAdminCategories를 사용
-  
+  // 슈퍼관리자: 연구 플랫폼 모드에서도 역할 전환 가능하도록
+  if (userRole === 'super_admin') {
+    serviceAdminCategories.push({
+      id: 'super-admin',
+      title: '관리자 역할 전환',
+      items: [
+        { id: 'role-switch-admin', label: '서비스 관리자 모드' },
+        { id: 'role-switch-user', label: '서비스 사용자 모드' },
+        { id: 'role-switch-evaluator', label: '평가자 모드' }
+      ]
+    });
+  }
+
   // 슈퍼관리자가 아닌 경우 관리자 메뉴 추가
   if (userRole === 'service_admin') {
     serviceAdminCategories.push({
