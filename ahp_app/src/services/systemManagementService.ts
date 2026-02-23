@@ -69,7 +69,7 @@ const getSystemHeaders = (): HeadersInit => {
     'X-Admin-Required': 'true', // Indicates admin-only endpoint
   };
   
-  const accessToken = localStorage.getItem('ahp_access_token') || sessionStorage.getItem('ahp_access_token');
+  const accessToken = sessionStorage.getItem('ahp_access_token');
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }

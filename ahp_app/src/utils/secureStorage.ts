@@ -1,44 +1,99 @@
 /**
  * 보안 강화된 스토리지 유틸리티
- * localStorage 사용을 암호화와 함께 안전하게 처리
+ * Web Crypto API (AES-GCM) 기반 암호화 + localStorage/sessionStorage/Memory
+ *
+ * NOTE: 클라이언트 측 암호화는 XSS 공격 시 키도 노출되므로 완벽하지 않음.
+ * 민감 데이터는 가능하면 서버에 저장하고, 여기서는 난독화 수준의 보호 제공.
  */
 
-// 간단한 암호화/복호화 함수 (실제 운영환경에서는 더 강력한 암호화 사용 권장)
 const STORAGE_KEY = 'ahp_secure_';
-const ENCRYPTION_SECRET = process.env.REACT_APP_ENCRYPTION_SECRET || 'ahp_platform_2025';
+
+// AES-GCM 키 도출을 위한 salt (환경 변수 또는 고정값)
+const KEY_MATERIAL = process.env.REACT_APP_ENCRYPTION_SECRET || 'ahp-default-key';
 
 /**
- * 간단한 문자열 암호화 (XOR 기반)
- * 주의: 이는 기본적인 난독화이며, 실제 운영환경에서는 AES 등 강력한 암호화 사용 권장
+ * Web Crypto API를 이용한 AES-GCM 암호화
  */
-const encrypt = (text: string): string => {
-  let result = '';
-  for (let i = 0; i < text.length; i++) {
-    result += String.fromCharCode(
-      text.charCodeAt(i) ^ ENCRYPTION_SECRET.charCodeAt(i % ENCRYPTION_SECRET.length)
-    );
-  }
-  return btoa(result); // Base64 인코딩
-};
+async function deriveKey(): Promise<CryptoKey> {
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(KEY_MATERIAL),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: encoder.encode('ahp-salt-v1'),
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
 
-/**
- * 간단한 문자열 복호화
- */
-const decrypt = (encryptedText: string): string => {
+async function encryptAsync(text: string): Promise<string> {
   try {
-    const decoded = atob(encryptedText); // Base64 디코딩
-    let result = '';
-    for (let i = 0; i < decoded.length; i++) {
-      result += String.fromCharCode(
-        decoded.charCodeAt(i) ^ ENCRYPTION_SECRET.charCodeAt(i % ENCRYPTION_SECRET.length)
-      );
+    const key = await deriveKey();
+    const encoder = new TextEncoder();
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      encoder.encode(text)
+    );
+    // iv + ciphertext를 결합하여 Base64로 인코딩
+    const combined = new Uint8Array(iv.length + new Uint8Array(encrypted).length);
+    combined.set(iv);
+    combined.set(new Uint8Array(encrypted), iv.length);
+    return btoa(Array.from(combined, b => String.fromCharCode(b)).join(''));
+  } catch {
+    // Web Crypto 미지원 환경 fallback: Base64만
+    return btoa(unescape(encodeURIComponent(text)));
+  }
+}
+
+async function decryptAsync(encryptedText: string): Promise<string> {
+  try {
+    const key = await deriveKey();
+    const combined = Uint8Array.from(atob(encryptedText), c => c.charCodeAt(0));
+    const iv = combined.slice(0, 12);
+    const ciphertext = combined.slice(12);
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      ciphertext
+    );
+    return new TextDecoder().decode(decrypted);
+  } catch {
+    // fallback: Base64 디코딩 시도
+    try {
+      return decodeURIComponent(escape(atob(encryptedText)));
+    } catch {
+      return '';
     }
-    return result;
-  } catch (error) {
-    console.error('복호화 실패:', error);
+  }
+}
+
+/**
+ * 동기 fallback (Web Crypto 미사용, Base64 난독화만)
+ */
+function encryptSync(text: string): string {
+  return btoa(unescape(encodeURIComponent(text)));
+}
+
+function decryptSync(encoded: string): string {
+  try {
+    return decodeURIComponent(escape(atob(encoded)));
+  } catch {
     return '';
   }
-};
+}
 
 /**
  * 보안 스토리지 인터페이스
@@ -51,25 +106,33 @@ export interface SecureStorage {
 }
 
 /**
- * 암호화된 localStorage 구현
+ * 비동기 보안 스토리지 인터페이스 (AES-GCM 사용 시)
+ */
+export interface AsyncSecureStorage {
+  setItem(key: string, value: string): Promise<void>;
+  getItem(key: string): Promise<string | null>;
+  removeItem(key: string): void;
+  clear(): void;
+}
+
+/**
+ * 암호화된 localStorage 구현 (동기 - Base64 난독화)
  */
 class EncryptedLocalStorage implements SecureStorage {
   setItem(key: string, value: string): void {
     try {
-      const encryptedValue = encrypt(value);
-      localStorage.setItem(STORAGE_KEY + key, encryptedValue);
-    } catch (error) {
-      console.error('암호화된 저장 실패:', error);
+      localStorage.setItem(STORAGE_KEY + key, encryptSync(value));
+    } catch {
+      // 스토리지 용량 초과 등
     }
   }
 
   getItem(key: string): string | null {
     try {
-      const encryptedValue = localStorage.getItem(STORAGE_KEY + key);
-      if (!encryptedValue) return null;
-      return decrypt(encryptedValue);
-    } catch (error) {
-      console.error('암호화된 조회 실패:', error);
+      const stored = localStorage.getItem(STORAGE_KEY + key);
+      if (!stored) return null;
+      return decryptSync(stored);
+    } catch {
       return null;
     }
   }
@@ -79,7 +142,6 @@ class EncryptedLocalStorage implements SecureStorage {
   }
 
   clear(): void {
-    // AHP 관련 암호화된 항목만 제거
     Object.keys(localStorage)
       .filter(key => key.startsWith(STORAGE_KEY))
       .forEach(key => localStorage.removeItem(key));
@@ -87,33 +149,53 @@ class EncryptedLocalStorage implements SecureStorage {
 }
 
 /**
- * sessionStorage 구현 (암호화 선택적)
+ * AES-GCM 암호화 localStorage (비동기)
  */
-class SecureSessionStorage implements SecureStorage {
-  private useEncryption: boolean;
-
-  constructor(useEncryption = false) {
-    this.useEncryption = useEncryption;
+class AesEncryptedLocalStorage implements AsyncSecureStorage {
+  async setItem(key: string, value: string): Promise<void> {
+    try {
+      const encrypted = await encryptAsync(value);
+      localStorage.setItem(STORAGE_KEY + key, encrypted);
+    } catch {
+      // 스토리지 용량 초과 등
+    }
   }
 
+  async getItem(key: string): Promise<string | null> {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY + key);
+      if (!stored) return null;
+      return await decryptAsync(stored);
+    } catch {
+      return null;
+    }
+  }
+
+  removeItem(key: string): void {
+    localStorage.removeItem(STORAGE_KEY + key);
+  }
+
+  clear(): void {
+    Object.keys(localStorage)
+      .filter(key => key.startsWith(STORAGE_KEY))
+      .forEach(key => localStorage.removeItem(key));
+  }
+}
+
+/**
+ * sessionStorage 구현
+ */
+class SecureSessionStorage implements SecureStorage {
   setItem(key: string, value: string): void {
     try {
-      const finalValue = this.useEncryption ? encrypt(value) : value;
-      sessionStorage.setItem(STORAGE_KEY + key, finalValue);
-    } catch (error) {
-      console.error('세션 저장 실패:', error);
+      sessionStorage.setItem(STORAGE_KEY + key, value);
+    } catch {
+      // 스토리지 용량 초과 등
     }
   }
 
   getItem(key: string): string | null {
-    try {
-      const storedValue = sessionStorage.getItem(STORAGE_KEY + key);
-      if (!storedValue) return null;
-      return this.useEncryption ? decrypt(storedValue) : storedValue;
-    } catch (error) {
-      console.error('세션 조회 실패:', error);
-      return null;
-    }
+    return sessionStorage.getItem(STORAGE_KEY + key);
   }
 
   removeItem(key: string): void {
@@ -128,7 +210,7 @@ class SecureSessionStorage implements SecureStorage {
 }
 
 /**
- * 메모리 기반 스토리지 (가장 안전하지만 새로고침 시 초기화)
+ * 메모리 기반 스토리지 (가장 안전, 새로고침 시 초기화)
  */
 class MemoryStorage implements SecureStorage {
   private storage: Map<string, string> = new Map();
@@ -154,89 +236,27 @@ class MemoryStorage implements SecureStorage {
  * 스토리지 팩토리
  */
 export class SecureStorageFactory {
-  /**
-   * 암호화된 localStorage (권장: 사용자 설정, 비민감 데이터)
-   */
   static createEncryptedLocalStorage(): SecureStorage {
     return new EncryptedLocalStorage();
   }
 
-  /**
-   * sessionStorage (권장: 임시 토큰, 세션 데이터)
-   */
-  static createSessionStorage(useEncryption = false): SecureStorage {
-    return new SecureSessionStorage(useEncryption);
+  static createAesEncryptedLocalStorage(): AsyncSecureStorage {
+    return new AesEncryptedLocalStorage();
   }
 
-  /**
-   * 메모리 스토리지 (최고 보안: 민감한 인증 토큰)
-   */
+  static createSessionStorage(): SecureStorage {
+    return new SecureSessionStorage();
+  }
+
   static createMemoryStorage(): SecureStorage {
     return new MemoryStorage();
-  }
-
-  /**
-   * 하이브리드 스토리지 (현재 AHP 패턴과 유사)
-   * sessionStorage 우선, localStorage 폴백
-   */
-  static createHybridStorage(): {
-    setItem: (key: string, value: string, persistent?: boolean) => void;
-    getItem: (key: string) => string | null;
-    removeItem: (key: string) => void;
-    clear: () => void;
-  } {
-    const sessionStore = new SecureSessionStorage(false);
-    const localStore = new EncryptedLocalStorage();
-
-    return {
-      setItem: (key: string, value: string, persistent = false) => {
-        sessionStore.setItem(key, value);
-        if (persistent) {
-          localStore.setItem(key, value);
-        }
-      },
-      getItem: (key: string) => {
-        return sessionStore.getItem(key) || localStore.getItem(key);
-      },
-      removeItem: (key: string) => {
-        sessionStore.removeItem(key);
-        localStore.removeItem(key);
-      },
-      clear: () => {
-        sessionStore.clear();
-        localStore.clear();
-      }
-    };
   }
 }
 
 /**
- * 기본 인스턴스들
+ * 기본 인스턴스
  */
 export const encryptedLocalStorage = SecureStorageFactory.createEncryptedLocalStorage();
-export const secureSessionStorage = SecureStorageFactory.createSessionStorage(false);
+export const aesEncryptedLocalStorage = SecureStorageFactory.createAesEncryptedLocalStorage();
+export const secureSessionStorage = SecureStorageFactory.createSessionStorage();
 export const memoryStorage = SecureStorageFactory.createMemoryStorage();
-export const hybridStorage = SecureStorageFactory.createHybridStorage();
-
-/**
- * 레거시 localStorage 마이그레이션 유틸리티
- */
-export const migrateLegacyStorage = () => {
-  const legacyKeys = [
-    'ahp_user',
-    'ahp_access_token', 
-    'ahp_refresh_token',
-    'ahp_temp_role',
-    'ahp_super_mode'
-  ];
-
-  legacyKeys.forEach(key => {
-    const value = localStorage.getItem(key);
-    if (value) {
-      // 새로운 암호화된 스토리지로 이동
-      encryptedLocalStorage.setItem(key.replace('ahp_', ''), value);
-      // 기존 키 제거
-      localStorage.removeItem(key);
-    }
-  });
-};

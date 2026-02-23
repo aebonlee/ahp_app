@@ -1,7 +1,7 @@
 import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
 
 // API 응답 타입 정의
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
@@ -117,14 +117,35 @@ export interface PairwiseComparisonData {
   consistency_ratio?: number;
 }
 
+// Django REST Framework 페이지네이션 응답 타입
+interface DjangoPaginatedResponse<T> {
+  count?: number;
+  next?: string | null;
+  previous?: string | null;
+  results?: T[];
+}
+
+// Django 기준 응답 (페이지네이션 또는 배열)
+type DjangoCriteriaResponse = DjangoPaginatedResponse<CriteriaData> | CriteriaData[];
+
+// Django 프로젝트 목록 응답
+type DjangoProjectListResponse = DjangoPaginatedResponse<DjangoProjectResponse> | DjangoProjectResponse[];
+
+// AHP 분석 결과 타입
+interface AnalysisResult {
+  weights?: Record<string, number>;
+  consistency_ratio?: number;
+  rankings?: Array<{ name: string; score: number }>;
+  [key: string]: unknown;
+}
+
 // HTTP 헤더 생성 함수
 const getAuthHeaders = (): HeadersInit => {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
   
-  // localStorage에서 토큰 확인
-  const accessToken = localStorage.getItem('ahp_access_token') || sessionStorage.getItem('ahp_access_token');
+  const accessToken = sessionStorage.getItem('ahp_access_token');
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
@@ -236,7 +257,7 @@ const makeRequest = async <T>(
 export const projectApi = {
   // 프로젝트 목록 조회 (정규화 적용)
   getProjects: async () => {
-    const response = await makeRequest<any>(API_ENDPOINTS.PROJECTS.LIST);
+    const response = await makeRequest<DjangoProjectListResponse>(API_ENDPOINTS.PROJECTS.LIST);
 
     if (response.success) {
       // response.data가 undefined인 경우 빈 배열 반환
@@ -247,7 +268,7 @@ export const projectApi = {
           message: '프로젝트가 없습니다'
         };
       }
-      
+
       // Django 응답을 정규화하여 반환
       const normalizedProjects = normalizeProjectListResponse(response.data);
       return {
@@ -256,7 +277,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
+    return { success: false, error: response.error } as ApiResponse<ProjectData[]>;
   },
 
   // 프로젝트 상세 조회 (정규화 적용)
@@ -271,7 +292,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
+    return { success: false, error: response.error } as ApiResponse<ProjectData>;
   },
 
   // 프로젝트 생성 (정규화 적용)
@@ -287,7 +308,7 @@ export const projectApi = {
       workflow_stage: 'creating', // Django 모델: creating, waiting, evaluating, completed
     };
 
-    const response = await makeRequest<any>(API_ENDPOINTS.PROJECTS.CREATE, {
+    const response = await makeRequest<DjangoProjectResponse>(API_ENDPOINTS.PROJECTS.CREATE, {
       method: 'POST',
       body: JSON.stringify(djangoData)
     });
@@ -301,7 +322,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
+    return { success: false, error: response.error } as ApiResponse<ProjectData>;
   },
 
   // 프로젝트 수정 (정규화 적용)
@@ -331,7 +352,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
+    return { success: false, error: response.error } as ApiResponse<ProjectData>;
   },
 
   // 프로젝트 삭제 (휴지통으로 이동)
@@ -352,7 +373,7 @@ export const projectApi = {
         message: response.message
       };
     }
-    return response as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- error response returned where success type expected
+    return { success: false, error: response.error } as ApiResponse<ProjectData[]>;
   },
 
   // 프로젝트 복원 - 임시로 업데이트로 대체
@@ -374,20 +395,21 @@ export const criteriaApi = {
   // 프로젝트의 기준 목록 조회
   getCriteria: async (projectId: string) => {
     // CriteriaViewSet은 project 필드로 필터링 지원
-    const response = await makeRequest<any>(`/api/service/projects/criteria/?project=${projectId}`);
+    const response = await makeRequest<DjangoCriteriaResponse>(`/api/service/projects/criteria/?project=${projectId}`);
 
     if (response.success && response.data) {
       // Django REST Framework 페이지네이션 처리
       let criteriaList: CriteriaData[] = [];
+      const data = response.data as Record<string, unknown>;
       if (Array.isArray(response.data)) {
         // 배열로 온 경우
         criteriaList = response.data;
-      } else if (response.data.results && Array.isArray(response.data.results)) {
+      } else if (Array.isArray(data.results)) {
         // 페이지네이션 객체로 온 경우
-        criteriaList = response.data.results;
-      } else if (response.data.data && Array.isArray(response.data.data)) {
+        criteriaList = data.results as CriteriaData[];
+      } else if (Array.isArray(data.data)) {
         // data 필드 안에 배열이 있는 경우
-        criteriaList = response.data.data;
+        criteriaList = data.data as CriteriaData[];
       }
       
       return {
@@ -609,21 +631,21 @@ export const evaluationApi = {
 export const resultsApi = {
   // AHP 계산 결과 조회
   getResults: (projectId: string) =>
-    makeRequest<any>(`/api/projects/${projectId}/results`),
+    makeRequest<AnalysisResult>(`/api/projects/${projectId}/results`),
 
   // 개별 평가자 결과 조회
   getIndividualResults: (projectId: string, evaluatorId: string) =>
-    makeRequest<any>(`/api/projects/${projectId}/evaluators/${evaluatorId}/results`),
+    makeRequest<AnalysisResult>(`/api/projects/${projectId}/evaluators/${evaluatorId}/results`),
 
   // 그룹 결과 계산 및 조회
   calculateGroupResults: (projectId: string) =>
-    makeRequest<any>(`/api/projects/${projectId}/results/calculate`, {
+    makeRequest<AnalysisResult>(`/api/projects/${projectId}/results/calculate`, {
       method: 'POST'
     }),
 
   // 민감도 분석 실행
   runSensitivityAnalysis: (projectId: string, parameters?: Record<string, unknown>) =>
-    makeRequest<any>(`/api/projects/${projectId}/analysis/sensitivity`, {
+    makeRequest<AnalysisResult>(`/api/projects/${projectId}/analysis/sensitivity`, {
       method: 'POST',
       body: JSON.stringify(parameters || {})
     })
@@ -656,11 +678,11 @@ export const authApi = {
 
   // 사용자 정보 조회
   getCurrentUser: () =>
-    makeRequest<any>('/api/service/auth/me'),
+    makeRequest<Record<string, unknown>>('/api/service/auth/me'),
 
   // 토큰 검증
   verifyToken: () =>
-    makeRequest<any>('/api/service/auth/verify')
+    makeRequest<Record<string, unknown>>('/api/service/auth/verify')
 };
 
 // === 데이터 정규화 함수 ===
@@ -757,33 +779,32 @@ export const normalizeProjectListResponse = (
 
 // === 고급 분석 API (새로 추가) ===
 export const advancedAnalysisApi = {
-  // 일반 GET 요청 메서드
-  get: (url: string) => makeRequest<any>(url),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 100+ 호출자 호환, 향후 개별 타입 적용 예정
+  get: (url: string) => makeRequest<any>(url), // NOSONAR
 
-  // 일반 POST 요청 메서드
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   post: (url: string, data?: unknown) => makeRequest<any>(url, {
     method: 'POST',
     body: data ? JSON.stringify(data) : undefined
   }),
 
-  // 일반 PUT 요청 메서드
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   put: (url: string, data?: unknown) => makeRequest<any>(url, {
     method: 'PUT',
     body: data ? JSON.stringify(data) : undefined
   }),
 
-  // 일반 PATCH 요청 메서드
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   patch: (url: string, data?: unknown) => makeRequest<any>(url, {
     method: 'PATCH',
     body: data ? JSON.stringify(data) : undefined
   }),
 
-  // 일반 DELETE 요청 메서드
-  delete: (url: string) => makeRequest<any>(url, { method: 'DELETE' }),
+  delete: (url: string) => makeRequest<void>(url, { method: 'DELETE' }),
 
   // 민감도 분석
   runSensitivityAnalysis: (projectId: string, data: Record<string, unknown>) =>
-    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/sensitivity_analysis/`, {
+    makeRequest<AnalysisResult>(`/api/service/analysis/advanced/${projectId}/sensitivity_analysis/`, {
       method: 'POST',
       body: JSON.stringify(data)
     }),
@@ -811,7 +832,7 @@ export const advancedAnalysisApi = {
 
   // 종합 보고서 조회
   getComprehensiveReport: (projectId: string) =>
-    makeRequest<any>(`/api/service/analysis/advanced/${projectId}/comprehensive_report/`)
+    makeRequest<AnalysisResult>(`/api/service/analysis/advanced/${projectId}/comprehensive_report/`)
 };
 
 const apiExports = {

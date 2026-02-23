@@ -63,7 +63,7 @@ const getFileUploadHeaders = (includeContentType: boolean = false): HeadersInit 
     headers['Content-Type'] = 'application/json';
   }
   
-  const accessToken = localStorage.getItem('ahp_access_token') || sessionStorage.getItem('ahp_access_token');
+  const accessToken = sessionStorage.getItem('ahp_access_token');
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }

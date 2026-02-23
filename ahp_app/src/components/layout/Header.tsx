@@ -5,7 +5,6 @@ import ColorThemeSelector from '../common/ColorThemeSelector';
 import Modal from '../common/Modal';
 import sessionService from '../../services/sessionService';
 import { useTheme } from '../../hooks/useTheme';
-import { SUPER_ADMIN_EMAIL } from '../../config/api';
 
 import type { User } from '../../types';
 
@@ -158,8 +157,9 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
   };
 
   return (
-    <header className="sticky top-0 z-50 transition-luxury backdrop-blur-sm" 
-            style={{ 
+    <>
+    <header className="sticky top-0 z-50 transition-luxury backdrop-blur-sm"
+            style={{
               backgroundColor: 'var(--bg-secondary)',
               borderBottom: '1px solid var(--border-light)',
               boxShadow: 'var(--shadow-md)',
@@ -202,27 +202,13 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
                 onClick={() => {
                   if (onTabChange) {
                     // 상단 대시보드 버튼 클릭 시 역할별 전체 대시보드로 이동
-                    const storedUserStr = localStorage.getItem('ahp_user');
                     const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
-                    let isAdminEmail = false;
-                    
-                    if (storedUserStr) {
-                      try {
-                        const storedUser = JSON.parse(storedUserStr);
-                        isAdminEmail = storedUser.email === SUPER_ADMIN_EMAIL;
-                      } catch {
-                        // corrupted localStorage data, skip
-                      }
-                    }
-                    
-                    if ((user.role === 'super_admin' || isAdminEmail) && isSuperMode) {
-                      // 슈퍼 관리자 모드 -> 슈퍼 관리자 대시보드
+
+                    if (user.role === 'super_admin' && isSuperMode) {
                       onTabChange('super-admin-dashboard');
                     } else if (user.role === 'evaluator') {
-                      // 평가자 -> 평가자 대시보드
                       onTabChange('evaluator-dashboard');
                     } else {
-                      // 개인 서비스 모드 -> 개인 서비스 대시보드
                       onTabChange('personal-service');
                     }
                   }
@@ -473,6 +459,8 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
         </div>
       </div>
 
+    </header>
+
       <Modal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
@@ -501,7 +489,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onLogoClick, activeTab,
       >
         <p className="text-sm text-gray-600">로그아웃 하시겠습니까?</p>
       </Modal>
-    </header>
+    </>
   );
 };
 

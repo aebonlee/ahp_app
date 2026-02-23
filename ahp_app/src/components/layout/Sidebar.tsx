@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { UserRole } from '../../types';
-import { SUPER_ADMIN_EMAIL } from '../../config/api';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -42,6 +41,23 @@ const Sidebar: React.FC<SidebarProps> = ({
     return storedMode === 'true';
   });
   
+  // activeTab과 Sidebar 모드를 동기화
+  // 슈퍼 관리자 전용 탭이면 자동으로 시스템 관리 모드, 그 외엔 연구 플랫폼 모드
+  useEffect(() => {
+    if (userRole !== 'super_admin') return;
+    const superAdminTabs = [
+      'super-admin', 'super-admin-dashboard',
+      'users', 'all-projects', 'system-monitoring', 'system-info',
+      'system-settings', 'system-health', 'system-reset',
+      'database', 'backup', 'audit', 'payment-options',
+    ];
+    const shouldBeSuperMode = superAdminTabs.includes(activeTab);
+    if (shouldBeSuperMode !== isSuperAdminMode) {
+      setIsSuperAdminMode(shouldBeSuperMode);
+      localStorage.setItem('ahp_super_mode', shouldBeSuperMode.toString());
+    }
+  }, [activeTab, userRole, isSuperAdminMode]);
+
   const toggleCategory = (categoryId: string) => {
     // 모든 주요 카테고리 리스트 (슈퍼 관리자 메뉴 포함)
     const mainCategories = ['basic', 'advanced', 'research', 'ai', 'super-admin'];
@@ -315,34 +331,17 @@ const Sidebar: React.FC<SidebarProps> = ({
       }
     }
     
-    // 사이드바 "내 대시보드" 클릭 시 역할별 대시보드로 라우팅
+    // 사이드바 "대시보드" 클릭 시 역할별 대시보드로 라우팅
     if (itemId === 'dashboard') {
-      const storedUserStr = localStorage.getItem('ahp_user');
-      const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
-      let isAdminEmail = false;
-      
-      if (storedUserStr) {
-        try {
-          const storedUser = JSON.parse(storedUserStr);
-          isAdminEmail = storedUser.email === SUPER_ADMIN_EMAIL;
-        } catch {
-          // corrupted localStorage data, skip
-        }
-      }
-      
-      if ((userRole === 'super_admin' || isAdminEmail) && isSuperMode) {
-        // 슈퍼 관리자 모드일 때 -> 슈퍼 관리자 대시보드
+      if (isSuperAdminMode && (userRole === 'super_admin')) {
         onTabChange('super-admin-dashboard');
-        return;
       } else if (userRole === 'evaluator') {
-        // 평가자 -> 평가자 대시보드
         onTabChange('evaluator-dashboard');
-        return;
       } else {
-        // 개인 서비스 모드 (서비스 관리자, 서비스 사용자, 개인 모드의 슈퍼 관리자)
+        // 연구자 대시보드 (관리자 포함 - 연구 플랫폼 모드)
         onTabChange('personal-service');
-        return;
       }
+      return;
     }
     
     // 기존 모드 전환 처리
@@ -548,21 +547,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           {/* 슈퍼 어드민 토글 버튼 - 사이드바 하단에 위치 */}
           {(() => {
-            const storedUserStr = localStorage.getItem('ahp_user');
-            let isAdminEmail = false;
-            
-            if (storedUserStr) {
-              try {
-                const storedUserData = JSON.parse(storedUserStr);
-                isAdminEmail = storedUserData.email === SUPER_ADMIN_EMAIL || storedUserData.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
-              } catch {
-                // corrupted localStorage data, skip
-              }
-            }
-            
-            const shouldShowToggle = isAdminEmail || userRole === 'super_admin';
-            
-            if (!shouldShowToggle) return null;
+            // 슈퍼관리자 역할인 경우에만 모드 토글 표시
+            if (userRole !== 'super_admin') return null;
             
             return (
               <div style={{
@@ -574,6 +560,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                     const newMode = !isSuperAdminMode;
                     setIsSuperAdminMode(newMode);
                     localStorage.setItem('ahp_super_mode', newMode.toString());
+                    // 모드 전환 시 해당 대시보드로 즉시 이동
+                    onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
                   }}
                   className="w-full p-2 rounded-lg transition-all flex items-center justify-center"
                   style={{

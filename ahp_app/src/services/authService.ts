@@ -16,71 +16,50 @@ class AuthService {
   }
 
   /**
-   * 메모리에서 토큰 로드 (localStorage + sessionStorage 조합)
+   * sessionStorage에서 토큰 로드 (localStorage는 사용하지 않음 - 보안)
    */
   private loadTokensFromMemory(): void {
     try {
-      // 1. sessionStorage에서 먼저 시도 (일반 새로고침 대응)
       this.accessToken = sessionStorage.getItem('ahp_access_token');
       this.refreshToken = sessionStorage.getItem('ahp_refresh_token');
 
-      // 2. sessionStorage에 없으면 localStorage에서 시도 (강력한 새로고침 대응)
-      if (!this.accessToken) {
-        this.accessToken = localStorage.getItem('ahp_access_token');
-        this.refreshToken = localStorage.getItem('ahp_refresh_token');
-
-        // localStorage에서 복원했으면 sessionStorage에도 복사
-        if (this.accessToken) {
-          sessionStorage.setItem('ahp_access_token', this.accessToken);
-          if (this.refreshToken) {
-            sessionStorage.setItem('ahp_refresh_token', this.refreshToken);
-          }
-        }
-      }
-
-      // 3. 토큰 만료 확인 - access token만 정리 (refresh token은 유지)
+      // 만료된 access token 정리 (refresh token은 유지 → 갱신 시도 가능)
       if (this.accessToken && this.isTokenExpired(this.accessToken)) {
         this.accessToken = null;
         sessionStorage.removeItem('ahp_access_token');
-        localStorage.removeItem('ahp_access_token');
-        // refresh token은 유지 → validateSession에서 갱신 시도
       }
-    } catch (error) {
-      console.warn('토큰 로딩 실패:', error);
+
+      // 레거시 localStorage 토큰 정리 (이전 버전에서 남은 것)
+      localStorage.removeItem('ahp_access_token');
+      localStorage.removeItem('ahp_refresh_token');
+    } catch {
       this.clearTokens();
     }
   }
 
   /**
-   * 토큰을 메모리, sessionStorage, localStorage에 저장
+   * 토큰을 메모리 + sessionStorage에 저장
+   * NOTE: localStorage에는 저장하지 않음 (XSS 토큰 탈취 위험 감소)
+   * 탭/창 닫으면 토큰 소멸 → 재로그인 필요 (보안 우선)
    */
   private saveTokens(tokens: AuthTokens): void {
     this.accessToken = tokens.access;
     this.refreshToken = tokens.refresh;
 
-    // sessionStorage에 저장 (일반 새로고침 대응)
+    // sessionStorage에만 저장 (탭 내 새로고침 대응)
     sessionStorage.setItem('ahp_access_token', tokens.access);
     sessionStorage.setItem('ahp_refresh_token', tokens.refresh);
-
-    // localStorage에도 저장 (강력한 새로고침 대응)
-    localStorage.setItem('ahp_access_token', tokens.access);
-    localStorage.setItem('ahp_refresh_token', tokens.refresh);
   }
 
   /**
-   * 토큰 정리 (메모리, sessionStorage, localStorage 모두 정리)
+   * 토큰 정리 (메모리 + sessionStorage)
    */
   clearTokens(): void {
     this.accessToken = null;
     this.refreshToken = null;
 
-    // sessionStorage 정리
     sessionStorage.removeItem('ahp_access_token');
     sessionStorage.removeItem('ahp_refresh_token');
-
-    // localStorage 정리
-    localStorage.removeItem('ahp_access_token');
-    localStorage.removeItem('ahp_refresh_token');
 
     if (this.tokenRefreshTimer) {
       clearTimeout(this.tokenRefreshTimer);
@@ -307,16 +286,11 @@ class AuthService {
 
       if (response.ok && data.access) {
         this.accessToken = data.access;
-
-        // sessionStorage와 localStorage 모두 업데이트
         sessionStorage.setItem('ahp_access_token', data.access);
-        localStorage.setItem('ahp_access_token', data.access);
 
-        // 새 refresh 토큰이 있으면 업데이트
         if (data.refresh) {
           this.refreshToken = data.refresh;
           sessionStorage.setItem('ahp_refresh_token', data.refresh);
-          localStorage.setItem('ahp_refresh_token', data.refresh);
         }
 
         this.initTokenRefresh();
@@ -356,7 +330,7 @@ class AuthService {
       this.tokenRefreshTimer = setTimeout(async () => {
         const result = await this.refreshAccessToken();
         if (!result.success) {
-          console.warn('Automatic token refresh failed:', result.error);
+          // Token refresh failed - trigger logout event
           // 리프레시 실패 시 로그아웃 이벤트 발생
           window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
         }

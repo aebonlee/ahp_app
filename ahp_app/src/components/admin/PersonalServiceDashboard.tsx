@@ -2,7 +2,7 @@
  * PersonalServiceDashboard - AHP 플랫폼 개인 서비스 대시보드
  * 프로젝트 생성 워크플로우: 기본정보 → 기준설정 → 대안설정 → 평가자배정
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import MyProjects from './MyProjects';
@@ -32,28 +32,14 @@ import dataService from '../../services/dataService_clean';
 import type { ProjectData } from '../../services/api';
 import type { User, UserProject } from '../../types';
 import { SUPER_ADMIN_EMAIL } from '../../config/api';
-// DEMO 데이터 제거 - 실제 DB만 사용
+import { useAuthContext } from '../../contexts/AuthContext';
+import { useNavigationContext } from '../../contexts/NavigationContext';
+import { useProjectContext } from '../../contexts/ProjectContext';
 
 type ActiveMenuTab = 'dashboard' | 'projects' | 'creation' | 'project-wizard' | 'demographic-setup' | 'evaluator-invitation' | 'model-builder' | 'validity-check' | 'evaluators' | 'survey-links' | 'monitoring' | 'analysis' | 'paper' | 'export' | 'workshop' | 'decision-support' | 'evaluation-test' | 'settings' | 'usage-management' | 'payment' | 'demographic-survey' | 'trash' | 'dev-tools';
 
 interface PersonalServiceProps {
-  user: User;
-  activeTab?: string;
-  onTabChange?: (tab: string) => void;
-  onUserUpdate?: (updatedUser: User) => void;
-  projects?: UserProject[];
-  onCreateProject?: (projectData: Partial<ProjectData>) => Promise<unknown>;
-  onDeleteProject?: (projectId: string) => Promise<unknown>;
-  onFetchCriteria?: (projectId: string) => Promise<unknown[]>;
-  onCreateCriteria?: (projectId: string, criteriaData: Record<string, unknown>) => Promise<unknown>;
-  onFetchAlternatives?: (projectId: string) => Promise<unknown[]>;
-  onCreateAlternative?: (projectId: string, alternativeData: Record<string, unknown>) => Promise<unknown>;
-  onSaveEvaluation?: (projectId: string, evaluationData: Record<string, unknown>) => Promise<unknown>;
-  onFetchTrashedProjects?: () => Promise<unknown[]>;
-  onRestoreProject?: (projectId: string) => Promise<unknown>;
-  onPermanentDeleteProject?: (projectId: string) => Promise<unknown>;
-  selectedProjectId?: string | null;
-  onSelectProject?: (projectId: string | null) => void;
+  tabOverride?: string;
 }
 
 
@@ -74,31 +60,37 @@ const USER_PLANS: Record<string, 'basic' | 'standard' | 'premium' | 'enterprise'
   'default': 'basic' // 기본값
 };
 
-const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({ 
-  user: initialUser, 
-  activeTab: externalActiveTab,
-  onTabChange: externalOnTabChange,
-  onUserUpdate,
-  projects: externalProjects = [], // 기본값으로 빈 배열 설정
-  onCreateProject,
-  onDeleteProject,
-  onFetchCriteria,
-  onCreateCriteria,
-  onFetchAlternatives,
-  onCreateAlternative,
-  onSaveEvaluation,
-  onFetchTrashedProjects,
-  onRestoreProject,
-  onPermanentDeleteProject,
-  selectedProjectId: externalSelectedProjectId,
-  onSelectProject: externalOnSelectProject
-}) => {
+const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({ tabOverride }) => {
+  // ── Context 소비 ──────────────────────────────────────────────────────────
+  const {
+    user: initialUser, setUser: contextSetUser,
+  } = useAuthContext();
+  const {
+    activeTab: contextActiveTab, setActiveTab: contextSetActiveTab,
+  } = useNavigationContext();
+  const {
+    projects: contextProjects,
+    createProject: onCreateProject,
+    deleteProject: onDeleteProject,
+    fetchCriteria: onFetchCriteria,
+    fetchAlternatives: onFetchAlternatives,
+    fetchTrashedProjects: onFetchTrashedProjects,
+    restoreProject: onRestoreProject,
+    permanentDeleteProject: onPermanentDeleteProject,
+  } = useProjectContext();
+
+  // Context 값을 기존 변수명에 매핑 (최소 변경 원칙)
+  const externalActiveTab = tabOverride || contextActiveTab;
+  const externalOnTabChange = contextSetActiveTab;
+  const externalProjects = useMemo(() => contextProjects || [], [contextProjects]);
+  const onUserUpdate = contextSetUser;
+
   // 사용자 정보 내부 상태 관리
-  const [user, setUser] = useState(initialUser);
+  const [user, setUser] = useState(initialUser!);
   
   // 사용자 이메일에 따른 요금제 결정
   const getUserPlanType = (): 'basic' | 'standard' | 'premium' | 'enterprise' => {
-    const email = initialUser.email?.toLowerCase() || '';
+    const email = initialUser?.email?.toLowerCase() || '';
     return USER_PLANS[email] || USER_PLANS['default'];
   };
   
@@ -149,22 +141,17 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
     }
   }, [externalProjects, hasAttemptedLoad, isAutoLoading]);
 
-  // props의 user가 변경될 때 내부 상태도 업데이트
+  // Context의 user가 변경될 때 내부 상태도 업데이트
   useEffect(() => {
-    if (user.first_name !== initialUser.first_name || user.last_name !== initialUser.last_name) {
+    if (initialUser && (user.first_name !== initialUser.first_name || user.last_name !== initialUser.last_name)) {
       setUser(initialUser);
     }
   }, [initialUser, user]);
 
   // 사용자 정보 업데이트 처리
-  const handleUserUpdate = (updatedUser: typeof initialUser) => {
+  const handleUserUpdate = (updatedUser: User) => {
     // 새로운 객체 참조를 만들어 React 리렌더링 보장
-    const newUserObject = {
-      ...updatedUser,
-      // 타임스탬프 추가로 강제 리렌더링
-      _updated: Date.now()
-    };
-
+    const newUserObject = { ...updatedUser };
     setUser(newUserObject);
     if (onUserUpdate) {
       onUserUpdate(newUserObject);
@@ -215,14 +202,12 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   const refreshProjectList = useCallback(async () => {
     const updatedProjects = await dataService.getProjects();
 
-    // App.tsx의 프로젝트 목록 업데이트를 위한 이벤트 발생
-    if (onCreateProject && updatedProjects.length > 0) {
-      // 새로고침 트리거를 통해 상위 컴포넌트에 알림
+    if (updatedProjects.length > 0) {
       setProjectRefreshTrigger(prev => prev + 1);
     }
 
     return updatedProjects;
-  }, [onCreateProject]);
+  }, []);
   
   const [activeMenu, setActiveMenu] = useState<ActiveMenuTab>(() => {
     // externalActiveTab이 있으면 그것을 우선 사용
@@ -312,29 +297,7 @@ const PersonalServiceDashboard: React.FC<PersonalServiceProps> = ({
   }, [externalActiveTab]);
   
   // 슈퍼 관리자 모드 체크 및 리다이렉트
-  useEffect(() => {
-    const storedUserStr = localStorage.getItem('ahp_user');
-    const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
-    let isAdminEmail = false;
-    
-    if (storedUserStr) {
-      try {
-        const storedUser = JSON.parse(storedUserStr);
-        isAdminEmail = storedUser.email === SUPER_ADMIN_EMAIL;
-      } catch (e) {
-        // parse error ignored
-      }
-    }
-
-    // 슈퍼 관리자 모드이고 personal-service로 접근한 경우
-    if ((user?.role === 'super_admin' || isAdminEmail) && isSuperMode &&
-        (externalActiveTab === 'personal-service' || externalActiveTab === 'admin-dashboard' || externalActiveTab === 'user-home')) {
-      if (externalOnTabChange) {
-        externalOnTabChange('super-admin-dashboard');
-      }
-      return;
-    }
-  }, [user, externalActiveTab, externalOnTabChange]);
+  // PSD는 항상 연구자 대시보드로 동작. 관리자 리디렉트는 AppContent에서 처리.
 
   // 외부에서 activeTab이 변경되면 내부 activeMenu도 업데이트
   useEffect(() => {
@@ -2950,47 +2913,19 @@ ${project?.title} - ${type} 프레젠테이션
   );
 
   const renderMenuContent = () => {
-    // 슈퍼 관리자 모드 체크
-    const storedUserStr = localStorage.getItem('ahp_user');
-    const isSuperMode = localStorage.getItem('ahp_super_mode') === 'true';
-    let isAdminEmail = false;
-    
-    if (storedUserStr) {
-      try {
-        const storedUser = JSON.parse(storedUserStr);
-        isAdminEmail = storedUser.email === SUPER_ADMIN_EMAIL;
-      } catch (e) {
-        // parse error ignored
-      }
-    }
-
-    // 슈퍼 관리자 모드일 때는 슈퍼 관리자 대시보드로 리다이렉트
-    if ((user?.role === 'super_admin' || isAdminEmail) && isSuperMode && activeMenu === 'dashboard') {
-      if (externalOnTabChange) {
-        externalOnTabChange('super-admin-dashboard');
-      }
-      return null;
-    }
-
     switch (activeMenu) {
       case 'dashboard':
-        // 사용자 역할에 따라 다른 대시보드 표시
-        if (user?.role === 'service_user') {
-          // 일반 사용자용 대시보드 표시
-          return (
-            <PersonalUserDashboard
-              user={user}
-              onTabChange={(tab) => {
-                if (externalOnTabChange) {
-                  externalOnTabChange(tab);
-                }
-              }}
-            />
-          );
-        } else {
-          // 관리자용 대시보드 표시
-          return renderOverview();
-        }
+        // 모든 역할에서 연구자 대시보드 표시 (관리자도 연구 플랫폼 모드에서는 연구자 뷰)
+        return (
+          <PersonalUserDashboard
+            user={user}
+            onTabChange={(tab) => {
+              if (externalOnTabChange) {
+                externalOnTabChange(tab);
+              }
+            }}
+          />
+        );
       case 'projects':
         return (
           <MyProjects
@@ -3391,26 +3326,40 @@ ${project?.title} - ${type} 프레젠테이션
   if (currentTab === 'demographic-survey') return renderDemographicSurveyFullPage();
   
   // 대시보드 컨텐츠 렌더링
-  if (currentTab === 'personal-service' || currentTab === 'dashboard' || !currentTab) {
+  if (currentTab === 'personal-service' || currentTab === 'dashboard' || currentTab === 'admin-dashboard' || currentTab === 'user-home' || !currentTab) {
+    return (
+      <PersonalUserDashboard
+        user={user}
+        onTabChange={(tab) => {
+          if (externalOnTabChange) {
+            externalOnTabChange(tab);
+          }
+        }}
+      />
+    );
+  }
+
+  // 기존 환영 대시보드 (renderOverview에서 사용)
+  if (false) {
     return (
       <div className="max-w-6xl mx-auto space-y-6">
         {/* 환영 메시지 + 요금제 정보 통합 */}
       <div className="py-6">
         {/* 환영 메시지 (기존 스타일) */}
         <div className="text-center lg:text-left space-y-6">
-          <div className="space-y-3 p-6 rounded-xl" 
+          <div className="space-y-3 p-6 rounded-xl"
                style={{
                  border: '1px solid var(--border-light)',
                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                }}>
-            <h1 
+            <h1
               className="text-4xl lg:text-5xl font-light tracking-wide"
-              style={{ 
+              style={{
                 color: 'var(--text-primary)',
                 fontFamily: "'Inter', 'Pretendard', system-ui, sans-serif"
               }}
             >
-              안녕하세요, 
+              안녕하세요,
               <span 
                 className="font-semibold ml-2"
                 style={{ color: 'var(--accent-primary)' }}
@@ -4379,10 +4328,10 @@ ${project?.title} - ${type} 프레젠테이션
 
 
       {/* Project Selector Modal */}
-      {showProjectSelector && projectSelectorConfig && (
+      {showProjectSelector && projectSelectorConfig != null && (
         <ProjectSelector
-          title={projectSelectorConfig.title}
-          description={projectSelectorConfig.description}
+          title={projectSelectorConfig!.title}
+          description={projectSelectorConfig!.description}
           onProjectSelect={handleProjectSelect}
           onCancel={handleProjectSelectorCancel}
         />

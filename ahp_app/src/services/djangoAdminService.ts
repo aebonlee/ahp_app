@@ -75,7 +75,7 @@ const getDjangoAdminHeaders = (): HeadersInit => {
     'X-Django-Admin': 'true',
   };
   
-  const accessToken = localStorage.getItem('ahp_access_token') || sessionStorage.getItem('ahp_access_token');
+  const accessToken = sessionStorage.getItem('ahp_access_token');
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }

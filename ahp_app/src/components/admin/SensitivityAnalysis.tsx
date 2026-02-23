@@ -77,7 +77,7 @@ const SensitivityAnalysis: React.FC<SensitivityAnalysisProps> = ({ projectId, on
 
     setIsAnalyzing(true);
 
-    // TODO: real API call for sensitivity analysis
+    // Placeholder data: replace when sensitivity API endpoint is available
     setResults({
       original: {
         alternatives: [

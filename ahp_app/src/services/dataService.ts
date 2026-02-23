@@ -13,10 +13,8 @@ class DataService {
         // projectApi에서 이미 정규화된 데이터를 반환
         return response.data;
       }
-      console.error('Failed to fetch projects from backend');
       return [];
-    } catch (error) {
-      console.error('Error fetching projects:', error);
+    } catch {
       return [];
     }
   }
@@ -27,10 +25,8 @@ class DataService {
       if (response.success && response.data) {
         return response.data;
       }
-      console.error('Failed to fetch project from backend:', id);
       return null;
-    } catch (error) {
-      console.error('Error fetching project:', error);
+    } catch {
       return null;
     }
   }
@@ -40,7 +36,6 @@ class DataService {
     if (response.success && response.data) {
       return response.data;
     }
-    console.error('Failed to create project');
     return null;
   }
 
@@ -55,8 +50,8 @@ class DataService {
       if (response.success && response.data) {
         return response.data;
       }
-    } catch (error) {
-      console.warn('Backend API update failed:', error);
+    } catch {
+      // error propagated via throw below
     }
 
     // 백엔드 실패시 오류 반환
@@ -69,8 +64,8 @@ class DataService {
       if (response.success) {
         return true;
       }
-    } catch (error) {
-      console.warn('Backend API delete failed:', error);
+    } catch {
+      // error propagated via throw below
     }
 
     // 백엔드 실패시 오류 반환
@@ -84,8 +79,8 @@ class DataService {
       if (response.success && response.data) {
         return response.data;
       }
-    } catch (error) {
-      console.warn('Backend API getCriteria failed:', error);
+    } catch {
+      // silently return empty
     }
 
     return [];
@@ -122,8 +117,8 @@ class DataService {
       if (response.success && response.data) {
         return response.data;
       }
-    } catch (error) {
-      console.warn('Backend API getAlternatives failed:', error);
+    } catch {
+      // silently return empty
     }
 
     return [];
@@ -160,8 +155,8 @@ class DataService {
       if (response.success && response.data) {
         return response.data;
       }
-    } catch (error) {
-      console.warn('Backend API getEvaluators failed:', error);
+    } catch {
+      // silently return empty
     }
 
     return [];
@@ -198,8 +193,8 @@ class DataService {
       if (response.success && response.data) {
         return response.data;
       }
-    } catch (error) {
-      console.warn('Backend API getPairwiseComparisons failed:', error);
+    } catch {
+      // silently return empty
     }
 
     return [];
@@ -213,8 +208,8 @@ class DataService {
         // projectApi에서 이미 정규화된 데이터를 반환
         return response.data;
       }
-    } catch (error) {
-      console.warn('Backend API getTrashedProjects failed:', error);
+    } catch {
+      // silently return empty
     }
 
     return [];

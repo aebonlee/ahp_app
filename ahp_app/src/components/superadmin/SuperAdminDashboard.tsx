@@ -150,8 +150,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
   const loadSystemStats = async () => {
     try {
       // 실제 데이터 가져오기
-      const projects = await projectApi.getProjects();
-      
+      const projectsResponse = await projectApi.getProjects();
+
       // localStorage에서 사용자 데이터 가져오기
       const users = JSON.parse(localStorage.getItem('ahp_users') || '[]');
 
@@ -185,7 +185,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onTabCh
       
       setSystemStats({
         totalUsers: users?.length || 0,
-        totalProjects: projects?.length || 0,
+        totalProjects: (projectsResponse.success && Array.isArray(projectsResponse.data)) ? projectsResponse.data.length : 0,
         activeEvaluations: activeEvaluations,
         systemHealth: parseFloat(sizeInMB) < 5 ? 'healthy' : 'warning',
         databaseSize: `${sizeInMB} MB`,

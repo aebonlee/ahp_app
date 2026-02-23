@@ -7,7 +7,7 @@ import { API_BASE_URL } from '../config/api';
 
 const getAuthHeaders = (): HeadersInit => {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
-  const token = localStorage.getItem('ahp_access_token') || sessionStorage.getItem('ahp_access_token');
+  const token = sessionStorage.getItem('ahp_access_token');
   if (token) {
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }

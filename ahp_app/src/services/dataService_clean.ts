@@ -410,7 +410,7 @@ class CleanDataService {
       // 프로젝트 메타데이터에서 평가자 조회
       const projectResponse = await projectApi.getProject(projectId);
       if (projectResponse.success && projectResponse.data) {
-        const evaluators = projectResponse.data.settings?.evaluators || [];
+        const evaluators = (projectResponse.data.settings?.evaluators ?? []) as EvaluatorData[];
         return evaluators;
       }
 
@@ -436,7 +436,7 @@ class CleanDataService {
 
     // settings가 null이면 빈 객체로 초기화
     const currentSettings = currentProject.settings || {};
-    const existingEvaluators = currentSettings.evaluators || [];
+    const existingEvaluators = (currentSettings.evaluators ?? []) as EvaluatorData[];
 
     // 중복 검사
     const isDuplicate = existingEvaluators.some((e: EvaluatorData) =>
@@ -511,7 +511,7 @@ class CleanDataService {
       }
 
       const currentProject = projectResponse.data;
-      const existingEvaluators = currentProject.settings?.evaluators || [];
+      const existingEvaluators = (currentProject.settings?.evaluators ?? []) as EvaluatorData[];
 
       // 평가자 제거
       const updatedEvaluators = existingEvaluators.filter((e: EvaluatorData) => e.id !== evaluatorId);

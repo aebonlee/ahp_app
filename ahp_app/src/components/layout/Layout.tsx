@@ -28,7 +28,7 @@ const Layout: React.FC<LayoutProps> = ({
   const handleLogoClick = () => {
     if (user) {
       if (user.role === 'super_admin') {
-        onTabChange('super-admin');
+        onTabChange('super-admin-dashboard');
       } else if (user.role === 'service_admin' || user.role === 'service_user') {
         onTabChange('personal-service');
       } else if (user.role === 'evaluator') {

@@ -154,8 +154,7 @@ const QRCodeEvaluatorAssignment: React.FC<QRCodeAssignmentProps> = ({
     printWindow.print();
   };
 
-  // TODO: replace with real API polling for session status
-  // e.g. setInterval(() => api.getSessionStatuses(sessions.map(s => s.sessionId)), 5000)
+  // Session polling: add when real-time session status API is available
 
   // Get status color
   const getStatusColor = (status: string) => {

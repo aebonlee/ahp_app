@@ -154,7 +154,7 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
         monthlyGrowth: subscriptionStats.monthlyGrowth || 12.5
       });
 
-      // TODO: replace with real monitoring API call for system metrics
+      // System metrics: zeroed until monitoring API is available
       setSystemMetrics({
         cpu: 0,
         memory: 0,
@@ -227,8 +227,7 @@ const EnhancedSuperAdminDashboard: React.FC<EnhancedSuperAdminDashboardProps> = 
         }
       ]);
 
-      // TODO: replace with real monitoring API call for performance history
-      // Performance data placeholder — real API should return time-series metrics
+      // Performance history: empty until monitoring API is available
       setPerformanceData([]);
 
     } catch (error) {

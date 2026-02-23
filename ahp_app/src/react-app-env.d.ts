@@ -2,7 +2,6 @@
 
 // Global window extensions used by the app
 interface Window {
-  __SUPER_ADMIN__?: boolean;
   comparisonStartTime?: number;
 google?: {
     charts: {
