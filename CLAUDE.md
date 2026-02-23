@@ -1,249 +1,195 @@
-# 🚀 AHP 플랫폼 개발 가이드 - AI 역할 분담
-## Multi-Layer AHP Decision Support Platform
+# AHP Research Platform — 개발 가이드
 
-**현재 완성도**: 75% → **목표: 100%** (2026.02.18 재개)
-**개발 재개**: 2026-02-18
-**AI 협업**: Claude Opus 4.6 (설계/알고리즘) + Claude Sonnet 4.6 (구현/통합)
-**문서 폴더**: `Dev_md_2602/` (2026년 02월~ 개발 기록)
-
-> ⚠️ **중요**: 작업 전 반드시 이 파일을 읽고 역할 분담을 확인할 것.
-> Sonnet은 Opus 설계 기반으로 구현. 독단적 아키텍처 변경 금지.
+**프로젝트**: Multi-Layer AHP Decision Support Platform
+**완성도**: ~85% (2026-02-24 기준)
+**마지막 작업일**: 2026-02-24
+**다음 작업 예정**: 2026-02-26
+**문서 폴더**: `Dev_md_2602/`
+**이전 CLAUDE.md 백업**: `Dev_md_2602/CLAUDE_backup_20260224.md`
 
 ---
 
-## 🗺️ 전체 개발 로드맵
+## 기술 스택
 
-```
-Phase 1: 기반 안정화 (현재 진행 - Sonnet 주도)
-├── 1a. React.lazy() 코드 스플리팅 (2.8MB → 500KB)
-├── 1b. App.tsx 분리 (AppRouter + 커스텀 Hook)
-├── 1c. 비즈니스 로직 Hook 분리
-└── 1d. 보안 취약점 30개 패치
-
-Phase 2: 핵심 미완성 기능 (Opus 설계 → Sonnet 구현)
-├── 2a. 평가자 초대 이메일 시스템 (현재 40%)
-├── 2b. 실시간 협업 WebSocket (현재 35%)
-└── 2c. 고급 분석 기능 (현재 30%)
-
-Phase 3: 수익화 (Opus 설계 → Sonnet 구현)
-├── 3a. Stripe 결제 시스템 (현재 0%)
-├── 3b. 구독 플랜 관리
-└── 3c. 청구서 생성
-```
+| 항목 | 값 |
+|------|-----|
+| Frontend | React 18.2 + TypeScript 4.9 (strict) + TailwindCSS 3.4 |
+| Backend | Django REST Framework (Render.com) |
+| DB | PostgreSQL (Render.com) |
+| 배포 | GitHub Pages (`/ahp_app/`) via GitHub Actions |
+| 번들 | main.js **162.34KB** (gzip) |
+| 빌드 도구 | Create React App (react-scripts 5.0.1) |
+| 리포 | https://github.com/aebonlee/ahp_app |
+| 라이브 | https://aebonlee.github.io/ahp_app |
 
 ---
 
-## 🤖 Sonnet 4.6 담당 영역 (구현 및 통합)
+## 프로젝트 규모
 
-### ✅ Phase 1 - 현재 진행 중
-
-#### 1a. 코드 스플리팅 (React.lazy)
-```
-변경 파일: src/App.tsx
-작업 내용:
-- 60+ 컴포넌트 import를 React.lazy()로 전환
-- React.Suspense 경계 추가
-- LoadingFallback 컴포넌트 생성
-목표: 초기 번들 2.8MB → 500KB
-```
-
-#### 1b. AppRouter 분리
-```
-신규 파일: src/router/AppRouter.tsx
-변경 파일: src/App.tsx (2309줄 → ~300줄)
-작업 내용:
-- renderContent() 함수를 AppRouter로 이전
-- App.tsx를 순수 상태 컨테이너로 축소
-```
-
-#### 1c. 비즈니스 로직 Hook 분리
-```
-신규 파일:
-- src/hooks/useAuth.ts     (로그인/로그아웃/세션/토큰)
-- src/hooks/useProjects.ts (프로젝트 CRUD)
-- src/hooks/useNavigation.ts (탭 네비게이션)
-- src/hooks/useBackendStatus.ts (백엔드 상태)
-```
-
-#### 완료 기준
-- [ ] npm run build 성공
-- [ ] 번들 크기 500KB 이하
-- [ ] 모든 탭 정상 동작
-- [ ] GitHub Pages 배포 확인
-
-### 📋 Sonnet 완료해야 할 작업 (Phase 2-3)
-```
-🔧 구현 작업:
-├── Phase 2: Opus 설계 문서 기반 구현
-│   ├── 평가자 초대 UI (이메일 발송 폼, 상태 추적 UI)
-│   ├── WebSocket 연결 처리 (React 훅)
-│   └── 고급 분석 대시보드 UI
-└── Phase 3: 결제 UI
-    ├── Stripe Elements 통합
-    ├── 구독 관리 UI
-    └── 청구서 뷰어
-```
+- **299+ TypeScript/TSX 파일**, **~118,200줄**
+- 컴포넌트 180+, 서비스 12개, 훅 10개, 유틸리티 26개, Context 5개
+- 기능: AHP, Fuzzy AHP, Monte Carlo, 그룹 합의, 민감도 분석, AI 통합
 
 ---
 
-## 🧠 Opus 4.6 담당 영역 (설계 및 알고리즘)
+## 아키텍처
 
-### 📋 Phase 2 설계 필요 항목 (Sonnet 구현 전 필수)
-
-#### 2a. 평가자 초대 시스템 설계 (현재 40%)
 ```
-설계 산출물 위치: Dev_md_2602/설계문서_Opus/평가초대_시스템_설계.md
-
-포함 내용:
-├── 이메일 초대 토큰 생성 로직 (JWT 기반)
-├── 만료/재발송/취소 상태 머신
-├── 권한 관리 아키텍처
-└── Django 백엔드 API 스펙
-```
-
-#### 2b. 실시간 협업 WebSocket 설계 (현재 35%)
-```
-설계 산출물 위치: Dev_md_2602/설계문서_Opus/실시간협업_아키텍처.md
-
-포함 내용:
-├── Django Channels WebSocket 설계
-├── 이벤트 소싱 패턴
-├── 충돌 해결 메커니즘
-└── React 클라이언트 연결 방식
+Django REST API (Render.com)
+  ↕
+config/api.ts (API_ENDPOINTS, API_BASE_URL)
+  ↕
+services/api.ts (makeRequest + 10개 API 모듈 + 토큰 갱신)
+  ↕
+services/authService.ts (JWT, sessionStorage 전용)
+  ↕
+hooks/ (useAuth, useProjects, useNavigation, useBackendStatus...)
+  ↕
+contexts/ (AuthContext, ProjectContext, UIContext, NavigationContext)
+  ↕
+App.tsx (22줄) → AppProviders → AppContent → components/
 ```
 
-#### 2c. 고급 분석 알고리즘 (현재 30%)
-```
-설계 산출물 위치: Dev_md_2602/설계문서_Opus/고급분석_알고리즘.md
+### 핵심 서비스 (12개, 총 5,460줄)
 
-포함 내용:
-├── Monte Carlo 시뮬레이션 (반복 횟수, 분포 설정)
-├── 민감도 분석 고도화
-├── 그룹 합의 알고리즘 (AIJ, AIP, Fuzzy)
-└── Shannon Entropy 기반 합의도
-```
+| 서비스 | 줄 | 역할 |
+|--------|-----|------|
+| api.ts | 924 | HTTP 클라이언트 + projectApi/criteriaApi/alternativeApi/evaluatorApi/evaluationApi/resultsApi/exportApi/authApi/advancedAnalysisApi/directEvaluationAPI |
+| authService.ts | 424 | JWT 토큰 관리, sessionStorage, 자동 갱신 (만료 5분 전) |
+| anonymousEvaluationService.ts | 580 | 익명 평가 세션 (sessionStorage 전용) |
+| dataService_clean.ts | 563 | 비즈니스 로직 래퍼 |
+| fileUploadService.ts | 561 | 파일 업로드 |
+| systemManagementService.ts | 460 | 시스템 관리 |
+| djangoAdminService.ts | 453 | Django Admin 통합 |
+| sessionService.ts | 345 | 세션 유효성 |
+| aiService.ts | 362 | AI 통합 |
+| twoFactorService.ts | 337 | 2FA TOTP |
+| subscriptionService.ts | 310 | 구독 관리 |
+| invitationService.ts | 146 | 평가자 초대 |
 
-#### 3a. 결제 시스템 아키텍처 (현재 0%)
-```
-설계 산출물 위치: Dev_md_2602/설계문서_Opus/결제시스템_설계.md
-
-포함 내용:
-├── Stripe 구독 모델 설계
-├── 결제 상태 머신
-├── 환불 처리 로직
-└── PCI 준수 사항
-```
+### 삭제된 파일 (Phase 3에서 제거)
+- ~~apiService.ts~~ (376줄) — api.ts로 통합
+- ~~apiService.test.ts~~ — 테스트 파일
+- ~~dataService.ts~~ (241줄) — api.ts로 통합
 
 ---
 
-## 📊 현재 TODO 현황
+## 완료 현황
 
-### Phase 1 (Sonnet 주도)
-| # | 작업 | 상태 | 완성도 |
-|---|---|---|---|
-| 1a | React.lazy() 코드 스플리팅 | ✅ 완료 | 100% |
-| 1b | AppRouter 분리 | ✅ 완료 | 100% |
-| 1c | Hook 분리 (파일 생성) | ✅ 완료 | 80% (App.tsx 적용 미완) |
-| 1d | 보안 취약점 30개 패치 | ⏳ 대기 | 0% |
+### Phase 1: 기반 안정화 ✅ 7/7 완료
+- 1a: React.lazy() 코드 스플리팅 (App.tsx 2,309→22줄)
+- 1b: AppRouter → AppContent 분리
+- 1c: 커스텀 훅 6개 추출
+- 1d: 보안 취약점 5건 패치
+- 1e: 라우트 맵 + 가드 컴포넌트
+- 1f: Context API 5개 + AppProviders
+- 1g: 프로덕션 console.* 13건 정리
 
-### Phase 2 (Opus 설계 → Sonnet 구현)
-| # | 작업 | 설계 상태 | 구현 상태 |
-|---|---|---|---|
-| 2a | 평가자 초대 시스템 | ⏳ 미설계 | 40% |
-| 2b | WebSocket 실시간 협업 | ⏳ 미설계 | 35% |
-| 2c | 고급 분석 기능 | ⏳ 미설계 | 30% |
+### Phase 2: 핵심 기능 ✅ 완료
+- 2a: 평가자 초대 시스템 FE 인프라
+- 2c: 고급 분석 알고리즘 5개 (Monte Carlo, 민감도, 그룹 합의, Pareto, 강건성)
 
-### Phase 3 (Opus 설계 → Sonnet 구현)
-| # | 작업 | 설계 상태 | 구현 상태 |
-|---|---|---|---|
-| 3a | Stripe 결제 | ⏳ 미설계 | 0% |
-| 3b | 구독 관리 | ⏳ 미설계 | 0% |
-| 3c | 청구서 생성 | ⏳ 미설계 | 0% |
+### Phase 2.5: 코드 품질 ✅ 7/7 완료
+- npm audit fix, secureStorage, any→제네릭, PSD 분할(-41%), logger, React.memo(18개), ErrorBoundary(3개)
 
----
+### Phase 3: 서비스 통합 ✅ 완료
+- 토큰 갱신 일원화 (C1), dataService 삭제 (C2), apiService 삭제 (H1), axios→fetch (H3), localStorage→sessionStorage (C3)
+- 순 코드 감소: **-870줄**, 삭제 파일 3개, 수정 파일 25개
 
-## 📁 파일 구조 및 규칙
-
-### 개발 문서 위치
-```
-Dev_md_2602/
-├── README.md                      # 전체 개요
-├── README_backup_YYYYMMDD.md      # README.md 백업
-├── CLAUDE_backup_YYYYMMDD.md      # CLAUDE.md 갱신 시 백업
-├── 개발일지_YYYYMMDD.md           # 일별 작업 기록
-├── phase1_코드스플리팅.md          # Phase 1 상세
-├── phase2_미완성기능.md            # Phase 2 상세
-├── phase3_수익화.md               # Phase 3 상세
-├── 보안_취약점_추적.md             # 보안 이슈 추적
-├── 설계문서_Opus/                  # Opus 설계 산출물
-│   ├── 평가초대_시스템_설계.md
-│   ├── 실시간협업_아키텍처.md
-│   ├── 고급분석_알고리즘.md
-│   └── 결제시스템_설계.md
-└── 평가보고서/
-    ├── phase1_평가보고서.md
-    ├── phase2_평가보고서.md
-    └── 최종_평가보고서.md
-```
-
-### 소스 코드 구조 (변경 후 목표)
-```
-src/
-├── App.tsx                    # ~300줄 (상태 + 초기화만)
-├── router/
-│   └── AppRouter.tsx          # 라우팅 전담
-├── hooks/
-│   ├── useAuth.ts             # 인증 로직
-│   ├── useProjects.ts         # 프로젝트 CRUD
-│   ├── useNavigation.ts       # 탭 네비게이션
-│   └── useBackendStatus.ts    # 백엔드 상태
-└── components/
-    └── common/
-        └── LoadingFallback.tsx # Suspense fallback
-```
+### 주요 버그 수정 (28~39)
+- API 엔드포인트 불일치 8건 수정
+- 401 토큰 자동 갱신 추가
+- SUPER_ADMIN_EMAIL 프로덕션 빌드 빈 문자열
+- PUBLIC_URL 누락 (평가 테스트 404)
+- Sidebar 역할 전환 버튼 6건 수정
+- effectiveSuperAdminMode 일관성 복원
 
 ---
 
-## 🔧 개발 환경 및 명령어
+## 현재 코드 품질
+
+| 지표 | 값 |
+|------|-----|
+| TypeScript 에러 | **0개** |
+| any 타입 잔여 | **4개** (advancedAnalysisApi 제네릭, Phase 4 예정) |
+| console.log 잔여 | **0개** (logger 유틸 사용) |
+| TODO/FIXME | **5개** (설명성 코멘트) |
+| npm 취약점 | 60개 (CRA 의존성, 런타임 무관) |
+| axios 런타임 사용 | **0건** |
+
+---
+
+## 차기 Todo (Phase 4)
+
+### 즉시 (2026-02-26 재개 시)
+1. **불필요 의존성 정리** — pg, node-fetch, claude-agent-sdk 제거, QR 라이브러리 통합, axios 제거
+2. **apiService 잔존 import 정리** — 13개 컴포넌트 확인 및 수정
+3. **anonymousEvaluationService 중복 코드 정리** — sessionStorage 호출 중복 제거
+4. **@types/* devDependencies 이동** — dependencies→devDependencies
+
+### 단기
+5. **대형 컴포넌트 분할** — 500줄+ 컴포넌트 식별 및 분할
+6. **advancedAnalysisApi 타입 강화** — `<T = any>` 4건 → 구체적 타입
+7. **ESLint 경고 정리** — 350건 → 100건 이하
+8. **테스트 커버리지 구축** — 핵심 서비스/유틸리티 단위 테스트
+
+### 중기
+9. **CRA → Vite 마이그레이션** — npm 취약점 60건 근본 해결 + 빌드 속도
+10. **Lint 차단 모드** — CI에서 경고 임계값 강제
+11. **E2E 테스트** — Playwright 도입
+
+---
+
+## 개발 명령어
 
 ```bash
-# 로컬 개발
-npm start            # 개발 서버 (포트 3000)
-
-# 빌드 및 배포
-npm run build        # 프로덕션 빌드
-npm run deploy       # GitHub Pages 배포 (build 후 자동)
-
-# 품질 검사
-npm run lint         # ESLint 검사
-npm test             # 단위 테스트
-
-# 번들 크기 확인 (빌드 후)
-# build/static/js/ 폴더의 파일 크기 확인
+npm start              # 개발 서버 (포트 3000, 프록시: Render.com)
+npm run build          # 프로덕션 빌드 (CI=false)
+npx tsc --noEmit       # TypeScript 타입 체크
+npm run lint           # ESLint (max-warnings 350)
+npm test               # 테스트
+npm run deploy         # gh-pages 수동 배포 (CI가 자동 처리)
 ```
 
 ---
 
-## ⚠️ 중요 주의사항
+## 주의사항
 
-### GitHub Pages 배포 제약
-- React Router DOM 사용 불가 → 탭 기반 네비게이션 유지
-- `window.history.pushState` 로 URL 동기화
-- `?tab=XXX&project=YYY` 파라미터 방식 유지
+### 절대 변경 금지
+- 평가자 URL 파라미터 처리 (`?project=`, `?eval=`, `?token=`, `?key=`)
+- GitHub Pages 탭 기반 네비게이션 (`?tab=XXX&project=YYY`)
+- sessionStorage 기반 토큰 저장 (localStorage 사용 금지 — 보안)
 
-### 평가자 URL 처리
-- `?project=ID` 또는 `?eval=ID` 파라미터로 로그인 없이 접근
-- `?token=TOKEN` 또는 `?key=KEY` 로 인증
-- 이 로직은 절대 변경하지 말 것
+### 스토리지 정책
+- **sessionStorage**: JWT 토큰, 익명 세션 (보안 데이터)
+- **localStorage**: 업로드 진행률, 2FA 속도 제한, 테마 설정 (영속 데이터만)
+- **secureStorage**: API 키 등 민감 데이터 (암호화 래핑)
 
-### localStorage 키 목록
-- `ahp_user` - 로그인 사용자 정보
-- `ahp_temp_role` - 임시 역할 전환
-- `ahp_super_mode` - 슈퍼 관리자 모드
+### CI/CD
+- Push to main → GitHub Actions 자동 빌드+배포
+- 트리거 경로: src/**, public/**, package.json, tsconfig.json, .github/workflows/**
+- Lint/Test는 현재 비차단 (continue-on-error)
 
 ---
 
-**마지막 업데이트**: 2026-02-18 (Phase 1 완료)
-**Sonnet 완료 작업**: Phase 1a(코드스플리팅), 1b(AppRouter분리), 1c(Hook파일생성)
-**Sonnet 다음 작업**: Phase 1c App.tsx Hook 적용 + Phase 1d 보안패치
-**Opus 다음 작업**: Phase 2a 설계 (평가자 초대 시스템) → `Dev_md_2602/설계문서_Opus/`
+## 개발 문서
+
+```
+Dev_md_2602/
+├── README.md                        # 전체 개요
+├── 개발일지_20260223.md             # 작업 기록 (#1~#41)
+├── 점검보고서_20260223.md           # 초기 점검
+├── 전체점검보고서_20260224.md       # 정밀 점검 (C/H/M/L 이슈 분류)
+├── 평가보고서_20260224.md           # 개발 상태 평가 (이 세션)
+├── DB구조_연동분석_20260224.md       # DB 구조 분석
+├── plan_routing_fix.md              # 라우팅 수정 계획
+├── CLAUDE_backup_20260224.md        # 이전 CLAUDE.md 백업
+└── 작업지시서_20260226.md           # 다음 세션 작업 지시서
+```
+
+---
+
+**마지막 업데이트**: 2026-02-24
+**작성**: Claude Opus 4.6
+**최신 커밋**: `90ee74d` docs: 개발일지 #40-#41
+**빌드 상태**: ✅ 0 errors, 162.34KB gzip
