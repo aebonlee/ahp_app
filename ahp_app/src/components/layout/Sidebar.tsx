@@ -401,13 +401,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
         
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          {menuCategories.map((category) => {
-            // 'ai' 카테고리 바로 뒤에 모드 전환 버튼 삽입
-            const showModeToggleAfter = category.id === 'ai' && userRole === 'super_admin';
-
-            return (
-            <React.Fragment key={category.id}>
-            <div>
+          {menuCategories.map((category) => (
+            <div key={category.id}>
               {/* 카테고리 헤더 */}
               <button
                 onClick={() => toggleCategory(category.id)}
@@ -531,56 +526,48 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               )}
             </div>
-
-            {/* AI 연구 지원 바로 아래에 모드 전환 버튼 배치 */}
-            {showModeToggleAfter && (
-              <div style={{
-                padding: 'var(--space-2) 0',
-                marginBottom: 'var(--space-2)'
-              }}>
-                <button
-                  onClick={() => {
-                    const newMode = !isSuperAdminMode;
-                    setIsSuperAdminMode(newMode);
-                    localStorage.setItem('ahp_super_mode', newMode.toString());
-                    onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
-                  }}
-                  className="w-full p-3 rounded-lg transition-all flex items-center justify-center gap-2"
-                  style={{
-                    background: isSuperAdminMode
-                      ? 'linear-gradient(135deg, var(--gold-primary), var(--gold-dark, #b8860b))'
-                      : 'linear-gradient(135deg, var(--accent-primary), var(--accent-dark, #1a56db))',
-                    color: 'white',
-                    fontSize: 'var(--font-size-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    boxShadow: '0 3px 8px rgba(0,0,0,0.2)',
-                    border: '2px solid rgba(255,255,255,0.2)',
-                    letterSpacing: '0.05em'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.02)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.boxShadow = '0 3px 8px rgba(0,0,0,0.2)';
-                  }}
-                >
-                  <span style={{ fontSize: '1.1rem' }}>
-                    {isSuperAdminMode ? '🔬' : '⚙️'}
-                  </span>
-                  <span>
-                    {isSuperAdminMode ? '연구 플랫폼 전환' : '슈퍼관리자 전환'}
-                  </span>
-                </button>
-              </div>
-            )}
-            </React.Fragment>
-            );
-          })}
+          ))}
         </nav>
+
+        {/* 슈퍼관리자 모드 전환 버튼 - 메뉴 영역 하단, 항상 표시 */}
+        {userRole === 'super_admin' && (
+          <div style={{
+            padding: 'var(--space-4) 0',
+            marginTop: 'var(--space-4)',
+            borderTop: '1px solid var(--border-light)'
+          }}>
+            <button
+              onClick={() => {
+                const newMode = !isSuperAdminMode;
+                setIsSuperAdminMode(newMode);
+                localStorage.setItem('ahp_super_mode', newMode.toString());
+                onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
+              }}
+              className="w-full p-3 rounded-lg transition-all flex items-center justify-center gap-2"
+              style={{
+                background: isSuperAdminMode
+                  ? 'linear-gradient(135deg, #2563eb, #1d4ed8)'
+                  : 'linear-gradient(135deg, #b8860b, #996515)',
+                color: 'white',
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                boxShadow: '0 3px 8px rgba(0,0,0,0.25)',
+                border: '2px solid rgba(255,255,255,0.25)',
+                letterSpacing: '0.05em',
+                cursor: 'pointer'
+              }}
+            >
+              <span style={{ fontSize: '1.1rem' }}>
+                {isSuperAdminMode ? '🔬' : '⚙️'}
+              </span>
+              <span>
+                {isSuperAdminMode ? '연구 플랫폼 전환' : '시스템 관리 전환'}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
-      
+
       {/* 하단 푸터 영역 */}
       {!isCollapsed && (
         <div 
@@ -590,39 +577,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             backgroundColor: 'var(--bg-elevated)'
           }}
         >
-          {/* 슈퍼 어드민 토글 버튼 - 사이드바 하단에 위치 */}
-          {(() => {
-            // 슈퍼관리자 역할인 경우에만 모드 토글 표시
-            if (userRole !== 'super_admin') return null;
-            
-            return (
-              <div style={{
-                padding: 'var(--space-3)', 
-                borderBottom: '1px solid var(--border-light)'
-              }}>
-                <button
-                  onClick={() => {
-                    const newMode = !isSuperAdminMode;
-                    setIsSuperAdminMode(newMode);
-                    localStorage.setItem('ahp_super_mode', newMode.toString());
-                    // 모드 전환 시 해당 대시보드로 즉시 이동
-                    onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
-                  }}
-                  className="w-full p-2 rounded-lg transition-all flex items-center justify-center"
-                  style={{
-                    backgroundColor: isSuperAdminMode ? 'var(--gold-primary)' : 'var(--accent-primary)',
-                    color: 'white',
-                    fontSize: 'var(--font-size-sm)',
-                    fontWeight: 'var(--font-weight-bold)',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  <span>{isSuperAdminMode ? '연구 플랫폼 모드' : '시스템 관리 모드'}</span>
-                </button>
-              </div>
-            );
-          })()}
-          
           <div className="text-center space-y-2 p-4">
             <div 
               className="text-xs font-semibold"
