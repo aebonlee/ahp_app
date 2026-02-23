@@ -280,27 +280,30 @@ const Sidebar: React.FC<SidebarProps> = ({
     });
   }
 
+  // 실제 슈퍼관리자 모드 여부 (원래 슈퍼관리자 + 모드 활성화)
+  const effectiveSuperAdminMode = isOriginalSuperAdmin && isSuperAdminMode;
+
   const getMenuCategories = (): MenuCategory[] => {
     // 슈퍼 어드민이고 슈퍼 어드민 모드일 때는 슈퍼 어드민 메뉴만 표시
-    if (isOriginalSuperAdmin && isSuperAdminMode) {
+    if (effectiveSuperAdminMode) {
       return superAdminCategories;
     }
-    
+
     // 평가자 모드
     if (viewMode === 'evaluator') {
       return evaluatorCategories;
     }
-    
+
     // 일반 서비스 메뉴 (슈퍼 어드민도 일반 모드일 때는 서비스 메뉴 표시)
     if (userRole === 'service_user' || userRole === 'service_admin' || isOriginalSuperAdmin) {
       return serviceAdminCategories;
     }
-    
+
     // 평가자 전용
     if (userRole === 'evaluator') {
       return evaluatorCategories;
     }
-    
+
     return serviceAdminCategories;
   };
 
@@ -330,7 +333,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     
     // 사이드바 "대시보드" 클릭 시 역할별 대시보드로 라우팅
     if (itemId === 'dashboard') {
-      if (isSuperAdminMode && isOriginalSuperAdmin) {
+      if (effectiveSuperAdminMode) {
         onTabChange('super-admin-dashboard');
       } else if (userRole === 'evaluator') {
         onTabChange('evaluator-dashboard');
@@ -386,7 +389,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   paddingBottom: '0.4rem',
                   marginBottom: '1rem'
                 }}>
-              {isSuperAdminMode
+              {effectiveSuperAdminMode
                 ? '시스템 관리 콘솔'
                 : isOriginalSuperAdmin
                 ? 'AHP 연구 플랫폼'
@@ -544,31 +547,33 @@ const Sidebar: React.FC<SidebarProps> = ({
             flexShrink: 0
           }}
         >
-          {/* 슈퍼관리자 모드 전환 버튼 - 푸터 내부 상단 */}
-          <div style={{
-            padding: 'var(--space-3)',
-            borderBottom: '1px solid var(--border-light)'
-          }}>
-            <button
-              onClick={() => {
-                const newMode = !isSuperAdminMode;
-                setIsSuperAdminMode(newMode);
-                localStorage.setItem('ahp_super_mode', newMode.toString());
-                onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
-              }}
-              className="w-full p-2 rounded-lg transition-all flex items-center justify-center gap-2"
-              style={{
-                backgroundColor: isSuperAdminMode ? '#b8860b' : '#2563eb',
-                color: 'white',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                cursor: 'pointer'
-              }}
-            >
-              <span>{isSuperAdminMode ? '🔬 연구 플랫폼 모드' : '⚙️ 시스템 관리 모드'}</span>
-            </button>
-          </div>
+          {/* 슈퍼관리자 모드 전환 버튼 - 원래 슈퍼관리자만 표시 */}
+          {isOriginalSuperAdmin && (
+            <div style={{
+              padding: 'var(--space-3)',
+              borderBottom: '1px solid var(--border-light)'
+            }}>
+              <button
+                onClick={() => {
+                  const newMode = !isSuperAdminMode;
+                  setIsSuperAdminMode(newMode);
+                  localStorage.setItem('ahp_super_mode', newMode.toString());
+                  onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
+                }}
+                className="w-full p-2 rounded-lg transition-all flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: isSuperAdminMode ? '#b8860b' : '#2563eb',
+                  color: 'white',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>{isSuperAdminMode ? '🔬 연구 플랫폼 모드' : '⚙️ 시스템 관리 모드'}</span>
+              </button>
+            </div>
+          )}
 
           <div className="text-center space-y-2 p-4">
             <div 
