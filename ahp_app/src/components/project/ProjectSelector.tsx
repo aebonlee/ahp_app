@@ -3,8 +3,9 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import { EvaluationMode } from '../evaluation/EvaluationModeSelector';
 import { WorkflowStage } from '../workflow/WorkflowStageIndicator';
-import dataService from '../../services/dataService';
-import type { ProjectData, UserProject } from '../../types';
+import { projectApi } from '../../services/api';
+import type { ProjectData } from '../../services/api';
+import type { UserProject } from '../../types';
 
 interface ProjectSelectorProps {
   onProjectSelect: (project: UserProject) => void;
@@ -32,8 +33,8 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     setError(null);
     
     try {
-      // dataService를 사용하여 프로젝트 로드 (자동으로 온라인/오프라인 모드 처리)
-      const projectsData = await dataService.getProjects();
+      const projResp = await projectApi.getProjects();
+      const projectsData = projResp.success && projResp.data ? projResp.data : [];
       
       // ProjectData를 UserProject로 변환
       const formattedProjects: UserProject[] = projectsData.map((project: ProjectData) => ({

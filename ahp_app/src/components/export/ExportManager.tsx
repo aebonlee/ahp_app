@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import dataService from '../../services/dataService';
+import { criteriaApi, alternativeApi, evaluationApi } from '../../services/api';
 
 interface ExportOptions {
   format: 'csv';
@@ -50,7 +50,8 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
       ];
 
       // 평가 기준 fetch
-      const criteria = await dataService.getCriteria(projectId);
+      const criteriaResp = await criteriaApi.getCriteria(projectId);
+      const criteria = criteriaResp.success && criteriaResp.data ? criteriaResp.data : [];
       if (criteria.length > 0) {
         rows.push('## 평가 기준');
         rows.push('기준명,설명,가중치,수준');
@@ -61,7 +62,8 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
       }
 
       // 대안 fetch
-      const alternatives = await dataService.getAlternatives(projectId);
+      const altResp = await alternativeApi.getAlternatives(projectId);
+      const alternatives = altResp.success && altResp.data ? altResp.data : [];
       if (alternatives.length > 0) {
         rows.push('## 대안');
         rows.push('대안명,설명,비용');
@@ -73,7 +75,8 @@ const ExportManager: React.FC<ExportManagerProps> = ({ projectId, projectTitle, 
 
       // 쌍대비교 데이터 fetch (옵션 선택 시)
       if (options.includeConsistency) {
-        const comparisons = await dataService.getPairwiseComparisons(projectId);
+        const compResp = await evaluationApi.getPairwiseComparisons(projectId);
+        const comparisons = compResp.success && compResp.data ? compResp.data : [];
         if (comparisons.length > 0) {
           rows.push('## 쌍대비교 데이터');
           rows.push('비교유형,항목A ID,항목B ID,비교값,일관성 비율');

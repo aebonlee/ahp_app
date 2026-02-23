@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 
 interface SurveyLink {
   id: string;

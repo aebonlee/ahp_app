@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../../types';
 import { API_BASE_URL } from '../../config/api';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 import api from '../../services/api';
 
 interface AdminOnlyDashboardProps {

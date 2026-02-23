@@ -77,7 +77,7 @@ const getAnonymousEvalHeaders = (): HeadersInit => {
   };
 
   // Include session key if available
-  const sessionKey = localStorage.getItem('anonymous_session_key') || sessionStorage.getItem('anonymous_session_key');
+  const sessionKey = sessionStorage.getItem('anonymous_session_key') || sessionStorage.getItem('anonymous_session_key');
   if (sessionKey) {
     headers['X-Session-Key'] = sessionKey;
   }
@@ -165,8 +165,8 @@ export const anonymousEvaluationService = {
 
     // Store session key locally for future requests
     if (response.success && response.data) {
-      localStorage.setItem('anonymous_session_key', response.data.session_key);
-      localStorage.setItem('anonymous_session_id', response.data.id);
+      sessionStorage.setItem('anonymous_session_key', response.data.session_key);
+      sessionStorage.setItem('anonymous_session_id', response.data.id);
 
       // Also store in sessionStorage as backup
       sessionStorage.setItem('anonymous_session_key', response.data.session_key);
@@ -346,7 +346,7 @@ export const anonymousEvaluationUtils = {
         ...session,
         stored_at: new Date().toISOString()
       };
-      localStorage.setItem(`session_${session.id}`, JSON.stringify(sessionData));
+      sessionStorage.setItem(`session_${session.id}`, JSON.stringify(sessionData));
     } catch (error) {
       logger.error('Failed to store session locally:', error);
     }
@@ -354,7 +354,7 @@ export const anonymousEvaluationUtils = {
 
   getSessionFromLocal: (sessionId: string): AnonymousEvaluationSession | null => {
     try {
-      const stored = localStorage.getItem(`session_${sessionId}`);
+      const stored = sessionStorage.getItem(`session_${sessionId}`);
       if (stored) {
         const data = JSON.parse(stored);
         return data;
@@ -488,7 +488,7 @@ export const anonymousEvaluationUtils = {
   attemptRecovery: async (): Promise<SessionRecoveryData | null> => {
     try {
       // Try to recover from various sources
-      const sessionKey = localStorage.getItem('anonymous_session_key') || sessionStorage.getItem('anonymous_session_key');
+      const sessionKey = sessionStorage.getItem('anonymous_session_key') || sessionStorage.getItem('anonymous_session_key');
 
       if (sessionKey) {
         const response = await anonymousEvaluationService.recoverSession(sessionKey);
@@ -498,7 +498,7 @@ export const anonymousEvaluationUtils = {
       }
 
       // Try to recover from local backup
-      const localBackup = localStorage.getItem('anonymous_session_backup');
+      const localBackup = sessionStorage.getItem('anonymous_session_backup');
       if (localBackup) {
         const backupData = JSON.parse(localBackup);
         return backupData;
@@ -534,7 +534,7 @@ function generateBrowserFingerprint(): string {
 
 function getLocalSessionData(): Record<string, unknown> | null {
   try {
-    return JSON.parse(localStorage.getItem('anonymous_session_data') || '{}');
+    return JSON.parse(sessionStorage.getItem('anonymous_session_data') || '{}');
   } catch {
     return {};
   }
@@ -542,7 +542,7 @@ function getLocalSessionData(): Record<string, unknown> | null {
 
 function getLocalComparisons(): PairwiseComparisonResult[] {
   try {
-    return JSON.parse(localStorage.getItem('anonymous_comparisons') || '[]');
+    return JSON.parse(sessionStorage.getItem('anonymous_comparisons') || '[]');
   } catch {
     return [];
   }
@@ -552,7 +552,7 @@ function storeComparisonLocally(comparison: PairwiseComparisonResult): void {
   try {
     const existing = getLocalComparisons();
     existing.push(comparison);
-    localStorage.setItem('anonymous_comparisons', JSON.stringify(existing));
+    sessionStorage.setItem('anonymous_comparisons', JSON.stringify(existing));
   } catch (error) {
     logger.error('Failed to store comparison locally:', error);
   }
@@ -560,10 +560,10 @@ function storeComparisonLocally(comparison: PairwiseComparisonResult): void {
 
 function clearLocalSessionData(): void {
   try {
-    localStorage.removeItem('anonymous_session_key');
-    localStorage.removeItem('anonymous_session_id');
-    localStorage.removeItem('anonymous_session_data');
-    localStorage.removeItem('anonymous_comparisons');
+    sessionStorage.removeItem('anonymous_session_key');
+    sessionStorage.removeItem('anonymous_session_id');
+    sessionStorage.removeItem('anonymous_session_data');
+    sessionStorage.removeItem('anonymous_comparisons');
     sessionStorage.removeItem('anonymous_session_key');
     sessionStorage.removeItem('anonymous_session_id');
   } catch (error) {

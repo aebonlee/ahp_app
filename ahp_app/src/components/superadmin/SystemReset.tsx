@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 
 interface SystemResetProps {
   onBack: () => void;

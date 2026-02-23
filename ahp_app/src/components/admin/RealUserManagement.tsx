@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
 import Input from '../common/Input';
 import Modal from '../common/Modal';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 
 interface DjangoUser {
   id: number;
@@ -166,22 +165,7 @@ const RealUserManagement: React.FC = () => {
         throw new Error(response.error || '사용자 생성에 실패했습니다.');
       }
     } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        const errorData = error.response.data;
-        if (typeof errorData === 'object') {
-          const fieldErrors: Record<string, string> = {};
-          Object.keys(errorData).forEach(key => {
-            fieldErrors[key] = Array.isArray(errorData[key])
-              ? errorData[key].join(', ')
-              : errorData[key];
-          });
-          setErrors(fieldErrors);
-        } else {
-          setErrorMessage('사용자 생성에 실패했습니다.');
-        }
-      } else {
-        setErrorMessage((error instanceof Error ? error.message : '') || '사용자 생성에 실패했습니다.');
-      }
+      setErrorMessage((error instanceof Error ? error.message : '') || '사용자 생성에 실패했습니다.');
     } finally {
       setFormLoading(false);
     }
@@ -224,22 +208,7 @@ const RealUserManagement: React.FC = () => {
         throw new Error(response.error || '사용자 수정에 실패했습니다.');
       }
     } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        const errorData = error.response.data;
-        if (typeof errorData === 'object') {
-          const fieldErrors: Record<string, string> = {};
-          Object.keys(errorData).forEach(key => {
-            fieldErrors[key] = Array.isArray(errorData[key])
-              ? errorData[key].join(', ')
-              : errorData[key];
-          });
-          setErrors(fieldErrors);
-        } else {
-          setErrorMessage('사용자 수정에 실패했습니다.');
-        }
-      } else {
-        setErrorMessage((error instanceof Error ? error.message : '') || '사용자 수정에 실패했습니다.');
-      }
+      setErrorMessage((error instanceof Error ? error.message : '') || '사용자 수정에 실패했습니다.');
     } finally {
       setFormLoading(false);
     }

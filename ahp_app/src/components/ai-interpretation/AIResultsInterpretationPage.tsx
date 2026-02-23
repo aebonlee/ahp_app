@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import PageHeader from '../common/PageHeader';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 import { getAIService, type AhpProjectData } from '../../services/aiService';
 import type { User } from '../../types';
 

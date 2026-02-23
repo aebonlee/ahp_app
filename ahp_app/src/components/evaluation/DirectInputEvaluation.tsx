@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
-import { directEvaluationAPI, apiHelpers } from '../../services/apiService';
+import { directEvaluationAPI, apiHelpers } from '../../services/api';
 import { MESSAGES } from '../../constants/messages';
 
 interface DirectInputValue {

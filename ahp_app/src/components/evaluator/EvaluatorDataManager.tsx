@@ -3,8 +3,8 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import Modal from '../common/Modal';
-import dataService from '../../services/dataService';
-import type { EvaluatorData } from '../../services/dataService';
+import { evaluatorApi } from '../../services/api';
+import type { EvaluatorData } from '../../services/api';
 
 interface Evaluator {
   id: string;
@@ -50,7 +50,8 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
   const loadEvaluators = async () => {
     try {
       setLoading(true);
-      const evaluatorsData = await dataService.getEvaluators(projectId);
+      const evalResp = await evaluatorApi.getEvaluators(projectId);
+      const evaluatorsData = evalResp.success && evalResp.data ? evalResp.data : [];
 
       const convertedEvaluators: Evaluator[] = evaluatorsData.map(data => ({
         id: data.id ?? '',
@@ -114,7 +115,8 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
         status: 'pending'
       };
       
-      const createdEvaluator = await dataService.addEvaluator(evaluatorData);
+      const addResp = await evaluatorApi.addEvaluator(evaluatorData);
+      const createdEvaluator = addResp.success && addResp.data ? addResp.data : null;
       
       if (createdEvaluator) {
         const newEval: Evaluator = {
@@ -152,7 +154,7 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
 
       // 샘플 데이터가 아닌 경우에만 삭제
       if (!evaluatorId.startsWith('sample-') && !evaluatorId.startsWith('new-')) {
-        await dataService.removeEvaluator(evaluatorId);
+        await evaluatorApi.removeEvaluator(evaluatorId);
       }
 
       setEvaluators(prev => prev.filter(e => e.id !== evaluatorId));
@@ -239,7 +241,7 @@ const EvaluatorDataManager: React.FC<EvaluatorDataManagerProps> = ({
       // 데이터 서비스에서 모든 평가자 삭제
       for (const evaluator of evaluators) {
         if (!evaluator.id.startsWith('sample-') && !evaluator.id.startsWith('new-')) {
-          await dataService.removeEvaluator(evaluator.id);
+          await evaluatorApi.removeEvaluator(evaluator.id);
         }
       }
 

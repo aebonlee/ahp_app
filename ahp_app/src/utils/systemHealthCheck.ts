@@ -3,7 +3,6 @@
  * Frontend → Backend → Database 연결 테스트
  */
 
-import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 
 interface HealthCheckResult {
@@ -20,6 +19,17 @@ interface HealthReport {
   results: HealthCheckResult[];
   summary: { total: number; healthy: number; degraded: number; error: number };
 }
+
+// fetch with timeout helper
+const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 5000): Promise<Response> => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(id);
+  }
+};
 
 class SystemHealthChecker {
   private results: HealthCheckResult[] = [];
@@ -54,26 +64,25 @@ class SystemHealthChecker {
   async checkBackendServer(): Promise<HealthCheckResult> {
     const startTime = Date.now();
     try {
-      const response = await axios.get(`${API_BASE_URL}/health/`, {
-        timeout: 5000,
-        validateStatus: () => true
-      });
+      const response = await fetchWithTimeout(`${API_BASE_URL}/health/`);
 
-      if (response.status === 200) {
+      if (response.ok) {
+        const data = await response.json().catch(() => null);
         return {
           component: 'Backend Server (Django)',
           status: 'healthy',
           responseTime: Date.now() - startTime,
           message: 'Django server is responding',
-          details: response.data
+          details: data
         };
       } else {
+        const data = await response.json().catch(() => null);
         return {
           component: 'Backend Server (Django)',
           status: 'degraded',
           responseTime: Date.now() - startTime,
           message: `Server returned status ${response.status}`,
-          details: response.data
+          details: data
         };
       }
     } catch (error: unknown) {
@@ -94,36 +103,33 @@ class SystemHealthChecker {
   async checkDatabase(): Promise<HealthCheckResult> {
     const startTime = Date.now();
     try {
-      const response = await axios.get(`${API_BASE_URL}/db-status/`, {
-        timeout: 5000,
-        validateStatus: () => true
-      });
+      const response = await fetchWithTimeout(`${API_BASE_URL}/db-status/`);
 
-      if (response.status === 200 && response.data) {
+      if (response.ok) {
+        const data = await response.json().catch(() => null);
         return {
           component: 'Database (PostgreSQL)',
           status: 'healthy',
           responseTime: Date.now() - startTime,
           message: 'Database connection is active',
-          details: response.data
+          details: data
         };
       } else {
+        const data = await response.json().catch(() => null);
         return {
           component: 'Database (PostgreSQL)',
           status: 'degraded',
           responseTime: Date.now() - startTime,
           message: 'Database status check returned unexpected response',
-          details: response.data
+          details: data
         };
       }
     } catch (error: unknown) {
       // 대체 방법: API를 통해 간접 확인
       try {
-        const testResponse = await axios.get(`${API_BASE_URL}/api/service/status/`, {
-          timeout: 5000
-        });
+        const testResponse = await fetchWithTimeout(`${API_BASE_URL}/api/service/status/`);
 
-        if (testResponse.status === 200) {
+        if (testResponse.ok) {
           return {
             component: 'Database (PostgreSQL)',
             status: 'degraded',
@@ -132,7 +138,7 @@ class SystemHealthChecker {
             details: { indirect: true }
           };
         }
-      } catch (innerError) {
+      } catch {
         // 최종 실패
       }
 
@@ -161,13 +167,11 @@ class SystemHealthChecker {
     for (const endpoint of endpoints) {
       try {
         const endpointStart = Date.now();
-        const response = await axios.get(`${API_BASE_URL}${endpoint}`, {
-          timeout: 3000,
-          validateStatus: () => true,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await fetchWithTimeout(
+          `${API_BASE_URL}${endpoint}`,
+          { headers: { 'Content-Type': 'application/json' } },
+          3000
+        );
 
         const responseTime = Date.now() - endpointStart;
         const isHealthy = response.status < 500;
@@ -206,19 +210,18 @@ class SystemHealthChecker {
   async checkCORS(): Promise<HealthCheckResult> {
     const startTime = Date.now();
     try {
-      const response = await axios.options(`${API_BASE_URL}/api/service/status/`, {
-        timeout: 5000,
-        validateStatus: () => true
-      });
+      const response = await fetchWithTimeout(
+        `${API_BASE_URL}/api/service/status/`,
+        { method: 'OPTIONS' }
+      );
 
-      const headers = response.headers;
       const corsHeaders = {
-        'access-control-allow-origin': headers['access-control-allow-origin'],
-        'access-control-allow-methods': headers['access-control-allow-methods'],
-        'access-control-allow-headers': headers['access-control-allow-headers']
+        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+        'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
+        'access-control-allow-headers': response.headers.get('access-control-allow-headers')
       };
 
-      const hasProperCORS = corsHeaders['access-control-allow-origin'] !== undefined;
+      const hasProperCORS = corsHeaders['access-control-allow-origin'] !== null;
 
       return {
         component: 'CORS Configuration',
@@ -241,13 +244,12 @@ class SystemHealthChecker {
   async checkAuthentication(): Promise<HealthCheckResult> {
     const startTime = Date.now();
     try {
-      // 토큰 검증 엔드포인트 테스트
-      const response = await axios.post(
+      const response = await fetchWithTimeout(
         `${API_BASE_URL}/api/auth/token/verify/`,
-        { token: 'test-token' },
         {
-          timeout: 5000,
-          validateStatus: () => true
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: 'test-token' })
         }
       );
 
@@ -286,8 +288,8 @@ class SystemHealthChecker {
       error: number;
     };
   }> {
-    console.log('🔍 Starting system health check...');
-    
+    console.log('Starting system health check...');
+
     this.results = [];
 
     // 모든 점검 실행
@@ -337,42 +339,23 @@ class SystemHealthChecker {
   // 보고서 출력
   private printReport(report: HealthReport): void {
     console.log('\n' + '='.repeat(60));
-    console.log('🏥 SYSTEM HEALTH CHECK REPORT');
+    console.log('SYSTEM HEALTH CHECK REPORT');
     console.log('='.repeat(60));
-    console.log(`📅 Timestamp: ${report.timestamp}`);
-    console.log(`📊 Overall Status: ${this.getStatusEmoji(report.overallStatus)} ${report.overallStatus.toUpperCase()}`);
-    console.log('\n📈 Summary:');
-    console.log(`  Total Checks: ${report.summary.total}`);
-    console.log(`  ✅ Healthy: ${report.summary.healthy}`);
-    console.log(`  ⚠️  Degraded: ${report.summary.degraded}`);
-    console.log(`  ❌ Error: ${report.summary.error}`);
-    console.log('\n📋 Detailed Results:');
-    console.log('-'.repeat(60));
-    
+    console.log(`Timestamp: ${report.timestamp}`);
+    console.log(`Overall Status: ${report.overallStatus.toUpperCase()}`);
+    console.log(`\nSummary: Total=${report.summary.total} Healthy=${report.summary.healthy} Degraded=${report.summary.degraded} Error=${report.summary.error}`);
+
     report.results.forEach((result: HealthCheckResult) => {
-      console.log(`\n${this.getStatusEmoji(result.status)} ${result.component}`);
-      console.log(`  Status: ${result.status}`);
+      console.log(`\n[${result.status.toUpperCase()}] ${result.component}`);
       if (result.responseTime) {
         console.log(`  Response Time: ${result.responseTime}ms`);
       }
       if (result.message) {
         console.log(`  Message: ${result.message}`);
       }
-      if (result.details) {
-        console.log(`  Details:`, result.details);
-      }
     });
-    
-    console.log('\n' + '='.repeat(60));
-  }
 
-  private getStatusEmoji(status: string): string {
-    switch (status) {
-      case 'healthy': return '✅';
-      case 'degraded': return '⚠️';
-      case 'error': return '❌';
-      default: return '❓';
-    }
+    console.log('\n' + '='.repeat(60));
   }
 }
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 
 interface SystemInfoData {
   system: {

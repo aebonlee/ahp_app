@@ -8,7 +8,7 @@ import AlternativeManagement from './AlternativeManagement';
 import EvaluatorAssignment from './EvaluatorAssignment';
 import ProjectCompletion from './ProjectCompletion';
 import dataService from '../../services/dataService_clean';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 import { ProjectData } from '../../services/api';
 
 interface ProjectWorkflowProps {

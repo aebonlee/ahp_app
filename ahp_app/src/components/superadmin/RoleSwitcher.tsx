@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../../types';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 
 interface RoleSwitcherProps {
   currentUser: User;

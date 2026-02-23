@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { PlusIcon, TrashIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import api from '../../../services/api';
 
@@ -89,8 +88,8 @@ const InviteEvaluators: React.FC<InviteEvaluatorsProps> = ({ projectId, onSucces
         onSuccess();
       }
     } catch (error: unknown) {
-      const axiosMsg = axios.isAxiosError(error) ? error.response?.data?.error : undefined;
-      setErrors([axiosMsg || '초대 발송에 실패했습니다.']);
+      const errMsg = error instanceof Error ? error.message : '초대 발송에 실패했습니다.';
+      setErrors([errMsg]);
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import UnifiedButton from '../common/UnifiedButton';
 import Modal from '../common/Modal';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 import { SUPER_ADMIN_EMAIL } from '../../config/api';
 
 interface Project {

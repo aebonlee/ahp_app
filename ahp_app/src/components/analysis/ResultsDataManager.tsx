@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 
 // --- 백엔드 API 응답 타입 ---
 

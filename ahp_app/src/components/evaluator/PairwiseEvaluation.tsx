@@ -3,7 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import MatrixGrid from './MatrixGrid';
 import JudgmentHelper from './JudgmentHelper';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 
 interface CriterionItem {
   id: string;

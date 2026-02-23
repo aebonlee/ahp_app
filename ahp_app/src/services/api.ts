@@ -1,4 +1,5 @@
 import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import authService from './authService';
 import logger from '../utils/logger';
 
 // API 응답 타입 정의
@@ -211,47 +212,32 @@ const makeRequest = async <T>(
       }
     });
 
-    // 401 Unauthorized → 토큰 갱신 후 재시도
+    // 401 Unauthorized → authService를 통한 토큰 갱신 후 재시도
     if (response.status === 401) {
-      const refreshToken = sessionStorage.getItem('ahp_refresh_token');
-      if (refreshToken) {
-        try {
-          const refreshResponse = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refresh: refreshToken })
-          });
-          if (refreshResponse.ok) {
-            const refreshData = await refreshResponse.json();
-            if (refreshData.access) {
-              sessionStorage.setItem('ahp_access_token', refreshData.access);
-              // 새 토큰으로 원래 요청 재시도
-              const retryResponse = await fetch(url, {
-                credentials: 'include',
-                ...options,
-                headers: {
-                  ...getAuthHeaders(),
-                  ...options.headers
-                }
-              });
-              if (retryResponse.ok) {
-                const parsed = await parseResponse(retryResponse, isDeleteRequest);
-                if (!parsed.data && isDeleteRequest) {
-                  return { success: true, data: undefined, message: '삭제 완료' };
-                }
-                return {
-                  success: true,
-                  data: (parsed.data?.data ?? parsed.data) as T,
-                  message: parsed.data?.message as string | undefined
-                };
-              }
-            }
+      const refreshResult = await authService.refreshAccessToken();
+      if (refreshResult.success) {
+        // 새 토큰으로 원래 요청 재시도
+        const retryResponse = await fetch(url, {
+          credentials: 'include',
+          ...options,
+          headers: {
+            ...getAuthHeaders(),
+            ...options.headers
           }
-        } catch {
-          // 토큰 갱신 실패 시 원래 401 에러 반환
+        });
+        if (retryResponse.ok) {
+          const parsed = await parseResponse(retryResponse, isDeleteRequest);
+          if (!parsed.data && isDeleteRequest) {
+            return { success: true, data: undefined, message: '삭제 완료' };
+          }
+          return {
+            success: true,
+            data: (parsed.data?.data ?? parsed.data) as T,
+            message: parsed.data?.message as string | undefined
+          };
         }
       }
-      // 토큰 갱신 실패 또는 refresh 토큰 없음
+      // 토큰 갱신 실패
       window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
       throw new Error('인증이 필요합니다. 다시 로그인해 주세요.');
     }
@@ -811,28 +797,28 @@ export const normalizeProjectListResponse = (
 
 // === 고급 분석 API (새로 추가) ===
 export const advancedAnalysisApi = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 100+ 호출자 호환, 향후 개별 타입 적용 예정
-  get: (url: string) => makeRequest<any>(url), // NOSONAR
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Phase 4에서 개별 타입 적용 예정
+  get: <T = any>(url: string) => makeRequest<T>(url), // NOSONAR
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  post: (url: string, data?: unknown) => makeRequest<any>(url, {
+  post: <T = any>(url: string, data?: unknown) => makeRequest<T>(url, {
     method: 'POST',
     body: data ? JSON.stringify(data) : undefined
   }),
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  put: (url: string, data?: unknown) => makeRequest<any>(url, {
+  put: <T = any>(url: string, data?: unknown) => makeRequest<T>(url, {
     method: 'PUT',
     body: data ? JSON.stringify(data) : undefined
   }),
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  patch: (url: string, data?: unknown) => makeRequest<any>(url, {
+  patch: <T = any>(url: string, data?: unknown) => makeRequest<T>(url, {
     method: 'PATCH',
     body: data ? JSON.stringify(data) : undefined
   }),
 
-  delete: (url: string) => makeRequest<void>(url, { method: 'DELETE' }),
+  delete: <T = void>(url: string) => makeRequest<T>(url, { method: 'DELETE' }),
 
   // 민감도 분석
   runSensitivityAnalysis: (projectId: string, data: Record<string, unknown>) =>
@@ -865,6 +851,57 @@ export const advancedAnalysisApi = {
   // 종합 보고서 조회
   getComprehensiveReport: (projectId: string) =>
     makeRequest<AnalysisResult>(`/api/service/analysis/advanced/${projectId}/comprehensive_report/`)
+};
+
+// 직접입력 평가 API
+export const directEvaluationAPI = {
+  save: (data: {
+    project_id: string;
+    target_key: string;
+    value: number;
+    is_benefit: boolean;
+  }) => makeRequest<unknown>('/api/service/evaluations/direct-input/', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  fetch: (projectId: string) =>
+    makeRequest<unknown>(`/api/service/evaluations/direct-input/?project=${projectId}`),
+
+  normalize: (data: {
+    values: number[];
+    is_benefit: boolean;
+  }) => makeRequest<unknown>('/api/service/analysis/normalize/', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+};
+
+// API 헬퍼 함수들
+export const apiHelpers = {
+  generateMatrixKey: (type: 'criteria' | 'alternatives', criterionId?: string): string => {
+    if (type === 'criteria') {
+      return `C:${criterionId || 'root'}`;
+    } else {
+      return `A:${criterionId}`;
+    }
+  },
+
+  generateTargetKey: (type: 'criterion' | 'alternative', itemId: string, criterionId?: string): string => {
+    if (type === 'criterion') {
+      return `criterion:${itemId}`;
+    } else {
+      return `alternative:${itemId}@criterion:${criterionId}`;
+    }
+  },
+
+  extractErrorMessage: (response: ApiResponse): string => {
+    return response.error || 'Unknown error occurred';
+  },
+
+  extractSuccessMessage: (response: ApiResponse): string => {
+    return response.message || 'Operation completed successfully';
+  },
 };
 
 const apiExports = {

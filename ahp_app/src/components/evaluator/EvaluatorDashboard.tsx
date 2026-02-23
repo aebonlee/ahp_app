@@ -3,7 +3,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import PairwiseEvaluation from './PairwiseEvaluation';
 import DirectInputEvaluation from './DirectInputEvaluation';
-import apiService from '../../services/apiService';
+import apiService from '../../services/api';
 
 interface EvaluationApiItem {
   id: string;
