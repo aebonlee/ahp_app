@@ -35,14 +35,17 @@ const Sidebar: React.FC<SidebarProps> = ({
   canSwitchModes, 
   onModeSwitch 
 }) => {
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(['basic']);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(
+    userRole === 'super_admin' ? ['basic', 'super-admin'] : ['basic']
+  );
   const [isSuperAdminMode, setIsSuperAdminMode] = useState(() => {
     const storedMode = localStorage.getItem('ahp_super_mode');
     return storedMode === 'true';
   });
   
   // activeTab과 Sidebar 모드를 동기화
-  // 슈퍼 관리자 전용 탭이면 자동으로 시스템 관리 모드, 그 외엔 연구 플랫폼 모드
+  // 슈퍼 관리자 전용 탭 진입 시에만 자동으로 시스템 관리 모드로 전환
+  // 반대 방향(→연구 플랫폼)은 하단 토글 버튼으로만 전환 (자동 플립 방지)
   useEffect(() => {
     if (userRole !== 'super_admin') return;
     const superAdminTabs = [
@@ -52,25 +55,26 @@ const Sidebar: React.FC<SidebarProps> = ({
       'database', 'backup', 'audit', 'payment-options',
       'role-switch-admin', 'role-switch-user', 'role-switch-evaluator',
     ];
-    const shouldBeSuperMode = superAdminTabs.includes(activeTab);
-    if (shouldBeSuperMode !== isSuperAdminMode) {
-      setIsSuperAdminMode(shouldBeSuperMode);
-      localStorage.setItem('ahp_super_mode', shouldBeSuperMode.toString());
+    const isSuperTab = superAdminTabs.includes(activeTab);
+    if (isSuperTab && !isSuperAdminMode) {
+      setIsSuperAdminMode(true);
+      localStorage.setItem('ahp_super_mode', 'true');
     }
   }, [activeTab, userRole, isSuperAdminMode]);
 
   const toggleCategory = (categoryId: string) => {
-    // 모든 주요 카테고리 리스트 (슈퍼 관리자 메뉴 포함)
-    const mainCategories = ['basic', 'advanced', 'research', 'ai', 'super-admin'];
-    
-    // 클릭한 카테고리가 주요 카테고리 중 하나인지 확인
-    if (mainCategories.includes(categoryId)) {
+    // 콘텐츠 카테고리 (아코디언 - 하나만 열림)
+    const contentCategories = ['basic', 'advanced', 'research', 'ai'];
+    // super-admin은 독립 토글 (다른 카테고리와 무관하게 열고 닫기 가능)
+
+    if (contentCategories.includes(categoryId)) {
       // 이미 열려있는 카테고리를 다시 클릭하면 닫기
       if (expandedCategories.includes(categoryId)) {
-        setExpandedCategories([]);
+        setExpandedCategories(prev => prev.filter(id => id !== categoryId));
       } else {
-        // 다른 주요 카테고리는 모두 닫고, 클릭한 것만 열기
-        setExpandedCategories([categoryId]);
+        // 다른 콘텐츠 카테고리는 닫고, 클릭한 것 + super-admin(열려있으면 유지)
+        const keepOpen = expandedCategories.filter(id => !contentCategories.includes(id));
+        setExpandedCategories([...keepOpen, categoryId]);
       }
     } else {
       // 다른 카테고리들은 기존 토글 방식 유지
