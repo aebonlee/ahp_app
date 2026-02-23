@@ -35,19 +35,22 @@ const Sidebar: React.FC<SidebarProps> = ({
   canSwitchModes, 
   onModeSwitch 
 }) => {
+  // 원래 슈퍼관리자인지 판별 (역할 전환 후에도 유지)
+  const isOriginalSuperAdmin = userRole === 'super_admin' || !!localStorage.getItem('ahp_temp_role');
+
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
-    userRole === 'super_admin' ? ['basic', 'super-admin'] : ['basic']
+    isOriginalSuperAdmin ? ['basic', 'super-admin'] : ['basic']
   );
   const [isSuperAdminMode, setIsSuperAdminMode] = useState(() => {
     const storedMode = localStorage.getItem('ahp_super_mode');
     return storedMode === 'true';
   });
-  
+
   // activeTab과 Sidebar 모드를 동기화
   // 슈퍼 관리자 전용 탭 진입 시에만 자동으로 시스템 관리 모드로 전환
   // 반대 방향(→연구 플랫폼)은 하단 토글 버튼으로만 전환 (자동 플립 방지)
   useEffect(() => {
-    if (userRole !== 'super_admin') return;
+    if (!isOriginalSuperAdmin) return;
     const superAdminTabs = [
       'super-admin', 'super-admin-dashboard',
       'users', 'all-projects', 'system-monitoring', 'system-info',
@@ -60,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       setIsSuperAdminMode(true);
       localStorage.setItem('ahp_super_mode', 'true');
     }
-  }, [activeTab, userRole, isSuperAdminMode]);
+  }, [activeTab, isOriginalSuperAdmin, isSuperAdminMode]);
 
   const toggleCategory = (categoryId: string) => {
     // 콘텐츠 카테고리 (아코디언 - 하나만 열림)
@@ -189,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   // 슈퍼관리자: 연구 플랫폼 모드에서도 역할 전환 가능하도록
-  if (userRole === 'super_admin') {
+  if (isOriginalSuperAdmin) {
     serviceAdminCategories.push({
       id: 'super-admin',
       title: '관리자 역할 전환',
@@ -279,7 +282,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const getMenuCategories = (): MenuCategory[] => {
     // 슈퍼 어드민이고 슈퍼 어드민 모드일 때는 슈퍼 어드민 메뉴만 표시
-    if (userRole === 'super_admin' && isSuperAdminMode) {
+    if (isOriginalSuperAdmin && isSuperAdminMode) {
       return superAdminCategories;
     }
     
@@ -289,7 +292,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
     
     // 일반 서비스 메뉴 (슈퍼 어드민도 일반 모드일 때는 서비스 메뉴 표시)
-    if (userRole === 'service_user' || userRole === 'service_admin' || userRole === 'super_admin') {
+    if (userRole === 'service_user' || userRole === 'service_admin' || isOriginalSuperAdmin) {
       return serviceAdminCategories;
     }
     
@@ -327,7 +330,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     
     // 사이드바 "대시보드" 클릭 시 역할별 대시보드로 라우팅
     if (itemId === 'dashboard') {
-      if (isSuperAdminMode && (userRole === 'super_admin')) {
+      if (isSuperAdminMode && isOriginalSuperAdmin) {
         onTabChange('super-admin-dashboard');
       } else if (userRole === 'evaluator') {
         onTabChange('evaluator-dashboard');
@@ -385,7 +388,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}>
               {isSuperAdminMode
                 ? '시스템 관리 콘솔'
-                : userRole === 'super_admin'
+                : isOriginalSuperAdmin
                 ? 'AHP 연구 플랫폼'
                 : userRole === 'service_admin'
                 ? 'AHP 연구 플랫폼'
@@ -542,7 +545,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           }}
         >
           {/* 슈퍼관리자 모드 전환 버튼 - 푸터 내부 상단 */}
-          {userRole === 'super_admin' && (
+          {isOriginalSuperAdmin && (
             <div style={{
               padding: 'var(--space-3)',
               borderBottom: '1px solid var(--border-light)'
