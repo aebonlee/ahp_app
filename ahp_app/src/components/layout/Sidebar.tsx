@@ -401,8 +401,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
         
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          {menuCategories.map((category) => (
-            <div key={category.id}>
+          {menuCategories.map((category) => {
+            // 'ai' 카테고리 바로 뒤에 모드 전환 버튼 삽입
+            const showModeToggleAfter = category.id === 'ai' && userRole === 'super_admin';
+
+            return (
+            <React.Fragment key={category.id}>
+            <div>
               {/* 카테고리 헤더 */}
               <button
                 onClick={() => toggleCategory(category.id)}
@@ -433,21 +438,21 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
               >
                 <div className="flex items-center">
-                  <span style={{ 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.1em', 
+                  <span style={{
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
                     fontSize: ['basic', 'advanced', 'research', 'ai', 'super-admin'].includes(category.id) ? '1rem' : '0.85rem',
                     fontWeight: ['basic', 'advanced', 'research', 'ai', 'super-admin'].includes(category.id) ? 'bold' : 'semibold',
-                    color: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--text-primary)' 
+                    color: expandedCategories.includes(category.id) ? 'var(--gold-primary)' : 'var(--text-primary)'
                   }}>
                     {category.title}
                   </span>
                 </div>
-                <svg 
+                <svg
                   className={`transition-transform ${expandedCategories.includes(category.id) ? 'rotate-180' : ''}`}
                   style={{ width: '16px', height: '16px' }}
-                  fill="none" 
-                  stroke="currentColor" 
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -460,7 +465,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   {category.items.map((item) => {
                     const isModeSwitch = item.id.startsWith('mode-switch-');
                     const isActive = activeTab === item.id;
-                    
+
                     return (
                       <button
                         key={item.id}
@@ -470,15 +475,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                           padding: 'var(--space-2) var(--space-4)',
                           paddingLeft: 'calc(var(--space-8) + var(--space-4))',
                           borderRadius: 'var(--radius-sm)',
-                          backgroundColor: isActive 
-                            ? 'var(--gold-primary)' 
-                            : isModeSwitch 
-                            ? 'var(--bg-elevated)' 
+                          backgroundColor: isActive
+                            ? 'var(--gold-primary)'
+                            : isModeSwitch
+                            ? 'var(--bg-elevated)'
                             : 'transparent',
-                          color: isActive 
-                            ? 'white' 
-                            : isModeSwitch 
-                            ? 'var(--color-warning)' 
+                          color: isActive
+                            ? 'white'
+                            : isModeSwitch
+                            ? 'var(--color-warning)'
                             : 'var(--text-secondary)',
                           fontWeight: 'var(--font-weight-medium)',
                           fontSize: 'var(--font-size-sm)',
@@ -487,28 +492,28 @@ const Sidebar: React.FC<SidebarProps> = ({
                         }}
                         onMouseEnter={(e) => {
                           if (!isActive) {
-                            e.currentTarget.style.backgroundColor = isModeSwitch 
-                              ? 'var(--color-warning)' 
+                            e.currentTarget.style.backgroundColor = isModeSwitch
+                              ? 'var(--color-warning)'
                               : 'var(--bg-elevated)';
-                            e.currentTarget.style.color = isModeSwitch 
-                              ? 'white' 
+                            e.currentTarget.style.color = isModeSwitch
+                              ? 'white'
                               : 'var(--text-primary)';
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (!isActive) {
-                            e.currentTarget.style.backgroundColor = isModeSwitch 
-                              ? 'var(--bg-elevated)' 
+                            e.currentTarget.style.backgroundColor = isModeSwitch
+                              ? 'var(--bg-elevated)'
                               : 'transparent';
-                            e.currentTarget.style.color = isModeSwitch 
-                              ? 'var(--color-warning)' 
+                            e.currentTarget.style.color = isModeSwitch
+                              ? 'var(--color-warning)'
                               : 'var(--text-secondary)';
                           }
                         }}
                       >
-                        <span style={{ 
-                          position: 'absolute', 
-                          left: 'var(--space-6)', 
+                        <span style={{
+                          position: 'absolute',
+                          left: 'var(--space-6)',
                           color: isActive ? 'white' : 'var(--text-muted)',
                           fontSize: '0.6rem'
                         }}>
@@ -526,7 +531,53 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               )}
             </div>
-          ))}
+
+            {/* AI 연구 지원 바로 아래에 모드 전환 버튼 배치 */}
+            {showModeToggleAfter && (
+              <div style={{
+                padding: 'var(--space-2) 0',
+                marginBottom: 'var(--space-2)'
+              }}>
+                <button
+                  onClick={() => {
+                    const newMode = !isSuperAdminMode;
+                    setIsSuperAdminMode(newMode);
+                    localStorage.setItem('ahp_super_mode', newMode.toString());
+                    onTabChange(newMode ? 'super-admin-dashboard' : 'personal-service');
+                  }}
+                  className="w-full p-3 rounded-lg transition-all flex items-center justify-center gap-2"
+                  style={{
+                    background: isSuperAdminMode
+                      ? 'linear-gradient(135deg, var(--gold-primary), var(--gold-dark, #b8860b))'
+                      : 'linear-gradient(135deg, var(--accent-primary), var(--accent-dark, #1a56db))',
+                    color: 'white',
+                    fontSize: 'var(--font-size-sm)',
+                    fontWeight: 'var(--font-weight-bold)',
+                    boxShadow: '0 3px 8px rgba(0,0,0,0.2)',
+                    border: '2px solid rgba(255,255,255,0.2)',
+                    letterSpacing: '0.05em'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = '0 3px 8px rgba(0,0,0,0.2)';
+                  }}
+                >
+                  <span style={{ fontSize: '1.1rem' }}>
+                    {isSuperAdminMode ? '🔬' : '⚙️'}
+                  </span>
+                  <span>
+                    {isSuperAdminMode ? '연구 플랫폼 전환' : '슈퍼관리자 전환'}
+                  </span>
+                </button>
+              </div>
+            )}
+            </React.Fragment>
+            );
+          })}
         </nav>
       </div>
       
