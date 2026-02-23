@@ -50,6 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       'users', 'all-projects', 'system-monitoring', 'system-info',
       'system-settings', 'system-health', 'system-reset',
       'database', 'backup', 'audit', 'payment-options',
+      'role-switch-admin', 'role-switch-user', 'role-switch-evaluator',
     ];
     const shouldBeSuperMode = superAdminTabs.includes(activeTab);
     if (shouldBeSuperMode !== isSuperAdminMode) {
