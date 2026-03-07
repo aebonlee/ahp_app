@@ -1,6 +1,4 @@
 import authService from './authService';
-import { API_BASE_URL } from '../config/api';
-import logger from '../utils/logger';
 
 // 세션 관리 서비스 (JWT 기반 - localStorage 제거됨)
 class SessionService {
@@ -297,20 +295,10 @@ class SessionService {
     }, 3000);
   }
 
-  // 수동 로그아웃
+  // 수동 로그아웃 (프론트엔드 전용 - 서버 요청 없음)
   public async logout(): Promise<void> {
     this.clearTimers();
     this.hideSessionWarning();
-
-    // 서버에 로그아웃 요청
-    try {
-      await fetch(`${API_BASE_URL}/api/service/auth/logout/`, {
-        credentials: 'include',
-        method: 'POST'
-      });
-    } catch (error) {
-      logger.error('로그아웃 요청 실패:', error);
-    }
   }
 
   // 타이머 정리

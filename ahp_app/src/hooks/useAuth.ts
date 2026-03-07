@@ -1,19 +1,12 @@
 import { useState, useEffect } from 'react';
 import authService from '../services/authService';
-import sessionService from '../services/sessionService';
-import { SUPER_ADMIN_EMAIL } from '../config/api';
 import type { User, UserRole } from '../types';
 
 function getInitialUser(): User | null {
   const storedUser = localStorage.getItem('ahp_user');
   if (storedUser) {
     try {
-      const parsedUser = JSON.parse(storedUser);
-      if (parsedUser.email === SUPER_ADMIN_EMAIL || parsedUser.email?.toLowerCase() === SUPER_ADMIN_EMAIL) {
-        parsedUser.role = 'super_admin';
-        localStorage.setItem('ahp_user', JSON.stringify(parsedUser));
-      }
-      return parsedUser;
+      return JSON.parse(storedUser);
     } catch {
       localStorage.removeItem('ahp_user');
     }
@@ -59,15 +52,8 @@ export function useAuth(
   const [loginError, setLoginError] = useState('');
   const [registerMode, setRegisterMode] = useState<'service' | 'admin' | null>(null);
 
-  // 세션 서비스 초기화 (탭 라우팅은 useNavigation이 담당)
+  // 임시 역할 체크 (프론트엔드 전용)
   useEffect(() => {
-    sessionService.setLogoutCallback(() => {
-      setUser(null);
-      if (onLogout) onLogout();
-      localStorage.removeItem('ahp_temp_role');
-    });
-
-    // 임시 역할 체크
     const tempRole = localStorage.getItem('ahp_temp_role');
     if (tempRole && user && user.role === 'super_admin') {
       setUser(prevUser => prevUser ? { ...prevUser, role: tempRole as UserRole } : null);
@@ -79,15 +65,14 @@ export function useAuth(
     setLoginError('');
 
     try {
+      // 프론트엔드 전용 모드: 회원가입도 바로 관리자 로그인 처리
       const result = await authService.register(data);
+      const finalUser = { ...result.user, role: 'super_admin' as const };
 
-      setUser(result.user);
-      sessionService.startSession();
+      setUser(finalUser);
+      localStorage.setItem('ahp_user', JSON.stringify(finalUser));
 
-      const targetTab = result.user.role === 'evaluator' ? 'evaluator-dashboard' : 'personal-service';
-      onLoginSuccess?.(result.user, targetTab);
-
-      if (fetchProjects) await fetchProjects();
+      onLoginSuccess?.(finalUser, 'personal-service');
     } catch (error: unknown) {
       setLoginError((error instanceof Error ? error.message : '') || '회원가입 중 오류가 발생했습니다.');
     } finally {
@@ -100,16 +85,13 @@ export function useAuth(
     setLoginError('');
 
     try {
+      // 프론트엔드 전용 모드: 어떤 입력이든 로그인 성공
       const result = await authService.login(username, password);
 
-      let finalUser = { ...result.user };
-      if (result.user.email === SUPER_ADMIN_EMAIL) {
-        finalUser.role = 'super_admin';
-      }
+      const finalUser = { ...result.user, role: 'super_admin' as const };
 
       setUser(finalUser);
       localStorage.setItem('ahp_user', JSON.stringify(finalUser));
-      sessionService.startSession();
 
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab');
@@ -117,14 +99,11 @@ export function useAuth(
       let targetTab = '';
       if (tabParam && ['personal-service', 'my-projects', 'model-builder', 'evaluator-management', 'results-analysis'].includes(tabParam)) {
         targetTab = tabParam;
-      } else if (result.user.role === 'evaluator') {
-        targetTab = 'evaluator-dashboard';
       } else {
         targetTab = 'personal-service';
       }
 
       onLoginSuccess?.(finalUser, targetTab);
-      if (fetchProjects) await fetchProjects();
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : 'Login failed');
     } finally {
@@ -133,13 +112,7 @@ export function useAuth(
   };
 
   const handleLogout = async () => {
-    await sessionService.logout();
-
-    try {
-      await authService.logout();
-    } catch {
-      // Logout API failure is non-critical
-    }
+    authService.clearTokens();
 
     localStorage.removeItem('ahp_user');
     localStorage.removeItem('ahp_temp_role');

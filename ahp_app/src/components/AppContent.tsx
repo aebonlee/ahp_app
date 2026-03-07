@@ -5,8 +5,7 @@ import { useProjectContext } from '../contexts/ProjectContext';
 import { useUIContext } from '../contexts/UIContext';
 import { useUsers } from '../hooks/useUsers';
 import { getCachedEvaluatorToken, getCachedEvaluatorProjectId } from '../hooks/useNavigation';
-import authService from '../services/authService';
-import sessionService from '../services/sessionService';
+// authService와 sessionService는 프론트엔드 전용 모드에서 최소화됨
 
 import Layout from './layout/Layout';
 import ErrorBoundary from './common/ErrorBoundary';
@@ -108,21 +107,19 @@ export default function AppContent() {
   // Users hook (only used for admin user management)
   const { users, fetchUsers, createUser, updateUser, deleteUser } = useUsers(showActionMessage);
 
-  // ── Auto-login on page load ─────────────────────────────────────────────
+  // ── Auto-login on page load (프론트엔드 전용) ─────────────────────────
   useEffect(() => {
     if (user || !isNavigationReady) return;
-    const autoLogin = async () => {
-      if (authService.isAuthenticated()) {
-        try {
-          const currentUser = await authService.getCurrentUser();
-          setUser(currentUser);
-          sessionService.startSession();
-        } catch {
-          authService.clearTokens();
-        }
+    // sessionStorage에 저장된 사용자 정보로 세션 복원
+    const storedUser = localStorage.getItem('ahp_user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch {
+        localStorage.removeItem('ahp_user');
       }
-    };
-    autoLogin();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNavigationReady, user]);
 

@@ -1,195 +1,73 @@
 /**
- * 인증 서비스 - JWT 토큰 관리 및 자동 새로고침
+ * 인증 서비스 - 프론트엔드 전용 모드
+ * 백엔드/DB 없이 로컬에서 동작하는 인증 시스템
+ * 어떤 이메일/비밀번호를 입력해도 관리자로 로그인됩니다.
  */
 
-import { API_BASE_URL, API_ENDPOINTS, SUPER_ADMIN_EMAIL } from '../config/api';
+import { SUPER_ADMIN_EMAIL } from '../config/api';
 import type { User, AuthTokens, LoginResponse } from '../types';
 
 class AuthService {
-  private accessToken: string | null = null;
-  private refreshToken: string | null = null;
-  private tokenRefreshTimer: NodeJS.Timeout | null = null;
+  private authenticated: boolean = false;
 
   constructor() {
-    this.loadTokensFromMemory();
-    this.initTokenRefresh();
+    // sessionStorage에서 인증 상태 복원
+    const storedUser = sessionStorage.getItem('ahp_authenticated');
+    this.authenticated = storedUser === 'true';
   }
 
   /**
-   * sessionStorage에서 토큰 로드 (localStorage는 사용하지 않음 - 보안)
-   */
-  private loadTokensFromMemory(): void {
-    try {
-      this.accessToken = sessionStorage.getItem('ahp_access_token');
-      this.refreshToken = sessionStorage.getItem('ahp_refresh_token');
-
-      // 만료된 access token 정리 (refresh token은 유지 → 갱신 시도 가능)
-      if (this.accessToken && this.isTokenExpired(this.accessToken)) {
-        this.accessToken = null;
-        sessionStorage.removeItem('ahp_access_token');
-      }
-
-      // 레거시 localStorage 토큰 정리 (이전 버전에서 남은 것)
-      localStorage.removeItem('ahp_access_token');
-      localStorage.removeItem('ahp_refresh_token');
-    } catch {
-      this.clearTokens();
-    }
-  }
-
-  /**
-   * 토큰을 메모리 + sessionStorage에 저장
-   * NOTE: localStorage에는 저장하지 않음 (XSS 토큰 탈취 위험 감소)
-   * 탭/창 닫으면 토큰 소멸 → 재로그인 필요 (보안 우선)
-   */
-  private saveTokens(tokens: AuthTokens): void {
-    this.accessToken = tokens.access;
-    this.refreshToken = tokens.refresh;
-
-    // sessionStorage에만 저장 (탭 내 새로고침 대응)
-    sessionStorage.setItem('ahp_access_token', tokens.access);
-    sessionStorage.setItem('ahp_refresh_token', tokens.refresh);
-  }
-
-  /**
-   * 토큰 정리 (메모리 + sessionStorage)
+   * 토큰 정리 (프론트엔드 전용)
    */
   clearTokens(): void {
-    this.accessToken = null;
-    this.refreshToken = null;
-
+    this.authenticated = false;
+    sessionStorage.removeItem('ahp_authenticated');
     sessionStorage.removeItem('ahp_access_token');
     sessionStorage.removeItem('ahp_refresh_token');
-
-    if (this.tokenRefreshTimer) {
-      clearTimeout(this.tokenRefreshTimer);
-      this.tokenRefreshTimer = null;
-    }
+    localStorage.removeItem('ahp_access_token');
+    localStorage.removeItem('ahp_refresh_token');
   }
 
   /**
-   * JWT 토큰 만료 확인
+   * 프론트엔드 전용 로그인 - 어떤 입력이든 관리자로 로그인
    */
-  private isTokenExpired(token: string): boolean {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Math.floor(Date.now() / 1000);
-      return payload.exp <= currentTime;
-    } catch {
-      return true;
+  async login(usernameOrEmail: string, _password: string): Promise<LoginResponse> {
+    const email = usernameOrEmail.includes('@') ? usernameOrEmail : `${usernameOrEmail}@ahp.com`;
+    const username = usernameOrEmail.includes('@') ? usernameOrEmail.split('@')[0] : usernameOrEmail;
+
+    const user: User = {
+      id: 1,
+      username: username,
+      email: email,
+      first_name: username,
+      last_name: 'Admin',
+      role: 'super_admin',
+      is_verified: true,
+      can_create_projects: true,
+      max_projects: 999,
+      created_at: new Date().toISOString(),
+    };
+
+    // SUPER_ADMIN_EMAIL과 일치하면 super_admin, 아니면 service_admin
+    if (email === SUPER_ADMIN_EMAIL) {
+      user.role = 'super_admin';
+    } else {
+      user.role = 'super_admin'; // 모든 사용자를 관리자로 처리
     }
+
+    const tokens: AuthTokens = {
+      access: 'frontend-only-token',
+      refresh: 'frontend-only-refresh',
+    };
+
+    this.authenticated = true;
+    sessionStorage.setItem('ahp_authenticated', 'true');
+
+    return { user, tokens };
   }
 
   /**
-   * 토큰 만료 시간 계산 (초 단위)
-   */
-  private getTokenExpirationTime(token: string): number {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.exp * 1000; // 밀리초로 변환
-    } catch {
-      return Date.now();
-    }
-  }
-
-  /**
-   * API 요청 헬퍼
-   */
-  private async apiRequest<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<{ success: boolean; data?: T; error?: string }> {
-    try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        ...(options.headers as Record<string, string>),
-      };
-
-      if (this.accessToken) {
-        headers.Authorization = `Bearer ${this.accessToken}`;
-      }
-
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        credentials: 'include',
-        ...options,
-        headers,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // 401 오류 시 토큰 새로고침 시도
-        if (response.status === 401 && this.refreshToken) {
-          const refreshResult = await this.refreshAccessToken();
-          if (refreshResult.success) {
-            // 새 토큰으로 재시도
-            headers.Authorization = `Bearer ${this.accessToken}`;
-            const retryResponse = await fetch(`${API_BASE_URL}${endpoint}`, {
-              credentials: 'include',
-              ...options,
-              headers,
-            });
-
-            if (retryResponse.ok) {
-              const retryData = await retryResponse.json();
-              return { success: true, data: retryData };
-            }
-          }
-        }
-
-        return {
-          success: false,
-          error: data.detail || data.error || `HTTP ${response.status}`
-        };
-      }
-
-      return { success: true, data };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Network error'
-      };
-    }
-  }
-
-  /**
-   * 로그인 - 이메일 또는 username 지원
-   */
-  async login(usernameOrEmail: string, password: string): Promise<LoginResponse> {
-    // 이메일 형식인지 확인
-    const isEmail = usernameOrEmail.includes('@');
-    const loginData = isEmail
-      ? { email: usernameOrEmail, password }
-      : { username: usernameOrEmail, password };
-
-    // JWT 토큰 엔드포인트 사용 (Django custom_token_obtain_pair)
-    const result = await this.apiRequest<{ access: string; refresh: string; user: User }>(
-      '/api/service/auth/token/',
-      {
-        method: 'POST',
-        body: JSON.stringify(loginData),
-      }
-    );
-
-    if (result.success && result.data) {
-      const { access, refresh, user } = result.data;
-
-      // 슈퍼 관리자 이메일 처리
-      if (user.email === SUPER_ADMIN_EMAIL) {
-        user.role = 'super_admin';
-      }
-
-      const tokens = { access, refresh };
-      this.saveTokens(tokens);
-      this.initTokenRefresh();
-      return { user, tokens };
-    }
-
-    throw new Error(result.error || 'Login failed');
-  }
-
-  /**
-   * 회원가입
+   * 프론트엔드 전용 회원가입 - 로그인과 동일하게 처리
    */
   async register(userData: {
     username: string;
@@ -202,215 +80,99 @@ class AuthService {
     organization?: string;
     role?: string;
   }): Promise<LoginResponse> {
-    // password2를 password_confirm으로 변환 (Django 기대값)
-    const { password2, ...restData } = userData;
-    const registerData = {
-      ...restData,
-      password_confirm: password2,
-      full_name: `${userData.first_name} ${userData.last_name}`.trim()
-    };
-
-    const result = await this.apiRequest<{ tokens: { access: string; refresh: string }; user: User }>(
-      '/api/service/auth/register/',
-      {
-        method: 'POST',
-        body: JSON.stringify(registerData),
-      }
-    );
-
-    if (result.success && result.data) {
-      const { tokens, user } = result.data;
-      this.saveTokens(tokens);
-      this.initTokenRefresh();
-      return { user, tokens };
-    }
-
-    throw new Error(result.error || 'Registration failed');
+    return this.login(userData.email, userData.password);
   }
 
   /**
    * 로그아웃
    */
   async logout(): Promise<{ success: boolean; error?: string }> {
-    if (this.refreshToken) {
-      await this.apiRequest(API_ENDPOINTS.AUTH.LOGOUT, {
-        method: 'POST',
-        body: JSON.stringify({ refresh: this.refreshToken }),
-      });
-    }
-
     this.clearTokens();
     return { success: true };
   }
 
   /**
-   * 현재 사용자 정보 조회
+   * 현재 사용자 정보 조회 (프론트엔드 전용)
    */
   async getCurrentUser(): Promise<User> {
-    if (!this.accessToken) {
-      throw new Error('No access token');
+    if (!this.authenticated) {
+      throw new Error('Not authenticated');
     }
 
-    const result = await this.apiRequest<User>(API_ENDPOINTS.AUTH.ME);
-
-    if (result.success && result.data) {
-      // 슈퍼 관리자 이메일 처리
-      if (result.data.email === SUPER_ADMIN_EMAIL) {
-        result.data.role = 'super_admin';
-      }
-      return result.data;
-    }
-
-    throw new Error(result.error || 'Failed to fetch user info');
+    return {
+      id: 1,
+      username: 'admin',
+      email: SUPER_ADMIN_EMAIL,
+      first_name: 'Admin',
+      last_name: 'User',
+      role: 'super_admin',
+      is_verified: true,
+      can_create_projects: true,
+      max_projects: 999,
+      created_at: new Date().toISOString(),
+    };
   }
 
   /**
-   * 액세스 토큰 새로고침
+   * 액세스 토큰 새로고침 (프론트엔드 전용 - 항상 성공)
    */
   async refreshAccessToken(): Promise<{ success: boolean; error?: string }> {
-    if (!this.refreshToken) {
-      return { success: false, error: 'No refresh token' };
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ refresh: this.refreshToken }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.access) {
-        this.accessToken = data.access;
-        sessionStorage.setItem('ahp_access_token', data.access);
-
-        if (data.refresh) {
-          this.refreshToken = data.refresh;
-          sessionStorage.setItem('ahp_refresh_token', data.refresh);
-        }
-
-        this.initTokenRefresh();
-        return { success: true };
-      }
-
-      // 리프레시 토큰도 만료된 경우
-      this.clearTokens();
-      return { success: false, error: 'Refresh token expired' };
-    } catch (error) {
-      this.clearTokens();
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Token refresh failed'
-      };
-    }
-  }
-
-  /**
-   * 자동 토큰 새로고침 설정
-   */
-  private initTokenRefresh(): void {
-    if (this.tokenRefreshTimer) {
-      clearTimeout(this.tokenRefreshTimer);
-    }
-
-    if (!this.accessToken) return;
-
-    const expirationTime = this.getTokenExpirationTime(this.accessToken);
-    const currentTime = Date.now();
-    const timeUntilExpiry = expirationTime - currentTime;
-
-    // 만료 5분 전에 토큰 새로고침
-    const refreshTime = Math.max(timeUntilExpiry - (5 * 60 * 1000), 30000); // 최소 30초
-
-    if (refreshTime > 0) {
-      this.tokenRefreshTimer = setTimeout(async () => {
-        const result = await this.refreshAccessToken();
-        if (!result.success) {
-          // Token refresh failed - trigger logout event
-          // 리프레시 실패 시 로그아웃 이벤트 발생
-          window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
-        }
-      }, refreshTime);
-    }
+    return { success: true };
   }
 
   /**
    * 현재 액세스 토큰 반환
    */
   getAccessToken(): string | null {
-    return this.accessToken;
+    return this.authenticated ? 'frontend-only-token' : null;
   }
 
   /**
    * 인증 상태 확인
    */
   isAuthenticated(): boolean {
-    return !!(this.accessToken && !this.isTokenExpired(this.accessToken));
+    return this.authenticated;
   }
 
   /**
-   * 소셜 로그인 - Google
+   * 소셜 로그인 - Google (프론트엔드 전용 - 비활성)
    */
   async googleLogin(): Promise<void> {
-    const authUrl = `${API_BASE_URL}/api/service/auth/social/google/`;
-    window.location.href = authUrl;
+    // 백엔드 없이 소셜 로그인 불가
   }
 
   /**
-   * 소셜 로그인 - Kakao
+   * 소셜 로그인 - Kakao (프론트엔드 전용 - 비활성)
    */
   async kakaoLogin(): Promise<void> {
-    const authUrl = `${API_BASE_URL}/api/service/auth/social/kakao/`;
-    window.location.href = authUrl;
+    // 백엔드 없이 소셜 로그인 불가
   }
 
   /**
-   * 소셜 로그인 - Naver
+   * 소셜 로그인 - Naver (프론트엔드 전용 - 비활성)
    */
   async naverLogin(): Promise<void> {
-    const authUrl = `${API_BASE_URL}/api/service/auth/social/naver/`;
-    window.location.href = authUrl;
+    // 백엔드 없이 소셜 로그인 불가
   }
 
   /**
-   * 소셜 로그인 콜백 처리
+   * 소셜 로그인 콜백 처리 (프론트엔드 전용 - 비활성)
    */
-  async handleSocialCallback(provider: string, code: string, state?: string): Promise<LoginResponse> {
-    const result = await this.apiRequest<{ access: string; refresh: string; user: User }>(
-      `/api/service/auth/social/${provider}/callback/`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ code, state }),
-      }
-    );
-
-    if (result.success && result.data) {
-      const { access, refresh, user } = result.data;
-      const tokens = { access, refresh };
-      this.saveTokens(tokens);
-      this.initTokenRefresh();
-      return { user, tokens };
-    }
-
-    throw new Error(result.error || 'Social login failed');
+  async handleSocialCallback(_provider: string, _code: string, _state?: string): Promise<LoginResponse> {
+    throw new Error('Social login not available in frontend-only mode');
   }
 
   /**
-   * 인증된 API 요청을 위한 헬퍼
+   * 인증된 API 요청을 위한 헬퍼 (프론트엔드 전용)
    */
   async authenticatedRequest<T>(
-    endpoint: string,
-    options: RequestInit = {}
+    _endpoint: string,
+    _options: RequestInit = {}
   ): Promise<{ success: boolean; data?: T; error?: string }> {
     if (!this.isAuthenticated()) {
       return { success: false, error: 'Not authenticated' };
     }
-
-    return this.apiRequest<T>(endpoint, options);
+    return { success: false, error: 'Backend not available in frontend-only mode' };
   }
 }
 
