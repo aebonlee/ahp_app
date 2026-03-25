@@ -3,17 +3,18 @@ PostgreSQL Database Connection Test
 Tests connection to Render.com hosted PostgreSQL database
 """
 
+import os
 import psycopg2
 from psycopg2 import OperationalError
 import sys
 
-# Database connection parameters from settings.py
+# Database connection parameters from environment variables
 DB_CONFIG = {
-    'host': 'dpg-d2vgtg3uibrs738jk4i0-a.oregon-postgres.render.com',
-    'database': 'ahp_app',
-    'user': 'ahp_app_user',
-    'password': 'xEcCdn2WB32sxLYIPAncc9cHARXf1t6d',
-    'port': 5432
+    'host': os.environ.get('DB_HOST', 'localhost'),
+    'database': os.environ.get('DB_NAME', 'ahp_app'),
+    'user': os.environ.get('DB_USER', 'ahp_app_user'),
+    'password': os.environ.get('DB_PASSWORD', ''),
+    'port': int(os.environ.get('DB_PORT', 5432))
 }
 
 def test_connection():
