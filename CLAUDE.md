@@ -1,195 +1,379 @@
-# AHP Research Platform — 개발 가이드
+# AHP 플랫폼 개발 가이드 - Claude Code 협업 시스템
+## 지속적 체계 개발 진행 가이드 (2025-10-25 업데이트)
 
-**프로젝트**: Multi-Layer AHP Decision Support Platform
-**완성도**: ~85% (2026-02-24 기준)
-**마지막 작업일**: 2026-02-24
-**다음 작업 예정**: 2026-02-26
-**문서 폴더**: `Dev_md_2602/`
-**이전 CLAUDE.md 백업**: `Dev_md_2602/CLAUDE_backup_20260224.md`
-
----
-
-## 기술 스택
-
-| 항목 | 값 |
-|------|-----|
-| Frontend | React 18.2 + TypeScript 4.9 (strict) + TailwindCSS 3.4 |
-| Backend | Django REST Framework (Render.com) |
-| DB | PostgreSQL (Render.com) |
-| 배포 | GitHub Pages (`/ahp_app/`) via GitHub Actions |
-| 번들 | main.js **162.34KB** (gzip) |
-| 빌드 도구 | Create React App (react-scripts 5.0.1) |
-| 리포 | https://github.com/aebonlee/ahp_app |
-| 라이브 | https://aebonlee.github.io/ahp_app |
+**프로젝트**: Multi-Layer AHP Decision Support Platform  
+**현재 완성도**: 73.5% (2025-10-25 기준)  
+**목표**: MVP 완성 (2025년 11월 말)  
+**협력 AI**: Claude Sonnet 4 (일상) + Opus 4.1 (고급설계, 목요일)  
 
 ---
 
-## 프로젝트 규모
+## 🎯 프로젝트 현재 상태 (2025-10-25 기준)
 
-- **299+ TypeScript/TSX 파일**, **~118,200줄**
-- 컴포넌트 180+, 서비스 12개, 훅 10개, 유틸리티 26개, Context 5개
-- 기능: AHP, Fuzzy AHP, Monte Carlo, 그룹 합의, 민감도 분석, AI 통합
-
----
-
-## 아키텍처
-
+### ✅ 완성된 핵심 영역 (73.5%)
 ```
-Django REST API (Render.com)
-  ↕
-config/api.ts (API_ENDPOINTS, API_BASE_URL)
-  ↕
-services/api.ts (makeRequest + 10개 API 모듈 + 토큰 갱신)
-  ↕
-services/authService.ts (JWT, sessionStorage 전용)
-  ↕
-hooks/ (useAuth, useProjects, useNavigation, useBackendStatus...)
-  ↕
-contexts/ (AuthContext, ProjectContext, UIContext, NavigationContext)
-  ↕
-App.tsx (22줄) → AppProviders → AppContent → components/
+🏆 최근 완료 사항:
+├── 페이지 라우팅 시스템: 100% 완성 ✅ (10/17)
+├── 인프라 및 인증: 95% 완성 ✅
+├── 기본 AHP 프로세스: 80% 완성 ✅ (10/25 계층구조 수정)
+├── UI/UX 기본 시스템: 80% 완성 🔄
+├── 데이터베이스 스키마: 95% 완성 ✅ (10/25 parent 필드 수정)
+├── 문서화 시스템: 95% 완성 ✅
+├── GitHub 배포 시스템: 100% 완성 ✅
+└── CI/CD 파이프라인: 100% 완성 ✅
 ```
 
-### 핵심 서비스 (12개, 총 5,460줄)
-
-| 서비스 | 줄 | 역할 |
-|--------|-----|------|
-| api.ts | 924 | HTTP 클라이언트 + projectApi/criteriaApi/alternativeApi/evaluatorApi/evaluationApi/resultsApi/exportApi/authApi/advancedAnalysisApi/directEvaluationAPI |
-| authService.ts | 424 | JWT 토큰 관리, sessionStorage, 자동 갱신 (만료 5분 전) |
-| anonymousEvaluationService.ts | 580 | 익명 평가 세션 (sessionStorage 전용) |
-| dataService_clean.ts | 563 | 비즈니스 로직 래퍼 |
-| fileUploadService.ts | 561 | 파일 업로드 |
-| systemManagementService.ts | 460 | 시스템 관리 |
-| djangoAdminService.ts | 453 | Django Admin 통합 |
-| sessionService.ts | 345 | 세션 유효성 |
-| aiService.ts | 362 | AI 통합 |
-| twoFactorService.ts | 337 | 2FA TOTP |
-| subscriptionService.ts | 310 | 구독 관리 |
-| invitationService.ts | 146 | 평가자 초대 |
-
-### 삭제된 파일 (Phase 3에서 제거)
-- ~~apiService.ts~~ (376줄) — api.ts로 통합
-- ~~apiService.test.ts~~ — 테스트 파일
-- ~~dataService.ts~~ (241줄) — api.ts로 통합
-
----
-
-## 완료 현황
-
-### Phase 1: 기반 안정화 ✅ 7/7 완료
-- 1a: React.lazy() 코드 스플리팅 (App.tsx 2,309→22줄)
-- 1b: AppRouter → AppContent 분리
-- 1c: 커스텀 훅 6개 추출
-- 1d: 보안 취약점 5건 패치
-- 1e: 라우트 맵 + 가드 컴포넌트
-- 1f: Context API 5개 + AppProviders
-- 1g: 프로덕션 console.* 13건 정리
-
-### Phase 2: 핵심 기능 ✅ 완료
-- 2a: 평가자 초대 시스템 FE 인프라
-- 2c: 고급 분석 알고리즘 5개 (Monte Carlo, 민감도, 그룹 합의, Pareto, 강건성)
-
-### Phase 2.5: 코드 품질 ✅ 7/7 완료
-- npm audit fix, secureStorage, any→제네릭, PSD 분할(-41%), logger, React.memo(18개), ErrorBoundary(3개)
-
-### Phase 3: 서비스 통합 ✅ 완료
-- 토큰 갱신 일원화 (C1), dataService 삭제 (C2), apiService 삭제 (H1), axios→fetch (H3), localStorage→sessionStorage (C3)
-- 순 코드 감소: **-870줄**, 삭제 파일 3개, 수정 파일 25개
-
-### 주요 버그 수정 (28~39)
-- API 엔드포인트 불일치 8건 수정
-- 401 토큰 자동 갱신 추가
-- SUPER_ADMIN_EMAIL 프로덕션 빌드 빈 문자열
-- PUBLIC_URL 누락 (평가 테스트 404)
-- Sidebar 역할 전환 버튼 6건 수정
-- effectiveSuperAdminMode 일관성 복원
-
----
-
-## 현재 코드 품질
-
-| 지표 | 값 |
-|------|-----|
-| TypeScript 에러 | **0개** |
-| any 타입 잔여 | **4개** (advancedAnalysisApi 제네릭, Phase 4 예정) |
-| console.log 잔여 | **0개** (logger 유틸 사용) |
-| TODO/FIXME | **5개** (설명성 코멘트) |
-| npm 취약점 | 60개 (CRA 의존성, 런타임 무관) |
-| axios 런타임 사용 | **0건** |
-
----
-
-## 차기 Todo (Phase 4)
-
-### 즉시 (2026-02-26 재개 시)
-1. **불필요 의존성 정리** — pg, node-fetch, claude-agent-sdk 제거, QR 라이브러리 통합, axios 제거
-2. **apiService 잔존 import 정리** — 13개 컴포넌트 확인 및 수정
-3. **anonymousEvaluationService 중복 코드 정리** — sessionStorage 호출 중복 제거
-4. **@types/* devDependencies 이동** — dependencies→devDependencies
-
-### 단기
-5. **대형 컴포넌트 분할** — 500줄+ 컴포넌트 식별 및 분할
-6. **advancedAnalysisApi 타입 강화** — `<T = any>` 4건 → 구체적 타입
-7. **ESLint 경고 정리** — 350건 → 100건 이하
-8. **테스트 커버리지 구축** — 핵심 서비스/유틸리티 단위 테스트
-
-### 중기
-9. **CRA → Vite 마이그레이션** — npm 취약점 60건 근본 해결 + 빌드 속도
-10. **Lint 차단 모드** — CI에서 경고 임계값 강제
-11. **E2E 테스트** — Playwright 도입
-
----
-
-## 개발 명령어
-
-```bash
-npm start              # 개발 서버 (포트 3000, 프록시: Render.com)
-npm run build          # 프로덕션 빌드 (CI=false)
-npx tsc --noEmit       # TypeScript 타입 체크
-npm run lint           # ESLint (max-warnings 350)
-npm test               # 테스트
-npm run deploy         # gh-pages 수동 배포 (CI가 자동 처리)
+### 🚧 개발 필요 영역 (26.5%)
+```
+❌ 우선순위별 개발 계획:
+1. 이메일 발송 시스템 (10% → 90%) - Opus 필수 ⚠️ 긴급
+2. 평가자 배정 시스템 (50% → 95%) - Opus 권장
+3. 고급 분석 보고서 (20% → 90%) - Opus 권장  
+4. 실시간 모니터링 (30% → 90%) - Sonnet 가능
+5. 모바일 최적화 (35% → 85%) - Sonnet 가능
+6. 결제 시스템 (0% → 90%) - Opus 필수
 ```
 
 ---
 
-## 주의사항
+## 🤖 AI 역할 분담 전략 (명확한 구분)
 
-### 절대 변경 금지
-- 평가자 URL 파라미터 처리 (`?project=`, `?eval=`, `?token=`, `?key=`)
-- GitHub Pages 탭 기반 네비게이션 (`?tab=XXX&project=YYY`)
-- sessionStorage 기반 토큰 저장 (localStorage 사용 금지 — 보안)
+### 🧠 Opus 전담 영역 (매주 목요일)
+**복잡한 설계와 알고리즘이 필요한 작업**
 
-### 스토리지 정책
-- **sessionStorage**: JWT 토큰, 익명 세션 (보안 데이터)
-- **localStorage**: 업로드 진행률, 2FA 속도 제한, 테마 설정 (영속 데이터만)
-- **secureStorage**: API 키 등 민감 데이터 (암호화 래핑)
+#### 🔴 1차 우선순위: 이메일 발송 시스템 (긴급!)
+```
+📋 설계 범위:
+├── Django 이메일 백엔드 설정
+├── SendGrid API 통합
+├── 이메일 템플릿 시스템
+├── 대량 발송 큐 시스템 (Celery)
+├── 발송 상태 추적 및 재시도 로직
+└── 평가자 초대 API 엔드포인트
+```
 
-### CI/CD
-- Push to main → GitHub Actions 자동 빌드+배포
-- 트리거 경로: src/**, public/**, package.json, tsconfig.json, .github/workflows/**
-- Lint/Test는 현재 비차단 (continue-on-error)
+#### 2차 우선순위: 평가자 배정 시스템 완성
+```
+📋 설계 범위:
+├── 평가자 권한 관리 시스템
+├── 토큰 기반 익명 평가 인증
+├── 평가 진행률 실시간 추적
+├── 리마인더 자동 발송
+└── 평가 완료 알림 시스템
+```
+
+#### 3차 우선순위: 고급 분석 엔진
+```
+📋 설계 범위:
+├── 민감도 분석 알고리즘 구현
+├── 몬테카를로 시뮬레이션
+├── 그룹 의사결정 통합 알고리즘
+├── 통계적 유의성 검증
+└── 대용량 데이터 처리 최적화
+```
+
+#### 4차 우선순위: 결제 시스템
+```
+📋 설계 범위:
+├── Stripe/PayPal 결제 통합
+├── 구독 모델 비즈니스 로직
+├── 결제 보안 및 PCI 준수
+├── 환불 처리 시스템
+└── 청구서 자동 생성
+```
+
+### ⚡ Sonnet 전담 영역 (매일)
+**구현, 디버깅, UI/UX 중심 작업**
+
+#### 즉시 시작 가능한 작업들
+```
+🔧 다음 세션 작업 우선순위:
+├── 계층 구조 테스트 (parent-child 관계 확인)
+├── 평가자 초대 UI 개선 (임시 → 정식)
+├── ESLint 경고 해결 (40개 남음)
+├── 모바일 반응형 CSS 개선
+├── 로딩 스피너 및 스켈레톤 UI 추가
+└── 평가 진행률 대시보드 UI 구현
+```
+
+#### 다음 주 작업 계획 (10/31-11/06)
+```
+🔧 구현 작업:
+├── 실시간 모니터링 대시보드 UI
+├── 알림 시스템 프론트엔드
+├── 데이터 테이블 필터링/정렬 개선
+├── 차트 라이브러리 통합 (Recharts 이미 설치됨)
+└── PWA 설정 추가
+```
 
 ---
 
-## 개발 문서
+## 📊 주간 개발 일정
 
+### 이번 주 (10/18-10/23) - Sonnet 집중
 ```
-Dev_md_2602/
-├── README.md                        # 전체 개요
-├── 개발일지_20260223.md             # 작업 기록 (#1~#41)
-├── 점검보고서_20260223.md           # 초기 점검
-├── 전체점검보고서_20260224.md       # 정밀 점검 (C/H/M/L 이슈 분류)
-├── 평가보고서_20260224.md           # 개발 상태 평가 (이 세션)
-├── DB구조_연동분석_20260224.md       # DB 구조 분석
-├── plan_routing_fix.md              # 라우팅 수정 계획
-├── CLAUDE_backup_20260224.md        # 이전 CLAUDE.md 백업
-└── 작업지시서_20260226.md           # 다음 세션 작업 지시서
+금요일 (10/18):
+├── 오전: ESLint 경고 50% 해결
+├── 오후: TypeScript 타입 정의 개선
+└── 저녁: 테스트 및 문서 업데이트
+
+월요일 (10/21):
+├── 오전: 모바일 반응형 개선
+├── 오후: 로딩 상태 UI 구현
+└── 저녁: 애니메이션 효과 추가
+
+화-수요일 (10/22-23):
+├── 단위 테스트 작성
+├── 성능 프로파일링
+└── Opus 작업 준비
+```
+
+### 다음 주 (10/24-10/30) - Opus + Sonnet
+```
+목요일 (10/24) - Opus Day:
+├── 09:00-12:00: 평가자 배정 시스템 설계
+├── 13:00-16:00: 고급 분석 알고리즘 설계
+├── 16:00-18:00: Sonnet 구현 가이드 작성
+└── 18:00-19:00: 주간 보고서 작성
+
+금-수요일 (10/25-30) - Sonnet:
+├── Opus 설계 기반 구현
+├── UI 컴포넌트 개발
+├── 테스트 및 디버깅
+└── 문서화
 ```
 
 ---
 
-**마지막 업데이트**: 2026-02-24
-**작성**: Claude Opus 4.6
-**최신 커밋**: `90ee74d` docs: 개발일지 #40-#41
-**빌드 상태**: ✅ 0 errors, 162.34KB gzip
+## 🔧 기술 스택 현황
+
+### 현재 사용 중
+```javascript
+// Frontend
+{
+  "react": "18.2.0",
+  "typescript": "4.9.5",
+  "tailwindcss": "3.x",
+  "react-router-dom": "6.x",
+  "axios": "1.x"
+}
+
+// Backend (Django)
+{
+  "django": "5.0",
+  "djangorestframework": "3.x",
+  "postgresql": "17.0",
+  "redis": "배포 예정"
+}
+```
+
+### 추가 도입 예정
+```javascript
+// 우선순위 높음
+{
+  "socket.io": "실시간 통신",
+  "recharts": "차트 라이브러리",
+  "react-query": "서버 상태 관리",
+  "jest": "테스트 프레임워크"
+}
+
+// Opus 설계 후 도입
+{
+  "bullmq": "작업 큐",
+  "sendgrid": "이메일 서비스",
+  "stripe": "결제 처리"
+}
+```
+
+---
+
+## 📈 진행 상황 추적
+
+### 완성도 추이
+```
+10월 1주: 70% → 71% (+1%)
+10월 2주: 71% → 72% (+1%)
+10월 3주: 72% → 73.5% (+1.5%) ✅ 달성
+10월 4주: 목표 76% (+2.5%)
+11월 목표: 90% (MVP)
+```
+
+### 주요 마일스톤
+- [x] 프로젝트 생성 플로우 완성 (10/16)
+- [x] 페이지 라우팅 시스템 완성 (10/17)
+- [ ] 평가자 시스템 완성 (10/31 목표)
+- [ ] 고급 분석 기능 완성 (11/7 목표)
+- [ ] 결제 시스템 통합 (11/14 목표)
+- [ ] MVP 출시 준비 (11/30 목표)
+
+---
+
+## 💡 즉시 실행 가능한 작업 (Sonnet)
+
+### 오늘 바로 시작할 수 있는 작업
+1. **코드 품질 개선**
+   ```bash
+   cd ahp_app
+   npm run lint  # ESLint 경고 확인
+   # 각 경고를 하나씩 수정
+   ```
+
+2. **TypeScript 타입 개선**
+   ```typescript
+   // any 타입을 구체적인 타입으로 변경
+   // 누락된 타입 정의 추가
+   ```
+
+3. **반응형 디자인 테스트**
+   ```bash
+   # Chrome DevTools로 모바일 뷰 테스트
+   # Tailwind 반응형 클래스 추가
+   ```
+
+---
+
+## 📝 개발 시 주의사항
+
+### 코드 컨벤션
+- TypeScript strict 모드 유지
+- 컴포넌트는 함수형으로 작성
+- Custom Hook 적극 활용
+- 절대 경로 import 사용
+
+### Git 커밋 규칙
+```
+feat: 새로운 기능 추가
+fix: 버그 수정
+refactor: 코드 리팩토링
+style: 코드 포맷팅
+docs: 문서 수정
+test: 테스트 추가
+chore: 기타 변경사항
+```
+
+### 성능 목표
+- Lighthouse 점수 90+ 유지
+- 번들 크기 500KB 이하
+- FCP 1.5초 이내
+- TTI 3초 이내
+
+---
+
+## 📞 세션 시작 체크리스트
+
+### Sonnet 세션 시작 시
+1. [ ] 이전 개발일지 확인
+2. [ ] 현재 작업 우선순위 확인
+3. [ ] 브랜치 상태 확인 (`git status`)
+4. [ ] 개발 서버 시작 (`npm start`)
+5. [ ] 작업 시작!
+
+### Opus 세션 시작 시 (목요일)
+1. [ ] 주간 진행 상황 리뷰
+2. [ ] 복잡한 문제 목록 준비
+3. [ ] 설계 문서 템플릿 준비
+4. [ ] 아키텍처 결정 필요사항 정리
+5. [ ] 설계 세션 시작!
+
+---
+
+## 🗂️ 개발 기록 저장소
+
+### 개발일지 위치
+```
+D:\ahp\Dev_md\
+├── 개발일지_20251016_최종_배포_및_성과_보고.md
+├── 개발일지_20251017_페이지_라우팅_개선.md
+└── [향후 일지들...]
+```
+
+### 백업 저장소
+```
+GitHub Repositories:
+├── ahp_app (메인 프론트엔드)
+├── ahp-django-service (백엔드)
+├── ahp_app_backup_[날짜] (정기 백업)
+└── ahp-platform_backup (전체 백업)
+```
+
+---
+
+## 📋 TODO LIST - Opus & Sonnet 역할 분담
+
+### 🧠 Opus 4.1 전담 TODO (목요일 집중)
+**우선순위: 복잡한 설계 및 알고리즘**
+```
+[ ] 1. 평가자 배정 시스템 설계 (최우선)
+    [ ] 이메일 발송 아키텍처 설계
+    [ ] 대량 초대 처리 Queue 시스템
+    [ ] 토큰 기반 인증 체계 설계
+    [ ] 평가 진행률 추적 시스템
+
+[ ] 2. 고급 분석 엔진 설계
+    [ ] 민감도 분석 알고리즘
+    [ ] 몬테카를로 시뮬레이션
+    [ ] 그룹 의사결정 통합
+
+[ ] 3. 결제 시스템 아키텍처
+    [ ] Stripe/PayPal 통합 설계
+    [ ] 구독 모델 비즈니스 로직
+    [ ] 결제 보안 체계
+
+[ ] 4. 성능 최적화 전략
+    [ ] 대용량 데이터 처리 최적화
+    [ ] 캐싱 전략 설계
+    [ ] 데이터베이스 쿼리 최적화
+```
+
+### ⚡ Sonnet 4 전담 TODO (매일 작업)
+**우선순위: 구현 및 UI/UX 개선**
+```
+[x] CI/CD 파이프라인 수정 완료 (10/19)
+[x] GitHub 브랜치 정리 완료 (10/19)
+[ ] 1. 코드 품질 개선 (진행 중)
+    [~] ESLint 경고 해결 (40개 남음)
+    [ ] TypeScript 타입 정의 개선
+    [ ] 컴포넌트 단위 테스트 작성
+
+[ ] 2. UI/UX 개선
+    [ ] 모바일 반응형 디자인 개선
+    [ ] 로딩 스피너/스켈레톤 UI 구현
+    [ ] 페이지 전환 애니메이션
+
+[ ] 3. 실시간 기능 구현
+    [ ] 실시간 모니터링 대시보드 UI
+    [ ] 알림 시스템 프론트엔드
+    [ ] WebSocket 연결 구현
+
+[ ] 4. 데이터 시각화
+    [ ] Recharts 차트 컴포넌트 구현
+    [ ] 데이터 테이블 필터링/정렬
+    [ ] 대시보드 위젯 개발
+
+[ ] 5. PWA 설정
+    [ ] Service Worker 구현
+    [ ] 오프라인 모드 지원
+    [ ] 앱 아이콘/스플래시 스크린
+```
+
+### 🤝 Opus-Sonnet 협업 TODO
+```
+[ ] 1. 평가자 시스템 (Opus 설계 → Sonnet 구현)
+[ ] 2. 고급 분석 기능 (Opus 알고리즘 → Sonnet UI)
+[ ] 3. 결제 시스템 (Opus 보안설계 → Sonnet 폼구현)
+[ ] 4. 성능 최적화 (Opus 전략 → Sonnet 적용)
+```
+
+---
+
+**최종 업데이트**: 2025-10-24  
+**현재 Opus 세션**: 2025-10-24 (목요일) ✅  
+**다음 Opus 세션**: 2025-10-31 (목요일)  
+**현재 완성도**: 72%  
+**목표 완성도**: 90% (2025년 11월 30일)
+
+---
+
+> 📌 **중요**: 이 문서는 Claude Code와의 지속적 협업을 위한 **마스터 가이드**입니다.
+> 매 세션마다 이 문서를 참조하여 일관성 있는 개발을 진행하세요.
+> Sonnet은 일상적인 구현을, Opus는 복잡한 설계를 담당합니다.
