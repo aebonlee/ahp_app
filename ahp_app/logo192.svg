@@ -1,0 +1,49 @@
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="96" cy="96" r="90" fill="#3B82F6" stroke="#1E40AF" stroke-width="6"/>
+  
+  <!-- AHP Text -->
+  <text x="96" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="white">AHP</text>
+  <text x="96" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" opacity="0.9">for Paper</text>
+  
+  <!-- Hierarchy Symbol -->
+  <g fill="white" opacity="0.8">
+    <!-- Top node (Goal) -->
+    <circle cx="96" cy="115" r="8"/>
+    <text x="96" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#3B82F6">G</text>
+    
+    <!-- Second level nodes (Criteria) -->
+    <circle cx="64" cy="140" r="6"/>
+    <text x="64" y="144" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#3B82F6">C1</text>
+    <circle cx="96" cy="140" r="6"/>
+    <text x="96" y="144" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#3B82F6">C2</text>
+    <circle cx="128" cy="140" r="6"/>
+    <text x="128" y="144" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#3B82F6">C3</text>
+    
+    <!-- Third level nodes (Alternatives) -->
+    <circle cx="48" cy="165" r="4"/>
+    <text x="48" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" fill="#3B82F6">A1</text>
+    <circle cx="64" cy="165" r="4"/>
+    <text x="64" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" fill="#3B82F6">A2</text>
+    <circle cx="80" cy="165" r="4"/>
+    <text x="80" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" fill="#3B82F6">A3</text>
+    <circle cx="112" cy="165" r="4"/>
+    <text x="112" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" fill="#3B82F6">A4</text>
+    <circle cx="128" cy="165" r="4"/>
+    <text x="128" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" fill="#3B82F6">A5</text>
+    <circle cx="144" cy="165" r="4"/>
+    <text x="144" y="168" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" fill="#3B82F6">A6</text>
+    
+    <!-- Connecting lines -->
+    <line x1="96" y1="123" x2="64" y2="134" stroke="white" stroke-width="2" opacity="0.6"/>
+    <line x1="96" y1="123" x2="96" y2="134" stroke="white" stroke-width="2" opacity="0.6"/>
+    <line x1="96" y1="123" x2="128" y2="134" stroke="white" stroke-width="2" opacity="0.6"/>
+    
+    <line x1="64" y1="146" x2="48" y2="161" stroke="white" stroke-width="1.5" opacity="0.6"/>
+    <line x1="64" y1="146" x2="64" y2="161" stroke="white" stroke-width="1.5" opacity="0.6"/>
+    <line x1="96" y1="146" x2="80" y2="161" stroke="white" stroke-width="1.5" opacity="0.6"/>
+    <line x1="96" y1="146" x2="112" y2="161" stroke="white" stroke-width="1.5" opacity="0.6"/>
+    <line x1="128" y1="146" x2="128" y2="161" stroke="white" stroke-width="1.5" opacity="0.6"/>
+    <line x1="128" y1="146" x2="144" y2="161" stroke="white" stroke-width="1.5" opacity="0.6"/>
+  </g>
+</svg>
